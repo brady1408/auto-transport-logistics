@@ -1,0 +1,63 @@
+package templates
+
+templ Layout(title string) {
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title>{ title } - Auto Transport Logistics</title>
+		<link rel="stylesheet" href="/static/css/output.css"/>
+		<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+		<script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"></script>
+		<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+	</head>
+	<body class="bg-gray-100">
+		@Navigation()
+		<main class="container mx-auto px-4 py-8">
+			{ children... }
+		</main>
+		@Footer()
+	</body>
+	</html>
+}
+
+templ Navigation() {
+	<nav class="bg-white shadow-lg">
+		<div class="container mx-auto px-4">
+			<div class="flex justify-between items-center py-4">
+				<div class="flex items-center space-x-8">
+					<a href="/" class="text-xl font-bold text-gray-900">
+						Auto Transport Logistics
+					</a>
+					<div class="hidden md:flex space-x-6">
+						<a href="/shipments" class="text-gray-700 hover:text-blue-600 transition-colors">
+							Shipments
+						</a>
+						<a href="/customers" class="text-gray-700 hover:text-blue-600 transition-colors">
+							Customers
+						</a>
+						<a href="/carriers" class="text-gray-700 hover:text-blue-600 transition-colors">
+							Carriers
+						</a>
+					</div>
+				</div>
+				<div>
+					<button class="btn-primary">
+						New Shipment
+					</button>
+				</div>
+			</div>
+		</div>
+	</nav>
+}
+
+templ Footer() {
+	<footer class="bg-white border-t border-gray-200 mt-12">
+		<div class="container mx-auto px-4 py-6">
+			<p class="text-center text-gray-600 text-sm">
+				&copy; 2024 Auto Transport Logistics. Built with GOTTH Stack.
+			</p>
+		</div>
+	</footer>
+}

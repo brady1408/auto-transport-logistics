@@ -1,0 +1,60 @@
+package templates
+
+templ Home() {
+	@Layout("Home") {
+		<div class="max-w-4xl mx-auto">
+			<div class="card text-center">
+				<h1 class="text-4xl font-bold text-gray-900 mb-4">
+					Welcome to Auto Transport Logistics
+				</h1>
+				<p class="text-lg text-gray-600 mb-8">
+					Manage your auto transport operations efficiently with our GOTTH stack application.
+				</p>
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+					<div class="p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
+						<h3 class="text-xl font-semibold mb-2">Shipments</h3>
+						<p class="text-gray-600 mb-4">Track and manage all your shipments in one place.</p>
+						<a href="/shipments" class="btn-primary inline-block">View Shipments</a>
+					</div>
+					<div class="p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
+						<h3 class="text-xl font-semibold mb-2">Customers</h3>
+						<p class="text-gray-600 mb-4">Manage customer information and contacts.</p>
+						<a href="/customers" class="btn-secondary inline-block">View Customers</a>
+					</div>
+					<div class="p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
+						<h3 class="text-xl font-semibold mb-2">Carriers</h3>
+						<p class="text-gray-600 mb-4">Manage carrier partnerships and assignments.</p>
+						<a href="/carriers" class="btn-secondary inline-block">View Carriers</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+				<div class="card text-center">
+					<div class="text-3xl font-bold text-blue-600" hx-get="/api/stats/total-shipments" hx-trigger="load">
+						0
+					</div>
+					<div class="text-sm text-gray-600 mt-2">Total Shipments</div>
+				</div>
+				<div class="card text-center">
+					<div class="text-3xl font-bold text-green-600" hx-get="/api/stats/active-shipments" hx-trigger="load">
+						0
+					</div>
+					<div class="text-sm text-gray-600 mt-2">Active Shipments</div>
+				</div>
+				<div class="card text-center">
+					<div class="text-3xl font-bold text-purple-600" hx-get="/api/stats/total-customers" hx-trigger="load">
+						0
+					</div>
+					<div class="text-sm text-gray-600 mt-2">Total Customers</div>
+				</div>
+				<div class="card text-center">
+					<div class="text-3xl font-bold text-orange-600" hx-get="/api/stats/active-carriers" hx-trigger="load">
+						0
+					</div>
+					<div class="text-sm text-gray-600 mt-2">Active Carriers</div>
+				</div>
+			</div>
+		</div>
+	}
+}
