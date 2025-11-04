@@ -174,19 +174,51 @@ Transport companies/drivers performing shipments.
 - ETA
 - Stops/Waypoints
 
+## Embedded Migrations
+
+**Migrations are embedded in the binary** for zero-dependency deployment.
+
+### How it Works
+- Migration files located in `internal/database/migrations/`
+- Embedded using Go's `embed` package (`//go:embed` directive)
+- Automatically run on server startup via `database.RunMigrations()`
+- Uses `golang-migrate/migrate` with `iofs` source driver
+- Single binary deployment (no separate .sql files needed)
+
+### Creating New Migrations
+1. Create files in `internal/database/migrations/`:
+   - `000002_description.up.sql` - Forward migration
+   - `000002_description.down.sql` - Rollback migration
+2. Restart server - migrations apply automatically
+3. Update `sql/schema.sql` to reflect current state (for reference)
+
+### Available Functions
+```go
+// Run all pending migrations
+database.RunMigrations(databaseURL)
+
+// Rollback last migration
+database.RollbackMigration(databaseURL)
+
+// Get current migration version
+database.MigrationVersion(databaseURL)
+```
+
 ## Development Workflow
 
 ### 1. Database Changes
 ```bash
-# 1. Create migration
-migrate create -ext sql -dir migrations -seq add_shipments_table
+# 1. Create new migration files in internal/database/migrations/
+# Example: 000002_add_notes_table.up.sql and .down.sql
 
-# 2. Write up/down SQL in migration files
+# 2. Write SQL in migration files
 
-# 3. Apply migrations
-migrate -path migrations -database "postgresql://postgres:postgres@localhost:5432/auto_transport?sslmode=disable" up
+# 3. Restart server (migrations run automatically)
+go run cmd/server/main.go
+# OR
+air
 
-# 4. Update sql/schema.sql with current schema
+# 4. Update sql/schema.sql with current schema (optional, for reference)
 
 # 5. Write queries in sql/queries/*.sql
 
@@ -351,13 +383,18 @@ Can be added later using:
 
 ## Deployment Strategy
 
+**Single binary deployment** - Migrations are embedded, no separate files needed!
+
 **Simple VPS deployment:**
-1. Build binary on local machine or CI
-2. SCP binary to VPS
-3. Run as systemd service
-4. Nginx reverse proxy on port 80/443
-5. PostgreSQL on same VPS or managed service
-6. SSL with Let's Encrypt
+1. Build binary: `go build -o bin/server cmd/server/main.go`
+2. SCP single binary to VPS (that's it - migrations are embedded!)
+3. Set `DATABASE_URL` environment variable
+4. Run as systemd service
+5. Nginx reverse proxy on port 80/443
+6. PostgreSQL on same VPS or managed service
+7. SSL with Let's Encrypt
+
+**On first run**, migrations apply automatically. No separate migration step!
 
 **Docker deployment (alternative):**
 ```dockerfile

@@ -54,14 +54,9 @@ The database will be available at `localhost:5432` with:
 - Username: `postgres`
 - Password: `postgres`
 
-### 4. Run Database Migrations
+### 4. Generate Code
 
-```bash
-# Apply migrations (once schema is created)
-migrate -path migrations -database "postgresql://postgres:postgres@localhost:5432/auto_transport?sslmode=disable" up
-```
-
-### 5. Generate Code
+**Note:** Migrations are embedded in the binary and run automatically on startup. No separate migration step needed!
 
 ```bash
 # Generate SQLC code
@@ -110,12 +105,12 @@ Now you can edit `.templ` files, Go code, and see changes automatically.
 
 1. **Database changes:**
    ```bash
-   # Create migration
-   migrate create -ext sql -dir migrations -seq description_of_change
+   # Create migration files in internal/database/migrations/
+   # Name them sequentially: 000002_description.up.sql and 000002_description.down.sql
 
-   # Edit the new migration files in migrations/
-   # Apply migration
-   migrate -path migrations -database "postgresql://postgres:postgres@localhost:5432/auto_transport?sslmode=disable" up
+   # Migrations run automatically on next server start
+   # OR you can restart the server to apply them immediately
+   go run cmd/server/main.go
    ```
 
 2. **Write SQL queries:**
@@ -152,22 +147,36 @@ Now you can edit `.templ` files, Go code, and see changes automatically.
 
 ## Database Management
 
-### Create a new migration
+**Migrations are embedded in the binary** and run automatically when the server starts. No separate migration tool needed for deployment!
+
+### How it works
+
+- Migration files are in `internal/database/migrations/`
+- Embedded using Go's `embed` package
+- Automatically applied on server startup
+- Single binary contains everything (migrations + application code)
+
+### Creating a new migration
+
+1. Create two files in `internal/database/migrations/`:
+   - `000002_description.up.sql` - The migration
+   - `000002_description.down.sql` - The rollback
+
+2. Restart the server to apply:
+   ```bash
+   go run cmd/server/main.go
+   # OR with Air
+   air
+   ```
+
+### Manual migration management (optional)
+
+If you still want to use the `migrate` CLI tool for development:
 
 ```bash
-migrate create -ext sql -dir migrations -seq add_shipments_table
-```
-
-### Apply migrations
-
-```bash
+# The old migrations/ folder is kept for reference
+# You can still use migrate CLI if needed:
 migrate -path migrations -database "postgresql://postgres:postgres@localhost:5432/auto_transport?sslmode=disable" up
-```
-
-### Rollback migration
-
-```bash
-migrate -path migrations -database "postgresql://postgres:postgres@localhost:5432/auto_transport?sslmode=disable" down 1
 ```
 
 ### Connect to database

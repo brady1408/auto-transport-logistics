@@ -9,11 +9,21 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/brady1408/auto-transport-logistics/internal/database"
 )
 
 func main() {
 	// Configuration
 	port := getEnv("PORT", "8080")
+	databaseURL := getEnv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/auto_transport?sslmode=disable")
+
+	// Run migrations
+	log.Println("Running database migrations...")
+	if err := database.RunMigrations(databaseURL); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+	log.Println("Migrations completed successfully")
 
 	// Setup router
 	mux := http.NewServeMux()
