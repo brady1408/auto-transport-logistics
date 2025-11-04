@@ -76,6 +76,24 @@ This directory contains specialized agent prompts for reviewing and maintaining 
 
 ---
 
+### 🎨 design-guardian
+**Focus:** Tailwind CSS, design system consistency, accessibility
+**Expertise:** Tailwind best practices, responsive design, WCAG compliance
+
+**When to use:**
+- After creating or modifying templates with styling
+- When implementing new UI components
+- For accessibility reviews
+- When the UI feels inconsistent
+- Before committing design changes
+
+**Usage:**
+```
+@design-guardian Review the styling for consistency and accessibility
+```
+
+---
+
 ## Recommended Workflow
 
 ### For New Features
@@ -84,7 +102,8 @@ This directory contains specialized agent prompts for reviewing and maintaining 
 2. **@tenant-guardian** - Check data isolation (if touching database)
 3. **@go-lead** - Review Go code quality
 4. **@htmx-architect** - Review frontend patterns (if UI changes)
-5. **@security-auditor** - Security check before commit
+5. **@design-guardian** - Review styling consistency (if UI changes)
+6. **@security-auditor** - Security check before commit
 
 ### Before Production Deployment
 
@@ -92,6 +111,7 @@ This directory contains specialized agent prompts for reviewing and maintaining 
 2. **@security-auditor** - Complete security audit
 3. **@go-lead** - Code quality review
 4. **@htmx-architect** - UX/accessibility review
+5. **@design-guardian** - Design system compliance & accessibility
 
 ### Quick Checks
 
@@ -109,6 +129,7 @@ This directory contains specialized agent prompts for reviewing and maintaining 
 **After template changes:**
 ```
 @htmx-architect Review templates in templates/
+@design-guardian Check styling consistency and accessibility
 ```
 
 ## Agent Priority by Risk
@@ -122,6 +143,7 @@ This directory contains specialized agent prompts for reviewing and maintaining 
 
 **Recommended (Use as needed):**
 4. 🎨 **htmx-architect** - UX and frontend patterns
+5. 🎨 **design-guardian** - Design consistency and accessibility
 
 ## Example Usage
 
@@ -138,6 +160,7 @@ Files changed:
 @tenant-guardian Please verify all queries include organization_id filtering
 @go-lead Review the handler implementation for Go best practices
 @htmx-architect Review the Templ templates for HTMX patterns
+@design-guardian Check the styling for consistency with our design system
 ```
 
 ### Scenario 2: Before committing auth changes
