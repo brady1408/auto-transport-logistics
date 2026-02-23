@@ -276,6 +276,76 @@ func (s *OrderStore) UpdateCounts(ctx context.Context, tx pgx.Tx, orderID int, c
 	return nil
 }
 
+// DashboardCounts returns summary counts for the dashboard.
+type OrderDashboardCounts struct {
+	Active             int
+	UninvoicedDelivered int
+}
+
+func (s *OrderStore) DashboardCounts(ctx context.Context) (OrderDashboardCounts, error) {
+	var c OrderDashboardCounts
+	err := s.pool.QueryRow(ctx,
+		`SELECT
+			COUNT(*) FILTER (WHERE active = true),
+			COUNT(*) FILTER (WHERE active = true AND (delivered_count + confirmed_count) > 0 AND invoiced_count = 0)
+		FROM orders`,
+	).Scan(&c.Active, &c.UninvoicedDelivered)
+	if err != nil {
+		return c, fmt.Errorf("dashboard order counts: %w", err)
+	}
+	return c, nil
+}
+
+// StatusSummary returns order counts grouped by dispatch_code for a date range.
+type OrderStatusRow struct {
+	DispatchCode string
+	Zone         string
+	Count        int
+}
+
+func (s *OrderStore) StatusSummary(ctx context.Context, dateFrom, dateTo string) ([]OrderStatusRow, error) {
+	var where []string
+	var args []any
+	argN := 1
+
+	if dateFrom != "" {
+		where = append(where, fmt.Sprintf("create_date >= $%d", argN))
+		args = append(args, dateFrom)
+		argN++
+	}
+	if dateTo != "" {
+		where = append(where, fmt.Sprintf("create_date <= $%d", argN))
+		args = append(args, dateTo)
+		argN++
+	}
+
+	whereClause := ""
+	if len(where) > 0 {
+		whereClause = "WHERE " + strings.Join(where, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(dispatch_code, ''), COALESCE(zone, ''), COUNT(*)
+		FROM orders %s
+		GROUP BY dispatch_code, zone
+		ORDER BY COUNT(*) DESC`, whereClause)
+
+	rows, err := s.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("order status summary: %w", err)
+	}
+	defer rows.Close()
+
+	var items []OrderStatusRow
+	for rows.Next() {
+		var r OrderStatusRow
+		if err := rows.Scan(&r.DispatchCode, &r.Zone, &r.Count); err != nil {
+			return nil, fmt.Errorf("scan order status row: %w", err)
+		}
+		items = append(items, r)
+	}
+	return items, nil
+}
+
 // GetByIDTx fetches an order within a transaction.
 func (s *OrderStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*models.Order, error) {
 	query := fmt.Sprintf("SELECT %s FROM orders WHERE id = $1", orderColumns)

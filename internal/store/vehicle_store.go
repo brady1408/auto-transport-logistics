@@ -214,6 +214,107 @@ func (s *VehicleStore) UpdateTripAssignmentTx(ctx context.Context, tx pgx.Tx, id
 	return nil
 }
 
+// GlobalSearchResult represents a vehicle with order context for global search.
+type GlobalSearchResult struct {
+	ID             int
+	VIN            string
+	Year           string
+	Make           string
+	Model          string
+	Status         string
+	OrderID        int
+	OrderNumber    string
+	CustomerName   string
+	TripID         *int
+	LoadNumber     string
+	InvoiceNumber  string
+}
+
+// SearchGlobal searches all vehicles (not just unassigned) with order context.
+func (s *VehicleStore) SearchGlobal(ctx context.Context, query string, limit int) ([]GlobalSearchResult, error) {
+	sql := `SELECT
+		ov.id, COALESCE(ov.vin, ''), COALESCE(ov.year, ''), COALESCE(ov.make, ''), COALESCE(ov.model, ''),
+		COALESCE(ov.status, ''), COALESCE(o.id, 0), COALESCE(o.order_number, ''),
+		COALESCE(o.bill_customer_name, ''), ov.trip_id,
+		COALESCE(ov.load_number, ''), COALESCE(ov.invoice_number, '')
+	FROM order_vehicles ov
+	LEFT JOIN orders o ON o.id = ov.order_id
+	WHERE ov.vin ILIKE $1 OR o.order_number ILIKE $1 OR o.bill_customer_name ILIKE $1
+	ORDER BY ov.id DESC LIMIT $2`
+
+	rows, err := s.pool.Query(ctx, sql, "%"+query+"%", limit)
+	if err != nil {
+		return nil, fmt.Errorf("global vehicle search: %w", err)
+	}
+	defer rows.Close()
+
+	var items []GlobalSearchResult
+	for rows.Next() {
+		var r GlobalSearchResult
+		if err := rows.Scan(&r.ID, &r.VIN, &r.Year, &r.Make, &r.Model, &r.Status,
+			&r.OrderID, &r.OrderNumber, &r.CustomerName, &r.TripID,
+			&r.LoadNumber, &r.InvoiceNumber); err != nil {
+			return nil, fmt.Errorf("scan global search result: %w", err)
+		}
+		items = append(items, r)
+	}
+	return items, nil
+}
+
+// VehicleHistoryRow represents a single vehicle record across orders.
+type VehicleHistoryRow struct {
+	ID            int
+	VIN           string
+	Year          string
+	Make          string
+	Model         string
+	Status        string
+	OrderID       int
+	OrderNumber   string
+	CustomerName  string
+	LoadNumber    string
+	InvoiceNumber string
+	ScheduledDate *string
+	LoadedDate    *string
+	DeliveredDate *string
+	ConfirmedDate *string
+}
+
+// VehicleHistory returns all records for a VIN across orders.
+func (s *VehicleStore) VehicleHistory(ctx context.Context, vin string) ([]VehicleHistoryRow, error) {
+	rows, err := s.pool.Query(ctx,
+		`SELECT
+			ov.id, COALESCE(ov.vin, ''), COALESCE(ov.year, ''), COALESCE(ov.make, ''), COALESCE(ov.model, ''),
+			COALESCE(ov.status, ''), COALESCE(o.id, 0), COALESCE(o.order_number, ''),
+			COALESCE(o.bill_customer_name, ''),
+			COALESCE(ov.load_number, ''), COALESCE(ov.invoice_number, ''),
+			CASE WHEN ov.scheduled_date IS NOT NULL THEN to_char(ov.scheduled_date, 'MM/DD/YYYY') END,
+			CASE WHEN ov.loaded_date IS NOT NULL THEN to_char(ov.loaded_date, 'MM/DD/YYYY') END,
+			CASE WHEN ov.delivered_date IS NOT NULL THEN to_char(ov.delivered_date, 'MM/DD/YYYY') END,
+			CASE WHEN ov.confirmed_date IS NOT NULL THEN to_char(ov.confirmed_date, 'MM/DD/YYYY') END
+		FROM order_vehicles ov
+		LEFT JOIN orders o ON o.id = ov.order_id
+		WHERE ov.vin ILIKE $1
+		ORDER BY ov.id DESC`, "%"+vin+"%")
+	if err != nil {
+		return nil, fmt.Errorf("vehicle history: %w", err)
+	}
+	defer rows.Close()
+
+	var items []VehicleHistoryRow
+	for rows.Next() {
+		var r VehicleHistoryRow
+		if err := rows.Scan(&r.ID, &r.VIN, &r.Year, &r.Make, &r.Model, &r.Status,
+			&r.OrderID, &r.OrderNumber, &r.CustomerName,
+			&r.LoadNumber, &r.InvoiceNumber,
+			&r.ScheduledDate, &r.LoadedDate, &r.DeliveredDate, &r.ConfirmedDate); err != nil {
+			return nil, fmt.Errorf("scan vehicle history row: %w", err)
+		}
+		items = append(items, r)
+	}
+	return items, nil
+}
+
 // SearchUnassigned finds vehicles that are in Waiting status and not assigned to a trip.
 func (s *VehicleStore) SearchUnassigned(ctx context.Context, search string, limit int) ([]models.OrderVehicle, error) {
 	query := fmt.Sprintf(`SELECT %s FROM order_vehicles

@@ -1,0 +1,51 @@
+{{define "report_revenue.html"}}
+{{template "base" .}}
+{{define "title"}}Revenue by Customer - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h1>Revenue by Customer</h1>
+    <div class="btn-group no-print">
+        <a href="/reports/revenue-by-customer/csv?date_from={{.DateFrom}}&date_to={{.DateTo}}" class="btn">Export CSV</a>
+        <button onclick="window.print()" class="btn">Print</button>
+        <a href="/reports" class="btn">Back to Reports</a>
+    </div>
+</div>
+
+<form class="filter-bar no-print" method="GET" action="/reports/revenue-by-customer">
+    <div class="form-group">
+        <label>From</label>
+        <input type="date" name="date_from" value="{{.DateFrom}}" class="form-control">
+    </div>
+    <div class="form-group">
+        <label>To</label>
+        <input type="date" name="date_to" value="{{.DateTo}}" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+<div class="table-container">
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>Customer #</th>
+                <th>Customer Name</th>
+                <th class="text-right">Invoice Count</th>
+                <th class="text-right">Total Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Rows}}
+            <tr>
+                <td>{{.CustomerNumber}}</td>
+                <td>{{.CustomerName}}</td>
+                <td class="text-right">{{.InvoiceCount}}</td>
+                <td class="text-right">${{.TotalRevenue}}</td>
+            </tr>
+            {{else}}
+            <tr><td colspan="4" class="text-center text-muted">No revenue data found.</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}
+{{end}}

@@ -167,6 +167,71 @@ func (s *PaymentStore) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
+// PaymentReportRow is a single row in the payment report.
+type PaymentReportRow struct {
+	ID             int
+	PaymentDate    *string
+	CustomerName   string
+	CheckNumber    string
+	Amount         string
+	AppliedAmount  string
+	PaymentMethod  string
+	InvoiceNumbers string
+}
+
+func (s *PaymentStore) PaymentReport(ctx context.Context, dateFrom, dateTo string) ([]PaymentReportRow, error) {
+	var where []string
+	var args []any
+	argN := 1
+
+	if dateFrom != "" {
+		where = append(where, fmt.Sprintf("p.payment_date >= $%d", argN))
+		args = append(args, dateFrom)
+		argN++
+	}
+	if dateTo != "" {
+		where = append(where, fmt.Sprintf("p.payment_date <= $%d", argN))
+		args = append(args, dateTo)
+		argN++
+	}
+
+	whereClause := ""
+	if len(where) > 0 {
+		whereClause = "WHERE " + strings.Join(where, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT
+		p.id,
+		CASE WHEN p.payment_date IS NOT NULL THEN to_char(p.payment_date, 'MM/DD/YYYY') END,
+		COALESCE(p.customer_name, ''), COALESCE(p.check_number, ''),
+		COALESCE(p.amount, '0.00'), COALESCE(p.applied_amount, '0.00'),
+		COALESCE(p.payment_method, ''),
+		COALESCE(STRING_AGG(DISTINCT i.invoice_number, ', '), '')
+	FROM payments p
+	LEFT JOIN payment_details pd ON pd.payment_id = p.id
+	LEFT JOIN invoices i ON i.id = pd.invoice_id
+	%s
+	GROUP BY p.id, p.payment_date, p.customer_name, p.check_number, p.amount, p.applied_amount, p.payment_method
+	ORDER BY p.payment_date DESC NULLS LAST`, whereClause)
+
+	rows, err := s.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("payment report: %w", err)
+	}
+	defer rows.Close()
+
+	var items []PaymentReportRow
+	for rows.Next() {
+		var r PaymentReportRow
+		if err := rows.Scan(&r.ID, &r.PaymentDate, &r.CustomerName, &r.CheckNumber,
+			&r.Amount, &r.AppliedAmount, &r.PaymentMethod, &r.InvoiceNumbers); err != nil {
+			return nil, fmt.Errorf("scan payment report row: %w", err)
+		}
+		items = append(items, r)
+	}
+	return items, nil
+}
+
 // UpdateAmountsTx updates the applied/unapplied amounts within a transaction.
 func (s *PaymentStore) UpdateAmountsTx(ctx context.Context, tx pgx.Tx, id int, applied string, unapplied string) error {
 	_, err := tx.Exec(ctx,

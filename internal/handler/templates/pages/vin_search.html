@@ -1,0 +1,79 @@
+{{define "vin_search.html"}}
+{{template "base" .}}
+{{define "title"}}VIN Search - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h1>VIN Search</h1>
+</div>
+
+<div class="filter-bar">
+    <div class="form-group">
+        <input type="text" class="form-control search-input" name="q" value="{{.Query}}"
+               placeholder="Search by VIN, order number, or customer..."
+               hx-get="/search/vin"
+               hx-trigger="keyup changed delay:300ms"
+               hx-target="#vin-results"
+               hx-push-url="true"
+               hx-include="this"
+               autofocus>
+    </div>
+</div>
+
+<div id="vin-results">
+{{template "vin_search_results" .}}
+</div>
+{{end}}
+{{end}}
+
+{{define "vin_search_results"}}
+{{if .Query}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>VIN</th>
+                <th>Year/Make/Model</th>
+                <th>Status</th>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Load #</th>
+                <th>Invoice #</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Results}}
+            <tr>
+                <td><strong>{{.VIN}}</strong></td>
+                <td>{{.Year}} {{.Make}} {{.Model}}</td>
+                <td>
+                    {{if eq .Status "Waiting"}}<span class="badge badge-waiting">Waiting</span>
+                    {{else if eq .Status "Scheduled"}}<span class="badge badge-scheduled">Scheduled</span>
+                    {{else if eq .Status "Loaded"}}<span class="badge badge-loaded">Loaded</span>
+                    {{else if eq .Status "Delivered"}}<span class="badge badge-delivered">Delivered</span>
+                    {{else if eq .Status "Confirmed"}}<span class="badge badge-confirmed">Confirmed</span>
+                    {{else}}<span class="badge">{{.Status}}</span>
+                    {{end}}
+                </td>
+                <td>{{if .OrderNumber}}<a href="/dispatch/orders/{{.OrderID}}">{{.OrderNumber}}</a>{{end}}</td>
+                <td>{{.CustomerName}}</td>
+                <td>{{.LoadNumber}}</td>
+                <td>{{.InvoiceNumber}}</td>
+                <td>
+                    <div class="btn-group">
+                        <a href="/reports/vehicle-history?vin={{.VIN}}" class="btn btn-sm">History</a>
+                    </div>
+                </td>
+            </tr>
+            {{else}}
+            <tr>
+                <td colspan="8" class="text-center text-muted">No vehicles found matching "{{$.Query}}"</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{else}}
+<p class="text-muted">Enter a VIN, order number, or customer name to search.</p>
+{{end}}
+{{end}}
