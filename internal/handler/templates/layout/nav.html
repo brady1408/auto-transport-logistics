@@ -16,11 +16,11 @@
         <div class="nav-dropdown" @mouseenter="open = 'accounting'" @mouseleave="open = ''">
             <button class="nav-link">Accounting</button>
             <div class="dropdown-menu" x-show="open === 'accounting'" x-cloak>
-                <a href="#" class="dropdown-item disabled">Invoices (coming soon)</a>
-                <a href="#" class="dropdown-item disabled">Payments (coming soon)</a>
-                <a href="#" class="dropdown-item disabled">Credit Memos (coming soon)</a>
-                <a href="#" class="dropdown-item disabled">Accounts Payable (coming soon)</a>
-                <a href="#" class="dropdown-item disabled">Damage Claims (coming soon)</a>
+                <a href="/accounting/invoices" class="dropdown-item">Invoices</a>
+                <a href="/accounting/payments" class="dropdown-item">Payments</a>
+                <a href="/accounting/credit-memos" class="dropdown-item">Credit Memos</a>
+                <a href="/accounting/damage-claims" class="dropdown-item">Damage Claims</a>
+                <a href="/accounting/ap" class="dropdown-item">Accounts Payable</a>
             </div>
         </div>
         <!-- Global -->

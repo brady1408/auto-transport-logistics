@@ -1,0 +1,105 @@
+{{define "credit_memo_form.html"}}
+{{template "base" .}}
+{{define "title"}}{{if .IsNew}}New Credit Memo{{else}}Edit Credit Memo{{end}} - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h1>{{if .IsNew}}New Credit Memo{{else}}Edit Credit Memo: {{.CreditMemo.CreditNumber}}{{end}}</h1>
+    <a href="/accounting/credit-memos" class="btn">Back to List</a>
+</div>
+
+{{if .Error}}
+<div class="alert alert-danger">{{.Error}}</div>
+{{end}}
+
+<form method="POST"
+      {{if .IsNew}}
+          action="/accounting/credit-memos"
+          hx-post="/accounting/credit-memos"
+      {{else}}
+          action="/accounting/credit-memos/{{.CreditMemo.ID}}/edit"
+          hx-put="/accounting/credit-memos/{{.CreditMemo.ID}}"
+      {{end}}>
+
+    <fieldset>
+        <legend>Credit Memo Information</legend>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="credit_number">Credit #</label>
+                <input type="text" id="credit_number" name="credit_number" class="form-control"
+                       value="{{.CreditMemo.CreditNumber}}" {{if not .IsNew}}readonly{{end}}>
+            </div>
+            <div class="form-group">
+                <label for="credit_date">Date</label>
+                <input type="date" id="credit_date" name="credit_date" class="form-control"
+                       {{if .CreditMemo.CreditDate}}value="{{.CreditMemo.CreditDate.Format "2006-01-02"}}"{{end}}>
+            </div>
+            <div class="form-group">
+                <label for="amount">Amount</label>
+                <input type="text" id="amount" name="amount" class="form-control" value="{{deref .CreditMemo.Amount}}">
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="Pending" {{if .CreditMemo.Status}}{{selected (deref .CreditMemo.Status) "Pending"}}{{end}}>Pending</option>
+                    <option value="Applied" {{if .CreditMemo.Status}}{{selected (deref .CreditMemo.Status) "Applied"}}{{end}}>Applied</option>
+                    <option value="Void" {{if .CreditMemo.Status}}{{selected (deref .CreditMemo.Status) "Void"}}{{end}}>Void</option>
+                </select>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Customer</legend>
+        <div class="form-row">
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="cm_customer_search">Search Customer</label>
+                <input type="text" id="cm_customer_search" class="form-control"
+                       placeholder="Type to search..."
+                       hx-get="/api/customers/search"
+                       hx-trigger="keyup changed delay:300ms"
+                       hx-target="#cm_customer_results"
+                       hx-params="*"
+                       @input="$el.name='q'">
+                <div id="cm_customer_results" class="search-results"></div>
+                <input type="hidden" id="customer_id" name="customer_id" value="{{derefInt .CreditMemo.CustomerID}}">
+            </div>
+            <div class="form-group">
+                <label for="customer_number">Customer #</label>
+                <input type="text" id="customer_number" name="customer_number" class="form-control" value="{{deref .CreditMemo.CustomerNumber}}" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label for="customer_name">Name</label>
+                <input type="text" id="customer_name" name="customer_name" class="form-control" value="{{deref .CreditMemo.CustomerName}}" maxlength="30">
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Invoice Reference</legend>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="invoice_number">Invoice #</label>
+                <input type="text" id="invoice_number" name="invoice_number" class="form-control" value="{{deref .CreditMemo.InvoiceNumber}}" maxlength="20">
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Details</legend>
+        <div class="form-group">
+            <label for="reason">Reason</label>
+            <input type="text" id="reason" name="reason" class="form-control" value="{{deref .CreditMemo.Reason}}" maxlength="200">
+        </div>
+        <div class="form-group">
+            <label for="comments">Comments</label>
+            <textarea id="comments" name="comments" class="form-control">{{deref .CreditMemo.Comments}}</textarea>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{if .IsNew}}Create Credit Memo{{else}}Save Changes{{end}}</button>
+        <a href="/accounting/credit-memos" class="btn">Cancel</a>
+    </div>
+</form>
+{{end}}
+{{end}}

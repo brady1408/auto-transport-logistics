@@ -95,9 +95,22 @@ func main() {
 	expenseStore := store.NewTripExpenseStore(pool)
 	routeStore := store.NewTripRouteStore(pool)
 
+	// Phase 3 stores (Accounting)
+	invoiceStore := store.NewInvoiceStore(pool)
+	invoiceDetailStore := store.NewInvoiceDetailStore(pool)
+	paymentStore := store.NewPaymentStore(pool)
+	paymentDetailStore := store.NewPaymentDetailStore(pool)
+	creditMemoStore := store.NewCreditMemoStore(pool)
+	damageClaimStore := store.NewDamageClaimStore(pool)
+	apStore := store.NewAccountsPayableStore(pool)
+
 	// Phase 2 services
 	orderSvc := service.NewOrderService(pool, orderStore, vehicleStore, auditSvc)
 	tripSvc := service.NewTripService(pool, tripStore, loadDetailStore, vehicleStore, orderStore, auditSvc)
+
+	// Phase 3 services (Accounting)
+	invoiceSvc := service.NewInvoiceService(pool, invoiceStore, invoiceDetailStore, orderStore, vehicleStore, auditSvc)
+	paymentSvc := service.NewPaymentService(pool, paymentStore, paymentDetailStore, invoiceStore, auditSvc)
 
 	// Mux
 	mux := http.NewServeMux()
@@ -185,7 +198,7 @@ func main() {
 	itemHandler.Register(protectedMux)
 
 	// Phase 2: Dispatch
-	orderHandler := handler.NewOrderHandler(orderStore, customerStore, orderSvc, deps)
+	orderHandler := handler.NewOrderHandler(orderStore, customerStore, orderSvc, invoiceSvc, deps)
 	orderHandler.Register(protectedMux)
 
 	vehicleHandler := handler.NewVehicleHandler(vehicleStore, orderStore, orderSvc, deps)
@@ -214,6 +227,22 @@ func main() {
 
 	apiHandler := handler.NewAPIHandler(customerStore, vehicleStore, deps)
 	apiHandler.Register(protectedMux)
+
+	// Phase 3: Accounting
+	invoiceHandler := handler.NewInvoiceHandler(invoiceStore, invoiceDetailStore, paymentDetailStore, invoiceSvc, deps)
+	invoiceHandler.Register(protectedMux)
+
+	paymentHandler := handler.NewPaymentHandler(paymentStore, paymentDetailStore, invoiceStore, paymentSvc, deps)
+	paymentHandler.Register(protectedMux)
+
+	creditMemoHandler := handler.NewCreditMemoHandler(creditMemoStore, deps)
+	creditMemoHandler.Register(protectedMux)
+
+	damageClaimHandler := handler.NewDamageClaimHandler(damageClaimStore, deps)
+	damageClaimHandler.Register(protectedMux)
+
+	apHandler := handler.NewAccountsPayableHandler(apStore, deps)
+	apHandler.Register(protectedMux)
 
 	// Wrap protected routes with auth middleware
 	authMiddleware := middleware.RequireAuth(jwtSvc)

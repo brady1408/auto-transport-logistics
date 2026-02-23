@@ -1,0 +1,80 @@
+{{define "damage_claim_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Claim #</th>
+                <th>VIN</th>
+                <th>Date</th>
+                <th class="text-right">Claim Amt</th>
+                <th class="text-right">Paid Amt</th>
+                <th>Status</th>
+                <th>Description</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Result.Items}}
+            {{range .Result.Items}}
+            <tr>
+                <td><a href="/accounting/damage-claims/{{.ID}}">{{.ClaimNumber}}</a></td>
+                <td>{{deref .VIN}}</td>
+                <td>{{if .ClaimDate}}{{.ClaimDate.Format "01/02/2006"}}{{end}}</td>
+                <td class="text-right">{{deref .ClaimAmount}}</td>
+                <td class="text-right">{{deref .PaidAmount}}</td>
+                <td>
+                    {{if .Status}}
+                        {{if eq (deref .Status) "Open"}}<span class="badge badge-open">Open</span>
+                        {{else if eq (deref .Status) "Approved"}}<span class="badge badge-scheduled">Approved</span>
+                        {{else if eq (deref .Status) "Denied"}}<span class="badge badge-void">Denied</span>
+                        {{else if eq (deref .Status) "Paid"}}<span class="badge badge-paid">Paid</span>
+                        {{else}}<span class="badge">{{deref .Status}}</span>
+                        {{end}}
+                    {{end}}
+                </td>
+                <td>{{deref .Description}}</td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <a href="/accounting/damage-claims/{{.ID}}" class="btn btn-sm">View</a>
+                        <a href="/accounting/damage-claims/{{.ID}}/edit" class="btn btn-sm">Edit</a>
+                    </div>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="8" class="text-center text-muted">No damage claims found</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{if .Result.Items}}
+<div class="pagination">
+    <span>Showing {{add (mul (sub .Result.Page 1) .Result.PageSize) 1}}-{{with $end := mul .Result.Page .Result.PageSize}}{{if gt $end $.Result.TotalCount}}{{$.Result.TotalCount}}{{else}}{{$end}}{{end}}{{end}} of {{.Result.TotalCount}}</span>
+    <div class="pagination-links">
+        {{$pages := totalPages .Result.TotalCount .Result.PageSize}}
+        {{if gt .Result.Page 1}}
+        <button class="btn btn-sm"
+                hx-get="/accounting/damage-claims?page={{sub .Result.Page 1}}"
+                hx-target="#damage-claim-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">Prev</button>
+        {{end}}
+        {{range $p := seq 1 $pages}}
+        <button class="btn btn-sm {{if eq $p $.Result.Page}}active{{end}}"
+                hx-get="/accounting/damage-claims?page={{$p}}"
+                hx-target="#damage-claim-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">{{$p}}</button>
+        {{end}}
+        {{if lt .Result.Page $pages}}
+        <button class="btn btn-sm"
+                hx-get="/accounting/damage-claims?page={{add .Result.Page 1}}"
+                hx-target="#damage-claim-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">Next</button>
+        {{end}}
+    </div>
+</div>
+{{end}}
+{{end}}

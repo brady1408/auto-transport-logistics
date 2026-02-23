@@ -1,0 +1,81 @@
+{{define "invoice_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Customer</th>
+                <th>Order #</th>
+                <th>Date</th>
+                <th class="text-right">Total</th>
+                <th class="text-right">Paid</th>
+                <th class="text-right">Balance</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Result.Items}}
+            {{range .Result.Items}}
+            <tr>
+                <td><a href="/accounting/invoices/{{.ID}}">{{.InvoiceNumber}}</a></td>
+                <td>{{deref .CustomerName}}</td>
+                <td>{{if .OrderID}}<a href="/dispatch/orders/{{derefInt .OrderID}}">{{deref .OrderNumber}}</a>{{end}}</td>
+                <td>{{if .InvoiceDate}}{{.InvoiceDate.Format "01/02/2006"}}{{end}}</td>
+                <td class="text-right">{{deref .TotalAmount}}</td>
+                <td class="text-right">{{deref .AmountPaid}}</td>
+                <td class="text-right">{{deref .Balance}}</td>
+                <td>
+                    {{if .Status}}
+                        {{if eq (deref .Status) "Open"}}<span class="badge badge-open">Open</span>
+                        {{else if eq (deref .Status) "Paid"}}<span class="badge badge-paid">Paid</span>
+                        {{else if eq (deref .Status) "Void"}}<span class="badge badge-void">Void</span>
+                        {{else}}<span class="badge">{{deref .Status}}</span>
+                        {{end}}
+                    {{end}}
+                </td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <a href="/accounting/invoices/{{.ID}}" class="btn btn-sm">View</a>
+                        <a href="/accounting/invoices/{{.ID}}/edit" class="btn btn-sm">Edit</a>
+                    </div>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="9" class="text-center text-muted">No invoices found</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{if .Result.Items}}
+<div class="pagination">
+    <span>Showing {{add (mul (sub .Result.Page 1) .Result.PageSize) 1}}-{{with $end := mul .Result.Page .Result.PageSize}}{{if gt $end $.Result.TotalCount}}{{$.Result.TotalCount}}{{else}}{{$end}}{{end}}{{end}} of {{.Result.TotalCount}}</span>
+    <div class="pagination-links">
+        {{$pages := totalPages .Result.TotalCount .Result.PageSize}}
+        {{if gt .Result.Page 1}}
+        <button class="btn btn-sm"
+                hx-get="/accounting/invoices?page={{sub .Result.Page 1}}"
+                hx-target="#invoice-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">Prev</button>
+        {{end}}
+        {{range $p := seq 1 $pages}}
+        <button class="btn btn-sm {{if eq $p $.Result.Page}}active{{end}}"
+                hx-get="/accounting/invoices?page={{$p}}"
+                hx-target="#invoice-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">{{$p}}</button>
+        {{end}}
+        {{if lt .Result.Page $pages}}
+        <button class="btn btn-sm"
+                hx-get="/accounting/invoices?page={{add .Result.Page 1}}"
+                hx-target="#invoice-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">Next</button>
+        {{end}}
+    </div>
+</div>
+{{end}}
+{{end}}
