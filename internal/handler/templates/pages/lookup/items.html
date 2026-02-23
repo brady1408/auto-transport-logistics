@@ -1,0 +1,38 @@
+{{define "items_list.html"}}
+{{template "base" .}}
+{{define "title"}}Items / Charges - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header"><h1>Items / Charges</h1></div>
+<div class="card">
+    <div class="card-header">Add Item</div>
+    <div class="card-body">
+        <form class="inline-form" method="POST" action="/global/items" hx-post="/global/items">
+            <input type="text" name="item" class="form-control" placeholder="Item Code" required style="width:150px">
+            <input type="text" name="description" class="form-control" placeholder="Description" style="width:200px">
+            <input type="text" name="default_amount" class="form-control" placeholder="Amount" style="width:100px">
+            <input type="text" name="calc_type" class="form-control" placeholder="Calc Type" style="width:120px">
+            <button type="submit" class="btn btn-primary btn-sm">Add</button>
+        </form>
+    </div>
+</div>
+<div id="items-table">{{template "items_table" .}}</div>
+{{end}}
+{{end}}
+
+{{define "items_table"}}
+<div class="table-container">
+    <table>
+        <thead><tr><th>Item</th><th>Description</th><th>Default Amount</th><th>Calc Type</th><th class="text-right">Actions</th></tr></thead>
+        <tbody>
+            {{if .Items}}{{range .Items}}
+            <tr>
+                <td>{{.Item}}</td><td>{{.Description}}</td><td>{{deref .DefaultAmount}}</td><td>{{deref .CalcType}}</td>
+                <td class="text-right"><button class="btn btn-sm btn-danger" hx-delete="/global/items/{{.ID}}" hx-confirm="Delete {{.Item}}?">Delete</button></td>
+            </tr>
+            {{end}}{{else}}
+            <tr><td colspan="5" class="text-center text-muted">No items found</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}

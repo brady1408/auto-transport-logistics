@@ -1,0 +1,388 @@
+package handler
+
+import (
+	"net/http"
+
+	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+// Fuel handler
+
+type FuelHandler struct {
+	store *store.TripFuelStore
+	deps  *Deps
+}
+
+func NewFuelHandler(store *store.TripFuelStore, deps *Deps) *FuelHandler {
+	return &FuelHandler{store: store, deps: deps}
+}
+
+func (h *FuelHandler) Register(mux *http.ServeMux) {
+	mux.HandleFunc("GET /dispatch/trips/{id}/fuel", h.list)
+	mux.HandleFunc("POST /dispatch/trips/{id}/fuel", h.create)
+	mux.HandleFunc("PUT /dispatch/fuel/{id}", h.update)
+	mux.HandleFunc("DELETE /dispatch/fuel/{id}", h.delete)
+}
+
+func (h *FuelHandler) list(w http.ResponseWriter, r *http.Request) {
+	tripID, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	items, err := h.store.ListByTrip(r.Context(), tripID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.renderPartial(w, "fuel_table", map[string]any{
+		"FuelEntries": items,
+		"TripID":      tripID,
+	})
+}
+
+func (h *FuelHandler) create(w http.ResponseWriter, r *http.Request) {
+	tripID, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	f := &models.TripFuel{
+		TripID:      tripID,
+		LoadedMiles: formBool(r, "loaded_miles"),
+		TruckNumber: formString(r, "truck_number"),
+		State:       formString(r, "state"),
+		Mileage:     formInt(r, "mileage"),
+		Gallons:     formString(r, "gallons"),
+	}
+
+	if err := h.store.Create(r.Context(), f); err != nil {
+		http.Error(w, "Failed to create fuel entry: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "trip_fuel", f.ID, "INSERT", nil, f)
+	h.list(w, r)
+}
+
+func (h *FuelHandler) update(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	old, err := h.store.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Fuel entry not found", http.StatusNotFound)
+		return
+	}
+
+	f := &models.TripFuel{
+		ID:          id,
+		TripID:      old.TripID,
+		LoadedMiles: formBool(r, "loaded_miles"),
+		TruckNumber: formString(r, "truck_number"),
+		State:       formString(r, "state"),
+		Mileage:     formInt(r, "mileage"),
+		Gallons:     formString(r, "gallons"),
+	}
+
+	if err := h.store.Update(r.Context(), f); err != nil {
+		http.Error(w, "Failed to update fuel entry: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "trip_fuel", f.ID, "UPDATE", old, f)
+
+	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
+	h.deps.renderPartial(w, "fuel_table", map[string]any{
+		"FuelEntries": items,
+		"TripID":      old.TripID,
+	})
+}
+
+func (h *FuelHandler) delete(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	old, err := h.store.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Fuel entry not found", http.StatusNotFound)
+		return
+	}
+
+	if err := h.store.Delete(r.Context(), id); err != nil {
+		http.Error(w, "Failed to delete fuel entry: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "trip_fuel", id, "DELETE", old, nil)
+
+	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
+	h.deps.renderPartial(w, "fuel_table", map[string]any{
+		"FuelEntries": items,
+		"TripID":      old.TripID,
+	})
+}
+
+// Expense handler
+
+type ExpenseHandler struct {
+	store *store.TripExpenseStore
+	deps  *Deps
+}
+
+func NewExpenseHandler(store *store.TripExpenseStore, deps *Deps) *ExpenseHandler {
+	return &ExpenseHandler{store: store, deps: deps}
+}
+
+func (h *ExpenseHandler) Register(mux *http.ServeMux) {
+	mux.HandleFunc("GET /dispatch/trips/{id}/expenses", h.list)
+	mux.HandleFunc("POST /dispatch/trips/{id}/expenses", h.create)
+	mux.HandleFunc("PUT /dispatch/expenses/{id}", h.update)
+	mux.HandleFunc("DELETE /dispatch/expenses/{id}", h.delete)
+}
+
+func (h *ExpenseHandler) list(w http.ResponseWriter, r *http.Request) {
+	tripID, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	items, err := h.store.ListByTrip(r.Context(), tripID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.renderPartial(w, "expense_table", map[string]any{
+		"Expenses": items,
+		"TripID":   tripID,
+	})
+}
+
+func (h *ExpenseHandler) create(w http.ResponseWriter, r *http.Request) {
+	tripID, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	e := &models.TripExpense{
+		TripID:      tripID,
+		Description: formString(r, "description"),
+		Amount:      formString(r, "amount"),
+		ExpenseDate: formDate(r, "expense_date"),
+	}
+
+	if err := h.store.Create(r.Context(), e); err != nil {
+		http.Error(w, "Failed to create expense: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "trip_expenses", e.ID, "INSERT", nil, e)
+	h.list(w, r)
+}
+
+func (h *ExpenseHandler) update(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	old, err := h.store.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Expense not found", http.StatusNotFound)
+		return
+	}
+
+	e := &models.TripExpense{
+		ID:          id,
+		TripID:      old.TripID,
+		Description: formString(r, "description"),
+		Amount:      formString(r, "amount"),
+		ExpenseDate: formDate(r, "expense_date"),
+	}
+
+	if err := h.store.Update(r.Context(), e); err != nil {
+		http.Error(w, "Failed to update expense: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "trip_expenses", e.ID, "UPDATE", old, e)
+
+	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
+	h.deps.renderPartial(w, "expense_table", map[string]any{
+		"Expenses": items,
+		"TripID":   old.TripID,
+	})
+}
+
+func (h *ExpenseHandler) delete(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	old, err := h.store.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Expense not found", http.StatusNotFound)
+		return
+	}
+
+	if err := h.store.Delete(r.Context(), id); err != nil {
+		http.Error(w, "Failed to delete expense: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "trip_expenses", id, "DELETE", old, nil)
+
+	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
+	h.deps.renderPartial(w, "expense_table", map[string]any{
+		"Expenses": items,
+		"TripID":   old.TripID,
+	})
+}
+
+// Route handler
+
+type RouteHandler struct {
+	store *store.TripRouteStore
+	deps  *Deps
+}
+
+func NewRouteHandler(store *store.TripRouteStore, deps *Deps) *RouteHandler {
+	return &RouteHandler{store: store, deps: deps}
+}
+
+func (h *RouteHandler) Register(mux *http.ServeMux) {
+	mux.HandleFunc("GET /dispatch/trips/{id}/routes", h.list)
+	mux.HandleFunc("POST /dispatch/trips/{id}/routes", h.create)
+	mux.HandleFunc("PUT /dispatch/routes/{id}", h.update)
+	mux.HandleFunc("DELETE /dispatch/routes/{id}", h.delete)
+}
+
+func (h *RouteHandler) list(w http.ResponseWriter, r *http.Request) {
+	tripID, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	items, err := h.store.ListByTrip(r.Context(), tripID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.renderPartial(w, "route_table", map[string]any{
+		"Routes": items,
+		"TripID": tripID,
+	})
+}
+
+func (h *RouteHandler) create(w http.ResponseWriter, r *http.Request) {
+	tripID, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	rt := &models.TripRoute{
+		TripID:       tripID,
+		Sequence:     formInt(r, "sequence"),
+		CustomerID:   formInt(r, "customer_id"),
+		CustomerName: formString(r, "customer_name"),
+		City:         formString(r, "city"),
+		State:        formString(r, "state"),
+		StopType:     formString(r, "stop_type"),
+		Miles:        formInt(r, "miles"),
+		EstArrival:   formDate(r, "est_arrival"),
+	}
+
+	if err := h.store.Create(r.Context(), rt); err != nil {
+		http.Error(w, "Failed to create route: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "trip_routes", rt.ID, "INSERT", nil, rt)
+	h.list(w, r)
+}
+
+func (h *RouteHandler) update(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	old, err := h.store.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Route not found", http.StatusNotFound)
+		return
+	}
+
+	rt := &models.TripRoute{
+		ID:           id,
+		TripID:       old.TripID,
+		Sequence:     formInt(r, "sequence"),
+		CustomerID:   formInt(r, "customer_id"),
+		CustomerName: formString(r, "customer_name"),
+		City:         formString(r, "city"),
+		State:        formString(r, "state"),
+		StopType:     formString(r, "stop_type"),
+		Miles:        formInt(r, "miles"),
+		EstArrival:   formDate(r, "est_arrival"),
+	}
+
+	if err := h.store.Update(r.Context(), rt); err != nil {
+		http.Error(w, "Failed to update route: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "trip_routes", rt.ID, "UPDATE", old, rt)
+
+	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
+	h.deps.renderPartial(w, "route_table", map[string]any{
+		"Routes": items,
+		"TripID": old.TripID,
+	})
+}
+
+func (h *RouteHandler) delete(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	old, err := h.store.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Route not found", http.StatusNotFound)
+		return
+	}
+
+	if err := h.store.Delete(r.Context(), id); err != nil {
+		http.Error(w, "Failed to delete route: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "trip_routes", id, "DELETE", old, nil)
+
+	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
+	h.deps.renderPartial(w, "route_table", map[string]any{
+		"Routes": items,
+		"TripID": old.TripID,
+	})
+}

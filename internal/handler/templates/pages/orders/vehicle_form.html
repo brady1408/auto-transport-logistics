@@ -1,0 +1,140 @@
+{{define "vehicle_form.html"}}
+{{template "base" .}}
+{{define "title"}}{{if .IsNew}}Add Vehicle{{else}}Edit Vehicle{{end}} - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h1>{{if .IsNew}}Add Vehicle to Order {{.Order.OrderNumber}}{{else}}Edit Vehicle{{end}}</h1>
+    <a href="/dispatch/orders/{{.Order.ID}}" class="btn">Back to Order</a>
+</div>
+
+{{if .Error}}
+<div class="alert alert-danger">{{.Error}}</div>
+{{end}}
+
+<form method="POST"
+      {{if .IsNew}}
+          action="/dispatch/orders/{{.Order.ID}}/vehicles"
+          hx-post="/dispatch/orders/{{.Order.ID}}/vehicles"
+      {{else}}
+          action="/dispatch/vehicles/{{.Vehicle.ID}}/edit"
+          hx-put="/dispatch/vehicles/{{.Vehicle.ID}}"
+      {{end}}>
+
+    <fieldset>
+        <legend>Vehicle Information</legend>
+        <div class="form-row">
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="vin">VIN</label>
+                <input type="text" id="vin" name="vin" class="form-control" value="{{deref .Vehicle.VIN}}" maxlength="17" style="text-transform:uppercase">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="year">Year</label>
+                <input type="text" id="year" name="year" class="form-control" value="{{deref .Vehicle.Year}}" maxlength="4">
+            </div>
+            <div class="form-group">
+                <label for="make">Make</label>
+                <input type="text" id="make" name="make" class="form-control" value="{{deref .Vehicle.Make}}" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label for="model">Model</label>
+                <input type="text" id="model" name="model" class="form-control" value="{{deref .Vehicle.Model}}" maxlength="30">
+            </div>
+            <div class="form-group">
+                <label for="color">Color</label>
+                <input type="text" id="color" name="color" class="form-control" value="{{deref .Vehicle.Color}}" maxlength="20">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="weight">Weight</label>
+                <input type="number" id="weight" name="weight" class="form-control" value="{{derefInt .Vehicle.Weight}}">
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <input type="text" id="category" name="category" class="form-control" value="{{deref .Vehicle.Category}}" maxlength="2">
+            </div>
+            <div class="form-group">
+                <label for="body_style">Body Style</label>
+                <input type="text" id="body_style" name="body_style" class="form-control" value="{{deref .Vehicle.BodyStyle}}" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label for="lot">Lot</label>
+                <input type="text" id="lot" name="lot" class="form-control" value="{{deref .Vehicle.Lot}}" maxlength="10">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-check">
+                <input type="checkbox" id="run_drive" name="run_drive" {{checked .Vehicle.RunDrive}}>
+                <label for="run_drive">Run/Drive</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="inoperable" name="inoperable" {{if not .Vehicle.Operable}}checked{{end}}>
+                <label for="inoperable">Inoperable</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="inactive" name="inactive" {{if not .Vehicle.Active}}checked{{end}}>
+                <label for="inactive">Inactive</label>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Pricing</legend>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="transport_amt">Transport Amount</label>
+                <input type="text" id="transport_amt" name="transport_amt" class="form-control" value="{{deref .Vehicle.TransportAmt}}">
+            </div>
+            <div class="form-group">
+                <label for="transport_calc_type">Calc Type</label>
+                <input type="text" id="transport_calc_type" name="transport_calc_type" class="form-control" value="{{deref .Vehicle.TransportCalcType}}" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label for="fuel_surcharge">Fuel Surcharge</label>
+                <input type="text" id="fuel_surcharge" name="fuel_surcharge" class="form-control" value="{{deref .Vehicle.FuelSurcharge}}">
+            </div>
+            <div class="form-group">
+                <label for="total_charge">Total Charge</label>
+                <input type="text" id="total_charge" name="total_charge" class="form-control" value="{{deref .Vehicle.TotalCharge}}">
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Dimensions</legend>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="dim_length">Length</label>
+                <input type="text" id="dim_length" name="dim_length" class="form-control" value="{{deref .Vehicle.DimLength}}">
+            </div>
+            <div class="form-group">
+                <label for="dim_width">Width</label>
+                <input type="text" id="dim_width" name="dim_width" class="form-control" value="{{deref .Vehicle.DimWidth}}">
+            </div>
+            <div class="form-group">
+                <label for="dim_height">Height</label>
+                <input type="text" id="dim_height" name="dim_height" class="form-control" value="{{deref .Vehicle.DimHeight}}">
+            </div>
+            <div class="form-group">
+                <label for="rate_class">Rate Class</label>
+                <input type="text" id="rate_class" name="rate_class" class="form-control" value="{{deref .Vehicle.RateClass}}" maxlength="10">
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Comments</legend>
+        <div class="form-group">
+            <textarea id="comments" name="comments" class="form-control">{{deref .Vehicle.Comments}}</textarea>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{if .IsNew}}Add Vehicle{{else}}Save Changes{{end}}</button>
+        <a href="/dispatch/orders/{{.Order.ID}}" class="btn">Cancel</a>
+    </div>
+</form>
+{{end}}
+{{end}}

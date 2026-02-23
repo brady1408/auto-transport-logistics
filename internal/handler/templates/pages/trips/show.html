@@ -1,0 +1,81 @@
+{{define "trip_show.html"}}
+{{template "base" .}}
+{{define "title"}}Trip {{.Trip.LoadNumber}} - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h1>Trip {{.Trip.LoadNumber}}</h1>
+    <div class="btn-group">
+        <a href="/dispatch/trips/{{.Trip.ID}}/edit" class="btn">Edit Trip</a>
+        <a href="/dispatch/trips" class="btn">Back to List</a>
+    </div>
+</div>
+
+<div class="order-detail-grid">
+    <div class="card">
+        <div class="card-header">Trip Info</div>
+        <div class="card-body">
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span>{{if .Trip.Active}}<span class="badge badge-active">Active</span>{{else}}<span class="badge badge-inactive">Inactive</span>{{end}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Truck:</span>
+                <span>{{deref .Trip.TruckNumber}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Driver:</span>
+                <span>{{deref .Trip.Driver}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Trip Date:</span>
+                <span>{{if .Trip.TripDate}}{{.Trip.TripDate.Format "01/02/2006"}}{{end}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Zone:</span>
+                <span>{{deref .Trip.Zone}}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="section-title">Load Manifest</h2>
+{{template "load_table" .}}
+
+<h3 class="section-title">Assign Vehicle</h3>
+<form class="inline-form mb-2"
+      hx-post="/dispatch/trips/{{.Trip.ID}}/assign"
+      hx-target="#load-manifest">
+    <div class="form-group" style="margin-bottom:0">
+        <input type="number" name="vehicle_id" class="form-control" placeholder="Vehicle ID" required style="width:120px">
+    </div>
+    <div class="form-group" style="margin-bottom:0">
+        <input type="text" name="bay_number" class="form-control" placeholder="Bay #" maxlength="3" style="width:80px">
+    </div>
+    <button type="submit" class="btn btn-sm btn-primary">Assign</button>
+</form>
+
+<h2 class="section-title">Fuel</h2>
+<div id="fuel-table"
+     hx-get="/dispatch/trips/{{.Trip.ID}}/fuel"
+     hx-trigger="load"
+     hx-swap="innerHTML">
+    <p class="text-muted">Loading...</p>
+</div>
+
+<h2 class="section-title">Expenses</h2>
+<div id="expense-table"
+     hx-get="/dispatch/trips/{{.Trip.ID}}/expenses"
+     hx-trigger="load"
+     hx-swap="innerHTML">
+    <p class="text-muted">Loading...</p>
+</div>
+
+<h2 class="section-title">Routes</h2>
+<div id="route-table"
+     hx-get="/dispatch/trips/{{.Trip.ID}}/routes"
+     hx-trigger="load"
+     hx-swap="innerHTML">
+    <p class="text-muted">Loading...</p>
+</div>
+{{end}}
+{{end}}

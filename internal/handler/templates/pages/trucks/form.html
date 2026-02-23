@@ -1,0 +1,85 @@
+{{define "truck_form.html"}}
+{{template "base" .}}
+{{define "title"}}{{if .IsNew}}New Truck{{else}}Edit Truck{{end}} - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h1>{{if .IsNew}}New Truck{{else}}Edit Truck: {{.Truck.TruckNumber}}{{end}}</h1>
+    <a href="/global/trucks" class="btn">Back to List</a>
+</div>
+
+{{if .Error}}<div class="alert alert-danger">{{.Error}}</div>{{end}}
+
+<form method="POST"
+      {{if .IsNew}}action="/global/trucks" hx-post="/global/trucks"
+      {{else}}action="/global/trucks/{{.Truck.ID}}/edit" hx-put="/global/trucks/{{.Truck.ID}}"{{end}}>
+
+    <fieldset>
+        <legend>Truck Information</legend>
+        <div class="form-row">
+            <div class="form-group"><label for="truck_number">Truck # *</label><input type="text" id="truck_number" name="truck_number" class="form-control" value="{{.Truck.TruckNumber}}" required maxlength="10" style="text-transform:uppercase"></div>
+            <div class="form-group"><label for="truck_make">Make</label><input type="text" id="truck_make" name="truck_make" class="form-control" value="{{deref .Truck.TruckMake}}" maxlength="20"></div>
+            <div class="form-group"><label for="truck_model">Model</label><input type="text" id="truck_model" name="truck_model" class="form-control" value="{{deref .Truck.TruckModel}}" maxlength="15"></div>
+            <div class="form-group"><label for="truck_year">Year</label><input type="text" id="truck_year" name="truck_year" class="form-control" value="{{deref .Truck.TruckYear}}" maxlength="4"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label for="truck_serial_number">Serial #</label><input type="text" id="truck_serial_number" name="truck_serial_number" class="form-control" value="{{deref .Truck.TruckSerialNumber}}" maxlength="20"></div>
+            <div class="form-group"><label for="truck_license">License</label><input type="text" id="truck_license" name="truck_license" class="form-control" value="{{deref .Truck.TruckLicense}}" maxlength="10"></div>
+            <div class="form-group"><label for="truck_license_exp">License Exp</label><input type="date" id="truck_license_exp" name="truck_license_exp" class="form-control" {{if .Truck.TruckLicenseExp}}value="{{.Truck.TruckLicenseExp.Format "2006-01-02"}}"{{end}}></div>
+            <div class="form-group"><label for="truck_safety_inspection">Safety Inspection</label><input type="date" id="truck_safety_inspection" name="truck_safety_inspection" class="form-control" {{if .Truck.TruckSafetyInspection}}value="{{.Truck.TruckSafetyInspection.Format "2006-01-02"}}"{{end}}></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label for="fleet_number">Fleet #</label><input type="text" id="fleet_number" name="fleet_number" class="form-control" value="{{deref .Truck.FleetNumber}}" maxlength="10"></div>
+            <div class="form-group"><label for="class">Class</label><input type="text" id="class" name="class" class="form-control" value="{{deref .Truck.Class}}" maxlength="2"></div>
+            <div class="form-group"><label for="tare_weight">Tare Weight</label><input type="number" id="tare_weight" name="tare_weight" class="form-control" value="{{derefInt .Truck.TareWeight}}"></div>
+            <div class="form-group"><label for="driver1">Default Driver 1</label><input type="text" id="driver1" name="driver1" class="form-control" value="{{deref .Truck.Driver1}}" maxlength="30"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label for="driver2">Default Driver 2</label><input type="text" id="driver2" name="driver2" class="form-control" value="{{deref .Truck.Driver2}}" maxlength="30"></div>
+            <div class="form-check" style="padding-top:20px"><input type="checkbox" id="active" name="active" {{checked .Truck.Active}}><label for="active">Active</label></div>
+            <div class="form-check" style="padding-top:20px"><input type="checkbox" id="leased_truck" name="leased_truck" {{checked .Truck.LeasedTruck}}><label for="leased_truck">Leased</label></div>
+            <div class="form-check" style="padding-top:20px"><input type="checkbox" id="straps" name="straps" {{checked .Truck.Straps}}><label for="straps">Straps</label></div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Trailer Information</legend>
+        <div class="form-row">
+            <div class="form-group"><label for="trailer_number">Trailer #</label><input type="text" id="trailer_number" name="trailer_number" class="form-control" value="{{deref .Truck.TrailerNumber}}" maxlength="4"></div>
+            <div class="form-group"><label for="trailer_make">Make</label><input type="text" id="trailer_make" name="trailer_make" class="form-control" value="{{deref .Truck.TrailerMake}}" maxlength="20"></div>
+            <div class="form-group"><label for="trailer_model">Model</label><input type="text" id="trailer_model" name="trailer_model" class="form-control" value="{{deref .Truck.TrailerModel}}" maxlength="15"></div>
+            <div class="form-group"><label for="trailer_year">Year</label><input type="text" id="trailer_year" name="trailer_year" class="form-control" value="{{deref .Truck.TrailerYear}}" maxlength="4"></div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Rates &amp; Finance</legend>
+        <div class="form-row">
+            <div class="form-group"><label for="truck_rate">Truck Rate</label><input type="text" id="truck_rate" name="truck_rate" class="form-control" value="{{deref .Truck.TruckRate}}"></div>
+            <div class="form-group"><label for="truck_calc_type">Calc Type</label><input type="text" id="truck_calc_type" name="truck_calc_type" class="form-control" value="{{deref .Truck.TruckCalcType}}" maxlength="10"></div>
+            <div class="form-group"><label for="owned_by">Owned By</label><input type="text" id="owned_by" name="owned_by" class="form-control" value="{{deref .Truck.OwnedBy}}" maxlength="30"></div>
+            <div class="form-group"><label for="financed_by">Financed By</label><input type="text" id="financed_by" name="financed_by" class="form-control" value="{{deref .Truck.FinancedBy}}" maxlength="30"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label for="insurance_coverage_amt">Insurance Coverage</label><input type="text" id="insurance_coverage_amt" name="insurance_coverage_amt" class="form-control" value="{{deref .Truck.InsuranceCoverageAmt}}"></div>
+            <div class="form-group"><label for="insurance_exp_date">Insurance Exp</label><input type="date" id="insurance_exp_date" name="insurance_exp_date" class="form-control" {{if .Truck.InsuranceExpDate}}value="{{.Truck.InsuranceExpDate.Format "2006-01-02"}}"{{end}}></div>
+            <div class="form-group"><label for="cargo_coverage_amt">Cargo Coverage</label><input type="text" id="cargo_coverage_amt" name="cargo_coverage_amt" class="form-control" value="{{deref .Truck.CargoCoverageAmt}}"></div>
+            <div class="form-check" style="padding-top:20px"><input type="checkbox" id="exclude_fuel" name="exclude_fuel" {{checked .Truck.ExcludeFuel}}><label for="exclude_fuel">Exclude Fuel</label></div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Compliance Dates</legend>
+        <div class="form-row">
+            <div class="form-group"><label for="w9_date">W-9 Date</label><input type="date" id="w9_date" name="w9_date" class="form-control" {{if .Truck.W9Date}}value="{{.Truck.W9Date.Format "2006-01-02"}}"{{end}}></div>
+            <div class="form-group"><label for="workers_comp_date">Workers Comp Date</label><input type="date" id="workers_comp_date" name="workers_comp_date" class="form-control" {{if .Truck.WorkersCompDate}}value="{{.Truck.WorkersCompDate.Format "2006-01-02"}}"{{end}}></div>
+            <div class="form-group"><label for="carrier_agreement_date">Carrier Agreement</label><input type="date" id="carrier_agreement_date" name="carrier_agreement_date" class="form-control" {{if .Truck.CarrierAgreementDate}}value="{{.Truck.CarrierAgreementDate.Format "2006-01-02"}}"{{end}}></div>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{if .IsNew}}Create Truck{{else}}Save Changes{{end}}</button>
+        <a href="/global/trucks" class="btn">Cancel</a>
+    </div>
+</form>
+{{end}}
+{{end}}

@@ -1,0 +1,220 @@
+{{define "vehicle_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>VIN</th>
+                <th>Year</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Color</th>
+                <th>Status</th>
+                <th>Load #</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Vehicles}}
+            {{range .Vehicles}}
+            {{template "vehicle_row" dict "Vehicle" . "OrderID" $.OrderID}}
+            {{end}}
+            {{else}}
+            <tr><td colspan="8" class="text-center text-muted">No vehicles on this order</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}
+
+{{define "vehicle_row"}}
+<tr id="vehicle-row-{{.Vehicle.ID}}">
+    <td>{{deref .Vehicle.VIN}}</td>
+    <td>{{deref .Vehicle.Year}}</td>
+    <td>{{deref .Vehicle.Make}}</td>
+    <td>{{deref .Vehicle.Model}}</td>
+    <td>{{deref .Vehicle.Color}}</td>
+    <td>
+        {{if eq .Vehicle.Status "Waiting"}}
+            <span class="badge badge-waiting">Waiting</span>
+        {{else if eq .Vehicle.Status "Scheduled"}}
+            <span class="badge badge-scheduled">Scheduled</span>
+        {{else if eq .Vehicle.Status "Loaded"}}
+            <span class="badge badge-loaded">Loaded</span>
+        {{else if eq .Vehicle.Status "Delivered"}}
+            <span class="badge badge-delivered">Delivered</span>
+        {{else if eq .Vehicle.Status "Confirmed"}}
+            <span class="badge badge-confirmed">Confirmed</span>
+        {{else}}
+            <span class="badge">{{.Vehicle.Status}}</span>
+        {{end}}
+    </td>
+    <td>{{deref .Vehicle.LoadNumber}}</td>
+    <td class="text-right">
+        <div class="btn-group">
+            {{if eq .Vehicle.Status "Waiting"}}
+                <button class="btn btn-sm btn-success"
+                        hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/schedule"
+                        hx-target="#vehicle-row-{{.Vehicle.ID}}"
+                        hx-swap="outerHTML">Schedule</button>
+            {{else if eq .Vehicle.Status "Scheduled"}}
+                <button class="btn btn-sm btn-success"
+                        hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/load"
+                        hx-target="#vehicle-row-{{.Vehicle.ID}}"
+                        hx-swap="outerHTML">Mark Loaded</button>
+            {{else if eq .Vehicle.Status "Loaded"}}
+                <button class="btn btn-sm btn-success"
+                        hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/deliver"
+                        hx-target="#vehicle-row-{{.Vehicle.ID}}"
+                        hx-swap="outerHTML">Mark Delivered</button>
+            {{else if eq .Vehicle.Status "Delivered"}}
+                <button class="btn btn-sm btn-success"
+                        hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/confirm"
+                        hx-target="#vehicle-row-{{.Vehicle.ID}}"
+                        hx-swap="outerHTML">Confirm</button>
+            {{end}}
+            {{if and (ne .Vehicle.Status "Waiting") (ne .Vehicle.Status "Confirmed")}}
+                <button class="btn btn-sm"
+                        hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/revert"
+                        hx-target="#vehicle-row-{{.Vehicle.ID}}"
+                        hx-swap="outerHTML">Revert</button>
+            {{end}}
+            <a href="/dispatch/vehicles/{{.Vehicle.ID}}/edit" class="btn btn-sm">Edit</a>
+            <button class="btn btn-sm btn-danger"
+                    hx-delete="/dispatch/vehicles/{{.Vehicle.ID}}"
+                    hx-confirm="Delete this vehicle?">Delete</button>
+        </div>
+    </td>
+</tr>
+{{end}}
+
+{{define "charge_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Item Code</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Amount</th>
+                <th class="text-center">Taxable</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Charges}}
+            {{range .Charges}}
+            <tr>
+                <td>{{deref .Description}}</td>
+                <td>{{deref .ItemCode}}</td>
+                <td>{{derefInt .Qty}}</td>
+                <td>{{deref .Rate}}</td>
+                <td>{{deref .Amount}}</td>
+                <td class="text-center">{{if .Taxable}}Y{{end}}</td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-danger"
+                                hx-delete="/dispatch/charges/{{.ID}}"
+                                hx-target="#charge-table"
+                                hx-confirm="Delete this charge?">Delete</button>
+                    </div>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="7" class="text-center text-muted">No charges</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{if .OrderID}}
+<form class="inline-form mt-2"
+      hx-post="/dispatch/orders/{{.OrderID}}/charges"
+      hx-target="#charge-table"
+      hx-swap="innerHTML">
+    <input type="text" name="description" class="form-control" placeholder="Description" style="min-width:200px">
+    <input type="text" name="item_code" class="form-control" placeholder="Item Code" style="width:100px">
+    <input type="number" name="qty" class="form-control" placeholder="Qty" style="width:60px" value="1">
+    <input type="text" name="rate" class="form-control" placeholder="Rate" style="width:80px">
+    <input type="text" name="amount" class="form-control" placeholder="Amount" style="width:100px">
+    <label class="form-check" style="margin:0"><input type="checkbox" name="taxable"> Tax</label>
+    <button type="submit" class="btn btn-sm btn-primary">Add</button>
+</form>
+{{end}}
+{{end}}
+
+{{define "damage_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Area</th>
+                <th>Type</th>
+                <th>Severity</th>
+                <th>Description</th>
+                <th>Inspected By</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Damages}}
+            {{range .Damages}}
+            <tr>
+                <td>{{deref .DamageArea}}</td>
+                <td>{{deref .DamageType}}</td>
+                <td>{{deref .DamageSeverity}}</td>
+                <td>{{deref .Description}}</td>
+                <td>{{deref .InspectedBy}}</td>
+                <td class="text-right">
+                    <button class="btn btn-sm btn-danger"
+                            hx-delete="/dispatch/damage/{{.ID}}"
+                            hx-target="#damage-table"
+                            hx-confirm="Delete this damage record?">Delete</button>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="6" class="text-center text-muted">No damage records</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}
+
+{{define "notes_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Comment</th>
+                <th>By</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Notes}}
+            {{range .Notes}}
+            <tr>
+                <td>{{if .NoteDate}}{{.NoteDate.Format "01/02/2006"}}{{end}}</td>
+                <td>{{deref .Description}}</td>
+                <td>{{deref .Comment}}</td>
+                <td>{{deref .CreatedBy}}</td>
+                <td class="text-right">
+                    <button class="btn btn-sm btn-danger"
+                            hx-delete="/dispatch/notes/{{.ID}}"
+                            hx-target="closest tr"
+                            hx-swap="outerHTML"
+                            hx-confirm="Delete this note?">Delete</button>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="5" class="text-center text-muted">No notes</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}

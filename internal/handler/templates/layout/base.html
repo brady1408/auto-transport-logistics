@@ -1,0 +1,27 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{block "title" .}}ATLinks{{end}}</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+    <script src="/static/js/htmx.min.js"></script>
+    <script defer src="/static/js/alpine.min.js"></script>
+</head>
+<body>
+    {{if .User}}
+    {{template "nav" .}}
+    {{end}}
+    <main class="container">
+        {{if .Flash}}
+        <div class="alert alert-success" id="flash-msg">
+            {{.Flash}}
+        </div>
+        <script>setTimeout(function(){ document.getElementById('flash-msg').remove(); }, 4000);</script>
+        {{end}}
+        {{block "content" .}}{{end}}
+    </main>
+</body>
+</html>
+{{end}}
