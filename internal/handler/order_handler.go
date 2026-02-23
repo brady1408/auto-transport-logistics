@@ -77,12 +77,16 @@ func (h *OrderHandler) create(w http.ResponseWriter, r *http.Request) {
 	o := bindOrderForm(r)
 
 	if o.OrderNumber == "" {
-		h.deps.render(w, r, "order_form.html", map[string]any{
-			"Order": o,
-			"IsNew": true,
-			"Error": "Order number is required",
-		})
-		return
+		num, err := h.store.NextOrderNumber(r.Context())
+		if err != nil {
+			h.deps.render(w, r, "order_form.html", map[string]any{
+				"Order": o,
+				"IsNew": true,
+				"Error": "Failed to generate order number: " + err.Error(),
+			})
+			return
+		}
+		o.OrderNumber = num
 	}
 
 	if err := h.store.Create(r.Context(), o); err != nil {
