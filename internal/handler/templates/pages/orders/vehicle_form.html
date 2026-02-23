@@ -20,12 +20,36 @@
           hx-put="/dispatch/vehicles/{{.Vehicle.ID}}"
       {{end}}>
 
-    <fieldset>
+    <fieldset x-data="{ decoding: false, decoded: false, decodeError: '' }">
         <legend>Vehicle Information</legend>
         <div class="form-row">
             <div class="form-group" style="grid-column: span 2;">
                 <label for="vin">VIN</label>
-                <input type="text" id="vin" name="vin" class="form-control" value="{{deref .Vehicle.VIN}}" maxlength="17" style="text-transform:uppercase">
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input type="text" id="vin" name="vin" class="form-control" value="{{deref .Vehicle.VIN}}" maxlength="17" style="text-transform:uppercase"
+                           @blur="
+                               let v = $el.value.trim();
+                               if (v.length === 17) {
+                                   decoding = true; decoded = false; decodeError = '';
+                                   fetch('/api/vin/decode?vin=' + encodeURIComponent(v))
+                                       .then(r => r.json())
+                                       .then(d => {
+                                           decoding = false;
+                                           if (d.error) { decodeError = d.error; return; }
+                                           decoded = true;
+                                           if (d.year) document.getElementById('year').value = d.year;
+                                           if (d.make) document.getElementById('make').value = d.make;
+                                           if (d.model) document.getElementById('model').value = d.model;
+                                           if (d.body_style) document.getElementById('body_style').value = d.body_style;
+                                           if (d.weight) document.getElementById('weight').value = d.weight;
+                                       })
+                                       .catch(() => { decoding = false; decodeError = 'Decode failed'; });
+                               }
+                           ">
+                    <span x-show="decoding" class="text-muted" style="font-size:12px;white-space:nowrap">Decoding...</span>
+                    <span x-show="decoded" style="color:var(--success);font-size:12px;white-space:nowrap" x-cloak>Decoded</span>
+                    <span x-show="decodeError" style="color:var(--danger);font-size:12px;white-space:nowrap" x-text="decodeError" x-cloak></span>
+                </div>
             </div>
         </div>
         <div class="form-row">

@@ -82,12 +82,16 @@ func (h *TripHandler) create(w http.ResponseWriter, r *http.Request) {
 	t := bindTripForm(r)
 
 	if t.LoadNumber == "" {
-		h.deps.render(w, r, "trip_form.html", map[string]any{
-			"Trip":  t,
-			"IsNew": true,
-			"Error": "Load number is required",
-		})
-		return
+		num, err := h.store.NextLoadNumber(r.Context())
+		if err != nil {
+			h.deps.render(w, r, "trip_form.html", map[string]any{
+				"Trip":  t,
+				"IsNew": true,
+				"Error": "Failed to generate load number: " + err.Error(),
+			})
+			return
+		}
+		t.LoadNumber = num
 	}
 
 	if err := h.store.Create(r.Context(), t); err != nil {
