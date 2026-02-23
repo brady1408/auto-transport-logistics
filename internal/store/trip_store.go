@@ -186,6 +186,160 @@ func (s *TripStore) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
+// DashboardCounts returns trip-level KPIs for the dashboard.
+type TripDashboardCounts struct {
+	Active    int
+	InTransit int
+}
+
+func (s *TripStore) DashboardCounts(ctx context.Context) (TripDashboardCounts, error) {
+	var c TripDashboardCounts
+	err := s.pool.QueryRow(ctx,
+		`SELECT
+			COUNT(*) FILTER (WHERE active = true),
+			(SELECT COUNT(*) FROM order_vehicles WHERE status = 'Loaded' AND trip_id IS NOT NULL)
+		FROM trips`,
+	).Scan(&c.Active, &c.InTransit)
+	if err != nil {
+		return c, fmt.Errorf("dashboard trip counts: %w", err)
+	}
+	return c, nil
+}
+
+// TripSummaryRow is a single row in the trip summary report.
+type TripSummaryRow struct {
+	ID             int
+	LoadNumber     string
+	TripDate       *string
+	Driver         string
+	TruckNumber    string
+	VehicleCount   int
+	TotalMileage   string
+	Status         string
+	DeliverDate    *string
+}
+
+func (s *TripStore) TripSummaryReport(ctx context.Context, dateFrom, dateTo string) ([]TripSummaryRow, error) {
+	var where []string
+	var args []any
+	argN := 1
+
+	if dateFrom != "" {
+		where = append(where, fmt.Sprintf("t.trip_date >= $%d", argN))
+		args = append(args, dateFrom)
+		argN++
+	}
+	if dateTo != "" {
+		where = append(where, fmt.Sprintf("t.trip_date <= $%d", argN))
+		args = append(args, dateTo)
+		argN++
+	}
+
+	whereClause := ""
+	if len(where) > 0 {
+		whereClause = "WHERE " + strings.Join(where, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT
+		t.id, t.load_number,
+		CASE WHEN t.trip_date IS NOT NULL THEN to_char(t.trip_date, 'MM/DD/YYYY') END,
+		COALESCE(t.driver, ''), COALESCE(t.truck_number, ''),
+		COUNT(ov.id),
+		COALESCE(t.total_mileage, '0'),
+		COALESCE(t.status, ''),
+		CASE WHEN t.deliver_date IS NOT NULL THEN to_char(t.deliver_date, 'MM/DD/YYYY') END
+	FROM trips t
+	LEFT JOIN order_vehicles ov ON ov.trip_id = t.id
+	%s
+	GROUP BY t.id, t.load_number, t.trip_date, t.driver, t.truck_number, t.total_mileage, t.status, t.deliver_date
+	ORDER BY t.trip_date DESC NULLS LAST`, whereClause)
+
+	rows, err := s.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("trip summary report: %w", err)
+	}
+	defer rows.Close()
+
+	var items []TripSummaryRow
+	for rows.Next() {
+		var r TripSummaryRow
+		if err := rows.Scan(&r.ID, &r.LoadNumber, &r.TripDate, &r.Driver, &r.TruckNumber,
+			&r.VehicleCount, &r.TotalMileage, &r.Status, &r.DeliverDate); err != nil {
+			return nil, fmt.Errorf("scan trip summary row: %w", err)
+		}
+		items = append(items, r)
+	}
+	return items, nil
+}
+
+// DriverSettlementRow is a single row in the driver settlement report.
+type DriverSettlementRow struct {
+	TripID       int
+	LoadNumber   string
+	TripDate     *string
+	VehicleCount int
+	TotalMileage string
+	DriverRate   string
+	DriverPay    string
+}
+
+func (s *TripStore) DriverSettlement(ctx context.Context, employeeID int, dateFrom, dateTo string) ([]DriverSettlementRow, error) {
+	var where []string
+	var args []any
+	argN := 1
+
+	where = append(where, fmt.Sprintf("t.driver1_id = $%d", argN))
+	args = append(args, employeeID)
+	argN++
+
+	if dateFrom != "" {
+		where = append(where, fmt.Sprintf("t.trip_date >= $%d", argN))
+		args = append(args, dateFrom)
+		argN++
+	}
+	if dateTo != "" {
+		where = append(where, fmt.Sprintf("t.trip_date <= $%d", argN))
+		args = append(args, dateTo)
+		argN++
+	}
+
+	whereClause := "WHERE " + strings.Join(where, " AND ")
+
+	query := fmt.Sprintf(`SELECT
+		t.id, t.load_number,
+		CASE WHEN t.trip_date IS NOT NULL THEN to_char(t.trip_date, 'MM/DD/YYYY') END,
+		COUNT(ov.id),
+		COALESCE(t.total_mileage, '0'),
+		COALESCE(t.driver_rate, '0.00'),
+		CASE
+			WHEN t.driver_calc_type = 'per_mile' THEN (COALESCE(t.total_mileage::numeric, 0) * COALESCE(t.driver_rate::numeric, 0))::text
+			WHEN t.driver_calc_type = 'per_vehicle' THEN (COUNT(ov.id) * COALESCE(t.driver_rate::numeric, 0))::text
+			ELSE COALESCE(t.driver_rate::numeric, 0)::text
+		END
+	FROM trips t
+	LEFT JOIN order_vehicles ov ON ov.trip_id = t.id
+	%s
+	GROUP BY t.id, t.load_number, t.trip_date, t.total_mileage, t.driver_rate, t.driver_calc_type
+	ORDER BY t.trip_date DESC NULLS LAST`, whereClause)
+
+	rows, err := s.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("driver settlement: %w", err)
+	}
+	defer rows.Close()
+
+	var items []DriverSettlementRow
+	for rows.Next() {
+		var r DriverSettlementRow
+		if err := rows.Scan(&r.TripID, &r.LoadNumber, &r.TripDate, &r.VehicleCount,
+			&r.TotalMileage, &r.DriverRate, &r.DriverPay); err != nil {
+			return nil, fmt.Errorf("scan driver settlement row: %w", err)
+		}
+		items = append(items, r)
+	}
+	return items, nil
+}
+
 func (s *TripStore) NextLoadNumber(ctx context.Context) (string, error) {
 	var next int
 	err := s.pool.QueryRow(ctx,

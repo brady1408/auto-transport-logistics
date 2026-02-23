@@ -4,6 +4,8 @@
         <a href="/">ATLinks</a>
     </div>
     <div class="nav-menu">
+        <!-- VIN Search (top-level) -->
+        <a href="/search/vin" class="nav-link" style="text-decoration:none;">VIN Search</a>
         <!-- Dispatch -->
         <div class="nav-dropdown" @mouseenter="open = 'dispatch'" @mouseleave="open = ''">
             <button class="nav-link">Dispatch</button>
@@ -51,7 +53,18 @@
         <div class="nav-dropdown" @mouseenter="open = 'reports'" @mouseleave="open = ''">
             <button class="nav-link">Reports</button>
             <div class="dropdown-menu" x-show="open === 'reports'" x-cloak>
-                <a href="#" class="dropdown-item disabled">Reports (coming soon)</a>
+                <a href="/reports" class="dropdown-item">All Reports</a>
+                <hr class="dropdown-divider">
+                <a href="/reports/ar-aging" class="dropdown-item">AR Aging</a>
+                <a href="/reports/revenue-by-customer" class="dropdown-item">Revenue by Customer</a>
+                <a href="/reports/payments" class="dropdown-item">Payment Report</a>
+                <hr class="dropdown-divider">
+                <a href="/reports/order-status" class="dropdown-item">Order Status</a>
+                <a href="/reports/trip-summary" class="dropdown-item">Trip Summary</a>
+                <a href="/reports/driver-settlement" class="dropdown-item">Driver Settlement</a>
+                <a href="/reports/vehicle-history" class="dropdown-item">Vehicle History</a>
+                <hr class="dropdown-divider">
+                <a href="/reports/damages" class="dropdown-item">Damage Report</a>
             </div>
         </div>
         <!-- Utilities -->

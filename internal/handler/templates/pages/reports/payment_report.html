@@ -1,0 +1,57 @@
+{{define "report_payments.html"}}
+{{template "base" .}}
+{{define "title"}}Payment Report - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h1>Payment Report</h1>
+    <div class="btn-group no-print">
+        <a href="/reports/payments/csv?date_from={{.DateFrom}}&date_to={{.DateTo}}" class="btn">Export CSV</a>
+        <button onclick="window.print()" class="btn">Print</button>
+        <a href="/reports" class="btn">Back to Reports</a>
+    </div>
+</div>
+
+<form class="filter-bar no-print" method="GET" action="/reports/payments">
+    <div class="form-group">
+        <label>From</label>
+        <input type="date" name="date_from" value="{{.DateFrom}}" class="form-control">
+    </div>
+    <div class="form-group">
+        <label>To</label>
+        <input type="date" name="date_to" value="{{.DateTo}}" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+<div class="table-container">
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Check #</th>
+                <th class="text-right">Amount</th>
+                <th class="text-right">Applied</th>
+                <th>Method</th>
+                <th>Applied to Invoices</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Rows}}
+            <tr>
+                <td>{{if .PaymentDate}}{{deref .PaymentDate}}{{end}}</td>
+                <td>{{.CustomerName}}</td>
+                <td>{{.CheckNumber}}</td>
+                <td class="text-right">${{.Amount}}</td>
+                <td class="text-right">${{.AppliedAmount}}</td>
+                <td>{{.PaymentMethod}}</td>
+                <td>{{.InvoiceNumbers}}</td>
+            </tr>
+            {{else}}
+            <tr><td colspan="7" class="text-center text-muted">No payments found.</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}
+{{end}}

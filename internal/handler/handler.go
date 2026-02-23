@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/csv"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -142,4 +143,17 @@ func formInt(r *http.Request, key string) *int {
 func formBool(r *http.Request, key string) bool {
 	v := r.FormValue(key)
 	return v == "on" || v == "true" || v == "1"
+}
+
+// writeCSV writes a CSV file to the response.
+func writeCSV(w http.ResponseWriter, filename string, headers []string, rows [][]string) {
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+
+	writer := csv.NewWriter(w)
+	writer.Write(headers)
+	for _, row := range rows {
+		writer.Write(row)
+	}
+	writer.Flush()
 }

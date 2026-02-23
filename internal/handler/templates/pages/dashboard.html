@@ -5,25 +5,69 @@
 <div class="page-header">
     <h1>Dashboard</h1>
 </div>
-<div class="dashboard-grid">
+
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-value">{{.OrderCounts.Active}}</div>
+        <div class="kpi-label">Active Orders</div>
+        <a href="/dispatch/orders?active=active" class="kpi-link">View Orders</a>
+    </div>
+    <div class="kpi-card kpi-warning">
+        <div class="kpi-value">{{.OrderCounts.UninvoicedDelivered}}</div>
+        <div class="kpi-label">Uninvoiced Delivered</div>
+        <a href="/dispatch/orders?active=active" class="kpi-link">Review</a>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-value">{{.Aging.Count}}</div>
+        <div class="kpi-label">Open Invoices</div>
+        <a href="/accounting/invoices?status=Open" class="kpi-link">View Invoices</a>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-value">{{.TripCounts.Active}}</div>
+        <div class="kpi-label">Active Trips</div>
+        <a href="/dispatch/trips?active=active" class="kpi-link">View Trips</a>
+    </div>
+</div>
+
+<div class="dashboard-grid" style="margin-top: 20px;">
+    <div class="card">
+        <div class="card-header">AR Aging Summary</div>
+        <div class="card-body">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Current (0-30)</th>
+                        <th>31-60 Days</th>
+                        <th>61-90 Days</th>
+                        <th>90+ Days</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>${{.Aging.Current}}</td>
+                        <td>${{.Aging.Days31}}</td>
+                        <td>${{.Aging.Days61}}</td>
+                        <td>${{.Aging.Days90}}</td>
+                        <td><strong>${{.Aging.Total}}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="margin-top: 8px; text-align: right;">
+                <a href="/reports/ar-aging" class="btn btn-sm">Full AR Aging Report</a>
+            </div>
+        </div>
+    </div>
     <div class="card">
         <div class="card-header">Quick Links</div>
         <div class="card-body">
             <ul class="quick-links">
+                <li><a href="/dispatch/orders/new">New Order</a></li>
+                <li><a href="/search/vin">VIN Search</a></li>
+                <li><a href="/reports">Reports</a></li>
                 <li><a href="/global/customers">Manage Customers</a></li>
-                <li><a href="/global/employees">Manage Employees</a></li>
-                <li><a href="/global/trucks">Manage Trucks</a></li>
-                <li><a href="/global/zones">Manage Zones</a></li>
                 <li><a href="/utilities/company">Company Settings</a></li>
             </ul>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-header">System Status</div>
-        <div class="card-body">
-            <p>Welcome to ATLinks, <strong>{{.User.Username}}</strong>.</p>
-            <p>Phase 1 — Global Masters management is active.</p>
-            <p>Dispatch, Accounting, and Reports modules coming in Phase 2-3.</p>
         </div>
     </div>
 </div>

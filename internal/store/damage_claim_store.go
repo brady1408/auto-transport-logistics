@@ -149,6 +149,67 @@ func (s *DamageClaimStore) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
+// DamageReportRow is a single row in the damage report.
+type DamageReportRow struct {
+	ID          int
+	ClaimNumber string
+	ClaimDate   *string
+	VIN         string
+	OrderID     int
+	Status      string
+	Description string
+	ClaimAmount string
+	PaidAmount  string
+}
+
+func (s *DamageClaimStore) DamageReport(ctx context.Context, dateFrom, dateTo string) ([]DamageReportRow, error) {
+	var where []string
+	var args []any
+	argN := 1
+
+	if dateFrom != "" {
+		where = append(where, fmt.Sprintf("claim_date >= $%d", argN))
+		args = append(args, dateFrom)
+		argN++
+	}
+	if dateTo != "" {
+		where = append(where, fmt.Sprintf("claim_date <= $%d", argN))
+		args = append(args, dateTo)
+		argN++
+	}
+
+	whereClause := ""
+	if len(where) > 0 {
+		whereClause = "WHERE " + strings.Join(where, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT
+		id, COALESCE(claim_number, ''),
+		CASE WHEN claim_date IS NOT NULL THEN to_char(claim_date, 'MM/DD/YYYY') END,
+		COALESCE(vin, ''), COALESCE(order_id, 0), COALESCE(status, ''),
+		COALESCE(description, ''),
+		COALESCE(claim_amount, '0.00'), COALESCE(paid_amount, '0.00')
+	FROM damage_claims %s
+	ORDER BY claim_date DESC NULLS LAST`, whereClause)
+
+	rows, err := s.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("damage report: %w", err)
+	}
+	defer rows.Close()
+
+	var items []DamageReportRow
+	for rows.Next() {
+		var r DamageReportRow
+		if err := rows.Scan(&r.ID, &r.ClaimNumber, &r.ClaimDate, &r.VIN, &r.OrderID,
+			&r.Status, &r.Description, &r.ClaimAmount, &r.PaidAmount); err != nil {
+			return nil, fmt.Errorf("scan damage report row: %w", err)
+		}
+		items = append(items, r)
+	}
+	return items, nil
+}
+
 func (s *DamageClaimStore) NextClaimNumber(ctx context.Context) (string, error) {
 	var next int
 	err := s.pool.QueryRow(ctx,

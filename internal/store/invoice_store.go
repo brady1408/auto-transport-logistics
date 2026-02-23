@@ -228,6 +228,134 @@ func (s *InvoiceStore) NextInvoiceNumberTx(ctx context.Context, tx pgx.Tx) (stri
 	return fmt.Sprintf("%06d", next), nil
 }
 
+// DashboardAging returns open invoice aging buckets.
+type AgingBucket struct {
+	Current  string
+	Days31   string
+	Days61   string
+	Days90   string
+	Total    string
+	Count    int
+}
+
+func (s *InvoiceStore) DashboardAging(ctx context.Context) (AgingBucket, error) {
+	var a AgingBucket
+	err := s.pool.QueryRow(ctx,
+		`SELECT
+			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date >= CURRENT_DATE - INTERVAL '30 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '30 days' AND invoice_date >= CURRENT_DATE - INTERVAL '60 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '60 days' AND invoice_date >= CURRENT_DATE - INTERVAL '90 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '90 days'), 0)::text,
+			COALESCE(SUM(balance::numeric), 0)::text,
+			COUNT(*)
+		FROM invoices WHERE status = 'Open'`,
+	).Scan(&a.Current, &a.Days31, &a.Days61, &a.Days90, &a.Total, &a.Count)
+	if err != nil {
+		return a, fmt.Errorf("dashboard aging: %w", err)
+	}
+	return a, nil
+}
+
+// ArAgingRow is a single customer row in the AR Aging report.
+type ArAgingRow struct {
+	CustomerID     int
+	CustomerNumber string
+	CustomerName   string
+	Current        string
+	Days31         string
+	Days61         string
+	Days90         string
+	Total          string
+}
+
+func (s *InvoiceStore) GetArAgingReport(ctx context.Context) ([]ArAgingRow, error) {
+	rows, err := s.pool.Query(ctx,
+		`SELECT
+			COALESCE(customer_id, 0),
+			COALESCE(customer_number, ''),
+			COALESCE(customer_name, ''),
+			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date >= CURRENT_DATE - INTERVAL '30 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '30 days' AND invoice_date >= CURRENT_DATE - INTERVAL '60 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '60 days' AND invoice_date >= CURRENT_DATE - INTERVAL '90 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '90 days'), 0)::text,
+			COALESCE(SUM(balance::numeric), 0)::text
+		FROM invoices WHERE status = 'Open'
+		GROUP BY customer_id, customer_number, customer_name
+		ORDER BY SUM(balance::numeric) DESC`)
+	if err != nil {
+		return nil, fmt.Errorf("ar aging report: %w", err)
+	}
+	defer rows.Close()
+
+	var items []ArAgingRow
+	for rows.Next() {
+		var r ArAgingRow
+		if err := rows.Scan(&r.CustomerID, &r.CustomerNumber, &r.CustomerName,
+			&r.Current, &r.Days31, &r.Days61, &r.Days90, &r.Total); err != nil {
+			return nil, fmt.Errorf("scan ar aging row: %w", err)
+		}
+		items = append(items, r)
+	}
+	return items, nil
+}
+
+// RevenueByCustomerRow is a single row in the Revenue by Customer report.
+type RevenueByCustomerRow struct {
+	CustomerID     int
+	CustomerNumber string
+	CustomerName   string
+	InvoiceCount   int
+	TotalRevenue   string
+}
+
+func (s *InvoiceStore) RevenueByCustomer(ctx context.Context, dateFrom, dateTo string) ([]RevenueByCustomerRow, error) {
+	var where []string
+	var args []any
+	argN := 1
+
+	where = append(where, "status != 'Void'")
+
+	if dateFrom != "" {
+		where = append(where, fmt.Sprintf("invoice_date >= $%d", argN))
+		args = append(args, dateFrom)
+		argN++
+	}
+	if dateTo != "" {
+		where = append(where, fmt.Sprintf("invoice_date <= $%d", argN))
+		args = append(args, dateTo)
+		argN++
+	}
+
+	whereClause := "WHERE " + strings.Join(where, " AND ")
+
+	query := fmt.Sprintf(`SELECT
+		COALESCE(customer_id, 0),
+		COALESCE(customer_number, ''),
+		COALESCE(customer_name, ''),
+		COUNT(*),
+		COALESCE(SUM(total_amount::numeric), 0)::text
+	FROM invoices %s
+	GROUP BY customer_id, customer_number, customer_name
+	ORDER BY SUM(total_amount::numeric) DESC`, whereClause)
+
+	rows, err := s.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("revenue by customer: %w", err)
+	}
+	defer rows.Close()
+
+	var items []RevenueByCustomerRow
+	for rows.Next() {
+		var r RevenueByCustomerRow
+		if err := rows.Scan(&r.CustomerID, &r.CustomerNumber, &r.CustomerName,
+			&r.InvoiceCount, &r.TotalRevenue); err != nil {
+			return nil, fmt.Errorf("scan revenue row: %w", err)
+		}
+		items = append(items, r)
+	}
+	return items, nil
+}
+
 // UpdateBalanceTx updates the payment-related fields on an invoice within a transaction.
 func (s *InvoiceStore) UpdateBalanceTx(ctx context.Context, tx pgx.Tx, id int, amountPaid string, balance string, status string) error {
 	_, err := tx.Exec(ctx,

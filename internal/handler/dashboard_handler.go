@@ -1,13 +1,26 @@
 package handler
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+
+	"github.com/brady1408/atlinks/internal/store"
+)
 
 type DashboardHandler struct {
-	deps *Deps
+	orderStore   *store.OrderStore
+	invoiceStore *store.InvoiceStore
+	tripStore    *store.TripStore
+	deps         *Deps
 }
 
-func NewDashboardHandler(deps *Deps) *DashboardHandler {
-	return &DashboardHandler{deps: deps}
+func NewDashboardHandler(orderStore *store.OrderStore, invoiceStore *store.InvoiceStore, tripStore *store.TripStore, deps *Deps) *DashboardHandler {
+	return &DashboardHandler{
+		orderStore:   orderStore,
+		invoiceStore: invoiceStore,
+		tripStore:    tripStore,
+		deps:         deps,
+	}
 }
 
 func (h *DashboardHandler) Register(mux *http.ServeMux) {
@@ -19,5 +32,27 @@ func (h *DashboardHandler) show(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	h.deps.render(w, r, "dashboard.html", nil)
+
+	ctx := r.Context()
+
+	orderCounts, err := h.orderStore.DashboardCounts(ctx)
+	if err != nil {
+		log.Printf("dashboard order counts: %v", err)
+	}
+
+	aging, err := h.invoiceStore.DashboardAging(ctx)
+	if err != nil {
+		log.Printf("dashboard aging: %v", err)
+	}
+
+	tripCounts, err := h.tripStore.DashboardCounts(ctx)
+	if err != nil {
+		log.Printf("dashboard trip counts: %v", err)
+	}
+
+	h.deps.render(w, r, "dashboard.html", map[string]any{
+		"OrderCounts": orderCounts,
+		"Aging":       aging,
+		"TripCounts":  tripCounts,
+	})
 }

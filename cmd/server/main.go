@@ -136,7 +136,7 @@ func main() {
 	protectedMux := http.NewServeMux()
 
 	// Dashboard
-	dashHandler := handler.NewDashboardHandler(deps)
+	dashHandler := handler.NewDashboardHandler(orderStore, invoiceStore, tripStore, deps)
 	dashHandler.Register(protectedMux)
 
 	// Customer CRUD
@@ -243,6 +243,13 @@ func main() {
 
 	apHandler := handler.NewAccountsPayableHandler(apStore, deps)
 	apHandler.Register(protectedMux)
+
+	// Phase 4: VIN Search + Reports
+	vinSearchHandler := handler.NewVinSearchHandler(vehicleStore, deps)
+	vinSearchHandler.Register(protectedMux)
+
+	reportHandler := handler.NewReportHandler(orderStore, invoiceStore, tripStore, vehicleStore, paymentStore, damageClaimStore, deps)
+	reportHandler.Register(protectedMux)
 
 	// Wrap protected routes with auth middleware
 	authMiddleware := middleware.RequireAuth(jwtSvc)
