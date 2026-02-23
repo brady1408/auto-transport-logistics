@@ -7,6 +7,11 @@
     <div class="btn-group">
         <a href="/dispatch/orders/{{.Order.ID}}/edit" class="btn">Edit Order</a>
         <a href="/dispatch/orders/{{.Order.ID}}/vehicles/new" class="btn btn-primary">Add Vehicle</a>
+        {{if or .Order.DeliveredCount .Order.ConfirmedCount}}
+        <button class="btn btn-success"
+                hx-post="/dispatch/orders/{{.Order.ID}}/invoice"
+                hx-confirm="Generate invoice for this order?">Generate Invoice</button>
+        {{end}}
         <a href="/dispatch/orders" class="btn">Back to List</a>
     </div>
 </div>

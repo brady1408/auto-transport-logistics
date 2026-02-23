@@ -1,0 +1,42 @@
+{{define "ap_list.html"}}
+{{template "base" .}}
+{{define "title"}}Accounts Payable - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h1>Accounts Payable</h1>
+    <a href="/accounting/ap/new" class="btn btn-primary">New AP</a>
+</div>
+
+<div class="filter-bar">
+    <div class="form-group">
+        <label for="search">Search</label>
+        <input type="text" id="search" name="search" class="form-control search-input"
+               placeholder="Vendor, description, check #..."
+               value="{{.Filter.Search}}"
+               hx-get="/accounting/ap"
+               hx-trigger="keyup changed delay:300ms"
+               hx-target="#ap-table"
+               hx-include=".filter-bar [name]"
+               hx-push-url="true">
+    </div>
+    <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status" name="status" class="form-control"
+                hx-get="/accounting/ap"
+                hx-trigger="change"
+                hx-target="#ap-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">
+            <option value="" {{selected .Filter.Status ""}}>All</option>
+            <option value="Open" {{selected .Filter.Status "Open"}}>Open</option>
+            <option value="Pending" {{selected .Filter.Status "Pending"}}>Pending</option>
+            <option value="Paid" {{selected .Filter.Status "Paid"}}>Paid</option>
+        </select>
+    </div>
+</div>
+
+<div id="ap-table">
+    {{template "ap_table" .}}
+</div>
+{{end}}
+{{end}}
