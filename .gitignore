@@ -1,0 +1,37 @@
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go
+vendor/
+*.test
+*.out
+coverage.html
+
+# Environment
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database backup (too large for git)
+*.bak
+
+# Legacy Clarion source (read-only reference, too large for git)
+Stargazer_Source/
+
+# Claude
+.claude/

@@ -1,0 +1,107 @@
+{{define "order_show.html"}}
+{{template "base" .}}
+{{define "title"}}Order {{.Order.OrderNumber}} - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h1>Order {{.Order.OrderNumber}}</h1>
+    <div class="btn-group">
+        <a href="/dispatch/orders/{{.Order.ID}}/edit" class="btn">Edit Order</a>
+        <a href="/dispatch/orders/{{.Order.ID}}/vehicles/new" class="btn btn-primary">Add Vehicle</a>
+        <a href="/dispatch/orders" class="btn">Back to List</a>
+    </div>
+</div>
+
+<div class="order-detail-grid">
+    <div class="card">
+        <div class="card-header">Order Info</div>
+        <div class="card-body">
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span>{{if .Order.Active}}<span class="badge badge-active">Active</span>{{else}}<span class="badge badge-inactive">Inactive</span>{{end}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Zone:</span>
+                <span>{{deref .Order.Zone}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Dispatch Code:</span>
+                <span>{{deref .Order.DispatchCode}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Create Date:</span>
+                <span>{{if .Order.CreateDate}}{{.Order.CreateDate.Format "01/02/2006"}}{{end}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Est. Pickup:</span>
+                <span>{{if .Order.EstPickupDate}}{{.Order.EstPickupDate.Format "01/02/2006"}}{{end}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Est. Deliver:</span>
+                <span>{{if .Order.EstDeliverDate}}{{.Order.EstDeliverDate.Format "01/02/2006"}}{{end}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Vehicle Counts</div>
+        <div class="card-body">
+            <div class="count-grid">
+                <div class="count-item"><span class="count-value">{{.Order.VehicleCount}}</span><span class="count-label">Total</span></div>
+                <div class="count-item"><span class="count-value">{{.Order.WaitingCount}}</span><span class="count-label">Waiting</span></div>
+                <div class="count-item"><span class="count-value">{{.Order.ScheduledCount}}</span><span class="count-label">Scheduled</span></div>
+                <div class="count-item"><span class="count-value">{{.Order.LoadedCount}}</span><span class="count-label">Loaded</span></div>
+                <div class="count-item"><span class="count-value">{{.Order.DeliveredCount}}</span><span class="count-label">Delivered</span></div>
+                <div class="count-item"><span class="count-value">{{.Order.ConfirmedCount}}</span><span class="count-label">Confirmed</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Bill-To</div>
+        <div class="card-body">
+            <strong>{{deref .Order.BillCustomerName}}</strong>
+            {{if .Order.BillToAddress}}<br>{{deref .Order.BillToAddress}}{{end}}
+            {{if .Order.BillToCity}}<br>{{deref .Order.BillToCity}}, {{deref .Order.BillToState}} {{deref .Order.BillToZip}}{{end}}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Load/Pickup</div>
+        <div class="card-body">
+            <strong>{{deref .Order.LoadCustomerName}}</strong>
+            {{if .Order.LoadAddress}}<br>{{deref .Order.LoadAddress}}{{end}}
+            {{if .Order.LoadCity}}<br>{{deref .Order.LoadCity}}, {{deref .Order.LoadState}} {{deref .Order.LoadZip}}{{end}}
+            {{if .Order.LoadContact}}<br>Contact: {{deref .Order.LoadContact}}{{end}}
+            {{if .Order.LoadPhone}}<br>Phone: {{deref .Order.LoadPhone}}{{end}}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Drop/Delivery</div>
+        <div class="card-body">
+            <strong>{{deref .Order.DropCustomerName}}</strong>
+            {{if .Order.DropAddress}}<br>{{deref .Order.DropAddress}}{{end}}
+            {{if .Order.DropCity}}<br>{{deref .Order.DropCity}}, {{deref .Order.DropState}} {{deref .Order.DropZip}}{{end}}
+            {{if .Order.DropContact}}<br>Contact: {{deref .Order.DropContact}}{{end}}
+            {{if .Order.DropPhone}}<br>Phone: {{deref .Order.DropPhone}}{{end}}
+        </div>
+    </div>
+</div>
+
+<h2 class="section-title">Vehicles</h2>
+<div id="vehicle-table"
+     hx-get="/dispatch/orders/{{.Order.ID}}/vehicles"
+     hx-trigger="load"
+     hx-swap="innerHTML">
+    <p class="text-muted">Loading vehicles...</p>
+</div>
+
+<h2 class="section-title">Charges</h2>
+<div id="charge-table"
+     hx-get="/dispatch/orders/{{.Order.ID}}/charges"
+     hx-trigger="load"
+     hx-swap="innerHTML">
+    <p class="text-muted">Loading charges...</p>
+</div>
+{{end}}
+{{end}}

@@ -1,0 +1,96 @@
+{{define "order_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Order #</th>
+                <th>Bill Customer</th>
+                <th>Load Customer</th>
+                <th>Drop Customer</th>
+                <th>Zone</th>
+                <th class="text-center">Vehicles</th>
+                <th>Status</th>
+                <th>Create Date</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Result.Items}}
+            {{range .Result.Items}}
+            <tr>
+                <td><a href="/dispatch/orders/{{.ID}}">{{.OrderNumber}}</a></td>
+                <td>{{deref .BillCustomerName}}</td>
+                <td>{{deref .LoadCustomerName}}</td>
+                <td>{{deref .DropCustomerName}}</td>
+                <td>{{deref .Zone}}</td>
+                <td class="text-center">
+                    {{if gt .VehicleCount 0}}
+                        <span class="badge badge-active">{{.VehicleCount}}</span>
+                    {{else}}
+                        0
+                    {{end}}
+                </td>
+                <td>
+                    {{if not .Active}}
+                        <span class="badge badge-inactive">Inactive</span>
+                    {{else if gt .ConfirmedCount 0}}
+                        <span class="badge badge-confirmed">{{.ConfirmedCount}}C</span>
+                    {{else if gt .DeliveredCount 0}}
+                        <span class="badge badge-delivered">{{.DeliveredCount}}D</span>
+                    {{else if gt .LoadedCount 0}}
+                        <span class="badge badge-loaded">{{.LoadedCount}}L</span>
+                    {{else if gt .ScheduledCount 0}}
+                        <span class="badge badge-scheduled">{{.ScheduledCount}}S</span>
+                    {{else}}
+                        <span class="badge badge-waiting">{{.WaitingCount}}W</span>
+                    {{end}}
+                </td>
+                <td>{{if .CreateDate}}{{.CreateDate.Format "01/02/2006"}}{{end}}</td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <a href="/dispatch/orders/{{.ID}}" class="btn btn-sm">View</a>
+                        <a href="/dispatch/orders/{{.ID}}/edit" class="btn btn-sm">Edit</a>
+                        <button class="btn btn-sm btn-danger"
+                                hx-delete="/dispatch/orders/{{.ID}}"
+                                hx-confirm="Delete order {{.OrderNumber}}?">Delete</button>
+                    </div>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="9" class="text-center text-muted">No orders found</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{if .Result.Items}}
+<div class="pagination">
+    <span>Showing {{add (mul (sub .Result.Page 1) .Result.PageSize) 1}}-{{with $end := mul .Result.Page .Result.PageSize}}{{if gt $end $.Result.TotalCount}}{{$.Result.TotalCount}}{{else}}{{$end}}{{end}}{{end}} of {{.Result.TotalCount}}</span>
+    <div class="pagination-links">
+        {{$pages := totalPages .Result.TotalCount .Result.PageSize}}
+        {{if gt .Result.Page 1}}
+        <button class="btn btn-sm"
+                hx-get="/dispatch/orders?page={{sub .Result.Page 1}}"
+                hx-target="#order-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">Prev</button>
+        {{end}}
+        {{range $p := seq 1 $pages}}
+        <button class="btn btn-sm {{if eq $p $.Result.Page}}active{{end}}"
+                hx-get="/dispatch/orders?page={{$p}}"
+                hx-target="#order-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">{{$p}}</button>
+        {{end}}
+        {{if lt .Result.Page $pages}}
+        <button class="btn btn-sm"
+                hx-get="/dispatch/orders?page={{add .Result.Page 1}}"
+                hx-target="#order-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">Next</button>
+        {{end}}
+    </div>
+</div>
+{{end}}
+{{end}}

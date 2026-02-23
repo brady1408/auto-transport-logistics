@@ -1,0 +1,81 @@
+{{define "customer_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Number</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Phone</th>
+                <th>Zone</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Result.Items}}
+            {{range .Result.Items}}
+            <tr>
+                <td>{{deref .Number}}</td>
+                <td><a href="/global/customers/{{.ID}}/edit">{{.Name}}</a></td>
+                <td>{{deref .Type}}</td>
+                <td>{{deref .City}}</td>
+                <td>{{deref .State}}</td>
+                <td>{{deref .Phone}}</td>
+                <td>{{deref .Zone}}</td>
+                <td>
+                    {{if .Inactive}}
+                        <span class="badge badge-inactive">Inactive</span>
+                    {{else}}
+                        <span class="badge badge-active">Active</span>
+                    {{end}}
+                </td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <a href="/global/customers/{{.ID}}/edit" class="btn btn-sm">Edit</a>
+                        <button class="btn btn-sm btn-danger"
+                                hx-delete="/global/customers/{{.ID}}"
+                                hx-confirm="Delete customer {{.Name}}?">Delete</button>
+                    </div>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="9" class="text-center text-muted">No customers found</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{if .Result.Items}}
+<div class="pagination">
+    <span>Showing {{add (mul (sub .Result.Page 1) .Result.PageSize) 1}}-{{with $end := mul .Result.Page .Result.PageSize}}{{if gt $end $.Result.TotalCount}}{{$.Result.TotalCount}}{{else}}{{$end}}{{end}}{{end}} of {{.Result.TotalCount}}</span>
+    <div class="pagination-links">
+        {{$pages := totalPages .Result.TotalCount .Result.PageSize}}
+        {{if gt .Result.Page 1}}
+        <button class="btn btn-sm"
+                hx-get="/global/customers?page={{sub .Result.Page 1}}"
+                hx-target="#customer-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">Prev</button>
+        {{end}}
+        {{range $p := seq 1 $pages}}
+        <button class="btn btn-sm {{if eq $p $.Result.Page}}active{{end}}"
+                hx-get="/global/customers?page={{$p}}"
+                hx-target="#customer-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">{{$p}}</button>
+        {{end}}
+        {{if lt .Result.Page $pages}}
+        <button class="btn btn-sm"
+                hx-get="/global/customers?page={{add .Result.Page 1}}"
+                hx-target="#customer-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">Next</button>
+        {{end}}
+    </div>
+</div>
+{{end}}
+{{end}}

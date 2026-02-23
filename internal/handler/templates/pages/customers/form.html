@@ -1,0 +1,214 @@
+{{define "customer_form.html"}}
+{{template "base" .}}
+{{define "title"}}{{if .IsNew}}New Customer{{else}}Edit Customer{{end}} - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h1>{{if .IsNew}}New Customer{{else}}Edit Customer: {{.Customer.Name}}{{end}}</h1>
+    <a href="/global/customers" class="btn">Back to List</a>
+</div>
+
+{{if .Error}}
+<div class="alert alert-danger">{{.Error}}</div>
+{{end}}
+
+<form method="POST"
+      {{if .IsNew}}
+          action="/global/customers"
+          hx-post="/global/customers"
+      {{else}}
+          action="/global/customers/{{.Customer.ID}}/edit"
+          hx-put="/global/customers/{{.Customer.ID}}"
+      {{end}}>
+
+    <fieldset>
+        <legend>General Information</legend>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="number">Customer Number</label>
+                <input type="text" id="number" name="number" class="form-control" value="{{deref .Customer.Number}}" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label for="name">Name *</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{.Customer.Name}}" maxlength="30" required>
+            </div>
+            <div class="form-group">
+                <label for="type">Type</label>
+                <select id="type" name="type" class="form-control">
+                    <option value="">-- Select --</option>
+                    <option value="Bill" {{selected (deref .Customer.Type) "Bill"}}>Bill</option>
+                    <option value="Load" {{selected (deref .Customer.Type) "Load"}}>Load</option>
+                    <option value="Drop" {{selected (deref .Customer.Type) "Drop"}}>Drop</option>
+                    <option value="Carrier" {{selected (deref .Customer.Type) "Carrier"}}>Carrier</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="contact">Contact</label>
+                <input type="text" id="contact" name="contact" class="form-control" value="{{deref .Customer.Contact}}" maxlength="20">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="zone">Zone</label>
+                <input type="text" id="zone" name="zone" class="form-control" value="{{deref .Customer.Zone}}" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label for="location_type">Location Type</label>
+                <input type="text" id="location_type" name="location_type" class="form-control" value="{{deref .Customer.LocationType}}" maxlength="2">
+            </div>
+            <div class="form-check" style="padding-top: 20px;">
+                <input type="checkbox" id="inactive" name="inactive" {{checked .Customer.Inactive}}>
+                <label for="inactive">Inactive</label>
+            </div>
+            <div class="form-check" style="padding-top: 20px;">
+                <input type="checkbox" id="cod" name="cod" {{checked .Customer.COD}}>
+                <label for="cod">COD</label>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Address</legend>
+        <div class="form-row">
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="address">Address</label>
+                <input type="text" id="address" name="address" class="form-control" value="{{deref .Customer.Address}}" maxlength="30">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="address2">Address 2</label>
+                <input type="text" id="address2" name="address2" class="form-control" value="{{deref .Customer.Address2}}" maxlength="30">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" id="city" name="city" class="form-control" value="{{deref .Customer.City}}" maxlength="25">
+            </div>
+            <div class="form-group">
+                <label for="state">State</label>
+                <input type="text" id="state" name="state" class="form-control" value="{{deref .Customer.State}}" maxlength="2" style="text-transform:uppercase">
+            </div>
+            <div class="form-group">
+                <label for="zip">Zip</label>
+                <input type="text" id="zip" name="zip" class="form-control" value="{{deref .Customer.Zip}}" maxlength="10">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="text" id="phone" name="phone" class="form-control" value="{{deref .Customer.Phone}}" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label for="mobile">Mobile</label>
+                <input type="text" id="mobile" name="mobile" class="form-control" value="{{deref .Customer.Mobile}}" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label for="fax">Fax</label>
+                <input type="text" id="fax" name="fax" class="form-control" value="{{deref .Customer.Fax}}" maxlength="10">
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Billing &amp; Pricing</legend>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="credit_limit">Credit Limit</label>
+                <input type="text" id="credit_limit" name="credit_limit" class="form-control" value="{{deref .Customer.CreditLimit}}">
+            </div>
+            <div class="form-group">
+                <label for="credit_terms">Credit Terms</label>
+                <input type="text" id="credit_terms" name="credit_terms" class="form-control" value="{{deref .Customer.CreditTerms}}" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label for="terms">Terms</label>
+                <input type="text" id="terms" name="terms" class="form-control" value="{{deref .Customer.Terms}}" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label for="tax_code">Tax Code</label>
+                <input type="text" id="tax_code" name="tax_code" class="form-control" value="{{deref .Customer.TaxCode}}" maxlength="20">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="fuel_surcharge">Fuel Surcharge</label>
+                <input type="text" id="fuel_surcharge" name="fuel_surcharge" class="form-control" value="{{deref .Customer.FuelSurcharge}}">
+            </div>
+            <div class="form-group">
+                <label for="fuel_calc_type">Fuel Calc Type</label>
+                <input type="text" id="fuel_calc_type" name="fuel_calc_type" class="form-control" value="{{deref .Customer.FuelCalcType}}" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label for="discount">Discount</label>
+                <input type="text" id="discount" name="discount" class="form-control" value="{{deref .Customer.Discount}}">
+            </div>
+            <div class="form-group">
+                <label for="discount_calc_type">Discount Calc Type</label>
+                <input type="text" id="discount_calc_type" name="discount_calc_type" class="form-control" value="{{deref .Customer.DiscountCalcType}}" maxlength="11">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="splc">SPLC</label>
+                <input type="text" id="splc" name="splc" class="form-control" value="{{deref .Customer.SPLC}}" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label for="rate_class">Rate Class</label>
+                <input type="text" id="rate_class" name="rate_class" class="form-control" value="{{deref .Customer.RateClass}}" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label for="route_code">Route Code</label>
+                <input type="text" id="route_code" name="route_code" class="form-control" value="{{deref .Customer.RouteCode}}" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label for="revenue_class">Revenue Class</label>
+                <input type="text" id="revenue_class" name="revenue_class" class="form-control" value="{{deref .Customer.RevenueClass}}" maxlength="20">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-check">
+                <input type="checkbox" id="combine_inv_det_line" name="combine_inv_det_line" {{checked .Customer.CombineInvDetLine}}>
+                <label for="combine_inv_det_line">Combine Invoice Detail Lines</label>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Sales</legend>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="sales_rep">Sales Rep</label>
+                <input type="text" id="sales_rep" name="sales_rep" class="form-control" value="{{deref .Customer.SalesRep}}" maxlength="30">
+            </div>
+            <div class="form-group">
+                <label for="sales_date">Sales Date</label>
+                <input type="date" id="sales_date" name="sales_date" class="form-control"
+                       {{if .Customer.SalesDate}}value="{{.Customer.SalesDate.Format "2006-01-02"}}"{{end}}>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Instructions &amp; Comments</legend>
+        <div class="form-group">
+            <label for="pu_instructions">Pickup Instructions</label>
+            <textarea id="pu_instructions" name="pu_instructions" class="form-control">{{deref .Customer.PUInstructions}}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="do_instructions">Drop-off Instructions</label>
+            <textarea id="do_instructions" name="do_instructions" class="form-control">{{deref .Customer.DOInstructions}}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="comments">Comments</label>
+            <textarea id="comments" name="comments" class="form-control">{{deref .Customer.Comments}}</textarea>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{if .IsNew}}Create Customer{{else}}Save Changes{{end}}</button>
+        <a href="/global/customers" class="btn">Cancel</a>
+    </div>
+</form>
+{{end}}
+{{end}}

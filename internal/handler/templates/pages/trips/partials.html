@@ -1,0 +1,193 @@
+{{define "load_table"}}
+<div id="load-manifest" class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Bay</th>
+                <th>VIN</th>
+                <th>Year</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Color</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Loads}}
+            {{range .Loads}}
+            <tr>
+                <td>{{deref .BayNumber}}</td>
+                <td>{{deref .VIN}}</td>
+                <td>{{deref .Year}}</td>
+                <td>{{deref .Make}}</td>
+                <td>{{deref .Model}}</td>
+                <td>{{deref .Color}}</td>
+                <td>{{deref .Status}}</td>
+                <td class="text-right">
+                    <button class="btn btn-sm btn-danger"
+                            hx-delete="/dispatch/trips/{{.TripID}}/loads/{{.ID}}"
+                            hx-confirm="Remove this vehicle from the trip?">Remove</button>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="8" class="text-center text-muted">No vehicles assigned to this trip</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}
+
+{{define "fuel_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>State</th>
+                <th>Mileage</th>
+                <th>Gallons</th>
+                <th>Truck</th>
+                <th class="text-center">Loaded</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .FuelEntries}}
+            {{range .FuelEntries}}
+            <tr>
+                <td>{{deref .State}}</td>
+                <td>{{derefInt .Mileage}}</td>
+                <td>{{deref .Gallons}}</td>
+                <td>{{deref .TruckNumber}}</td>
+                <td class="text-center">{{if .LoadedMiles}}Y{{end}}</td>
+                <td class="text-right">
+                    <button class="btn btn-sm btn-danger"
+                            hx-delete="/dispatch/fuel/{{.ID}}"
+                            hx-target="#fuel-table"
+                            hx-confirm="Delete this fuel entry?">Delete</button>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="6" class="text-center text-muted">No fuel entries</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{if .TripID}}
+<form class="inline-form mt-2"
+      hx-post="/dispatch/trips/{{.TripID}}/fuel"
+      hx-target="#fuel-table"
+      hx-swap="innerHTML">
+    <input type="text" name="state" class="form-control" placeholder="State" maxlength="2" style="width:60px;text-transform:uppercase">
+    <input type="number" name="mileage" class="form-control" placeholder="Mileage" style="width:100px">
+    <input type="text" name="gallons" class="form-control" placeholder="Gallons" style="width:100px">
+    <input type="text" name="truck_number" class="form-control" placeholder="Truck" style="width:100px">
+    <label class="form-check" style="margin:0"><input type="checkbox" name="loaded_miles"> Loaded</label>
+    <button type="submit" class="btn btn-sm btn-primary">Add</button>
+</form>
+{{end}}
+{{end}}
+
+{{define "expense_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Expenses}}
+            {{range .Expenses}}
+            <tr>
+                <td>{{deref .Description}}</td>
+                <td>{{deref .Amount}}</td>
+                <td>{{if .ExpenseDate}}{{.ExpenseDate.Format "01/02/2006"}}{{end}}</td>
+                <td class="text-right">
+                    <button class="btn btn-sm btn-danger"
+                            hx-delete="/dispatch/expenses/{{.ID}}"
+                            hx-target="#expense-table"
+                            hx-confirm="Delete this expense?">Delete</button>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="4" class="text-center text-muted">No expenses</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{if .TripID}}
+<form class="inline-form mt-2"
+      hx-post="/dispatch/trips/{{.TripID}}/expenses"
+      hx-target="#expense-table"
+      hx-swap="innerHTML">
+    <input type="text" name="description" class="form-control" placeholder="Description" style="min-width:200px">
+    <input type="text" name="amount" class="form-control" placeholder="Amount" style="width:100px">
+    <input type="date" name="expense_date" class="form-control" style="width:150px">
+    <button type="submit" class="btn btn-sm btn-primary">Add</button>
+</form>
+{{end}}
+{{end}}
+
+{{define "route_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Seq</th>
+                <th>Customer</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Stop Type</th>
+                <th>Miles</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Routes}}
+            {{range .Routes}}
+            <tr>
+                <td>{{derefInt .Sequence}}</td>
+                <td>{{deref .CustomerName}}</td>
+                <td>{{deref .City}}</td>
+                <td>{{deref .State}}</td>
+                <td>{{deref .StopType}}</td>
+                <td>{{derefInt .Miles}}</td>
+                <td class="text-right">
+                    <button class="btn btn-sm btn-danger"
+                            hx-delete="/dispatch/routes/{{.ID}}"
+                            hx-target="#route-table"
+                            hx-confirm="Delete this route stop?">Delete</button>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="7" class="text-center text-muted">No route stops</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{if .TripID}}
+<form class="inline-form mt-2"
+      hx-post="/dispatch/trips/{{.TripID}}/routes"
+      hx-target="#route-table"
+      hx-swap="innerHTML">
+    <input type="number" name="sequence" class="form-control" placeholder="Seq" style="width:60px">
+    <input type="text" name="customer_name" class="form-control" placeholder="Customer" style="min-width:150px">
+    <input type="text" name="city" class="form-control" placeholder="City" style="width:120px">
+    <input type="text" name="state" class="form-control" placeholder="ST" maxlength="2" style="width:50px;text-transform:uppercase">
+    <input type="text" name="stop_type" class="form-control" placeholder="Type" style="width:80px">
+    <input type="number" name="miles" class="form-control" placeholder="Miles" style="width:80px">
+    <button type="submit" class="btn btn-sm btn-primary">Add</button>
+</form>
+{{end}}
+{{end}}
