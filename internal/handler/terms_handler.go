@@ -25,7 +25,7 @@ func (h *TermsHandler) Register(mux *http.ServeMux) {
 func (h *TermsHandler) list(w http.ResponseWriter, r *http.Request) {
 	items, err := h.store.List(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	if isHTMX(r) {
@@ -48,7 +48,7 @@ func (h *TermsHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	item, err := h.store.Create(r.Context(), term, desc, days)
 	if err != nil {
-		http.Error(w, "Failed to create: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "terms", item.ID, "INSERT", nil, item)
@@ -64,12 +64,12 @@ func (h *TermsHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *TermsHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	old, _ := h.store.GetByID(r.Context(), id)
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "terms", id, "DELETE", old, nil)
@@ -102,7 +102,7 @@ func (h *TaxCodeHandler) Register(mux *http.ServeMux) {
 func (h *TaxCodeHandler) list(w http.ResponseWriter, r *http.Request) {
 	items, err := h.store.List(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	if isHTMX(r) {
@@ -125,7 +125,7 @@ func (h *TaxCodeHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	item, err := h.store.Create(r.Context(), code, desc, rate)
 	if err != nil {
-		http.Error(w, "Failed to create: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "tax_codes", item.ID, "INSERT", nil, item)
@@ -141,12 +141,12 @@ func (h *TaxCodeHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *TaxCodeHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	old, _ := h.store.GetByID(r.Context(), id)
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "tax_codes", id, "DELETE", old, nil)
@@ -179,7 +179,7 @@ func (h *ItemHandler) Register(mux *http.ServeMux) {
 func (h *ItemHandler) list(w http.ResponseWriter, r *http.Request) {
 	items, err := h.store.List(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	if isHTMX(r) {
@@ -203,7 +203,7 @@ func (h *ItemHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	rec, err := h.store.Create(r.Context(), item, desc, amount, calcType)
 	if err != nil {
-		http.Error(w, "Failed to create: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "items", rec.ID, "INSERT", nil, rec)
@@ -219,12 +219,12 @@ func (h *ItemHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *ItemHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	old, _ := h.store.GetByID(r.Context(), id)
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "items", id, "DELETE", old, nil)

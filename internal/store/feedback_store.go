@@ -103,6 +103,9 @@ func (s *FeedbackStore) List(ctx context.Context, f models.FeedbackFilter) (*mod
 		}
 		items = append(items, *fb)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list feedback rows: %w", err)
+	}
 
 	return &models.FeedbackListResult{
 		Items:      items,
@@ -216,6 +219,9 @@ func (s *FeedbackStore) ListComments(ctx context.Context, feedbackID int, includ
 			return nil, fmt.Errorf("scan feedback comment: %w", err)
 		}
 		comments = append(comments, c)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list feedback comments rows: %w", err)
 	}
 	return comments, nil
 }

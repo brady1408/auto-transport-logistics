@@ -112,6 +112,9 @@ func (s *EmployeeStore) List(ctx context.Context, f models.EmployeeFilter) (*mod
 		}
 		items = append(items, *e)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list employees rows: %w", err)
+	}
 
 	return &models.EmployeeListResult{
 		Items:      items,

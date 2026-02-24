@@ -27,13 +27,13 @@ func (h *ChargeHandler) Register(mux *http.ServeMux) {
 func (h *ChargeHandler) list(w http.ResponseWriter, r *http.Request) {
 	orderID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	charges, err := h.store.ListByOrder(r.Context(), orderID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -43,7 +43,7 @@ func (h *ChargeHandler) list(w http.ResponseWriter, r *http.Request) {
 func (h *ChargeHandler) create(w http.ResponseWriter, r *http.Request) {
 	orderID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -51,7 +51,7 @@ func (h *ChargeHandler) create(w http.ResponseWriter, r *http.Request) {
 	c.OrderID = &orderID
 
 	if err := h.store.Create(r.Context(), c); err != nil {
-		http.Error(w, "Failed to create charge: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -62,7 +62,7 @@ func (h *ChargeHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *ChargeHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (h *ChargeHandler) update(w http.ResponseWriter, r *http.Request) {
 	c.OrderID = old.OrderID
 
 	if err := h.store.Update(r.Context(), c); err != nil {
-		http.Error(w, "Failed to update charge: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -93,7 +93,7 @@ func (h *ChargeHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *ChargeHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -104,7 +104,7 @@ func (h *ChargeHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete charge: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

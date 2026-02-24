@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -39,7 +40,7 @@ func (h *TruckHandler) list(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.store.List(r.Context(), filter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -66,8 +67,9 @@ func (h *TruckHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Create(r.Context(), t); err != nil {
+		log.Printf("create truck: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, trucks.FormPage(pg, t, true, "Failed to create truck: "+err.Error()))
+		h.deps.renderTempl(w, r, trucks.FormPage(pg, t, true, "Failed to create truck"))
 		return
 	}
 
@@ -84,7 +86,7 @@ func (h *TruckHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *TruckHandler) editForm(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	t, err := h.store.GetByID(r.Context(), id)
@@ -99,7 +101,7 @@ func (h *TruckHandler) editForm(w http.ResponseWriter, r *http.Request) {
 func (h *TruckHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	old, err := h.store.GetByID(r.Context(), id)
@@ -118,8 +120,9 @@ func (h *TruckHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Update(r.Context(), t); err != nil {
+		log.Printf("update truck: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, trucks.FormPage(pg, t, false, "Failed to update: "+err.Error()))
+		h.deps.renderTempl(w, r, trucks.FormPage(pg, t, false, "Failed to update truck"))
 		return
 	}
 
@@ -136,7 +139,7 @@ func (h *TruckHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *TruckHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	old, err := h.store.GetByID(r.Context(), id)
@@ -145,7 +148,7 @@ func (h *TruckHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "trucks", id, "DELETE", old, nil)

@@ -48,6 +48,9 @@ func (s *ChargeStore) ListByOrder(ctx context.Context, orderID int) ([]models.Or
 		}
 		items = append(items, *c)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list charges rows: %w", err)
+	}
 	return items, nil
 }
 

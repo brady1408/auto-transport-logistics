@@ -47,6 +47,9 @@ func (s *PaymentDetailStore) ListByPayment(ctx context.Context, paymentID int) (
 		}
 		items = append(items, *pd)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list payment details rows: %w", err)
+	}
 	return items, nil
 }
 
@@ -66,6 +69,9 @@ func (s *PaymentDetailStore) ListByInvoice(ctx context.Context, invoiceID int) (
 			return nil, fmt.Errorf("scan payment detail: %w", err)
 		}
 		items = append(items, *pd)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list payment details by invoice rows: %w", err)
 	}
 	return items, nil
 }

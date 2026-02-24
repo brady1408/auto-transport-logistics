@@ -84,7 +84,7 @@ func (h *FeedbackHandler) list(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.store.List(r.Context(), filter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -101,7 +101,7 @@ func (h *FeedbackHandler) list(w http.ResponseWriter, r *http.Request) {
 func (h *FeedbackHandler) show(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -130,7 +130,7 @@ func (h *FeedbackHandler) update(w http.ResponseWriter, r *http.Request) {
 
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -173,7 +173,7 @@ func (h *FeedbackHandler) delete(w http.ResponseWriter, r *http.Request) {
 
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -208,7 +208,7 @@ func (h *FeedbackHandler) addComment(w http.ResponseWriter, r *http.Request) {
 
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 

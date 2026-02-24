@@ -72,6 +72,9 @@ func (s *CompanyStore) ListAll(ctx context.Context) ([]models.Company, error) {
 		}
 		items = append(items, *c)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list all companies rows: %w", err)
+	}
 	return items, nil
 }
 

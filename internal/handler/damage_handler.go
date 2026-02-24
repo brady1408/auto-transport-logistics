@@ -29,13 +29,13 @@ func (h *DamageHandler) Register(mux *http.ServeMux) {
 func (h *DamageHandler) list(w http.ResponseWriter, r *http.Request) {
 	vehicleID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	damages, err := h.store.ListByVehicle(r.Context(), vehicleID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -45,7 +45,7 @@ func (h *DamageHandler) list(w http.ResponseWriter, r *http.Request) {
 func (h *DamageHandler) create(w http.ResponseWriter, r *http.Request) {
 	vehicleID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (h *DamageHandler) create(w http.ResponseWriter, r *http.Request) {
 	d.VehicleID = &vehicleID
 
 	if err := h.store.Create(r.Context(), d); err != nil {
-		http.Error(w, "Failed to create damage record: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -64,7 +64,7 @@ func (h *DamageHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *DamageHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -78,7 +78,7 @@ func (h *DamageHandler) update(w http.ResponseWriter, r *http.Request) {
 	d.ID = id
 
 	if err := h.store.Update(r.Context(), d); err != nil {
-		http.Error(w, "Failed to update damage record: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -93,7 +93,7 @@ func (h *DamageHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *DamageHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -104,7 +104,7 @@ func (h *DamageHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete damage record: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -150,13 +150,13 @@ func (h *NoteHandler) Register(mux *http.ServeMux) {
 func (h *NoteHandler) list(w http.ResponseWriter, r *http.Request) {
 	vehicleID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	notes, err := h.store.ListByVehicle(r.Context(), vehicleID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -166,7 +166,7 @@ func (h *NoteHandler) list(w http.ResponseWriter, r *http.Request) {
 func (h *NoteHandler) create(w http.ResponseWriter, r *http.Request) {
 	vehicleID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -183,7 +183,7 @@ func (h *NoteHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Create(r.Context(), n); err != nil {
-		http.Error(w, "Failed to create note: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -196,12 +196,12 @@ func (h *NoteHandler) delete(w http.ResponseWriter, r *http.Request) {
 	// We'll use a hidden form field or query param
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete note: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

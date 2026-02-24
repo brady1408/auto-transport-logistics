@@ -48,6 +48,9 @@ func (s *TripRouteStore) ListByTrip(ctx context.Context, tripID int) ([]models.T
 		}
 		items = append(items, *r)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list routes rows: %w", err)
+	}
 	return items, nil
 }
 

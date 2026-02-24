@@ -7,6 +7,7 @@ import (
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -111,6 +112,9 @@ func (s *TripStore) List(ctx context.Context, f models.TripFilter) (*models.Trip
 		}
 		items = append(items, *t)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list trips rows: %w", err)
+	}
 
 	return &models.TripListResult{
 		Items:      items,
@@ -124,6 +128,16 @@ func (s *TripStore) GetByID(ctx context.Context, id int) (*models.Trip, error) {
 	companyID := auth.GetCompanyID(ctx)
 	query := fmt.Sprintf("SELECT %s FROM trips WHERE id = $1 AND company_id = $2", tripColumns)
 	t, err := scanTrip(s.pool.QueryRow(ctx, query, id, companyID))
+	if err != nil {
+		return nil, fmt.Errorf("get trip %d: %w", id, err)
+	}
+	return t, nil
+}
+
+func (s *TripStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*models.Trip, error) {
+	companyID := auth.GetCompanyID(ctx)
+	query := fmt.Sprintf("SELECT %s FROM trips WHERE id = $1 AND company_id = $2", tripColumns)
+	t, err := scanTrip(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get trip %d: %w", id, err)
 	}
@@ -282,6 +296,9 @@ func (s *TripStore) TripSummaryReport(ctx context.Context, dateFrom, dateTo stri
 		}
 		items = append(items, r)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("trip summary report rows: %w", err)
+	}
 	return items, nil
 }
 
@@ -355,6 +372,9 @@ func (s *TripStore) DriverSettlement(ctx context.Context, employeeID int, dateFr
 			return nil, fmt.Errorf("scan driver settlement row: %w", err)
 		}
 		items = append(items, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("driver settlement rows: %w", err)
 	}
 	return items, nil
 }

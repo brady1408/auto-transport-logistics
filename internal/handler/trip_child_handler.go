@@ -29,13 +29,13 @@ func (h *FuelHandler) Register(mux *http.ServeMux) {
 func (h *FuelHandler) list(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	items, err := h.store.ListByTrip(r.Context(), tripID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -45,7 +45,7 @@ func (h *FuelHandler) list(w http.ResponseWriter, r *http.Request) {
 func (h *FuelHandler) create(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -59,7 +59,7 @@ func (h *FuelHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Create(r.Context(), f); err != nil {
-		http.Error(w, "Failed to create fuel entry: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -70,7 +70,7 @@ func (h *FuelHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *FuelHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -91,7 +91,7 @@ func (h *FuelHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Update(r.Context(), f); err != nil {
-		http.Error(w, "Failed to update fuel entry: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -104,7 +104,7 @@ func (h *FuelHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *FuelHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -115,7 +115,7 @@ func (h *FuelHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete fuel entry: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -146,13 +146,13 @@ func (h *ExpenseHandler) Register(mux *http.ServeMux) {
 func (h *ExpenseHandler) list(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	items, err := h.store.ListByTrip(r.Context(), tripID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -162,7 +162,7 @@ func (h *ExpenseHandler) list(w http.ResponseWriter, r *http.Request) {
 func (h *ExpenseHandler) create(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -174,7 +174,7 @@ func (h *ExpenseHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Create(r.Context(), e); err != nil {
-		http.Error(w, "Failed to create expense: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -185,7 +185,7 @@ func (h *ExpenseHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *ExpenseHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -204,7 +204,7 @@ func (h *ExpenseHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Update(r.Context(), e); err != nil {
-		http.Error(w, "Failed to update expense: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -217,7 +217,7 @@ func (h *ExpenseHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *ExpenseHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -228,7 +228,7 @@ func (h *ExpenseHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete expense: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -259,13 +259,13 @@ func (h *RouteHandler) Register(mux *http.ServeMux) {
 func (h *RouteHandler) list(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	items, err := h.store.ListByTrip(r.Context(), tripID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -275,7 +275,7 @@ func (h *RouteHandler) list(w http.ResponseWriter, r *http.Request) {
 func (h *RouteHandler) create(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -292,7 +292,7 @@ func (h *RouteHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Create(r.Context(), rt); err != nil {
-		http.Error(w, "Failed to create route: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -303,7 +303,7 @@ func (h *RouteHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *RouteHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -327,7 +327,7 @@ func (h *RouteHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Update(r.Context(), rt); err != nil {
-		http.Error(w, "Failed to update route: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -340,7 +340,7 @@ func (h *RouteHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *RouteHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -351,7 +351,7 @@ func (h *RouteHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete route: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

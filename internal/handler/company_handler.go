@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -53,8 +54,9 @@ func (h *CompanyHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Upsert(r.Context(), c); err != nil {
+		log.Printf("save company: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, pages.CompanyFormPage(pg, c, "Failed to save: "+err.Error()))
+		h.deps.renderTempl(w, r, pages.CompanyFormPage(pg, c, "Failed to save"))
 		return
 	}
 

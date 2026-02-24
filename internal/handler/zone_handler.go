@@ -32,7 +32,7 @@ func (h *ZoneHandler) Register(mux *http.ServeMux) {
 func (h *ZoneHandler) list(w http.ResponseWriter, r *http.Request) {
 	zonesList, err := h.store.List(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	if isHTMX(r) {
@@ -54,7 +54,7 @@ func (h *ZoneHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.store.Create(r.Context(), z); err != nil {
-		http.Error(w, "Failed to create: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zones", z.ID, "INSERT", nil, z)
@@ -70,7 +70,7 @@ func (h *ZoneHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *ZoneHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	old, err := h.store.GetByID(r.Context(), id)
@@ -85,7 +85,7 @@ func (h *ZoneHandler) update(w http.ResponseWriter, r *http.Request) {
 		Region:      formString(r, "region"),
 	}
 	if err := h.store.Update(r.Context(), z); err != nil {
-		http.Error(w, "Failed to update: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zones", id, "UPDATE", old, z)
@@ -101,7 +101,7 @@ func (h *ZoneHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *ZoneHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	old, err := h.store.GetByID(r.Context(), id)
@@ -110,7 +110,7 @@ func (h *ZoneHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zones", id, "DELETE", old, nil)
@@ -128,7 +128,7 @@ func (h *ZoneHandler) delete(w http.ResponseWriter, r *http.Request) {
 func (h *ZoneHandler) pricingList(w http.ResponseWriter, r *http.Request) {
 	items, err := h.pricing.List(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	if isHTMX(r) {
@@ -154,7 +154,7 @@ func (h *ZoneHandler) pricingCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.pricing.Create(r.Context(), zp); err != nil {
-		http.Error(w, "Failed to create: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zone_pricing", zp.ID, "INSERT", nil, zp)
@@ -170,7 +170,7 @@ func (h *ZoneHandler) pricingCreate(w http.ResponseWriter, r *http.Request) {
 func (h *ZoneHandler) pricingUpdate(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	old, err := h.pricing.GetByID(r.Context(), id)
@@ -189,7 +189,7 @@ func (h *ZoneHandler) pricingUpdate(w http.ResponseWriter, r *http.Request) {
 		ShipTo:        formString(r, "ship_to"),
 	}
 	if err := h.pricing.Update(r.Context(), zp); err != nil {
-		http.Error(w, "Failed to update: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zone_pricing", id, "UPDATE", old, zp)
@@ -205,7 +205,7 @@ func (h *ZoneHandler) pricingUpdate(w http.ResponseWriter, r *http.Request) {
 func (h *ZoneHandler) pricingDelete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	old, err := h.pricing.GetByID(r.Context(), id)
@@ -214,7 +214,7 @@ func (h *ZoneHandler) pricingDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.pricing.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zone_pricing", id, "DELETE", old, nil)

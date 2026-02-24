@@ -46,6 +46,9 @@ func (s *TripExpenseStore) ListByTrip(ctx context.Context, tripID int) ([]models
 		}
 		items = append(items, *e)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list expenses rows: %w", err)
+	}
 	return items, nil
 }
 

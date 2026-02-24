@@ -99,6 +99,9 @@ func (s *AccountsPayableStore) List(ctx context.Context, f models.APFilter) (*mo
 		}
 		items = append(items, *ap)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list accounts payable rows: %w", err)
+	}
 
 	return &models.APListResult{
 		Items:      items,

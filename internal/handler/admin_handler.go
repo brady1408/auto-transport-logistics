@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -141,7 +142,7 @@ func (h *AdminHandler) RegisterSettings(mux *http.ServeMux, mw func(http.Handler
 func (h *AdminHandler) listCompanies(w http.ResponseWriter, r *http.Request) {
 	companies, err := h.companyStore.ListAll(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -174,7 +175,8 @@ func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.companyStore.Create(r.Context(), c); err != nil {
-		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, true, nil, fmt.Sprintf("Failed to create company: %v", err)))
+		log.Printf("create company: %v", err)
+		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, true, nil, "Failed to create company"))
 		return
 	}
 
@@ -185,13 +187,13 @@ func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
 func (h *AdminHandler) editCompany(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	c, err := h.companyStore.GetByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
@@ -202,7 +204,7 @@ func (h *AdminHandler) editCompany(w http.ResponseWriter, r *http.Request) {
 func (h *AdminHandler) updateCompany(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -233,7 +235,8 @@ func (h *AdminHandler) updateCompany(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.companyStore.UpdateByID(r.Context(), c); err != nil {
-		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, false, nil, fmt.Sprintf("Failed to update: %v", err)))
+		log.Printf("update company: %v", err)
+		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, false, nil, "Failed to update"))
 		return
 	}
 
@@ -269,7 +272,7 @@ func (h *AdminHandler) listUsers(w http.ResponseWriter, r *http.Request) {
 	companyID := auth.GetCompanyID(r.Context())
 	users, err := h.userStore.ListByCompany(r.Context(), companyID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -320,7 +323,8 @@ func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.userStore.Create(r.Context(), u); err != nil {
-		h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, formData, nil, nil, fmt.Sprintf("Failed to create user: %v", err)))
+		log.Printf("create user: %v", err)
+		h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, formData, nil, nil, "Failed to create user"))
 		return
 	}
 
@@ -331,13 +335,13 @@ func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
 func (h *AdminHandler) editUser(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	u, err := h.userStore.GetByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
@@ -356,7 +360,7 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 	ctxUser, _ := auth.GetUserFromRequest(r)
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -388,7 +392,8 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.userStore.Update(r.Context(), u); err != nil {
-		h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, fmt.Sprintf("Failed to update user: %v", err)))
+		log.Printf("update user: %v", err)
+		h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, "Failed to update user"))
 		return
 	}
 
@@ -400,7 +405,8 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if err := h.userStore.UpdatePassword(r.Context(), id, companyID, hash); err != nil {
-			h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, fmt.Sprintf("User updated but password change failed: %v", err)))
+			log.Printf("update user password: %v", err)
+			h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, "User updated but password change failed"))
 			return
 		}
 	}
@@ -416,7 +422,7 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 func (h *AdminHandler) adminCompanyContext(w http.ResponseWriter, r *http.Request) (*models.Company, bool) {
 	cid, err := parsePathID(r, "companyID")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return nil, false
 	}
 
@@ -436,7 +442,7 @@ func (h *AdminHandler) adminListUsers(w http.ResponseWriter, r *http.Request) {
 
 	users, err := h.userStore.ListByCompany(r.Context(), company.ID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -491,7 +497,8 @@ func (h *AdminHandler) adminCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.userStore.Create(r.Context(), u); err != nil {
-		h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, true, formData, nil, nil, fmt.Sprintf("Failed to create user: %v", err)))
+		log.Printf("create user: %v", err)
+		h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, true, formData, nil, nil, "Failed to create user"))
 		return
 	}
 
@@ -507,7 +514,7 @@ func (h *AdminHandler) adminEditUser(w http.ResponseWriter, r *http.Request) {
 
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -535,7 +542,7 @@ func (h *AdminHandler) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -562,7 +569,8 @@ func (h *AdminHandler) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.userStore.Update(r.Context(), u); err != nil {
-		h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, false, nil, u, nil, fmt.Sprintf("Failed to update user: %v", err)))
+		log.Printf("update user: %v", err)
+		h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, false, nil, u, nil, "Failed to update user"))
 		return
 	}
 
@@ -573,7 +581,8 @@ func (h *AdminHandler) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if err := h.userStore.UpdatePassword(r.Context(), id, company.ID, hash); err != nil {
-			h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, false, nil, u, nil, fmt.Sprintf("User updated but password change failed: %v", err)))
+			log.Printf("update user password: %v", err)
+			h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, false, nil, u, nil, "User updated but password change failed"))
 			return
 		}
 	}

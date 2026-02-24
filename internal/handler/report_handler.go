@@ -71,7 +71,7 @@ func (h *ReportHandler) index(w http.ResponseWriter, r *http.Request) {
 func (h *ReportHandler) deliveryReceipt(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (h *ReportHandler) deliveryReceipt(w http.ResponseWriter, r *http.Request) 
 
 	vehicles, err := h.vehicleStore.ListByOrder(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -95,7 +95,7 @@ func (h *ReportHandler) deliveryReceipt(w http.ResponseWriter, r *http.Request) 
 func (h *ReportHandler) arAging(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.invoiceStore.GetArAgingReport(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -106,7 +106,7 @@ func (h *ReportHandler) arAging(w http.ResponseWriter, r *http.Request) {
 func (h *ReportHandler) arAgingCSV(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.invoiceStore.GetArAgingReport(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -127,7 +127,7 @@ func (h *ReportHandler) revenueByCustomer(w http.ResponseWriter, r *http.Request
 
 	rows, err := h.invoiceStore.RevenueByCustomer(r.Context(), dateFrom, dateTo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -141,7 +141,7 @@ func (h *ReportHandler) revenueByCustomerCSV(w http.ResponseWriter, r *http.Requ
 
 	rows, err := h.invoiceStore.RevenueByCustomer(r.Context(), dateFrom, dateTo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -162,7 +162,7 @@ func (h *ReportHandler) tripSummary(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.tripStore.TripSummaryReport(r.Context(), dateFrom, dateTo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -176,7 +176,7 @@ func (h *ReportHandler) tripSummaryCSV(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.tripStore.TripSummaryReport(r.Context(), dateFrom, dateTo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -205,7 +205,7 @@ func (h *ReportHandler) orderStatus(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.orderStore.StatusSummary(r.Context(), dateFrom, dateTo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -219,7 +219,7 @@ func (h *ReportHandler) orderStatusCSV(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.orderStore.StatusSummary(r.Context(), dateFrom, dateTo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -247,7 +247,7 @@ func (h *ReportHandler) driverSettlement(w http.ResponseWriter, r *http.Request)
 		if err == nil {
 			rows, err = h.tripStore.DriverSettlement(r.Context(), employeeID, dateFrom, dateTo)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				serverError(w, err)
 				return
 			}
 		}
@@ -270,7 +270,7 @@ func (h *ReportHandler) driverSettlementCSV(w http.ResponseWriter, r *http.Reque
 
 	rows, err := h.tripStore.DriverSettlement(r.Context(), employeeID, dateFrom, dateTo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -295,7 +295,7 @@ func (h *ReportHandler) paymentReport(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.paymentStore.PaymentReport(r.Context(), dateFrom, dateTo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -309,7 +309,7 @@ func (h *ReportHandler) paymentReportCSV(w http.ResponseWriter, r *http.Request)
 
 	rows, err := h.paymentStore.PaymentReport(r.Context(), dateFrom, dateTo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -334,7 +334,7 @@ func (h *ReportHandler) damageReport(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.damageStore.DamageReport(r.Context(), dateFrom, dateTo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -348,7 +348,7 @@ func (h *ReportHandler) damageReportCSV(w http.ResponseWriter, r *http.Request) 
 
 	rows, err := h.damageStore.DamageReport(r.Context(), dateFrom, dateTo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -375,7 +375,7 @@ func (h *ReportHandler) vehicleHistory(w http.ResponseWriter, r *http.Request) {
 		var err error
 		rows, err = h.vehicleStore.VehicleHistory(r.Context(), vin)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			serverError(w, err)
 			return
 		}
 	}
@@ -393,7 +393,7 @@ func (h *ReportHandler) vehicleHistoryCSV(w http.ResponseWriter, r *http.Request
 
 	rows, err := h.vehicleStore.VehicleHistory(r.Context(), vin)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

@@ -77,6 +77,9 @@ func (s *LookupStore) List(ctx context.Context) ([]LookupItem, error) {
 		}
 		items = append(items, item)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list %s rows: %w", s.tableName, err)
+	}
 	return items, nil
 }
 

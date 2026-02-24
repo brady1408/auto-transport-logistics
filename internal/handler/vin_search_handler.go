@@ -30,7 +30,7 @@ func (h *VinSearchHandler) page(w http.ResponseWriter, r *http.Request) {
 		var err error
 		results, err = h.vehicleStore.SearchGlobal(r.Context(), query, 100)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			serverError(w, err)
 			return
 		}
 	}
@@ -53,7 +53,7 @@ func (h *VinSearchHandler) searchAPI(w http.ResponseWriter, r *http.Request) {
 
 	results, err := h.vehicleStore.SearchGlobal(r.Context(), query, 50)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

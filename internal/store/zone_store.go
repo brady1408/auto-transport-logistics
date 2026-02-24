@@ -35,6 +35,9 @@ func (s *ZoneStore) List(ctx context.Context) ([]models.Zone, error) {
 		}
 		items = append(items, z)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list zones rows: %w", err)
+	}
 	return items, nil
 }
 
@@ -112,6 +115,9 @@ func (s *ZonePricingStore) List(ctx context.Context) ([]models.ZonePricing, erro
 			return nil, fmt.Errorf("scan zone pricing: %w", err)
 		}
 		items = append(items, zp)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list zone pricing rows: %w", err)
 	}
 	return items, nil
 }

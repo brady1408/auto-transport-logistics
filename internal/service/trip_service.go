@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/brady1408/atlinks/internal/audit"
 	"github.com/brady1408/atlinks/internal/models"
@@ -60,8 +61,8 @@ func (s *TripService) AssignVehicleToTrip(ctx context.Context, tripID, vehicleID
 		return fmt.Errorf("get vehicle: %w", err)
 	}
 
-	// 2. Get trip (for load_number)
-	trip, err := s.tripStore.GetByID(ctx, tripID)
+	// 2. Get trip (for load_number) — inside tx for consistency
+	trip, err := s.tripStore.GetByIDTx(ctx, tx, tripID)
 	if err != nil {
 		return fmt.Errorf("get trip: %w", err)
 	}
@@ -97,9 +98,9 @@ func (s *TripService) AssignVehicleToTrip(ctx context.Context, tripID, vehicleID
 	}
 
 	// 5. Set scheduled_date on vehicle
-	if err := s.vehicleStore.UpdateStatusTx(ctx, tx, vehicleID, "Scheduled", "scheduled_date", nil); err != nil {
-		// scheduled_date was already set by UpdateTripAssignment changing status, skip this
-		// Actually we need to set the date. Let me use a direct exec.
+	now := time.Now()
+	if err := s.vehicleStore.UpdateStatusTx(ctx, tx, vehicleID, "Scheduled", "scheduled_date", &now); err != nil {
+		return fmt.Errorf("set scheduled date: %w", err)
 	}
 
 	// 6. Sync order counts
@@ -177,7 +178,7 @@ func (s *TripService) AssignAllFromOrder(ctx context.Context, tripID, orderID in
 	}
 	defer tx.Rollback(ctx)
 
-	trip, err := s.tripStore.GetByID(ctx, tripID)
+	trip, err := s.tripStore.GetByIDTx(ctx, tx, tripID)
 	if err != nil {
 		return 0, fmt.Errorf("get trip: %w", err)
 	}

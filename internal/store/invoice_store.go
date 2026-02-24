@@ -109,6 +109,9 @@ func (s *InvoiceStore) List(ctx context.Context, f models.InvoiceFilter) (*model
 		}
 		items = append(items, *inv)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list invoices rows: %w", err)
+	}
 
 	return &models.InvoiceListResult{
 		Items:      items,
@@ -331,6 +334,9 @@ func (s *InvoiceStore) GetArAgingReport(ctx context.Context) ([]ArAgingRow, erro
 		}
 		items = append(items, r)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("ar aging report rows: %w", err)
+	}
 	return items, nil
 }
 
@@ -393,6 +399,9 @@ func (s *InvoiceStore) RevenueByCustomer(ctx context.Context, dateFrom, dateTo s
 			return nil, fmt.Errorf("scan revenue row: %w", err)
 		}
 		items = append(items, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("revenue by customer rows: %w", err)
 	}
 	return items, nil
 }

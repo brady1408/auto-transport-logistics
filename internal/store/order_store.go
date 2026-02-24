@@ -142,6 +142,9 @@ func (s *OrderStore) List(ctx context.Context, f models.OrderFilter) (*models.Or
 		}
 		items = append(items, *o)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list orders rows: %w", err)
+	}
 
 	return &models.OrderListResult{
 		Items:      items,
@@ -375,6 +378,9 @@ func (s *OrderStore) StatusSummary(ctx context.Context, dateFrom, dateTo string)
 			return nil, fmt.Errorf("scan order status row: %w", err)
 		}
 		items = append(items, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("order status summary rows: %w", err)
 	}
 	return items, nil
 }

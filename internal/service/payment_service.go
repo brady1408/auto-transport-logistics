@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/brady1408/atlinks/internal/audit"
 	"github.com/brady1408/atlinks/internal/models"
@@ -56,15 +55,12 @@ func (s *PaymentService) ApplyPayment(ctx context.Context, paymentID, invoiceID 
 		return fmt.Errorf("get invoice: %w", err)
 	}
 
-	applyAmt, err := strconv.ParseFloat(amount, 64)
-	if err != nil || applyAmt <= 0 {
+	applyCents := parseCents(amount)
+	if applyCents <= 0 {
 		return fmt.Errorf("invalid apply amount: %s", amount)
 	}
 
-	var discountAmt float64
-	if discount != "" {
-		discountAmt, _ = strconv.ParseFloat(discount, 64)
-	}
+	discountCents := parseCents(discount)
 
 	// Get invoice invoice_number for denormalization
 	invNum := invoice.InvoiceNumber
@@ -76,8 +72,8 @@ func (s *PaymentService) ApplyPayment(ctx context.Context, paymentID, invoiceID 
 		InvoiceNumber: &invNum,
 		Amount:        &amount,
 	}
-	if discountAmt > 0 {
-		discStr := fmt.Sprintf("%.2f", discountAmt)
+	if discountCents > 0 {
+		discStr := centsToStr(discountCents)
 		pd.DiscountAmount = &discStr
 	}
 
@@ -85,44 +81,32 @@ func (s *PaymentService) ApplyPayment(ctx context.Context, paymentID, invoiceID 
 		return fmt.Errorf("create payment detail: %w", err)
 	}
 
-	// Update payment amounts
-	var currentApplied float64
-	if payment.AppliedAmount != nil {
-		currentApplied, _ = strconv.ParseFloat(*payment.AppliedAmount, 64)
-	}
-	var totalPayment float64
-	if payment.Amount != nil {
-		totalPayment, _ = strconv.ParseFloat(*payment.Amount, 64)
-	}
+	// Update payment amounts (integer cents)
+	currentAppliedCents := parseCentsPtr(payment.AppliedAmount)
+	totalPaymentCents := parseCentsPtr(payment.Amount)
 
-	newApplied := currentApplied + applyAmt
-	newUnapplied := totalPayment - newApplied
+	newAppliedCents := currentAppliedCents + applyCents
+	newUnappliedCents := totalPaymentCents - newAppliedCents
 
-	appliedStr := fmt.Sprintf("%.2f", newApplied)
-	unappliedStr := fmt.Sprintf("%.2f", newUnapplied)
+	appliedStr := centsToStr(newAppliedCents)
+	unappliedStr := centsToStr(newUnappliedCents)
 
 	if err := s.paymentStore.UpdateAmountsTx(ctx, tx, paymentID, appliedStr, unappliedStr); err != nil {
 		return fmt.Errorf("update payment amounts: %w", err)
 	}
 
-	// Update invoice balance
-	var currentPaid float64
-	if invoice.AmountPaid != nil {
-		currentPaid, _ = strconv.ParseFloat(*invoice.AmountPaid, 64)
-	}
-	var invoiceTotal float64
-	if invoice.TotalAmount != nil {
-		invoiceTotal, _ = strconv.ParseFloat(*invoice.TotalAmount, 64)
-	}
+	// Update invoice balance (integer cents)
+	currentPaidCents := parseCentsPtr(invoice.AmountPaid)
+	invoiceTotalCents := parseCentsPtr(invoice.TotalAmount)
 
-	newPaid := currentPaid + applyAmt + discountAmt
-	newBalance := invoiceTotal - newPaid
+	newPaidCents := currentPaidCents + applyCents + discountCents
+	newBalanceCents := invoiceTotalCents - newPaidCents
 
-	paidStr := fmt.Sprintf("%.2f", newPaid)
-	balanceStr := fmt.Sprintf("%.2f", newBalance)
+	paidStr := centsToStr(newPaidCents)
+	balanceStr := centsToStr(newBalanceCents)
 
 	status := "Open"
-	if newBalance <= 0.005 { // floating point tolerance
+	if newBalanceCents <= 0 {
 		status = "Paid"
 		balanceStr = "0.00"
 	}
@@ -153,15 +137,9 @@ func (s *PaymentService) UnapplyPayment(ctx context.Context, paymentDetailID int
 		return fmt.Errorf("get payment detail: %w", err)
 	}
 
-	// Parse amounts
-	var applyAmt float64
-	if pd.Amount != nil {
-		applyAmt, _ = strconv.ParseFloat(*pd.Amount, 64)
-	}
-	var discountAmt float64
-	if pd.DiscountAmount != nil {
-		discountAmt, _ = strconv.ParseFloat(*pd.DiscountAmount, 64)
-	}
+	// Parse amounts (integer cents)
+	applyCents := parseCentsPtr(pd.Amount)
+	discountCents := parseCentsPtr(pd.DiscountAmount)
 
 	// Update payment amounts
 	payment, err := s.paymentStore.GetByIDTx(ctx, tx, pd.PaymentID)
@@ -169,20 +147,14 @@ func (s *PaymentService) UnapplyPayment(ctx context.Context, paymentDetailID int
 		return fmt.Errorf("get payment: %w", err)
 	}
 
-	var currentApplied float64
-	if payment.AppliedAmount != nil {
-		currentApplied, _ = strconv.ParseFloat(*payment.AppliedAmount, 64)
-	}
-	var totalPayment float64
-	if payment.Amount != nil {
-		totalPayment, _ = strconv.ParseFloat(*payment.Amount, 64)
-	}
+	currentAppliedCents := parseCentsPtr(payment.AppliedAmount)
+	totalPaymentCents := parseCentsPtr(payment.Amount)
 
-	newApplied := currentApplied - applyAmt
-	newUnapplied := totalPayment - newApplied
+	newAppliedCents := currentAppliedCents - applyCents
+	newUnappliedCents := totalPaymentCents - newAppliedCents
 
-	appliedStr := fmt.Sprintf("%.2f", newApplied)
-	unappliedStr := fmt.Sprintf("%.2f", newUnapplied)
+	appliedStr := centsToStr(newAppliedCents)
+	unappliedStr := centsToStr(newUnappliedCents)
 
 	if err := s.paymentStore.UpdateAmountsTx(ctx, tx, pd.PaymentID, appliedStr, unappliedStr); err != nil {
 		return fmt.Errorf("update payment amounts: %w", err)
@@ -195,23 +167,17 @@ func (s *PaymentService) UnapplyPayment(ctx context.Context, paymentDetailID int
 			return fmt.Errorf("get invoice: %w", err)
 		}
 
-		var currentPaid float64
-		if invoice.AmountPaid != nil {
-			currentPaid, _ = strconv.ParseFloat(*invoice.AmountPaid, 64)
-		}
-		var invoiceTotal float64
-		if invoice.TotalAmount != nil {
-			invoiceTotal, _ = strconv.ParseFloat(*invoice.TotalAmount, 64)
-		}
+		currentPaidCents := parseCentsPtr(invoice.AmountPaid)
+		invoiceTotalCents := parseCentsPtr(invoice.TotalAmount)
 
-		newPaid := currentPaid - applyAmt - discountAmt
-		newBalance := invoiceTotal - newPaid
+		newPaidCents := currentPaidCents - applyCents - discountCents
+		newBalanceCents := invoiceTotalCents - newPaidCents
 
-		paidStr := fmt.Sprintf("%.2f", newPaid)
-		balanceStr := fmt.Sprintf("%.2f", newBalance)
+		paidStr := centsToStr(newPaidCents)
+		balanceStr := centsToStr(newBalanceCents)
 
 		status := "Open"
-		if newBalance <= 0.005 {
+		if newBalanceCents <= 0 {
 			status = "Paid"
 			balanceStr = "0.00"
 		}

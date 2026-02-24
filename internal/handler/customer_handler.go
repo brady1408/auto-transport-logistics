@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -40,7 +41,7 @@ func (h *CustomerHandler) list(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.store.List(r.Context(), filter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -67,8 +68,9 @@ func (h *CustomerHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Create(r.Context(), c); err != nil {
+		log.Printf("create customer: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, customers.FormPage(pg, c, true, "Failed to create customer: "+err.Error()))
+		h.deps.renderTempl(w, r, customers.FormPage(pg, c, true, "Failed to create customer"))
 		return
 	}
 
@@ -86,7 +88,7 @@ func (h *CustomerHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *CustomerHandler) editForm(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -103,7 +105,7 @@ func (h *CustomerHandler) editForm(w http.ResponseWriter, r *http.Request) {
 func (h *CustomerHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -123,8 +125,9 @@ func (h *CustomerHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Update(r.Context(), c); err != nil {
+		log.Printf("update customer: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, customers.FormPage(pg, c, false, "Failed to update customer: "+err.Error()))
+		h.deps.renderTempl(w, r, customers.FormPage(pg, c, false, "Failed to update customer"))
 		return
 	}
 
@@ -142,7 +145,7 @@ func (h *CustomerHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *CustomerHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -153,7 +156,7 @@ func (h *CustomerHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete customer: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

@@ -49,6 +49,9 @@ func (s *LoadDetailStore) ListByTrip(ctx context.Context, tripID int) ([]models.
 		}
 		items = append(items, *ld)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list load details rows: %w", err)
+	}
 	return items, nil
 }
 
@@ -89,6 +92,9 @@ func (s *LoadDetailStore) ListByTripWithOrder(ctx context.Context, tripID int) (
 			return nil, fmt.Errorf("scan load detail with order: %w", err)
 		}
 		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list load details with order rows: %w", err)
 	}
 	return items, nil
 }

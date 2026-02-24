@@ -61,6 +61,9 @@ func (s *VehicleStore) ListByOrder(ctx context.Context, orderID int) ([]models.O
 		}
 		items = append(items, *v)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list vehicles by order rows: %w", err)
+	}
 	return items, nil
 }
 
@@ -142,6 +145,15 @@ func (s *VehicleStore) Update(ctx context.Context, v *models.OrderVehicle) error
 func (s *VehicleStore) Delete(ctx context.Context, id int) error {
 	companyID := auth.GetCompanyID(ctx)
 	_, err := s.pool.Exec(ctx, "DELETE FROM order_vehicles WHERE id = $1 AND company_id = $2", id, companyID)
+	if err != nil {
+		return fmt.Errorf("delete vehicle %d: %w", id, err)
+	}
+	return nil
+}
+
+func (s *VehicleStore) DeleteTx(ctx context.Context, tx pgx.Tx, id int) error {
+	companyID := auth.GetCompanyID(ctx)
+	_, err := tx.Exec(ctx, "DELETE FROM order_vehicles WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete vehicle %d: %w", id, err)
 	}
@@ -281,6 +293,9 @@ func (s *VehicleStore) SearchGlobal(ctx context.Context, query string, limit int
 		}
 		items = append(items, r)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("global vehicle search rows: %w", err)
+	}
 	return items, nil
 }
 
@@ -343,6 +358,9 @@ func (s *VehicleStore) ListUnassigned(ctx context.Context, search string, limit,
 		}
 		items = append(items, r)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("list unassigned vehicles rows: %w", err)
+	}
 	return items, totalCount, nil
 }
 
@@ -365,6 +383,9 @@ func (s *VehicleStore) ListUnassignedByOrder(ctx context.Context, orderID int) (
 			return nil, fmt.Errorf("scan vehicle: %w", err)
 		}
 		items = append(items, *v)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list unassigned vehicles by order rows: %w", err)
 	}
 	return items, nil
 }
@@ -421,6 +442,9 @@ func (s *VehicleStore) VehicleHistory(ctx context.Context, vin string) ([]Vehicl
 		}
 		items = append(items, r)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("vehicle history rows: %w", err)
+	}
 	return items, nil
 }
 
@@ -444,6 +468,9 @@ func (s *VehicleStore) SearchUnassigned(ctx context.Context, search string, limi
 			return nil, fmt.Errorf("scan vehicle: %w", err)
 		}
 		items = append(items, *v)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("search unassigned vehicles rows: %w", err)
 	}
 	return items, nil
 }

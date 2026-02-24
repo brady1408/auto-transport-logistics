@@ -46,6 +46,9 @@ func (s *TripFuelStore) ListByTrip(ctx context.Context, tripID int) ([]models.Tr
 		}
 		items = append(items, *f)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list fuel entries rows: %w", err)
+	}
 	return items, nil
 }
 

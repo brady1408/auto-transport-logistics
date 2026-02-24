@@ -94,6 +94,9 @@ func (s *CreditMemoStore) List(ctx context.Context, f models.CreditMemoFilter) (
 		}
 		items = append(items, *cm)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list credit memos rows: %w", err)
+	}
 
 	return &models.CreditMemoListResult{
 		Items:      items,

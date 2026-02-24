@@ -47,6 +47,9 @@ func (s *InvoiceDetailStore) ListByInvoice(ctx context.Context, invoiceID int) (
 		}
 		items = append(items, *d)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list invoice details rows: %w", err)
+	}
 	return items, nil
 }
 

@@ -39,6 +39,9 @@ func (s *TermsStore) List(ctx context.Context) ([]TermItem, error) {
 		}
 		items = append(items, t)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list terms rows: %w", err)
+	}
 	return items, nil
 }
 
@@ -118,6 +121,9 @@ func (s *TaxCodeStore) List(ctx context.Context) ([]TaxCodeItem, error) {
 			return nil, fmt.Errorf("scan tax_codes: %w", err)
 		}
 		items = append(items, t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list tax codes rows: %w", err)
 	}
 	return items, nil
 }
@@ -199,6 +205,9 @@ func (s *ItemStore) List(ctx context.Context) ([]ItemRecord, error) {
 			return nil, fmt.Errorf("scan items: %w", err)
 		}
 		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list items rows: %w", err)
 	}
 	return items, nil
 }

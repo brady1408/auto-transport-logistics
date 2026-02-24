@@ -59,7 +59,7 @@ func (h *TripHandler) list(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.store.List(r.Context(), filter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -83,16 +83,18 @@ func (h *TripHandler) create(w http.ResponseWriter, r *http.Request) {
 	if t.LoadNumber == "" {
 		num, err := h.store.NextLoadNumber(r.Context())
 		if err != nil {
+			log.Printf("generate load number: %v", err)
 			pg := h.deps.pageContext(w, r)
-			h.deps.renderTempl(w, r, trips.FormPage(pg, t, true, "Failed to generate load number: "+err.Error()))
+			h.deps.renderTempl(w, r, trips.FormPage(pg, t, true, "Failed to generate load number"))
 			return
 		}
 		t.LoadNumber = num
 	}
 
 	if err := h.store.Create(r.Context(), t); err != nil {
+		log.Printf("create trip: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, trips.FormPage(pg, t, true, "Failed to create trip: "+err.Error()))
+		h.deps.renderTempl(w, r, trips.FormPage(pg, t, true, "Failed to create trip"))
 		return
 	}
 
@@ -110,7 +112,7 @@ func (h *TripHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *TripHandler) show(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -132,7 +134,7 @@ func (h *TripHandler) show(w http.ResponseWriter, r *http.Request) {
 func (h *TripHandler) editForm(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -149,7 +151,7 @@ func (h *TripHandler) editForm(w http.ResponseWriter, r *http.Request) {
 func (h *TripHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -164,8 +166,9 @@ func (h *TripHandler) update(w http.ResponseWriter, r *http.Request) {
 	t.LoadNumber = old.LoadNumber // load_number is immutable
 
 	if err := h.store.Update(r.Context(), t); err != nil {
+		log.Printf("update trip: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, trips.FormPage(pg, t, false, "Failed to update trip: "+err.Error()))
+		h.deps.renderTempl(w, r, trips.FormPage(pg, t, false, "Failed to update trip"))
 		return
 	}
 
@@ -183,7 +186,7 @@ func (h *TripHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *TripHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -194,7 +197,7 @@ func (h *TripHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete trip: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -212,7 +215,7 @@ func (h *TripHandler) delete(w http.ResponseWriter, r *http.Request) {
 func (h *TripHandler) assignVehicle(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -225,7 +228,7 @@ func (h *TripHandler) assignVehicle(w http.ResponseWriter, r *http.Request) {
 	bayNumber := formStringRequired(r, "bay_number")
 
 	if err := h.tripSvc.AssignVehicleToTrip(r.Context(), tripID, *vehicleID, bayNumber); err != nil {
-		http.Error(w, "Failed to assign vehicle: "+err.Error(), http.StatusBadRequest)
+		serverError(w, err)
 		return
 	}
 
@@ -240,7 +243,7 @@ func (h *TripHandler) assignVehicle(w http.ResponseWriter, r *http.Request) {
 func (h *TripHandler) assignOrder(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -252,7 +255,7 @@ func (h *TripHandler) assignOrder(w http.ResponseWriter, r *http.Request) {
 
 	count, err := h.tripSvc.AssignAllFromOrder(r.Context(), tripID, *orderID)
 	if err != nil {
-		http.Error(w, "Failed to assign order: "+err.Error(), http.StatusBadRequest)
+		serverError(w, err)
 		return
 	}
 
@@ -268,18 +271,18 @@ func (h *TripHandler) assignOrder(w http.ResponseWriter, r *http.Request) {
 func (h *TripHandler) unassignVehicle(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	loadID, err := parsePathID(r, "loadID")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.tripSvc.UnassignVehicle(r.Context(), loadID); err != nil {
-		http.Error(w, "Failed to unassign vehicle: "+err.Error(), http.StatusBadRequest)
+		serverError(w, err)
 		return
 	}
 
@@ -294,20 +297,20 @@ func (h *TripHandler) unassignVehicle(w http.ResponseWriter, r *http.Request) {
 func (h *TripHandler) updateBayNumber(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	loadID, err := parsePathID(r, "loadID")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	bayNumber := formStringRequired(r, "bay_number")
 
 	if err := h.loadStore.UpdateBayNumber(r.Context(), loadID, bayNumber); err != nil {
-		http.Error(w, "Failed to update bay number: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -315,7 +318,7 @@ func (h *TripHandler) updateBayNumber(w http.ResponseWriter, r *http.Request) {
 
 	loads, err := h.loadStore.ListByTripWithOrder(r.Context(), tripID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -325,7 +328,7 @@ func (h *TripHandler) updateBayNumber(w http.ResponseWriter, r *http.Request) {
 func (h *TripHandler) availableVehicles(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -341,7 +344,7 @@ func (h *TripHandler) availableVehicles(w http.ResponseWriter, r *http.Request) 
 
 	vehicles, totalCount, err := h.vehStore.ListUnassigned(r.Context(), search, pageSize, offset)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -356,7 +359,7 @@ func (h *TripHandler) availableVehicles(w http.ResponseWriter, r *http.Request) 
 func (h *TripHandler) loadManifest(w http.ResponseWriter, r *http.Request) {
 	tripID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 

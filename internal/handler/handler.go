@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
+	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -103,14 +105,21 @@ func (d *Deps) pageContext(w http.ResponseWriter, r *http.Request) components.Pa
 func (d *Deps) renderTempl(w http.ResponseWriter, r *http.Request, c templ.Component) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := c.Render(r.Context(), w); err != nil {
-		http.Error(w, "Template error: "+err.Error(), http.StatusInternalServerError)
+		log.Printf("template render error: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
+}
+
+// serverError logs the full error server-side and returns a generic message to the client.
+func serverError(w http.ResponseWriter, err error) {
+	log.Printf("server error: %v", err)
+	http.Error(w, "Internal server error", http.StatusInternalServerError)
 }
 
 func setFlash(w http.ResponseWriter, msg string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "flash",
-		Value:    msg,
+		Value:    url.QueryEscape(msg),
 		Path:     "/",
 		MaxAge:   5,
 		HttpOnly: true,
@@ -130,8 +139,13 @@ func getFlash(w http.ResponseWriter, r *http.Request) string {
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
+		Secure:   SecureCookies,
 	})
-	return cookie.Value
+	val, err := url.QueryUnescape(cookie.Value)
+	if err != nil {
+		return cookie.Value
+	}
+	return val
 }
 
 // Form helpers
@@ -170,9 +184,18 @@ func writeCSV(w http.ResponseWriter, filename string, headers []string, rows [][
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
 
 	writer := csv.NewWriter(w)
-	writer.Write(headers)
+	if err := writer.Write(headers); err != nil {
+		log.Printf("csv write headers: %v", err)
+		return
+	}
 	for _, row := range rows {
-		writer.Write(row)
+		if err := writer.Write(row); err != nil {
+			log.Printf("csv write row: %v", err)
+			return
+		}
 	}
 	writer.Flush()
+	if err := writer.Error(); err != nil {
+		log.Printf("csv flush: %v", err)
+	}
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/auth"
@@ -42,13 +43,13 @@ func (h *VehicleHandler) Register(mux *http.ServeMux) {
 func (h *VehicleHandler) listByOrder(w http.ResponseWriter, r *http.Request) {
 	orderID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	vehicles, err := h.store.ListByOrder(r.Context(), orderID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -58,7 +59,7 @@ func (h *VehicleHandler) listByOrder(w http.ResponseWriter, r *http.Request) {
 func (h *VehicleHandler) newForm(w http.ResponseWriter, r *http.Request) {
 	orderID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -75,7 +76,7 @@ func (h *VehicleHandler) newForm(w http.ResponseWriter, r *http.Request) {
 func (h *VehicleHandler) create(w http.ResponseWriter, r *http.Request) {
 	orderID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -86,7 +87,8 @@ func (h *VehicleHandler) create(w http.ResponseWriter, r *http.Request) {
 	if err := h.orderSvc.CreateVehicleAndSync(r.Context(), v); err != nil {
 		order, _ := h.orderStore.GetByID(r.Context(), orderID)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, v, order, true, "Failed to create vehicle: "+err.Error()))
+		log.Printf("create vehicle: %v", err)
+		h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, v, order, true, "Failed to create vehicle"))
 		return
 	}
 
@@ -105,7 +107,7 @@ func (h *VehicleHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *VehicleHandler) editForm(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -124,7 +126,7 @@ func (h *VehicleHandler) editForm(w http.ResponseWriter, r *http.Request) {
 func (h *VehicleHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -141,7 +143,8 @@ func (h *VehicleHandler) update(w http.ResponseWriter, r *http.Request) {
 	if err := h.store.Update(r.Context(), v); err != nil {
 		order, _ := h.orderStore.GetByID(r.Context(), v.OrderID)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, v, order, false, "Failed to update vehicle: "+err.Error()))
+		log.Printf("update vehicle: %v", err)
+		h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, v, order, false, "Failed to update vehicle"))
 		return
 	}
 
@@ -160,7 +163,7 @@ func (h *VehicleHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *VehicleHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -171,7 +174,7 @@ func (h *VehicleHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.orderSvc.DeleteVehicleAndSync(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete vehicle: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -204,7 +207,7 @@ func (h *VehicleHandler) deliver(w http.ResponseWriter, r *http.Request) {
 func (h *VehicleHandler) confirm(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -214,7 +217,7 @@ func (h *VehicleHandler) confirm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.orderSvc.UpdateVehicleStatus(r.Context(), id, "Confirmed", confirmedBy); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
@@ -224,12 +227,12 @@ func (h *VehicleHandler) confirm(w http.ResponseWriter, r *http.Request) {
 func (h *VehicleHandler) revert(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.orderSvc.RevertVehicleStatus(r.Context(), id); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
@@ -239,12 +242,12 @@ func (h *VehicleHandler) revert(w http.ResponseWriter, r *http.Request) {
 func (h *VehicleHandler) transitionStatus(w http.ResponseWriter, r *http.Request, newStatus string) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.orderSvc.UpdateVehicleStatus(r.Context(), id, newStatus, nil); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
@@ -254,7 +257,7 @@ func (h *VehicleHandler) transitionStatus(w http.ResponseWriter, r *http.Request
 func (h *VehicleHandler) renderVehicleRow(w http.ResponseWriter, r *http.Request, id int) {
 	v, err := h.store.GetByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
