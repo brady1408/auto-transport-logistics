@@ -5,17 +5,18 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/brady1408/atlinks/internal/handler/components/payments"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
 type PaymentHandler struct {
-	store       *store.PaymentStore
-	detailStore *store.PaymentDetailStore
+	store        *store.PaymentStore
+	detailStore  *store.PaymentDetailStore
 	invoiceStore *store.InvoiceStore
-	paymentSvc  *service.PaymentService
-	deps        *Deps
+	paymentSvc   *service.PaymentService
+	deps         *Deps
 }
 
 func NewPaymentHandler(
@@ -57,30 +58,24 @@ func (h *PaymentHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Result": result,
-		"Filter": filter,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "payment_table", data)
+		h.deps.renderTempl(w, r, payments.Table(*result))
 		return
 	}
-	h.deps.render(w, r, "payment_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, payments.ListPage(pg, *result, filter))
 }
 
 func (h *PaymentHandler) newForm(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	zero := "0.00"
-	h.deps.render(w, r, "payment_form.html", map[string]any{
-		"Payment": &models.Payment{
-			PaymentDate:     &now,
-			Amount:          &zero,
-			AppliedAmount:   &zero,
-			UnappliedAmount: &zero,
-		},
-		"IsNew": true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, payments.FormPage(pg, &models.Payment{
+		PaymentDate:     &now,
+		Amount:          &zero,
+		AppliedAmount:   &zero,
+		UnappliedAmount: &zero,
+	}, true, ""))
 }
 
 func (h *PaymentHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -91,11 +86,8 @@ func (h *PaymentHandler) create(w http.ResponseWriter, r *http.Request) {
 	p.UnappliedAmount = p.Amount
 
 	if err := h.store.Create(r.Context(), p); err != nil {
-		h.deps.render(w, r, "payment_form.html", map[string]any{
-			"Payment": p,
-			"IsNew":   true,
-			"Error":   "Failed to create payment: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, payments.FormPage(pg, p, true, "Failed to create payment: "+err.Error()))
 		return
 	}
 
@@ -144,11 +136,8 @@ func (h *PaymentHandler) show(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.deps.render(w, r, "payment_show.html", map[string]any{
-		"Payment":      p,
-		"Details":      details,
-		"OpenInvoices": openInvoices,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, payments.ShowPage(pg, p, details, openInvoices))
 }
 
 func (h *PaymentHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -164,10 +153,8 @@ func (h *PaymentHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "payment_form.html", map[string]any{
-		"Payment": p,
-		"IsNew":   false,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, payments.FormPage(pg, p, false, ""))
 }
 
 func (h *PaymentHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -190,11 +177,8 @@ func (h *PaymentHandler) update(w http.ResponseWriter, r *http.Request) {
 	p.UnappliedAmount = old.UnappliedAmount
 
 	if err := h.store.Update(r.Context(), p); err != nil {
-		h.deps.render(w, r, "payment_form.html", map[string]any{
-			"Payment": p,
-			"IsNew":   false,
-			"Error":   "Failed to update payment: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, payments.FormPage(pg, p, false, "Failed to update payment: "+err.Error()))
 		return
 	}
 

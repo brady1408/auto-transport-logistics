@@ -1,0 +1,143 @@
+package admin
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+func cuserFieldValue(editUser *models.User, form map[string]string, field string) string {
+	if editUser != nil {
+		switch field {
+		case "username":
+			return editUser.Username
+		case "email":
+			return editUser.Email
+		case "role":
+			return editUser.Role
+		}
+	}
+	if form != nil {
+		return form[field]
+	}
+	return ""
+}
+
+templ CompanyUserFormPage(pg components.PageContext, company *models.Company, isNew bool, form map[string]string, editUser *models.User, fieldErrors map[string]string, errMsg string) {
+	@components.Layout(pg, func() string {
+		if isNew {
+			return fmt.Sprintf("New User - %s", company.CompanyName)
+		}
+		return fmt.Sprintf("Edit User - %s", company.CompanyName)
+	}()) {
+		<div class="page-header">
+			<h2>
+				if isNew {
+					New User
+				} else {
+					Edit User
+				}
+				— { company.CompanyName }
+			</h2>
+			<a href={ templ.SafeURL(fmt.Sprintf("/admin/companies/%d/users", company.ID)) } class="btn">Back to Users</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			action={
+				templ.SafeURL(func() string {
+					if isNew {
+						return fmt.Sprintf("/admin/companies/%d/users", company.ID)
+					}
+					return fmt.Sprintf("/admin/companies/%d/users/%d", company.ID, editUser.ID)
+				}())
+			}
+			class="form-card"
+		>
+			<div class="form-row">
+				<div class="form-group">
+					<label for="username">Username *</label>
+					<input
+						type="text" id="username" name="username"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "username") != "") }
+						value={ cuserFieldValue(editUser, form, "username") }
+						required
+						maxlength="50"
+					/>
+					if fe := fieldError(fieldErrors, "username"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+				<div class="form-group">
+					<label for="email">Email</label>
+					<input
+						type="email" id="email" name="email"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "email") != "") }
+						value={ cuserFieldValue(editUser, form, "email") }
+						maxlength="255"
+					/>
+					if fe := fieldError(fieldErrors, "email"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label for="password">
+						Password
+						if !isNew {
+							(leave blank to keep current)
+						}
+					</label>
+					<input
+						type="password" id="password" name="password"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "password") != "") }
+						if isNew {
+							required
+						}
+					/>
+					if fe := fieldError(fieldErrors, "password"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+				<div class="form-group">
+					<label for="role">Role</label>
+					<select
+						id="role" name="role"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "role") != "") }
+					>
+						<option value="user" selected?={ cuserFieldValue(editUser, form, "role") == "user" }>User</option>
+						<option value="company_admin" selected?={ cuserFieldValue(editUser, form, "role") == "company_admin" }>Company Admin</option>
+						<option value="super_admin" selected?={ cuserFieldValue(editUser, form, "role") == "super_admin" }>Super Admin</option>
+					</select>
+					if fe := fieldError(fieldErrors, "role"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+			</div>
+			if editUser != nil {
+				<div class="form-row">
+					<div class="form-group">
+						<label>
+							<input type="checkbox" name="active" value="on" checked?={ editUser.Active }/>
+							Active
+						</label>
+					</div>
+				</div>
+			}
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create User
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href={ templ.SafeURL(fmt.Sprintf("/admin/companies/%d/users", company.ID)) } class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}

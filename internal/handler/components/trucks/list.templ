@@ -1,0 +1,63 @@
+package trucks
+
+import (
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ListPage(pg components.PageContext, result models.TruckListResult, filter models.TruckFilter) {
+	@components.Layout(pg, "Trucks - ATLinks") {
+		<div class="page-header">
+			<h1>Trucks</h1>
+			<a href="/global/trucks/new" class="btn btn-primary">New Truck</a>
+		</div>
+		<div class="filter-bar">
+			<div class="form-group">
+				<label for="search">Search</label>
+				<input
+					type="text" id="search" name="search" class="form-control search-input"
+					placeholder="Truck # or driver..."
+					value={ filter.Search }
+					hx-get="/global/trucks"
+					hx-trigger="keyup changed delay:300ms"
+					hx-target="#truck-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				/>
+			</div>
+			<div class="form-group">
+				<label for="active">Status</label>
+				<select
+					id="active" name="active" class="form-control"
+					hx-get="/global/trucks"
+					hx-trigger="change"
+					hx-target="#truck-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				>
+					<option value="">All</option>
+					<option value="active" selected?={ filter.Active == "active" }>Active</option>
+					<option value="inactive" selected?={ filter.Active == "inactive" }>Inactive</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="leased_truck">Ownership</label>
+				<select
+					id="leased_truck" name="leased_truck" class="form-control"
+					hx-get="/global/trucks"
+					hx-trigger="change"
+					hx-target="#truck-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				>
+					<option value="">All</option>
+					<option value="yes" selected?={ filter.LeasedTruck == "yes" }>Leased</option>
+					<option value="no" selected?={ filter.LeasedTruck == "no" }>Owned</option>
+				</select>
+			</div>
+		</div>
+		<div id="truck-table">
+			@Table(result, filter)
+		</div>
+	}
+}

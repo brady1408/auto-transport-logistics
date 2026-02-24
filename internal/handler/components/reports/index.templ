@@ -1,0 +1,42 @@
+package reports
+
+import "github.com/brady1408/atlinks/internal/handler/components"
+
+templ IndexPage(pg components.PageContext) {
+	@components.Layout(pg, "Reports - ATLinks") {
+		<div class="page-header">
+			<h1>Reports</h1>
+		</div>
+		<div class="dashboard-grid">
+			<div class="card">
+				<div class="card-header">Accounting Reports</div>
+				<div class="card-body">
+					<ul class="quick-links">
+						<li><a href="/reports/ar-aging">AR Aging Report</a></li>
+						<li><a href="/reports/revenue-by-customer">Revenue by Customer</a></li>
+						<li><a href="/reports/payments">Payment Report</a></li>
+					</ul>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Dispatch Reports</div>
+				<div class="card-body">
+					<ul class="quick-links">
+						<li><a href="/reports/order-status">Order Status Summary</a></li>
+						<li><a href="/reports/trip-summary">Trip Summary</a></li>
+						<li><a href="/reports/driver-settlement">Driver Settlement</a></li>
+						<li><a href="/reports/vehicle-history">Vehicle History</a></li>
+					</ul>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Claims</div>
+				<div class="card-body">
+					<ul class="quick-links">
+						<li><a href="/reports/damages">Damage Report</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	}
+}

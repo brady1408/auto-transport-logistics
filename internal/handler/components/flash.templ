@@ -1,0 +1,8 @@
+package components
+
+templ FlashMessage(msg string) {
+	<div class="alert alert-success" id="flash-msg">
+		{ msg }
+	</div>
+	<script>setTimeout(function(){ document.getElementById('flash-msg').remove(); }, 4000);</script>
+}

@@ -1,0 +1,51 @@
+package orders
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ NotesTable(notes []models.VehicleNote, vehicleID int) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Date</th>
+					<th>Description</th>
+					<th>Comment</th>
+					<th>By</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(notes) > 0 {
+					for _, n := range notes {
+						<tr>
+							<td>
+								if n.NoteDate != nil {
+									{ n.NoteDate.Format("01/02/2006") }
+								}
+							</td>
+							<td>{ components.Deref(n.Description) }</td>
+							<td>{ components.Deref(n.Comment) }</td>
+							<td>{ components.Deref(n.CreatedBy) }</td>
+							<td class="text-right">
+								<button
+									class="btn btn-sm btn-danger"
+									hx-delete={ fmt.Sprintf("/dispatch/notes/%d", n.ID) }
+									hx-target="closest tr"
+									hx-swap="outerHTML"
+									hx-confirm="Delete this note?"
+								>Delete</button>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="5" class="text-center text-muted">No notes</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

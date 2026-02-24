@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/brady1408/atlinks/internal/handler/components/reports"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
@@ -61,7 +62,8 @@ func (h *ReportHandler) Register(mux *http.ServeMux) {
 // --- Index ---
 
 func (h *ReportHandler) index(w http.ResponseWriter, r *http.Request) {
-	h.deps.render(w, r, "report_index.html", nil)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, reports.IndexPage(pg))
 }
 
 // --- Delivery Receipt ---
@@ -85,10 +87,7 @@ func (h *ReportHandler) deliveryReceipt(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	h.deps.renderPartial(w, "delivery_receipt", map[string]any{
-		"Order":    order,
-		"Vehicles": vehicles,
-	})
+	h.deps.renderTempl(w, r, reports.DeliveryReceipt(order, vehicles))
 }
 
 // --- AR Aging ---
@@ -100,9 +99,8 @@ func (h *ReportHandler) arAging(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "report_ar_aging.html", map[string]any{
-		"Rows": rows,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, reports.ArAgingPage(pg, rows))
 }
 
 func (h *ReportHandler) arAgingCSV(w http.ResponseWriter, r *http.Request) {
@@ -133,11 +131,8 @@ func (h *ReportHandler) revenueByCustomer(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	h.deps.render(w, r, "report_revenue.html", map[string]any{
-		"Rows":     rows,
-		"DateFrom": dateFrom,
-		"DateTo":   dateTo,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, reports.RevenuePage(pg, rows, dateFrom, dateTo))
 }
 
 func (h *ReportHandler) revenueByCustomerCSV(w http.ResponseWriter, r *http.Request) {
@@ -171,11 +166,8 @@ func (h *ReportHandler) tripSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "report_trip_summary.html", map[string]any{
-		"Rows":     rows,
-		"DateFrom": dateFrom,
-		"DateTo":   dateTo,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, reports.TripSummaryPage(pg, rows, dateFrom, dateTo))
 }
 
 func (h *ReportHandler) tripSummaryCSV(w http.ResponseWriter, r *http.Request) {
@@ -217,11 +209,8 @@ func (h *ReportHandler) orderStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "report_order_status.html", map[string]any{
-		"Rows":     rows,
-		"DateFrom": dateFrom,
-		"DateTo":   dateTo,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, reports.OrderStatusPage(pg, rows, dateFrom, dateTo))
 }
 
 func (h *ReportHandler) orderStatusCSV(w http.ResponseWriter, r *http.Request) {
@@ -264,12 +253,8 @@ func (h *ReportHandler) driverSettlement(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	h.deps.render(w, r, "report_driver_settlement.html", map[string]any{
-		"Rows":       rows,
-		"DateFrom":   dateFrom,
-		"DateTo":     dateTo,
-		"EmployeeID": employeeIDStr,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, reports.DriverSettlementPage(pg, rows, dateFrom, dateTo, employeeIDStr))
 }
 
 func (h *ReportHandler) driverSettlementCSV(w http.ResponseWriter, r *http.Request) {
@@ -314,11 +299,8 @@ func (h *ReportHandler) paymentReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "report_payments.html", map[string]any{
-		"Rows":     rows,
-		"DateFrom": dateFrom,
-		"DateTo":   dateTo,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, reports.PaymentReportPage(pg, rows, dateFrom, dateTo))
 }
 
 func (h *ReportHandler) paymentReportCSV(w http.ResponseWriter, r *http.Request) {
@@ -356,11 +338,8 @@ func (h *ReportHandler) damageReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "report_damages.html", map[string]any{
-		"Rows":     rows,
-		"DateFrom": dateFrom,
-		"DateTo":   dateTo,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, reports.DamageReportPage(pg, rows, dateFrom, dateTo))
 }
 
 func (h *ReportHandler) damageReportCSV(w http.ResponseWriter, r *http.Request) {
@@ -401,10 +380,8 @@ func (h *ReportHandler) vehicleHistory(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.deps.render(w, r, "report_vehicle_history.html", map[string]any{
-		"Rows": rows,
-		"VIN":  vin,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, reports.VehicleHistoryPage(pg, rows, vin))
 }
 
 func (h *ReportHandler) vehicleHistoryCSV(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,68 @@
+package lookup
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ ItemsListPage(pg components.PageContext, items []store.ItemRecord) {
+	@components.Layout(pg, "Items / Charges - ATLinks") {
+		<div class="page-header">
+			<h1>Items / Charges</h1>
+		</div>
+		<div class="card">
+			<div class="card-header">Add Item</div>
+			<div class="card-body">
+				<form class="inline-form" method="POST" action="/global/items" hx-post="/global/items">
+					<input type="text" name="item" class="form-control" placeholder="Item Code" required style="width:150px"/>
+					<input type="text" name="description" class="form-control" placeholder="Description" style="width:200px"/>
+					<input type="text" name="default_amount" class="form-control" placeholder="Amount" style="width:100px"/>
+					<input type="text" name="calc_type" class="form-control" placeholder="Calc Type" style="width:120px"/>
+					<button type="submit" class="btn btn-primary btn-sm">Add</button>
+				</form>
+			</div>
+		</div>
+		<div id="items-table">
+			@ItemsTable(items)
+		</div>
+	}
+}
+
+templ ItemsTable(items []store.ItemRecord) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Item</th>
+					<th>Description</th>
+					<th>Default Amount</th>
+					<th>Calc Type</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(items) > 0 {
+					for _, i := range items {
+						<tr>
+							<td>{ i.Item }</td>
+							<td>{ i.Description }</td>
+							<td>{ components.Deref(i.DefaultAmount) }</td>
+							<td>{ components.Deref(i.CalcType) }</td>
+							<td class="text-right">
+								<button
+									class="btn btn-sm btn-danger"
+									hx-delete={ fmt.Sprintf("/global/items/%d", i.ID) }
+									hx-confirm={ fmt.Sprintf("Delete %s?", i.Item) }
+								>Delete</button>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="5" class="text-center text-muted">No items found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

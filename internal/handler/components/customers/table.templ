@@ -1,0 +1,68 @@
+package customers
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Table(result models.CustomerListResult, filter models.CustomerFilter) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Number</th>
+					<th>Name</th>
+					<th>Type</th>
+					<th>City</th>
+					<th>State</th>
+					<th>Phone</th>
+					<th>Zone</th>
+					<th>Status</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, c := range result.Items {
+						<tr>
+							<td>{ components.Deref(c.Number) }</td>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/global/customers/%d/edit", c.ID)) }>{ c.Name }</a></td>
+							<td>{ components.Deref(c.Type) }</td>
+							<td>{ components.Deref(c.City) }</td>
+							<td>{ components.Deref(c.State) }</td>
+							<td>{ components.Deref(c.Phone) }</td>
+							<td>{ components.Deref(c.Zone) }</td>
+							<td>
+								if c.Inactive {
+									<span class="badge badge-inactive">Inactive</span>
+								} else {
+									<span class="badge badge-active">Active</span>
+								}
+							</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/global/customers/%d/edit", c.ID)) } class="btn btn-sm">Edit</a>
+									<button
+										class="btn btn-sm btn-danger"
+										hx-delete={ fmt.Sprintf("/global/customers/%d", c.ID) }
+										hx-confirm={ fmt.Sprintf("Delete customer %s?", c.Name) }
+									>Delete</button>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="9" class="text-center text-muted">No customers found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/global/customers", "#customer-table",
+		))
+	}
+}

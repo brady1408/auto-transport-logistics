@@ -10,15 +10,20 @@ import (
 	"sync"
 	"time"
 
+	"github.com/a-h/templ"
+
 	"github.com/brady1408/atlinks/internal/audit"
 	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/store"
 )
+
+// BuildVersion is set from main.go and used for static asset cache busting.
+var BuildVersion string
 
 type Deps struct {
 	JWT          *auth.JWTService
 	Audit        *audit.Service
-	Tmpl         *TemplateMap
 	CompanyStore *store.CompanyStore
 	companyNames sync.Map // cache: companyID(int) -> companyName(string)
 }
@@ -73,44 +78,25 @@ func (d *Deps) getCompanyName(ctx context.Context) string {
 	return c.CompanyName
 }
 
-func (d *Deps) render(w http.ResponseWriter, r *http.Request, page string, data map[string]any) {
-	if data == nil {
-		data = make(map[string]any)
-	}
-
-	// Add user to all templates
+// pageContext builds a PageContext from the current request.
+func (d *Deps) pageContext(w http.ResponseWriter, r *http.Request) components.PageContext {
+	ctx := components.PageContext{}
 	if user, ok := auth.GetUserFromRequest(r); ok {
-		data["User"] = user
+		ctx.User = &user
 	}
-
-	// Add company name to all templates
 	if companyName := d.getCompanyName(r.Context()); companyName != "" {
-		data["CompanyName"] = companyName
+		ctx.CompanyName = companyName
 	}
-
-	// Add flash message if present
 	if flash := getFlash(w, r); flash != "" {
-		data["Flash"] = flash
+		ctx.Flash = flash
 	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Check if this is a page template (renders with base layout)
-	// or a standalone template (like login.html)
-	var err error
-	if _, ok := d.Tmpl.pages[page]; ok {
-		err = d.Tmpl.RenderPage(w, page, data)
-	} else {
-		err = d.Tmpl.RenderTemplate(w, page, data)
-	}
-	if err != nil {
-		http.Error(w, "Template error: "+err.Error(), http.StatusInternalServerError)
-	}
+	return ctx
 }
 
-func (d *Deps) renderPartial(w http.ResponseWriter, name string, data any) {
+// renderTempl renders a templ.Component with proper Content-Type header.
+func (d *Deps) renderTempl(w http.ResponseWriter, r *http.Request, c templ.Component) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := d.Tmpl.RenderTemplate(w, name, data); err != nil {
+	if err := c.Render(r.Context(), w); err != nil {
 		http.Error(w, "Template error: "+err.Error(), http.StatusInternalServerError)
 	}
 }

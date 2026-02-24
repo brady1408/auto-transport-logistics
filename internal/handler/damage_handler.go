@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/atlinks/internal/handler/components/orders"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -38,10 +39,7 @@ func (h *DamageHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderPartial(w, "damage_table", map[string]any{
-		"Damages":   damages,
-		"VehicleID": vehicleID,
-	})
+	h.deps.renderTempl(w, r, orders.DamageTable(damages, vehicleID))
 }
 
 func (h *DamageHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -88,10 +86,7 @@ func (h *DamageHandler) update(w http.ResponseWriter, r *http.Request) {
 
 	if old.VehicleID != nil {
 		damages, _ := h.store.ListByVehicle(r.Context(), *old.VehicleID)
-		h.deps.renderPartial(w, "damage_table", map[string]any{
-			"Damages":   damages,
-			"VehicleID": *old.VehicleID,
-		})
+		h.deps.renderTempl(w, r, orders.DamageTable(damages, *old.VehicleID))
 	}
 }
 
@@ -117,10 +112,7 @@ func (h *DamageHandler) delete(w http.ResponseWriter, r *http.Request) {
 
 	if old.VehicleID != nil {
 		damages, _ := h.store.ListByVehicle(r.Context(), *old.VehicleID)
-		h.deps.renderPartial(w, "damage_table", map[string]any{
-			"Damages":   damages,
-			"VehicleID": *old.VehicleID,
-		})
+		h.deps.renderTempl(w, r, orders.DamageTable(damages, *old.VehicleID))
 	}
 }
 
@@ -168,10 +160,7 @@ func (h *NoteHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderPartial(w, "notes_table", map[string]any{
-		"Notes":     notes,
-		"VehicleID": vehicleID,
-	})
+	h.deps.renderTempl(w, r, orders.NotesTable(notes, vehicleID))
 }
 
 func (h *NoteHandler) create(w http.ResponseWriter, r *http.Request) {

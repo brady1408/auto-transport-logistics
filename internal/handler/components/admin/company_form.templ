@@ -1,0 +1,329 @@
+package admin
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+func fieldError(errs map[string]string, key string) string {
+	if errs == nil {
+		return ""
+	}
+	return errs[key]
+}
+
+templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew bool, fieldErrors map[string]string, errMsg string) {
+	@components.Layout(pg, func() string {
+		if isNew {
+			return "New Company - Admin"
+		}
+		return "Edit Company - Admin"
+	}()) {
+		<div class="page-header">
+			<h2>
+				if isNew {
+					New Company
+				} else {
+					Edit Company
+				}
+			</h2>
+			<a href="/admin/companies" class="btn">Back to Companies</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			action={
+				templ.SafeURL(func() string {
+					if isNew {
+						return "/admin/companies"
+					}
+					return fmt.Sprintf("/admin/companies/%d", company.ID)
+				}())
+			}
+			class="form-card"
+		>
+			<div class="form-row">
+				<div class="form-group">
+					<label for="company_name">Company Name *</label>
+					<input
+						type="text" id="company_name" name="company_name"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "company_name") != "") }
+						value={
+							func() string {
+								if company != nil {
+									return company.CompanyName
+								}
+								return ""
+							}()
+						}
+						required
+						maxlength="40"
+					/>
+					if fe := fieldError(fieldErrors, "company_name"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+				<div class="form-group">
+					<label for="slug">Slug *</label>
+					<input
+						type="text" id="slug" name="slug"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "slug") != "") }
+						value={
+							func() string {
+								if company != nil {
+									return company.Slug
+								}
+								return ""
+							}()
+						}
+						required
+						maxlength="30"
+						pattern="[a-z0-9-]+"
+						title="Lowercase letters, numbers, and hyphens only"
+					/>
+					<small>Used in login URL: /c/<em>slug</em>/login</small>
+					if fe := fieldError(fieldErrors, "slug"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label>
+						<input
+							type="checkbox" name="active" value="on"
+							if isNew {
+								checked
+							}
+							checked?={ !isNew && company != nil && company.Active }
+						/>
+						Active
+					</label>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label for="address">Address</label>
+					<input
+						type="text" id="address" name="address"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "address") != "") }
+						value={
+							func() string {
+								if company != nil {
+									return components.Deref(company.Address)
+								}
+								return ""
+							}()
+						}
+						maxlength="30"
+					/>
+					if fe := fieldError(fieldErrors, "address"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+				<div class="form-group">
+					<label for="address2">Address 2</label>
+					<input
+						type="text" id="address2" name="address2"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "address2") != "") }
+						value={
+							func() string {
+								if company != nil {
+									return components.Deref(company.Address2)
+								}
+								return ""
+							}()
+						}
+						maxlength="30"
+					/>
+					if fe := fieldError(fieldErrors, "address2"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label for="city">City</label>
+					<input
+						type="text" id="city" name="city"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "city") != "") }
+						value={
+							func() string {
+								if company != nil {
+									return components.Deref(company.City)
+								}
+								return ""
+							}()
+						}
+						maxlength="25"
+					/>
+					if fe := fieldError(fieldErrors, "city"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+				<div class="form-group">
+					<label for="state">State</label>
+					<input
+						type="text" id="state" name="state"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "state") != "") }
+						value={
+							func() string {
+								if company != nil {
+									return components.Deref(company.State)
+								}
+								return ""
+							}()
+						}
+						maxlength="2"
+						placeholder="e.g. TX"
+						style="text-transform:uppercase;"
+					/>
+					if fe := fieldError(fieldErrors, "state"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+				<div class="form-group">
+					<label for="zip">Zip</label>
+					<input
+						type="text" id="zip" name="zip"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "zip") != "") }
+						value={
+							func() string {
+								if company != nil {
+									return components.Deref(company.Zip)
+								}
+								return ""
+							}()
+						}
+						maxlength="10"
+						placeholder="e.g. 75001"
+					/>
+					if fe := fieldError(fieldErrors, "zip"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label for="phone">Phone</label>
+					<input
+						type="tel" id="phone" name="phone"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "phone") != "") }
+						value={
+							func() string {
+								if company != nil {
+									return components.FormatPhone(company.Phone)
+								}
+								return ""
+							}()
+						}
+						placeholder="(555) 123-4567"
+					/>
+					if fe := fieldError(fieldErrors, "phone"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+				<div class="form-group">
+					<label for="fax">Fax</label>
+					<input
+						type="tel" id="fax" name="fax"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "fax") != "") }
+						value={
+							func() string {
+								if company != nil {
+									return components.FormatPhone(company.Fax)
+								}
+								return ""
+							}()
+						}
+						placeholder="(555) 123-4567"
+					/>
+					if fe := fieldError(fieldErrors, "fax"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+			</div>
+			if !isNew {
+				<div class="form-row">
+					<div class="form-group">
+						<label for="scac">SCAC</label>
+						<input
+							type="text" id="scac" name="scac"
+							class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "scac") != "") }
+							value={ components.Deref(company.SCAC) }
+							maxlength="4"
+							style="text-transform:uppercase;"
+						/>
+						if fe := fieldError(fieldErrors, "scac"); fe != "" {
+							<small class="field-error">{ fe }</small>
+						}
+					</div>
+					<div class="form-group">
+						<label for="federal_id">Federal ID</label>
+						<input
+							type="text" id="federal_id" name="federal_id"
+							class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "federal_id") != "") }
+							value={ components.Deref(company.FederalID) }
+							maxlength="15"
+						/>
+						if fe := fieldError(fieldErrors, "federal_id"); fe != "" {
+							<small class="field-error">{ fe }</small>
+						}
+					</div>
+					<div class="form-group">
+						<label for="mc_number">MC Number</label>
+						<input
+							type="text" id="mc_number" name="mc_number"
+							class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "mc_number") != "") }
+							value={ components.Deref(company.MCNumber) }
+							maxlength="15"
+						/>
+						if fe := fieldError(fieldErrors, "mc_number"); fe != "" {
+							<small class="field-error">{ fe }</small>
+						}
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="dot_number">DOT Number</label>
+						<input
+							type="text" id="dot_number" name="dot_number"
+							class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "dot_number") != "") }
+							value={ components.Deref(company.DOTNumber) }
+							maxlength="15"
+						/>
+						if fe := fieldError(fieldErrors, "dot_number"); fe != "" {
+							<small class="field-error">{ fe }</small>
+						}
+					</div>
+					<div class="form-group">
+						<label for="splc">SPLC</label>
+						<input
+							type="text" id="splc" name="splc"
+							class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "splc") != "") }
+							value={ components.Deref(company.SPLC) }
+							maxlength="10"
+						/>
+						if fe := fieldError(fieldErrors, "splc"); fe != "" {
+							<small class="field-error">{ fe }</small>
+						}
+					</div>
+				</div>
+			}
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create Company
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href="/admin/companies" class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/brady1408/atlinks/internal/handler/components/damageclaims"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -41,30 +42,24 @@ func (h *DamageClaimHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Result": result,
-		"Filter": filter,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "damage_claim_table", data)
+		h.deps.renderTempl(w, r, damageclaims.Table(*result))
 		return
 	}
-	h.deps.render(w, r, "damage_claim_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, damageclaims.ListPage(pg, *result, filter))
 }
 
 func (h *DamageClaimHandler) newForm(w http.ResponseWriter, r *http.Request) {
 	claimNum, _ := h.store.NextClaimNumber(r.Context())
 	now := time.Now()
 	status := "Open"
-	h.deps.render(w, r, "damage_claim_form.html", map[string]any{
-		"Claim": &models.DamageClaim{
-			ClaimNumber: claimNum,
-			ClaimDate:   &now,
-			Status:      &status,
-		},
-		"IsNew": true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, damageclaims.FormPage(pg, &models.DamageClaim{
+		ClaimNumber: claimNum,
+		ClaimDate:   &now,
+		Status:      &status,
+	}, true, ""))
 }
 
 func (h *DamageClaimHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -73,22 +68,16 @@ func (h *DamageClaimHandler) create(w http.ResponseWriter, r *http.Request) {
 	if dc.ClaimNumber == "" {
 		num, err := h.store.NextClaimNumber(r.Context())
 		if err != nil {
-			h.deps.render(w, r, "damage_claim_form.html", map[string]any{
-				"Claim": dc,
-				"IsNew": true,
-				"Error": "Failed to generate claim number: " + err.Error(),
-			})
+			pg := h.deps.pageContext(w, r)
+			h.deps.renderTempl(w, r, damageclaims.FormPage(pg, dc, true, "Failed to generate claim number: "+err.Error()))
 			return
 		}
 		dc.ClaimNumber = num
 	}
 
 	if err := h.store.Create(r.Context(), dc); err != nil {
-		h.deps.render(w, r, "damage_claim_form.html", map[string]any{
-			"Claim": dc,
-			"IsNew": true,
-			"Error": "Failed to create damage claim: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, damageclaims.FormPage(pg, dc, true, "Failed to create damage claim: "+err.Error()))
 		return
 	}
 
@@ -116,9 +105,8 @@ func (h *DamageClaimHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "damage_claim_show.html", map[string]any{
-		"Claim": dc,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, damageclaims.ShowPage(pg, dc))
 }
 
 func (h *DamageClaimHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -134,10 +122,8 @@ func (h *DamageClaimHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "damage_claim_form.html", map[string]any{
-		"Claim": dc,
-		"IsNew": false,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, damageclaims.FormPage(pg, dc, false, ""))
 }
 
 func (h *DamageClaimHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -158,11 +144,8 @@ func (h *DamageClaimHandler) update(w http.ResponseWriter, r *http.Request) {
 	dc.ClaimNumber = old.ClaimNumber
 
 	if err := h.store.Update(r.Context(), dc); err != nil {
-		h.deps.render(w, r, "damage_claim_form.html", map[string]any{
-			"Claim": dc,
-			"IsNew": false,
-			"Error": "Failed to update damage claim: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, damageclaims.FormPage(pg, dc, false, "Failed to update damage claim: "+err.Error()))
 		return
 	}
 

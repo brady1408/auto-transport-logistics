@@ -1,0 +1,154 @@
+package payments
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ShowPage(pg components.PageContext, payment *models.Payment, details []models.PaymentDetail, openInvoices []models.Invoice) {
+	@components.Layout(pg, fmt.Sprintf("Payment #%d - ATLinks", payment.ID)) {
+		<div class="page-header">
+			<h1>Payment #{ fmt.Sprintf("%d", payment.ID) }</h1>
+			<div class="btn-group">
+				<a href={ templ.SafeURL(fmt.Sprintf("/accounting/payments/%d/edit", payment.ID)) } class="btn">Edit</a>
+				<button
+					class="btn btn-danger"
+					hx-delete={ fmt.Sprintf("/accounting/payments/%d", payment.ID) }
+					hx-confirm="Delete this payment?"
+				>Delete</button>
+				<a href="/accounting/payments" class="btn">Back to List</a>
+			</div>
+		</div>
+		<div class="order-detail-grid">
+			<div class="card">
+				<div class="card-header">Payment Info</div>
+				<div class="card-body">
+					<div class="detail-row">
+						<span class="detail-label">Date:</span>
+						<span>
+							if payment.PaymentDate != nil {
+								{ payment.PaymentDate.Format("01/02/2006") }
+							}
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Method:</span>
+						<span>{ components.Deref(payment.PaymentMethod) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Check #:</span>
+						<span>{ components.Deref(payment.CheckNumber) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Customer:</span>
+						<span>
+							{ components.Deref(payment.CustomerName) }
+							if payment.CustomerNumber != nil {
+								(#{ components.Deref(payment.CustomerNumber) })
+							}
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Amounts</div>
+				<div class="card-body">
+					<div class="detail-row">
+						<span class="detail-label">Total Amount:</span>
+						<span><strong>${ components.Deref(payment.Amount) }</strong></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Applied:</span>
+						<span>${ components.Deref(payment.AppliedAmount) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Unapplied:</span>
+						<span><strong>${ components.Deref(payment.UnappliedAmount) }</strong></span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<h2 class="section-title">Applied Invoices</h2>
+		if len(details) > 0 {
+			<div class="table-container">
+				<table>
+					<thead>
+						<tr>
+							<th>Invoice #</th>
+							<th class="text-right">Amount</th>
+							<th class="text-right">Discount</th>
+							<th>Applied</th>
+							<th class="text-right">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, d := range details {
+							<tr>
+								<td>
+									if d.InvoiceID != nil {
+										<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d", components.DerefInt(d.InvoiceID))) }>{ components.Deref(d.InvoiceNumber) }</a>
+									}
+								</td>
+								<td class="text-right">{ components.Deref(d.Amount) }</td>
+								<td class="text-right">{ components.Deref(d.DiscountAmount) }</td>
+								<td>{ d.CreatedAt.Format("01/02/2006") }</td>
+								<td class="text-right">
+									<button
+										class="btn btn-sm btn-danger"
+										hx-delete={ fmt.Sprintf("/accounting/payment-details/%d", d.ID) }
+										hx-confirm="Remove this payment application?"
+									>Unapply</button>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		} else {
+			<p class="text-muted">No invoices applied.</p>
+		}
+		if len(openInvoices) > 0 {
+			<div class="card mt-2">
+				<div class="card-header">Apply to Invoice</div>
+				<div class="card-body">
+					<form
+						method="POST"
+						action={ templ.SafeURL(fmt.Sprintf("/accounting/payments/%d/apply", payment.ID)) }
+						hx-post={ fmt.Sprintf("/accounting/payments/%d/apply", payment.ID) }
+					>
+						<div class="form-row">
+							<div class="form-group">
+								<label for="invoice_id">Invoice</label>
+								<select id="invoice_id" name="invoice_id" class="form-control">
+									<option value="">-- Select Invoice --</option>
+									for _, inv := range openInvoices {
+										<option value={ fmt.Sprintf("%d", inv.ID) }>#{ inv.InvoiceNumber } - Balance: ${ components.Deref(inv.Balance) }</option>
+									}
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="apply_amount">Amount</label>
+								<input type="text" id="apply_amount" name="amount" class="form-control" value={ components.Deref(payment.UnappliedAmount) }/>
+							</div>
+							<div class="form-group">
+								<label for="discount_amount">Discount</label>
+								<input type="text" id="discount_amount" name="discount_amount" class="form-control" value="0.00"/>
+							</div>
+							<div class="form-group" style="padding-top: 20px;">
+								<button type="submit" class="btn btn-primary btn-sm">Apply</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		}
+		if payment.Comments != nil {
+			<h2 class="section-title">Comments</h2>
+			<div class="card">
+				<div class="card-body">{ components.Deref(payment.Comments) }</div>
+			</div>
+		}
+	}
+}

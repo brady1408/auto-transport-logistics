@@ -1,0 +1,42 @@
+package components
+
+import "fmt"
+
+templ Pagination(p PaginationData) {
+	if len(p.Pages()) > 0 {
+		<div class="pagination">
+			<span>
+				Showing { fmt.Sprintf("%d", p.ShowingStart()) }-{ fmt.Sprintf("%d", p.ShowingEnd()) } of { fmt.Sprintf("%d", p.TotalCount) }
+			</span>
+			<div class="pagination-links">
+				if p.Page > 1 {
+					<button
+						class="btn btn-sm"
+						hx-get={ fmt.Sprintf("%s?page=%d", p.BaseURL, p.Page-1) }
+						hx-target={ p.TargetID }
+						hx-include=".filter-bar [name]"
+						hx-push-url="true"
+					>Prev</button>
+				}
+				for _, pg := range p.Pages() {
+					<button
+						class={ "btn btn-sm", templ.KV("active", pg == p.Page) }
+						hx-get={ fmt.Sprintf("%s?page=%d", p.BaseURL, pg) }
+						hx-target={ p.TargetID }
+						hx-include=".filter-bar [name]"
+						hx-push-url="true"
+					>{ fmt.Sprintf("%d", pg) }</button>
+				}
+				if p.Page < p.TotalPages {
+					<button
+						class="btn btn-sm"
+						hx-get={ fmt.Sprintf("%s?page=%d", p.BaseURL, p.Page+1) }
+						hx-target={ p.TargetID }
+						hx-include=".filter-bar [name]"
+						hx-push-url="true"
+					>Next</button>
+				}
+			</div>
+		</div>
+	}
+}

@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/atlinks/internal/handler/components/admin"
+	"github.com/brady1408/atlinks/internal/handler/components/settings"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -147,9 +149,8 @@ func (h *AdminHandler) listCompanies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "admin_companies.html", map[string]any{
-		"Companies": companies,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, admin.CompaniesPage(pg, companies))
 }
 
 func (h *AdminHandler) newCompany(w http.ResponseWriter, r *http.Request) {
@@ -159,9 +160,8 @@ func (h *AdminHandler) newCompany(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "admin_company_form.html", map[string]any{
-		"IsNew": true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, nil, true, nil, ""))
 }
 
 func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
@@ -182,21 +182,15 @@ func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
 		Phone:       stripPhone(formString(r, "phone")),
 	}
 
+	pg := h.deps.pageContext(w, r)
+
 	if errs := validateCompany(c); len(errs) > 0 {
-		h.deps.render(w, r, "admin_company_form.html", map[string]any{
-			"IsNew":       true,
-			"Company":     c,
-			"FieldErrors": errs,
-		})
+		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, true, errs, ""))
 		return
 	}
 
 	if err := h.companyStore.Create(r.Context(), c); err != nil {
-		h.deps.render(w, r, "admin_company_form.html", map[string]any{
-			"IsNew":   true,
-			"Company": c,
-			"Error":   fmt.Sprintf("Failed to create company: %v", err),
-		})
+		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, true, nil, fmt.Sprintf("Failed to create company: %v", err)))
 		return
 	}
 
@@ -223,9 +217,8 @@ func (h *AdminHandler) editCompany(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "admin_company_form.html", map[string]any{
-		"Company": c,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, false, nil, ""))
 }
 
 func (h *AdminHandler) updateCompany(w http.ResponseWriter, r *http.Request) {
@@ -260,19 +253,15 @@ func (h *AdminHandler) updateCompany(w http.ResponseWriter, r *http.Request) {
 		SPLC:        formString(r, "splc"),
 	}
 
+	pg := h.deps.pageContext(w, r)
+
 	if errs := validateCompany(c); len(errs) > 0 {
-		h.deps.render(w, r, "admin_company_form.html", map[string]any{
-			"Company":     c,
-			"FieldErrors": errs,
-		})
+		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, false, errs, ""))
 		return
 	}
 
 	if err := h.companyStore.UpdateByID(r.Context(), c); err != nil {
-		h.deps.render(w, r, "admin_company_form.html", map[string]any{
-			"Company": c,
-			"Error":   fmt.Sprintf("Failed to update: %v", err),
-		})
+		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, false, nil, fmt.Sprintf("Failed to update: %v", err)))
 		return
 	}
 
@@ -318,9 +307,8 @@ func (h *AdminHandler) listUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "settings_users.html", map[string]any{
-		"Users": users,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, settings.UsersPage(pg, users))
 }
 
 func (h *AdminHandler) newUser(w http.ResponseWriter, r *http.Request) {
@@ -330,9 +318,8 @@ func (h *AdminHandler) newUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "settings_user_form.html", map[string]any{
-		"IsNew": true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, nil, nil, nil, ""))
 }
 
 func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
@@ -355,12 +342,10 @@ func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
 
 	formData := map[string]string{"username": username, "email": email, "role": role}
 
+	pg := h.deps.pageContext(w, r)
+
 	if errs := validateUser(username, email, password, role, true); len(errs) > 0 {
-		h.deps.render(w, r, "settings_user_form.html", map[string]any{
-			"IsNew":       true,
-			"Form":        formData,
-			"FieldErrors": errs,
-		})
+		h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, formData, nil, errs, ""))
 		return
 	}
 
@@ -380,11 +365,7 @@ func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.userStore.Create(r.Context(), u); err != nil {
-		h.deps.render(w, r, "settings_user_form.html", map[string]any{
-			"IsNew": true,
-			"Error": fmt.Sprintf("Failed to create user: %v", err),
-			"Form":  formData,
-		})
+		h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, formData, nil, nil, fmt.Sprintf("Failed to create user: %v", err)))
 		return
 	}
 
@@ -418,9 +399,8 @@ func (h *AdminHandler) editUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "settings_user_form.html", map[string]any{
-		"EditUser": u,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, ""))
 }
 
 func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
@@ -456,19 +436,15 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 		CompanyID: &companyID,
 	}
 
+	pg := h.deps.pageContext(w, r)
+
 	if errs := validateUser(username, email, password, role, false); len(errs) > 0 {
-		h.deps.render(w, r, "settings_user_form.html", map[string]any{
-			"EditUser":    u,
-			"FieldErrors": errs,
-		})
+		h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, errs, ""))
 		return
 	}
 
 	if err := h.userStore.Update(r.Context(), u); err != nil {
-		h.deps.render(w, r, "settings_user_form.html", map[string]any{
-			"EditUser": u,
-			"Error":    fmt.Sprintf("Failed to update user: %v", err),
-		})
+		h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, fmt.Sprintf("Failed to update user: %v", err)))
 		return
 	}
 
@@ -480,10 +456,7 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if err := h.userStore.UpdatePassword(r.Context(), id, companyID, hash); err != nil {
-			h.deps.render(w, r, "settings_user_form.html", map[string]any{
-				"EditUser": u,
-				"Error":    fmt.Sprintf("User updated but password change failed: %v", err),
-			})
+			h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, fmt.Sprintf("User updated but password change failed: %v", err)))
 			return
 		}
 	}
@@ -529,10 +502,8 @@ func (h *AdminHandler) adminListUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "admin_company_users.html", map[string]any{
-		"Company":      company,
-		"CompanyUsers": users,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, admin.CompanyUsersPage(pg, company, users))
 }
 
 func (h *AdminHandler) adminNewUser(w http.ResponseWriter, r *http.Request) {
@@ -541,10 +512,8 @@ func (h *AdminHandler) adminNewUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "admin_company_user_form.html", map[string]any{
-		"Company": company,
-		"IsNew":   true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, true, nil, nil, nil, ""))
 }
 
 func (h *AdminHandler) adminCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -561,13 +530,10 @@ func (h *AdminHandler) adminCreateUser(w http.ResponseWriter, r *http.Request) {
 	formData := map[string]string{"username": username, "email": email, "role": role}
 	basePath := fmt.Sprintf("/admin/companies/%d/users", company.ID)
 
+	pg := h.deps.pageContext(w, r)
+
 	if errs := validateUser(username, email, password, role, true); len(errs) > 0 {
-		h.deps.render(w, r, "admin_company_user_form.html", map[string]any{
-			"Company":     company,
-			"IsNew":       true,
-			"Form":        formData,
-			"FieldErrors": errs,
-		})
+		h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, true, formData, nil, errs, ""))
 		return
 	}
 
@@ -587,12 +553,7 @@ func (h *AdminHandler) adminCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.userStore.Create(r.Context(), u); err != nil {
-		h.deps.render(w, r, "admin_company_user_form.html", map[string]any{
-			"Company": company,
-			"IsNew":   true,
-			"Form":    formData,
-			"Error":   fmt.Sprintf("Failed to create user: %v", err),
-		})
+		h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, true, formData, nil, nil, fmt.Sprintf("Failed to create user: %v", err)))
 		return
 	}
 
@@ -624,10 +585,8 @@ func (h *AdminHandler) adminEditUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "admin_company_user_form.html", map[string]any{
-		"Company":  company,
-		"EditUser": u,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, false, nil, u, nil, ""))
 }
 
 func (h *AdminHandler) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -657,21 +616,15 @@ func (h *AdminHandler) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
 		CompanyID: &company.ID,
 	}
 
+	pg := h.deps.pageContext(w, r)
+
 	if errs := validateUser(username, email, password, role, false); len(errs) > 0 {
-		h.deps.render(w, r, "admin_company_user_form.html", map[string]any{
-			"Company":     company,
-			"EditUser":    u,
-			"FieldErrors": errs,
-		})
+		h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, false, nil, u, errs, ""))
 		return
 	}
 
 	if err := h.userStore.Update(r.Context(), u); err != nil {
-		h.deps.render(w, r, "admin_company_user_form.html", map[string]any{
-			"Company":  company,
-			"EditUser": u,
-			"Error":    fmt.Sprintf("Failed to update user: %v", err),
-		})
+		h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, false, nil, u, nil, fmt.Sprintf("Failed to update user: %v", err)))
 		return
 	}
 
@@ -682,11 +635,7 @@ func (h *AdminHandler) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if err := h.userStore.UpdatePassword(r.Context(), id, company.ID, hash); err != nil {
-			h.deps.render(w, r, "admin_company_user_form.html", map[string]any{
-				"Company":  company,
-				"EditUser": u,
-				"Error":    fmt.Sprintf("User updated but password change failed: %v", err),
-			})
+			h.deps.renderTempl(w, r, admin.CompanyUserFormPage(pg, company, false, nil, u, nil, fmt.Sprintf("User updated but password change failed: %v", err)))
 			return
 		}
 	}

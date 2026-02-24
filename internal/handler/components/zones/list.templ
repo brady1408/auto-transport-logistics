@@ -1,0 +1,28 @@
+package zones
+
+import (
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ListPage(pg components.PageContext, zones []models.Zone) {
+	@components.Layout(pg, "Zones - ATLinks") {
+		<div class="page-header">
+			<h1>Zones</h1>
+		</div>
+		<div class="card">
+			<div class="card-header">Add Zone</div>
+			<div class="card-body">
+				<form class="inline-form" method="POST" action="/global/zones" hx-post="/global/zones" hx-target="#zone-table-body">
+					<input type="text" name="zone" class="form-control" placeholder="Zone code" maxlength="20" required style="width:150px"/>
+					<input type="text" name="description" class="form-control" placeholder="Description" maxlength="30" style="width:200px"/>
+					<input type="text" name="region" class="form-control" placeholder="Region" maxlength="20" style="width:150px"/>
+					<button type="submit" class="btn btn-primary btn-sm">Add</button>
+				</form>
+			</div>
+		</div>
+		<div id="zone-table">
+			@Table(zones)
+		</div>
+	}
+}

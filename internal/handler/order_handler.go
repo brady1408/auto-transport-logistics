@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/brady1408/atlinks/internal/handler/components/orders"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/store"
@@ -51,29 +52,23 @@ func (h *OrderHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Result": result,
-		"Filter": filter,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "order_table", data)
+		h.deps.renderTempl(w, r, orders.Table(*result))
 		return
 	}
-	h.deps.render(w, r, "order_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, orders.ListPage(pg, *result, filter))
 }
 
 func (h *OrderHandler) newForm(w http.ResponseWriter, r *http.Request) {
 	orderNum, _ := h.store.NextOrderNumber(r.Context())
 	now := time.Now()
-	h.deps.render(w, r, "order_form.html", map[string]any{
-		"Order": &models.Order{
-			OrderNumber: orderNum,
-			Active:      true,
-			CreateDate:  &now,
-		},
-		"IsNew": true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, orders.FormPage(pg, &models.Order{
+		OrderNumber: orderNum,
+		Active:      true,
+		CreateDate:  &now,
+	}, true, ""))
 }
 
 func (h *OrderHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -82,22 +77,16 @@ func (h *OrderHandler) create(w http.ResponseWriter, r *http.Request) {
 	if o.OrderNumber == "" {
 		num, err := h.store.NextOrderNumber(r.Context())
 		if err != nil {
-			h.deps.render(w, r, "order_form.html", map[string]any{
-				"Order": o,
-				"IsNew": true,
-				"Error": "Failed to generate order number: " + err.Error(),
-			})
+			pg := h.deps.pageContext(w, r)
+			h.deps.renderTempl(w, r, orders.FormPage(pg, o, true, "Failed to generate order number: "+err.Error()))
 			return
 		}
 		o.OrderNumber = num
 	}
 
 	if err := h.store.Create(r.Context(), o); err != nil {
-		h.deps.render(w, r, "order_form.html", map[string]any{
-			"Order": o,
-			"IsNew": true,
-			"Error": "Failed to create order: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, orders.FormPage(pg, o, true, "Failed to create order: "+err.Error()))
 		return
 	}
 
@@ -125,9 +114,8 @@ func (h *OrderHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "order_show.html", map[string]any{
-		"Order": o,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, orders.ShowPage(pg, o))
 }
 
 func (h *OrderHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -143,10 +131,8 @@ func (h *OrderHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "order_form.html", map[string]any{
-		"Order": o,
-		"IsNew": false,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, orders.FormPage(pg, o, false, ""))
 }
 
 func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -167,11 +153,8 @@ func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 	o.OrderNumber = old.OrderNumber // order_number is immutable
 
 	if err := h.store.Update(r.Context(), o); err != nil {
-		h.deps.render(w, r, "order_form.html", map[string]any{
-			"Order": o,
-			"IsNew": false,
-			"Error": "Failed to update order: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, orders.FormPage(pg, o, false, "Failed to update order: "+err.Error()))
 		return
 	}
 

@@ -1,0 +1,45 @@
+package zones
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Table(zones []models.Zone) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Zone</th>
+					<th>Description</th>
+					<th>Region</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody id="zone-table-body">
+				if len(zones) > 0 {
+					for _, z := range zones {
+						<tr>
+							<td>{ z.Zone }</td>
+							<td>{ components.Deref(z.Description) }</td>
+							<td>{ components.Deref(z.Region) }</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<button
+										class="btn btn-sm btn-danger"
+										hx-delete={ fmt.Sprintf("/global/zones/%d", z.ID) }
+										hx-confirm={ fmt.Sprintf("Delete zone %s?", z.Zone) }
+									>Delete</button>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="4" class="text-center text-muted">No zones found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

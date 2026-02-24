@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/brady1408/atlinks/internal/handler/components/pages"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
@@ -50,9 +51,6 @@ func (h *DashboardHandler) show(w http.ResponseWriter, r *http.Request) {
 		log.Printf("dashboard trip counts: %v", err)
 	}
 
-	h.deps.render(w, r, "dashboard.html", map[string]any{
-		"OrderCounts": orderCounts,
-		"Aging":       aging,
-		"TripCounts":  tripCounts,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, pages.DashboardPage(pg, orderCounts, aging, tripCounts))
 }

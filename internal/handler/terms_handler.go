@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/brady1408/atlinks/internal/handler/components/lookup"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
@@ -27,16 +28,12 @@ func (h *TermsHandler) list(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]any{
-		"Items":    items,
-		"Title":    "Terms",
-		"BasePath": "/global/terms",
-	}
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "terms_table", data)
+		h.deps.renderTempl(w, r, lookup.TermsTable(items))
 		return
 	}
-	h.deps.render(w, r, "terms_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, lookup.TermsListPage(pg, items))
 }
 
 func (h *TermsHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -108,16 +105,12 @@ func (h *TaxCodeHandler) list(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]any{
-		"Items":    items,
-		"Title":    "Tax Codes",
-		"BasePath": "/global/tax-codes",
-	}
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "tax_codes_table", data)
+		h.deps.renderTempl(w, r, lookup.TaxCodesTable(items))
 		return
 	}
-	h.deps.render(w, r, "tax_codes_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, lookup.TaxCodesListPage(pg, items))
 }
 
 func (h *TaxCodeHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -189,16 +182,12 @@ func (h *ItemHandler) list(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]any{
-		"Items":    items,
-		"Title":    "Items / Charges",
-		"BasePath": "/global/items",
-	}
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "items_table", data)
+		h.deps.renderTempl(w, r, lookup.ItemsTable(items))
 		return
 	}
-	h.deps.render(w, r, "items_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, lookup.ItemsListPage(pg, items))
 }
 
 func (h *ItemHandler) create(w http.ResponseWriter, r *http.Request) {

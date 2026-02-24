@@ -1,0 +1,65 @@
+package lookup
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ TaxCodesListPage(pg components.PageContext, items []store.TaxCodeItem) {
+	@components.Layout(pg, "Tax Codes - ATLinks") {
+		<div class="page-header">
+			<h1>Tax Codes</h1>
+		</div>
+		<div class="card">
+			<div class="card-header">Add Tax Code</div>
+			<div class="card-body">
+				<form class="inline-form" method="POST" action="/global/tax-codes" hx-post="/global/tax-codes">
+					<input type="text" name="code" class="form-control" placeholder="Code" required style="width:150px"/>
+					<input type="text" name="description" class="form-control" placeholder="Description" style="width:250px"/>
+					<input type="text" name="rate" class="form-control" placeholder="Rate" style="width:100px"/>
+					<button type="submit" class="btn btn-primary btn-sm">Add</button>
+				</form>
+			</div>
+		</div>
+		<div id="tax-codes-table">
+			@TaxCodesTable(items)
+		</div>
+	}
+}
+
+templ TaxCodesTable(items []store.TaxCodeItem) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Code</th>
+					<th>Description</th>
+					<th>Rate</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(items) > 0 {
+					for _, t := range items {
+						<tr>
+							<td>{ t.Code }</td>
+							<td>{ t.Description }</td>
+							<td>{ components.Deref(t.Rate) }</td>
+							<td class="text-right">
+								<button
+									class="btn btn-sm btn-danger"
+									hx-delete={ fmt.Sprintf("/global/tax-codes/%d", t.ID) }
+									hx-confirm={ fmt.Sprintf("Delete %s?", t.Code) }
+								>Delete</button>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="4" class="text-center text-muted">No tax codes found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

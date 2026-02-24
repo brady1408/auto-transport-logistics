@@ -1,0 +1,74 @@
+package reports
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ DriverSettlementPage(pg components.PageContext, rows []store.DriverSettlementRow, dateFrom string, dateTo string, employeeID string) {
+	@components.Layout(pg, "Driver Settlement - ATLinks") {
+		<div class="page-header">
+			<h1>Driver Settlement</h1>
+			<div class="btn-group no-print">
+				if employeeID != "" {
+					<a href={ templ.SafeURL(fmt.Sprintf("/reports/driver-settlement/csv?employee_id=%s&date_from=%s&date_to=%s", employeeID, dateFrom, dateTo)) } class="btn">Export CSV</a>
+				}
+				<button onclick="window.print()" class="btn">Print</button>
+				<a href="/reports" class="btn">Back to Reports</a>
+			</div>
+		</div>
+		<form class="filter-bar no-print" method="GET" action="/reports/driver-settlement">
+			<div class="form-group">
+				<label>Employee ID</label>
+				<input type="number" name="employee_id" value={ employeeID } class="form-control" placeholder="Employee ID" required/>
+			</div>
+			<div class="form-group">
+				<label>From</label>
+				<input type="date" name="date_from" value={ dateFrom } class="form-control"/>
+			</div>
+			<div class="form-group">
+				<label>To</label>
+				<input type="date" name="date_to" value={ dateTo } class="form-control"/>
+			</div>
+			<button type="submit" class="btn btn-primary">Generate</button>
+		</form>
+		if len(rows) > 0 {
+			<div class="table-container">
+				<table class="report-table">
+					<thead>
+						<tr>
+							<th>Load #</th>
+							<th>Trip Date</th>
+							<th class="text-right">Vehicles</th>
+							<th class="text-right">Miles</th>
+							<th class="text-right">Rate</th>
+							<th class="text-right">Pay</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, row := range rows {
+							<tr>
+								<td><a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d", row.TripID)) }>{ row.LoadNumber }</a></td>
+								<td>
+									if row.TripDate != nil {
+										{ components.Deref(row.TripDate) }
+									}
+								</td>
+								<td class="text-right">{ fmt.Sprintf("%d", row.VehicleCount) }</td>
+								<td class="text-right">{ row.TotalMileage }</td>
+								<td class="text-right">${ row.DriverRate }</td>
+								<td class="text-right"><strong>${ row.DriverPay }</strong></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		} else if employeeID != "" {
+			<p class="text-muted">No trips found for this driver in the selected date range.</p>
+		} else {
+			<p class="text-muted">Enter an employee ID and click Generate to view the settlement report.</p>
+		}
+	}
+}

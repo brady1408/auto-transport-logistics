@@ -1,0 +1,67 @@
+package trips
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ FuelTable(fuelEntries []models.TripFuel, tripID int) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>State</th>
+					<th>Mileage</th>
+					<th>Gallons</th>
+					<th>Truck</th>
+					<th class="text-center">Loaded</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(fuelEntries) > 0 {
+					for _, f := range fuelEntries {
+						<tr>
+							<td>{ components.Deref(f.State) }</td>
+							<td>{ fmt.Sprintf("%d", components.DerefInt(f.Mileage)) }</td>
+							<td>{ components.Deref(f.Gallons) }</td>
+							<td>{ components.Deref(f.TruckNumber) }</td>
+							<td class="text-center">
+								if f.LoadedMiles {
+									Y
+								}
+							</td>
+							<td class="text-right">
+								<button
+									class="btn btn-sm btn-danger"
+									hx-delete={ fmt.Sprintf("/dispatch/fuel/%d", f.ID) }
+									hx-target="#fuel-table"
+									hx-confirm="Delete this fuel entry?"
+								>Delete</button>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="6" class="text-center text-muted">No fuel entries</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if tripID > 0 {
+		<form
+			class="inline-form mt-2"
+			hx-post={ fmt.Sprintf("/dispatch/trips/%d/fuel", tripID) }
+			hx-target="#fuel-table"
+			hx-swap="innerHTML"
+		>
+			<input type="text" name="state" class="form-control" placeholder="State" maxlength="2" style="width:60px;text-transform:uppercase"/>
+			<input type="number" name="mileage" class="form-control" placeholder="Mileage" style="width:100px"/>
+			<input type="text" name="gallons" class="form-control" placeholder="Gallons" style="width:100px"/>
+			<input type="text" name="truck_number" class="form-control" placeholder="Truck" style="width:100px"/>
+			<label class="form-check" style="margin:0"><input type="checkbox" name="loaded_miles"/> Loaded</label>
+			<button type="submit" class="btn btn-sm btn-primary">Add</button>
+		</form>
+	}
+}

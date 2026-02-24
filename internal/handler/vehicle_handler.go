@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/atlinks/internal/handler/components/orders"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/store"
@@ -51,10 +52,7 @@ func (h *VehicleHandler) listByOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderPartial(w, "vehicle_table", map[string]any{
-		"Vehicles": vehicles,
-		"OrderID":  orderID,
-	})
+	h.deps.renderTempl(w, r, orders.VehicleTable(vehicles, orderID))
 }
 
 func (h *VehicleHandler) newForm(w http.ResponseWriter, r *http.Request) {
@@ -70,11 +68,8 @@ func (h *VehicleHandler) newForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "vehicle_form.html", map[string]any{
-		"Vehicle": &models.OrderVehicle{OrderID: orderID, Active: true, Status: "Waiting", Operable: true},
-		"Order":   order,
-		"IsNew":   true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, &models.OrderVehicle{OrderID: orderID, Active: true, Status: "Waiting", Operable: true}, order, true, ""))
 }
 
 func (h *VehicleHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -90,12 +85,8 @@ func (h *VehicleHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.orderSvc.CreateVehicleAndSync(r.Context(), v); err != nil {
 		order, _ := h.orderStore.GetByID(r.Context(), orderID)
-		h.deps.render(w, r, "vehicle_form.html", map[string]any{
-			"Vehicle": v,
-			"Order":   order,
-			"IsNew":   true,
-			"Error":   "Failed to create vehicle: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, v, order, true, "Failed to create vehicle: "+err.Error()))
 		return
 	}
 
@@ -126,11 +117,8 @@ func (h *VehicleHandler) editForm(w http.ResponseWriter, r *http.Request) {
 
 	order, _ := h.orderStore.GetByID(r.Context(), v.OrderID)
 
-	h.deps.render(w, r, "vehicle_form.html", map[string]any{
-		"Vehicle": v,
-		"Order":   order,
-		"IsNew":   false,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, v, order, false, ""))
 }
 
 func (h *VehicleHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -152,12 +140,8 @@ func (h *VehicleHandler) update(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.store.Update(r.Context(), v); err != nil {
 		order, _ := h.orderStore.GetByID(r.Context(), v.OrderID)
-		h.deps.render(w, r, "vehicle_form.html", map[string]any{
-			"Vehicle": v,
-			"Order":   order,
-			"IsNew":   false,
-			"Error":   "Failed to update vehicle: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, v, order, false, "Failed to update vehicle: "+err.Error()))
 		return
 	}
 
@@ -274,10 +258,7 @@ func (h *VehicleHandler) renderVehicleRow(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	h.deps.renderPartial(w, "vehicle_row", map[string]any{
-		"Vehicle": v,
-		"OrderID": v.OrderID,
-	})
+	h.deps.renderTempl(w, r, orders.VehicleRow(*v, v.OrderID))
 }
 
 func bindVehicleForm(r *http.Request) *models.OrderVehicle {

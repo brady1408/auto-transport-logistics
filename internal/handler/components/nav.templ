@@ -1,0 +1,109 @@
+package components
+
+import "github.com/brady1408/atlinks/internal/auth"
+
+templ Nav(user auth.ContextUser, companyName string) {
+	<nav class="main-nav" x-data="{ open: '' }">
+		<div class="nav-brand">
+			<a href="/">
+				if companyName != "" {
+					{ companyName }
+				} else {
+					ATLinks
+				}
+			</a>
+		</div>
+		<div class="nav-menu">
+			<!-- VIN Search (top-level) -->
+			<a href="/search/vin" class="nav-link" style="text-decoration:none;">VIN Search</a>
+			<!-- Dispatch -->
+			<div class="nav-dropdown" @mouseenter="open = 'dispatch'" @mouseleave="open = ''">
+				<button class="nav-link">Dispatch</button>
+				<div class="dropdown-menu" x-show="open === 'dispatch'" x-cloak>
+					<a href="/dispatch/orders" class="dropdown-item">Orders</a>
+					<a href="/dispatch/trips" class="dropdown-item">Trips/Loads</a>
+				</div>
+			</div>
+			<!-- Accounting -->
+			<div class="nav-dropdown" @mouseenter="open = 'accounting'" @mouseleave="open = ''">
+				<button class="nav-link">Accounting</button>
+				<div class="dropdown-menu" x-show="open === 'accounting'" x-cloak>
+					<a href="/accounting/invoices" class="dropdown-item">Invoices</a>
+					<a href="/accounting/payments" class="dropdown-item">Payments</a>
+					<a href="/accounting/credit-memos" class="dropdown-item">Credit Memos</a>
+					<a href="/accounting/damage-claims" class="dropdown-item">Damage Claims</a>
+					<a href="/accounting/ap" class="dropdown-item">Accounts Payable</a>
+				</div>
+			</div>
+			<!-- Global -->
+			<div class="nav-dropdown" @mouseenter="open = 'global'" @mouseleave="open = ''">
+				<button class="nav-link">Global</button>
+				<div class="dropdown-menu" x-show="open === 'global'" x-cloak>
+					<a href="/global/customers" class="dropdown-item">Customers</a>
+					<a href="/global/employees" class="dropdown-item">Employees</a>
+					<a href="/global/trucks" class="dropdown-item">Trucks</a>
+					<a href="/global/zones" class="dropdown-item">Zones</a>
+					<a href="/global/zone-pricing" class="dropdown-item">Zone Pricing</a>
+					<hr class="dropdown-divider"/>
+					<a href="/global/dispatch-codes" class="dropdown-item">Dispatch Codes</a>
+					<a href="/global/equipment-types" class="dropdown-item">Equipment Types</a>
+					<a href="/global/items" class="dropdown-item">Items/Charges</a>
+					<a href="/global/regions" class="dropdown-item">Regions</a>
+					<a href="/global/terms" class="dropdown-item">Terms</a>
+					<a href="/global/tax-codes" class="dropdown-item">Tax Codes</a>
+					<hr class="dropdown-divider"/>
+					<a href="/global/damage-areas" class="dropdown-item">Damage Areas</a>
+					<a href="/global/damage-types" class="dropdown-item">Damage Types</a>
+					<a href="/global/damage-severities" class="dropdown-item">Damage Severities</a>
+					<a href="/global/hold-codes" class="dropdown-item">Hold Codes</a>
+					<a href="/global/declination-codes" class="dropdown-item">Declination Codes</a>
+				</div>
+			</div>
+			<!-- Reports -->
+			<div class="nav-dropdown" @mouseenter="open = 'reports'" @mouseleave="open = ''">
+				<button class="nav-link">Reports</button>
+				<div class="dropdown-menu" x-show="open === 'reports'" x-cloak>
+					<a href="/reports" class="dropdown-item">All Reports</a>
+					<hr class="dropdown-divider"/>
+					<a href="/reports/ar-aging" class="dropdown-item">AR Aging</a>
+					<a href="/reports/revenue-by-customer" class="dropdown-item">Revenue by Customer</a>
+					<a href="/reports/payments" class="dropdown-item">Payment Report</a>
+					<hr class="dropdown-divider"/>
+					<a href="/reports/order-status" class="dropdown-item">Order Status</a>
+					<a href="/reports/trip-summary" class="dropdown-item">Trip Summary</a>
+					<a href="/reports/driver-settlement" class="dropdown-item">Driver Settlement</a>
+					<a href="/reports/vehicle-history" class="dropdown-item">Vehicle History</a>
+					<hr class="dropdown-divider"/>
+					<a href="/reports/damages" class="dropdown-item">Damage Report</a>
+				</div>
+			</div>
+			<!-- Utilities -->
+			<div class="nav-dropdown" @mouseenter="open = 'utilities'" @mouseleave="open = ''">
+				<button class="nav-link">Utilities</button>
+				<div class="dropdown-menu" x-show="open === 'utilities'" x-cloak>
+					<a href="/utilities/company" class="dropdown-item">Company Settings</a>
+					if user.Role == "super_admin" || user.Role == "company_admin" {
+						<a href="/settings/users" class="dropdown-item">Users</a>
+					}
+					<hr class="dropdown-divider"/>
+					<a href="/feedback" class="dropdown-item">Feedback</a>
+				</div>
+			</div>
+			if user.Role == "super_admin" {
+				<!-- Admin (super_admin only) -->
+				<div class="nav-dropdown" @mouseenter="open = 'admin'" @mouseleave="open = ''">
+					<button class="nav-link">Admin</button>
+					<div class="dropdown-menu" x-show="open === 'admin'" x-cloak>
+						<a href="/admin/companies" class="dropdown-item">Companies</a>
+					</div>
+				</div>
+			}
+		</div>
+		<div class="nav-user">
+			<span>{ user.Username }</span>
+			<form method="POST" action="/logout" style="display:inline">
+				<button type="submit" class="btn btn-sm">Logout</button>
+			</form>
+		</div>
+	</nav>
+}

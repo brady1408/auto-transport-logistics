@@ -1,0 +1,336 @@
+package orders
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ FormPage(pg components.PageContext, order *models.Order, isNew bool, errMsg string) {
+	@components.Layout(pg, orderFormTitle(isNew, order) + " - ATLinks") {
+		<div class="page-header">
+			<h1>
+				if isNew {
+					New Order
+				} else {
+					Edit Order: { order.OrderNumber }
+				}
+			</h1>
+			<a href="/dispatch/orders" class="btn">Back to List</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			if isNew {
+				action="/dispatch/orders"
+				hx-post="/dispatch/orders"
+			} else {
+				action={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/edit", order.ID)) }
+				hx-put={ fmt.Sprintf("/dispatch/orders/%d", order.ID) }
+			}
+			x-data="orderForm()"
+		>
+			<fieldset>
+				<legend>Order Information</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="order_number">Order Number</label>
+						<input
+							type="text" id="order_number" name="order_number" class="form-control"
+							value={ order.OrderNumber }
+							if !isNew {
+								readonly
+							}
+						/>
+					</div>
+					<div class="form-group">
+						<label for="zone">Zone</label>
+						<input type="text" id="zone" name="zone" class="form-control" value={ components.Deref(order.Zone) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="dispatch_code">Dispatch Code</label>
+						<input type="text" id="dispatch_code" name="dispatch_code" class="form-control" value={ components.Deref(order.DispatchCode) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="equipment_type">Equipment Type</label>
+						<input type="text" id="equipment_type" name="equipment_type" class="form-control" value={ components.Deref(order.EquipmentType) } maxlength="10"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="bol_number">BOL Number</label>
+						<input type="text" id="bol_number" name="bol_number" class="form-control" value={ components.Deref(order.BOLNumber) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="reference_number">Reference #</label>
+						<input type="text" id="reference_number" name="reference_number" class="form-control" value={ components.Deref(order.ReferenceNumber) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="po_number">PO Number</label>
+						<input type="text" id="po_number" name="po_number" class="form-control" value={ components.Deref(order.PONumber) } maxlength="20"/>
+					</div>
+					<div class="form-check" style="padding-top: 20px;">
+						<input type="checkbox" id="inactive" name="inactive" checked?={ !order.Active }/>
+						<label for="inactive">Inactive</label>
+					</div>
+				</div>
+			</fieldset>
+			@customerFieldset("Bill-To Customer", "bill", order.BillCustomerID, order.BillCustomerNumber, order.BillCustomerName, order.BillToAddress, order.BillToAddress2, order.BillToCity, order.BillToState, order.BillToZip, nil, nil)
+			@customerFieldsetLoadDrop("Load/Pickup Customer", "load", order.LoadCustomerID, order.LoadCustomerNumber, order.LoadCustomerName, order.LoadAddress, order.LoadCity, order.LoadState, order.LoadZip, order.LoadContact, order.LoadPhone)
+			@customerFieldsetLoadDrop("Drop/Delivery Customer", "drop", order.DropCustomerID, order.DropCustomerNumber, order.DropCustomerName, order.DropAddress, order.DropCity, order.DropState, order.DropZip, order.DropContact, order.DropPhone)
+			<fieldset>
+				<legend>Pricing</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="transport_amt">Transport Amount</label>
+						<input type="text" id="transport_amt" name="transport_amt" class="form-control" value={ components.Deref(order.TransportAmt) }/>
+					</div>
+					<div class="form-group">
+						<label for="transport_calc_type">Calc Type</label>
+						<input type="text" id="transport_calc_type" name="transport_calc_type" class="form-control" value={ components.Deref(order.TransportCalcType) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="fuel_surcharge">Fuel Surcharge</label>
+						<input type="text" id="fuel_surcharge" name="fuel_surcharge" class="form-control" value={ components.Deref(order.FuelSurcharge) }/>
+					</div>
+					<div class="form-group">
+						<label for="fuel_calc_type">Fuel Calc Type</label>
+						<input type="text" id="fuel_calc_type" name="fuel_calc_type" class="form-control" value={ components.Deref(order.FuelCalcType) } maxlength="10"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="other_charge">Other Charge</label>
+						<input type="text" id="other_charge" name="other_charge" class="form-control" value={ components.Deref(order.OtherCharge) }/>
+					</div>
+					<div class="form-group">
+						<label for="discount">Discount</label>
+						<input type="text" id="discount" name="discount" class="form-control" value={ components.Deref(order.Discount) }/>
+					</div>
+					<div class="form-group">
+						<label for="tax_code">Tax Code</label>
+						<input type="text" id="tax_code" name="tax_code" class="form-control" value={ components.Deref(order.TaxCode) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="total_charge">Total Charge</label>
+						<input type="text" id="total_charge" name="total_charge" class="form-control" value={ components.Deref(order.TotalCharge) }/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Dates &amp; References</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="create_date">Create Date</label>
+						<input type="date" id="create_date" name="create_date" class="form-control" value={ components.FormatDate(order.CreateDate) }/>
+					</div>
+					<div class="form-group">
+						<label for="est_pickup_date">Est. Pickup Date</label>
+						<input type="date" id="est_pickup_date" name="est_pickup_date" class="form-control" value={ components.FormatDate(order.EstPickupDate) }/>
+					</div>
+					<div class="form-group">
+						<label for="est_deliver_date">Est. Deliver Date</label>
+						<input type="date" id="est_deliver_date" name="est_deliver_date" class="form-control" value={ components.FormatDate(order.EstDeliverDate) }/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="sales_rep1">Sales Rep 1</label>
+						<input type="text" id="sales_rep1" name="sales_rep1" class="form-control" value={ components.Deref(order.SalesRep1) } maxlength="30"/>
+					</div>
+					<div class="form-group">
+						<label for="sales_rep2">Sales Rep 2</label>
+						<input type="text" id="sales_rep2" name="sales_rep2" class="form-control" value={ components.Deref(order.SalesRep2) } maxlength="30"/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Instructions &amp; Comments</legend>
+				<div class="form-group">
+					<label for="pu_instructions">Pickup Instructions</label>
+					<textarea id="pu_instructions" name="pu_instructions" class="form-control">{ components.Deref(order.PUInstructions) }</textarea>
+				</div>
+				<div class="form-group">
+					<label for="do_instructions">Drop-off Instructions</label>
+					<textarea id="do_instructions" name="do_instructions" class="form-control">{ components.Deref(order.DOInstructions) }</textarea>
+				</div>
+				<div class="form-group">
+					<label for="comments">Comments</label>
+					<textarea id="comments" name="comments" class="form-control">{ components.Deref(order.Comments) }</textarea>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create Order
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href="/dispatch/orders" class="btn">Cancel</a>
+			</div>
+		</form>
+		@orderFormScript()
+	}
+}
+
+templ customerFieldset(legend string, prefix string, customerID *int, customerNumber *string, customerName *string, address *string, address2 *string, city *string, state *string, zip *string, contact *string, phone *string) {
+	<fieldset>
+		<legend>{ legend }</legend>
+		<div class="form-row">
+			<div class="form-group" style="grid-column: span 2;">
+				<label for={ prefix + "_customer_search" }>Search Customer</label>
+				<input
+					type="text"
+					id={ prefix + "_customer_search" }
+					class="form-control"
+					placeholder="Type to search..."
+					hx-get="/api/customers/search"
+					hx-trigger="keyup changed delay:300ms"
+					hx-target={ "#" + prefix + "_customer_results" }
+					hx-params="*"
+					{ atInput()... }
+				/>
+				<div id={ prefix + "_customer_results" } class="search-results"></div>
+				<input type="hidden" name={ prefix + "_customer_id" } value={ fmt.Sprintf("%d", components.DerefInt(customerID)) }/>
+			</div>
+			<div class="form-group">
+				<label for={ prefix + "_customer_number" }>Customer #</label>
+				<input type="text" id={ prefix + "_customer_number" } name={ prefix + "_customer_number" } class="form-control" value={ components.Deref(customerNumber) } maxlength="10"/>
+			</div>
+			<div class="form-group">
+				<label for={ prefix + "_customer_name" }>Name</label>
+				<input type="text" id={ prefix + "_customer_name" } name={ prefix + "_customer_name" } class="form-control" value={ components.Deref(customerName) } maxlength="30"/>
+			</div>
+		</div>
+		<div class="form-row">
+			<div class="form-group" style="grid-column: span 2;">
+				<label for={ prefix + "_to_address" }>Address</label>
+				<input type="text" id={ prefix + "_to_address" } name={ prefix + "_to_address" } class="form-control" value={ components.Deref(address) } maxlength="30"/>
+			</div>
+			<div class="form-group" style="grid-column: span 2;">
+				<label for={ prefix + "_to_address2" }>Address 2</label>
+				<input type="text" id={ prefix + "_to_address2" } name={ prefix + "_to_address2" } class="form-control" value={ components.Deref(address2) } maxlength="30"/>
+			</div>
+		</div>
+		<div class="form-row">
+			<div class="form-group">
+				<label for={ prefix + "_to_city" }>City</label>
+				<input type="text" id={ prefix + "_to_city" } name={ prefix + "_to_city" } class="form-control" value={ components.Deref(city) } maxlength="25"/>
+			</div>
+			<div class="form-group">
+				<label for={ prefix + "_to_state" }>State</label>
+				<input type="text" id={ prefix + "_to_state" } name={ prefix + "_to_state" } class="form-control" value={ components.Deref(state) } maxlength="2" style="text-transform:uppercase"/>
+			</div>
+			<div class="form-group">
+				<label for={ prefix + "_to_zip" }>Zip</label>
+				<input type="text" id={ prefix + "_to_zip" } name={ prefix + "_to_zip" } class="form-control" value={ components.Deref(zip) } maxlength="10"/>
+			</div>
+		</div>
+	</fieldset>
+}
+
+templ customerFieldsetLoadDrop(legend string, prefix string, customerID *int, customerNumber *string, customerName *string, address *string, city *string, state *string, zip *string, contact *string, phone *string) {
+	<fieldset>
+		<legend>{ legend }</legend>
+		<div class="form-row">
+			<div class="form-group" style="grid-column: span 2;">
+				<label for={ prefix + "_customer_search" }>Search Customer</label>
+				<input
+					type="text"
+					id={ prefix + "_customer_search" }
+					class="form-control"
+					placeholder="Type to search..."
+					hx-get="/api/customers/search"
+					hx-trigger="keyup changed delay:300ms"
+					hx-target={ "#" + prefix + "_customer_results" }
+					hx-params="*"
+					{ atInput()... }
+				/>
+				<div id={ prefix + "_customer_results" } class="search-results"></div>
+				<input type="hidden" name={ prefix + "_customer_id" } value={ fmt.Sprintf("%d", components.DerefInt(customerID)) }/>
+			</div>
+			<div class="form-group">
+				<label for={ prefix + "_customer_number" }>Customer #</label>
+				<input type="text" id={ prefix + "_customer_number" } name={ prefix + "_customer_number" } class="form-control" value={ components.Deref(customerNumber) } maxlength="10"/>
+			</div>
+			<div class="form-group">
+				<label for={ prefix + "_customer_name" }>Name</label>
+				<input type="text" id={ prefix + "_customer_name" } name={ prefix + "_customer_name" } class="form-control" value={ components.Deref(customerName) } maxlength="30"/>
+			</div>
+		</div>
+		<div class="form-row">
+			<div class="form-group">
+				<label for={ prefix + "_contact" }>Contact</label>
+				<input type="text" id={ prefix + "_contact" } name={ prefix + "_contact" } class="form-control" value={ components.Deref(contact) } maxlength="20"/>
+			</div>
+			<div class="form-group">
+				<label for={ prefix + "_phone" }>Phone</label>
+				<input type="text" id={ prefix + "_phone" } name={ prefix + "_phone" } class="form-control" value={ components.Deref(phone) } maxlength="10"/>
+			</div>
+		</div>
+		<div class="form-row">
+			<div class="form-group" style="grid-column: span 2;">
+				<label for={ prefix + "_address" }>Address</label>
+				<input type="text" id={ prefix + "_address" } name={ prefix + "_address" } class="form-control" value={ components.Deref(address) } maxlength="30"/>
+			</div>
+		</div>
+		<div class="form-row">
+			<div class="form-group">
+				<label for={ prefix + "_city" }>City</label>
+				<input type="text" id={ prefix + "_city" } name={ prefix + "_city" } class="form-control" value={ components.Deref(city) } maxlength="25"/>
+			</div>
+			<div class="form-group">
+				<label for={ prefix + "_state" }>State</label>
+				<input type="text" id={ prefix + "_state" } name={ prefix + "_state" } class="form-control" value={ components.Deref(state) } maxlength="2" style="text-transform:uppercase"/>
+			</div>
+			<div class="form-group">
+				<label for={ prefix + "_zip" }>Zip</label>
+				<input type="text" id={ prefix + "_zip" } name={ prefix + "_zip" } class="form-control" value={ components.Deref(zip) } maxlength="10"/>
+			</div>
+		</div>
+	</fieldset>
+}
+
+// atInput returns Alpine.js @input attribute as a templ.Attributes map.
+func atInput() templ.Attributes {
+	return templ.Attributes{"@input": "$el.name='q'"}
+}
+
+func orderFormTitle(isNew bool, order *models.Order) string {
+	if isNew {
+		return "New Order"
+	}
+	return "Edit Order: " + order.OrderNumber
+}
+
+templ orderFormScript() {
+	@templ.Raw(`<script>
+function orderForm() {
+    return {
+        selectCustomer(prefix, customer) {
+            document.getElementById(prefix + '_customer_id').value = customer.id;
+            document.getElementById(prefix + '_customer_number').value = customer.number || '';
+            document.getElementById(prefix + '_customer_name').value = customer.name || '';
+            if (document.getElementById(prefix + '_address') || document.getElementById(prefix + '_to_address')) {
+                let addrField = document.getElementById(prefix + '_to_address') || document.getElementById(prefix + '_address');
+                if (addrField) addrField.value = customer.address || '';
+            }
+            let cityField = document.getElementById(prefix + '_to_city') || document.getElementById(prefix + '_city');
+            if (cityField) cityField.value = customer.city || '';
+            let stateField = document.getElementById(prefix + '_to_state') || document.getElementById(prefix + '_state');
+            if (stateField) stateField.value = customer.state || '';
+            let zipField = document.getElementById(prefix + '_to_zip') || document.getElementById(prefix + '_zip');
+            if (zipField) zipField.value = customer.zip || '';
+            let contactField = document.getElementById(prefix + '_contact');
+            if (contactField) contactField.value = customer.contact || '';
+            let phoneField = document.getElementById(prefix + '_phone');
+            if (phoneField) phoneField.value = customer.phone || '';
+        }
+    }
+}
+</script>`)
+}

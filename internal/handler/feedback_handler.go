@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/atlinks/internal/handler/components/feedback"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -87,17 +88,14 @@ func (h *FeedbackHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Result":       result,
-		"Filter":       filter,
-		"IsSuperAdmin": isSuperAdmin(r),
-	}
+	superAdmin := isSuperAdmin(r)
 
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "feedback_table", data)
+		h.deps.renderTempl(w, r, feedback.Table(*result, superAdmin))
 		return
 	}
-	h.deps.render(w, r, "feedback_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, feedback.ListPage(pg, *result, filter, superAdmin))
 }
 
 func (h *FeedbackHandler) show(w http.ResponseWriter, r *http.Request) {
@@ -120,11 +118,8 @@ func (h *FeedbackHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "feedback_show.html", map[string]any{
-		"Feedback":     fb,
-		"Comments":     comments,
-		"IsSuperAdmin": superAdmin,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, feedback.ShowPage(pg, fb, comments, superAdmin))
 }
 
 func (h *FeedbackHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -256,9 +251,5 @@ func (h *FeedbackHandler) addComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderPartial(w, "feedback_comments", map[string]any{
-		"Comments":     comments,
-		"Feedback":     fb,
-		"IsSuperAdmin": superAdmin,
-	})
+	h.deps.renderTempl(w, r, feedback.CommentThread(comments, fb, superAdmin))
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/brady1408/atlinks/internal/handler/components/pages"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 	"github.com/jackc/pgx/v5"
@@ -29,7 +30,8 @@ func (h *CompanyHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		// No company yet — show empty form
 		c = &models.Company{CompanyName: ""}
 	}
-	h.deps.render(w, r, "company_form.html", map[string]any{"Company": c})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, pages.CompanyFormPage(pg, c, ""))
 }
 
 func (h *CompanyHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -45,16 +47,14 @@ func (h *CompanyHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if c.CompanyName == "" {
-		h.deps.render(w, r, "company_form.html", map[string]any{
-			"Company": c, "Error": "Company Name is required",
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, pages.CompanyFormPage(pg, c, "Company Name is required"))
 		return
 	}
 
 	if err := h.store.Upsert(r.Context(), c); err != nil {
-		h.deps.render(w, r, "company_form.html", map[string]any{
-			"Company": c, "Error": "Failed to save: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, pages.CompanyFormPage(pg, c, "Failed to save: "+err.Error()))
 		return
 	}
 

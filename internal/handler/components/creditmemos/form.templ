@@ -1,0 +1,153 @@
+package creditmemos
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ FormPage(pg components.PageContext, creditMemo *models.CreditMemo, isNew bool, errMsg string) {
+	@components.Layout(pg, creditMemoFormTitle(isNew, creditMemo) + " - ATLinks") {
+		<div class="page-header">
+			<h1>
+				if isNew {
+					New Credit Memo
+				} else {
+					Edit Credit Memo: { creditMemo.CreditNumber }
+				}
+			</h1>
+			<a href="/accounting/credit-memos" class="btn">Back to List</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			if isNew {
+				action="/accounting/credit-memos"
+				hx-post="/accounting/credit-memos"
+			} else {
+				action={ templ.SafeURL(fmt.Sprintf("/accounting/credit-memos/%d/edit", creditMemo.ID)) }
+				hx-put={ fmt.Sprintf("/accounting/credit-memos/%d", creditMemo.ID) }
+			}
+			x-data="creditMemoForm()"
+		>
+			<fieldset>
+				<legend>Credit Memo Information</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="credit_number">Credit #</label>
+						<input
+							type="text" id="credit_number" name="credit_number" class="form-control"
+							value={ creditMemo.CreditNumber }
+							if !isNew {
+								readonly
+							}
+						/>
+					</div>
+					<div class="form-group">
+						<label for="credit_date">Date</label>
+						<input type="date" id="credit_date" name="credit_date" class="form-control" value={ components.FormatDate(creditMemo.CreditDate) }/>
+					</div>
+					<div class="form-group">
+						<label for="amount">Amount</label>
+						<input type="text" id="amount" name="amount" class="form-control" value={ components.Deref(creditMemo.Amount) }/>
+					</div>
+					<div class="form-group">
+						<label for="status">Status</label>
+						<select id="status" name="status" class="form-control">
+							<option value="Pending" selected?={ components.Deref(creditMemo.Status) == "Pending" }>Pending</option>
+							<option value="Applied" selected?={ components.Deref(creditMemo.Status) == "Applied" }>Applied</option>
+							<option value="Void" selected?={ components.Deref(creditMemo.Status) == "Void" }>Void</option>
+						</select>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Customer</legend>
+				<div class="form-row">
+					<div class="form-group" style="grid-column: span 2;">
+						<label for="cm_customer_search">Search Customer</label>
+						<input
+							type="text" id="cm_customer_search" class="form-control"
+							placeholder="Type to search..."
+							hx-get="/api/customers/search"
+							hx-trigger="keyup changed delay:300ms"
+							hx-target="#cm_customer_results"
+							hx-params="*"
+							{ atInput()... }
+						/>
+						<div id="cm_customer_results" class="search-results"></div>
+						<input type="hidden" id="customer_id" name="customer_id" value={ fmt.Sprintf("%d", components.DerefInt(creditMemo.CustomerID)) }/>
+					</div>
+					<div class="form-group">
+						<label for="customer_number">Customer #</label>
+						<input type="text" id="customer_number" name="customer_number" class="form-control" value={ components.Deref(creditMemo.CustomerNumber) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="customer_name">Name</label>
+						<input type="text" id="customer_name" name="customer_name" class="form-control" value={ components.Deref(creditMemo.CustomerName) } maxlength="30"/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Invoice Reference</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="invoice_number">Invoice #</label>
+						<input type="text" id="invoice_number" name="invoice_number" class="form-control" value={ components.Deref(creditMemo.InvoiceNumber) } maxlength="20"/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Details</legend>
+				<div class="form-group">
+					<label for="reason">Reason</label>
+					<input type="text" id="reason" name="reason" class="form-control" value={ components.Deref(creditMemo.Reason) } maxlength="200"/>
+				</div>
+				<div class="form-group">
+					<label for="comments">Comments</label>
+					<textarea id="comments" name="comments" class="form-control">{ components.Deref(creditMemo.Comments) }</textarea>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create Credit Memo
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href="/accounting/credit-memos" class="btn">Cancel</a>
+			</div>
+		</form>
+		@creditMemoFormScript()
+	}
+}
+
+func creditMemoFormTitle(isNew bool, creditMemo *models.CreditMemo) string {
+	if isNew {
+		return "New Credit Memo"
+	}
+	return "Edit Credit Memo: " + creditMemo.CreditNumber
+}
+
+// atInput returns Alpine.js @input attribute as a templ.Attributes map.
+func atInput() templ.Attributes {
+	return templ.Attributes{"@input": "$el.name='q'"}
+}
+
+templ creditMemoFormScript() {
+	@templ.Raw(`<script>
+function creditMemoForm() {
+    return {
+        selectCustomer(prefix, customer) {
+            document.getElementById('customer_id').value = customer.id;
+            document.getElementById('customer_number').value = customer.number || '';
+            document.getElementById('customer_name').value = customer.name || '';
+        }
+    }
+}
+</script>`)
+}

@@ -1,0 +1,141 @@
+package damageclaims
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ FormPage(pg components.PageContext, claim *models.DamageClaim, isNew bool, errMsg string) {
+	@components.Layout(pg, claimFormTitle(isNew, claim) + " - ATLinks") {
+		<div class="page-header">
+			<h1>
+				if isNew {
+					New Damage Claim
+				} else {
+					Edit Claim: { claim.ClaimNumber }
+				}
+			</h1>
+			<a href="/accounting/damage-claims" class="btn">Back to List</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			if isNew {
+				action="/accounting/damage-claims"
+				hx-post="/accounting/damage-claims"
+			} else {
+				action={ templ.SafeURL(fmt.Sprintf("/accounting/damage-claims/%d/edit", claim.ID)) }
+				hx-put={ fmt.Sprintf("/accounting/damage-claims/%d", claim.ID) }
+			}
+		>
+			<fieldset>
+				<legend>Claim Information</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="claim_number">Claim #</label>
+						<input
+							type="text" id="claim_number" name="claim_number" class="form-control"
+							value={ claim.ClaimNumber }
+							if !isNew {
+								readonly
+							}
+						/>
+					</div>
+					<div class="form-group">
+						<label for="claim_date">Claim Date</label>
+						<input type="date" id="claim_date" name="claim_date" class="form-control" value={ components.FormatDate(claim.ClaimDate) }/>
+					</div>
+					<div class="form-group">
+						<label for="status">Status</label>
+						<select id="status" name="status" class="form-control">
+							<option value="Open" selected?={ components.Deref(claim.Status) == "Open" }>Open</option>
+							<option value="Approved" selected?={ components.Deref(claim.Status) == "Approved" }>Approved</option>
+							<option value="Denied" selected?={ components.Deref(claim.Status) == "Denied" }>Denied</option>
+							<option value="Paid" selected?={ components.Deref(claim.Status) == "Paid" }>Paid</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="claim_amount">Claim Amount</label>
+						<input type="text" id="claim_amount" name="claim_amount" class="form-control" value={ components.Deref(claim.ClaimAmount) }/>
+					</div>
+					<div class="form-group">
+						<label for="paid_amount">Paid Amount</label>
+						<input type="text" id="paid_amount" name="paid_amount" class="form-control" value={ components.Deref(claim.PaidAmount) }/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Vehicle / Trip Reference</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="vin">VIN</label>
+						<input type="text" id="vin" name="vin" class="form-control" value={ components.Deref(claim.VIN) } maxlength="17"/>
+					</div>
+					<div class="form-group">
+						<label for="order_id">Order ID</label>
+						<input type="number" id="order_id" name="order_id" class="form-control" value={ fmt.Sprintf("%d", components.DerefInt(claim.OrderID)) }/>
+					</div>
+					<div class="form-group">
+						<label for="vehicle_id">Vehicle ID</label>
+						<input type="number" id="vehicle_id" name="vehicle_id" class="form-control" value={ fmt.Sprintf("%d", components.DerefInt(claim.VehicleID)) }/>
+					</div>
+					<div class="form-group">
+						<label for="trip_id">Trip ID</label>
+						<input type="number" id="trip_id" name="trip_id" class="form-control" value={ fmt.Sprintf("%d", components.DerefInt(claim.TripID)) }/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Insurance</legend>
+				<div class="form-row">
+					<div class="form-check" style="padding-top: 8px;">
+						<input type="checkbox" id="insurance_claim" name="insurance_claim" checked?={ claim.InsuranceClaim }/>
+						<label for="insurance_claim">Insurance Claim</label>
+					</div>
+					<div class="form-group">
+						<label for="insurance_claim_number">Insurance Claim #</label>
+						<input type="text" id="insurance_claim_number" name="insurance_claim_number" class="form-control" value={ components.Deref(claim.InsuranceClaimNumber) } maxlength="20"/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Details</legend>
+				<div class="form-group">
+					<label for="description">Description</label>
+					<textarea id="description" name="description" class="form-control">{ components.Deref(claim.Description) }</textarea>
+				</div>
+				<div class="form-group">
+					<label for="resolution">Resolution</label>
+					<textarea id="resolution" name="resolution" class="form-control">{ components.Deref(claim.Resolution) }</textarea>
+				</div>
+				<div class="form-group">
+					<label for="resolved_date">Resolved Date</label>
+					<input type="date" id="resolved_date" name="resolved_date" class="form-control" value={ components.FormatDate(claim.ResolvedDate) }/>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create Claim
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href="/accounting/damage-claims" class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}
+
+func claimFormTitle(isNew bool, claim *models.DamageClaim) string {
+	if isNew {
+		return "New Damage Claim"
+	}
+	return "Edit Claim: " + claim.ClaimNumber
+}

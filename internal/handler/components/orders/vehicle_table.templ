@@ -1,0 +1,173 @@
+package orders
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ VehicleTable(vehicles []models.OrderVehicle, orderID int) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>VIN</th>
+					<th>Year</th>
+					<th>Make</th>
+					<th>Model</th>
+					<th>Color</th>
+					<th>Status</th>
+					<th>Load #</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(vehicles) > 0 {
+					for _, v := range vehicles {
+						@VehicleRow(v, orderID)
+					}
+				} else {
+					<tr><td colspan="8" class="text-center text-muted">No vehicles on this order</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ VehicleRow(v models.OrderVehicle, orderID int) {
+	<tr id={ fmt.Sprintf("vehicle-row-%d", v.ID) }>
+		<td>{ components.Deref(v.VIN) }</td>
+		<td>{ components.Deref(v.Year) }</td>
+		<td>{ components.Deref(v.Make) }</td>
+		<td>{ components.Deref(v.Model) }</td>
+		<td>{ components.Deref(v.Color) }</td>
+		<td>
+			@vehicleStatusBadge(v.Status)
+		</td>
+		<td>{ components.Deref(v.LoadNumber) }</td>
+		<td class="text-right">
+			<div class="btn-group">
+				// Revert button
+				if v.Status == "Waiting" {
+					<button class="btn-icon" disabled title="Already at first status">
+						@chevronLeftSVG()
+					</button>
+				} else {
+					<button
+						class="btn-icon"
+						title={ "Revert to " + revertTarget(v.Status) }
+						hx-post={ fmt.Sprintf("/dispatch/vehicles/%d/revert", v.ID) }
+						hx-target={ fmt.Sprintf("#vehicle-row-%d", v.ID) }
+						hx-swap="outerHTML"
+					>
+						@chevronLeftSVG()
+					</button>
+				}
+				// Advance button
+				if v.Status == "Confirmed" {
+					<button class="btn-icon" disabled title="Already at final status">
+						@chevronRightSVG()
+					</button>
+				} else {
+					<button
+						class="btn-icon btn-icon-success"
+						title={ "Advance to " + advanceTarget(v.Status) }
+						hx-post={ fmt.Sprintf("/dispatch/vehicles/%d/%s", v.ID, advanceAction(v.Status)) }
+						hx-target={ fmt.Sprintf("#vehicle-row-%d", v.ID) }
+						hx-swap="outerHTML"
+					>
+						@chevronRightSVG()
+					</button>
+				}
+				<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/vehicles/%d/edit", v.ID)) } class="btn-icon" title="Edit vehicle">
+					@editSVG()
+				</a>
+				<button
+					class="btn-icon btn-icon-danger" title="Delete vehicle"
+					hx-delete={ fmt.Sprintf("/dispatch/vehicles/%d", v.ID) }
+					hx-confirm="Delete this vehicle?"
+				>
+					@trashSVG()
+				</button>
+			</div>
+		</td>
+	</tr>
+}
+
+templ vehicleStatusBadge(status string) {
+	if status == "Waiting" {
+		<span class="badge badge-waiting">Waiting</span>
+	} else if status == "Scheduled" {
+		<span class="badge badge-scheduled">Scheduled</span>
+	} else if status == "Loaded" {
+		<span class="badge badge-loaded">Loaded</span>
+	} else if status == "Delivered" {
+		<span class="badge badge-delivered">Delivered</span>
+	} else if status == "Confirmed" {
+		<span class="badge badge-confirmed">Confirmed</span>
+	} else {
+		<span class="badge">{ status }</span>
+	}
+}
+
+func revertTarget(status string) string {
+	switch status {
+	case "Scheduled":
+		return "Waiting"
+	case "Loaded":
+		return "Scheduled"
+	case "Delivered":
+		return "Loaded"
+	case "Confirmed":
+		return "Delivered"
+	default:
+		return ""
+	}
+}
+
+func advanceTarget(status string) string {
+	switch status {
+	case "Waiting":
+		return "Scheduled"
+	case "Scheduled":
+		return "Loaded"
+	case "Loaded":
+		return "Delivered"
+	case "Delivered":
+		return "Confirmed"
+	default:
+		return ""
+	}
+}
+
+func advanceAction(status string) string {
+	switch status {
+	case "Waiting":
+		return "schedule"
+	case "Scheduled":
+		return "load"
+	case "Loaded":
+		return "deliver"
+	case "Delivered":
+		return "confirm"
+	default:
+		return ""
+	}
+}
+
+templ chevronLeftSVG() {
+	<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 3 5 8 10 13"></polyline></svg>
+}
+
+templ chevronRightSVG() {
+	<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3 11 8 6 13"></polyline></svg>
+}
+
+templ editSVG() {
+	<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.5a1.8 1.8 0 0 1 2.5 2.5L5.5 13.5 2 14.5l1-3.5z"></path></svg>
+}
+
+templ trashSVG() {
+	<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 4 12 4"></polyline><path d="M5.5 4V3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1"></path><path d="M12 4v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4"></path></svg>
+}

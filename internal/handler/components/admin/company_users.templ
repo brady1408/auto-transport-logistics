@@ -1,0 +1,54 @@
+package admin
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ CompanyUsersPage(pg components.PageContext, company *models.Company, users []models.User) {
+	@components.Layout(pg, fmt.Sprintf("Users - %s", company.CompanyName)) {
+		<div class="page-header">
+			<h2>Users — { company.CompanyName }</h2>
+			<div>
+				<a href={ templ.SafeURL(fmt.Sprintf("/admin/companies/%d/users/new", company.ID)) } class="btn btn-primary">New User</a>
+				<a href="/admin/companies" class="btn">Back to Companies</a>
+			</div>
+		</div>
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Username</th>
+					<th>Email</th>
+					<th>Role</th>
+					<th>Active</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(users) > 0 {
+					for _, u := range users {
+						<tr>
+							<td>{ fmt.Sprintf("%d", u.ID) }</td>
+							<td>{ u.Username }</td>
+							<td>{ u.Email }</td>
+							<td>{ u.Role }</td>
+							<td>
+								if u.Active {
+									Yes
+								} else {
+									No
+								}
+							</td>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/admin/companies/%d/users/%d/edit", company.ID, u.ID)) } class="btn btn-sm">Edit</a></td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="6" class="text-center">No users found</td></tr>
+				}
+			</tbody>
+		</table>
+	}
+}

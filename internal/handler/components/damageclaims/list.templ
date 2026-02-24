@@ -1,0 +1,50 @@
+package damageclaims
+
+import (
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ListPage(pg components.PageContext, result models.DamageClaimListResult, filter models.DamageClaimFilter) {
+	@components.Layout(pg, "Damage Claims - ATLinks") {
+		<div class="page-header">
+			<h1>Damage Claims</h1>
+			<a href="/accounting/damage-claims/new" class="btn btn-primary">New Claim</a>
+		</div>
+		<div class="filter-bar">
+			<div class="form-group">
+				<label for="search">Search</label>
+				<input
+					type="text" id="search" name="search" class="form-control search-input"
+					placeholder="Claim #, VIN..."
+					value={ filter.Search }
+					hx-get="/accounting/damage-claims"
+					hx-trigger="keyup changed delay:300ms"
+					hx-target="#damage-claim-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				/>
+			</div>
+			<div class="form-group">
+				<label for="status">Status</label>
+				<select
+					id="status" name="status" class="form-control"
+					hx-get="/accounting/damage-claims"
+					hx-trigger="change"
+					hx-target="#damage-claim-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				>
+					<option value="" selected?={ filter.Status == "" }>All</option>
+					<option value="Open" selected?={ filter.Status == "Open" }>Open</option>
+					<option value="Approved" selected?={ filter.Status == "Approved" }>Approved</option>
+					<option value="Denied" selected?={ filter.Status == "Denied" }>Denied</option>
+					<option value="Paid" selected?={ filter.Status == "Paid" }>Paid</option>
+				</select>
+			</div>
+		</div>
+		<div id="damage-claim-table">
+			@Table(result)
+		</div>
+	}
+}

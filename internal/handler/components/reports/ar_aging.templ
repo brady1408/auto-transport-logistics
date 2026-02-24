@@ -1,0 +1,51 @@
+package reports
+
+import (
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ ArAgingPage(pg components.PageContext, rows []store.ArAgingRow) {
+	@components.Layout(pg, "AR Aging Report - ATLinks") {
+		<div class="page-header">
+			<h1>AR Aging Report</h1>
+			<div class="btn-group no-print">
+				<a href="/reports/ar-aging/csv" class="btn">Export CSV</a>
+				<button onclick="window.print()" class="btn">Print</button>
+				<a href="/reports" class="btn">Back to Reports</a>
+			</div>
+		</div>
+		<div class="table-container">
+			<table class="report-table">
+				<thead>
+					<tr>
+						<th>Customer #</th>
+						<th>Customer Name</th>
+						<th class="text-right">Current (0-30)</th>
+						<th class="text-right">31-60 Days</th>
+						<th class="text-right">61-90 Days</th>
+						<th class="text-right">90+ Days</th>
+						<th class="text-right">Total</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(rows) > 0 {
+						for _, row := range rows {
+							<tr>
+								<td>{ row.CustomerNumber }</td>
+								<td>{ row.CustomerName }</td>
+								<td class="text-right">${ row.Current }</td>
+								<td class="text-right">${ row.Days31 }</td>
+								<td class="text-right">${ row.Days61 }</td>
+								<td class="text-right">${ row.Days90 }</td>
+								<td class="text-right"><strong>${ row.Total }</strong></td>
+							</tr>
+						}
+					} else {
+						<tr><td colspan="7" class="text-center text-muted">No open invoices found.</td></tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}

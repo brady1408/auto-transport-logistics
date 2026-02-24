@@ -1,0 +1,62 @@
+package lookup
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ ListPage(pg components.PageContext, items []store.LookupItem, title string, basePath string) {
+	@components.Layout(pg, title + " - ATLinks") {
+		<div class="page-header">
+			<h1>{ title }</h1>
+		</div>
+		<div class="card">
+			<div class="card-header">Add Entry</div>
+			<div class="card-body">
+				<form class="inline-form" method="POST" action={ templ.SafeURL(basePath) } hx-post={ basePath }>
+					<input type="text" name="code" class="form-control" placeholder="Code" required style="width:150px"/>
+					<input type="text" name="description" class="form-control" placeholder="Description" style="width:300px"/>
+					<button type="submit" class="btn btn-primary btn-sm">Add</button>
+				</form>
+			</div>
+		</div>
+		<div id="lookup-table">
+			@Table(items, basePath)
+		</div>
+	}
+}
+
+templ Table(items []store.LookupItem, basePath string) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Code</th>
+					<th>Description</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(items) > 0 {
+					for _, item := range items {
+						<tr>
+							<td>{ item.Code }</td>
+							<td>{ item.Description }</td>
+							<td class="text-right">
+								<button
+									class="btn btn-sm btn-danger"
+									hx-delete={ fmt.Sprintf("%s/%d", basePath, item.ID) }
+									hx-confirm={ fmt.Sprintf("Delete %s?", item.Code) }
+								>Delete</button>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="3" class="text-center text-muted">No entries found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

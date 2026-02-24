@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/brady1408/atlinks/internal/handler/components/creditmemos"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -42,30 +43,24 @@ func (h *CreditMemoHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Result": result,
-		"Filter": filter,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "credit_memo_table", data)
+		h.deps.renderTempl(w, r, creditmemos.Table(*result))
 		return
 	}
-	h.deps.render(w, r, "credit_memo_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, creditmemos.ListPage(pg, *result, filter))
 }
 
 func (h *CreditMemoHandler) newForm(w http.ResponseWriter, r *http.Request) {
 	creditNum, _ := h.store.NextCreditNumber(r.Context())
 	now := time.Now()
 	status := "Pending"
-	h.deps.render(w, r, "credit_memo_form.html", map[string]any{
-		"CreditMemo": &models.CreditMemo{
-			CreditNumber: creditNum,
-			CreditDate:   &now,
-			Status:       &status,
-		},
-		"IsNew": true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, creditmemos.FormPage(pg, &models.CreditMemo{
+		CreditNumber: creditNum,
+		CreditDate:   &now,
+		Status:       &status,
+	}, true, ""))
 }
 
 func (h *CreditMemoHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -74,22 +69,16 @@ func (h *CreditMemoHandler) create(w http.ResponseWriter, r *http.Request) {
 	if cm.CreditNumber == "" {
 		num, err := h.store.NextCreditNumber(r.Context())
 		if err != nil {
-			h.deps.render(w, r, "credit_memo_form.html", map[string]any{
-				"CreditMemo": cm,
-				"IsNew":      true,
-				"Error":      "Failed to generate credit number: " + err.Error(),
-			})
+			pg := h.deps.pageContext(w, r)
+			h.deps.renderTempl(w, r, creditmemos.FormPage(pg, cm, true, "Failed to generate credit number: "+err.Error()))
 			return
 		}
 		cm.CreditNumber = num
 	}
 
 	if err := h.store.Create(r.Context(), cm); err != nil {
-		h.deps.render(w, r, "credit_memo_form.html", map[string]any{
-			"CreditMemo": cm,
-			"IsNew":      true,
-			"Error":      "Failed to create credit memo: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, creditmemos.FormPage(pg, cm, true, "Failed to create credit memo: "+err.Error()))
 		return
 	}
 
@@ -117,9 +106,8 @@ func (h *CreditMemoHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "credit_memo_show.html", map[string]any{
-		"CreditMemo": cm,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, creditmemos.ShowPage(pg, cm))
 }
 
 func (h *CreditMemoHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -135,10 +123,8 @@ func (h *CreditMemoHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "credit_memo_form.html", map[string]any{
-		"CreditMemo": cm,
-		"IsNew":      false,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, creditmemos.FormPage(pg, cm, false, ""))
 }
 
 func (h *CreditMemoHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -159,11 +145,8 @@ func (h *CreditMemoHandler) update(w http.ResponseWriter, r *http.Request) {
 	cm.CreditNumber = old.CreditNumber
 
 	if err := h.store.Update(r.Context(), cm); err != nil {
-		h.deps.render(w, r, "credit_memo_form.html", map[string]any{
-			"CreditMemo": cm,
-			"IsNew":      false,
-			"Error":      "Failed to update credit memo: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, creditmemos.FormPage(pg, cm, false, "Failed to update credit memo: "+err.Error()))
 		return
 	}
 

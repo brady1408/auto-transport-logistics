@@ -9,6 +9,7 @@ import (
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/email"
+	"github.com/brady1408/atlinks/internal/handler/components/authpages"
 	"github.com/brady1408/atlinks/internal/middleware"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
@@ -65,7 +66,7 @@ func (h *AuthHandler) showLogin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.deps.render(w, r, "login.html", nil)
+	h.deps.renderTempl(w, r, authpages.LoginPage("", "", "", "", "", getFlash(w, r), "", "", nil, nil))
 }
 
 func (h *AuthHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -74,18 +75,12 @@ func (h *AuthHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.users.GetByUsername(r.Context(), username)
 	if err != nil || !user.Active {
-		h.deps.render(w, r, "login.html", map[string]any{
-			"Error":    "Invalid username or password",
-			"Username": username,
-		})
+		h.deps.renderTempl(w, r, authpages.LoginPage("", "", "", username, "Invalid username or password", "", "", "", nil, nil))
 		return
 	}
 
 	if err := auth.CheckPassword(user.PasswordHash, password); err != nil {
-		h.deps.render(w, r, "login.html", map[string]any{
-			"Error":    "Invalid username or password",
-			"Username": username,
-		})
+		h.deps.renderTempl(w, r, authpages.LoginPage("", "", "", username, "Invalid username or password", "", "", "", nil, nil))
 		return
 	}
 
@@ -127,10 +122,7 @@ func (h *AuthHandler) showCompanyLogin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.deps.render(w, r, "login.html", map[string]any{
-		"CompanyName": company.CompanyName,
-		"LoginAction": "/c/" + slug + "/login",
-	})
+	h.deps.renderTempl(w, r, authpages.LoginPage(company.CompanyName, "/c/"+slug+"/login", "", "", "", getFlash(w, r), "", "", nil, nil))
 }
 
 func (h *AuthHandler) handleCompanyLogin(w http.ResponseWriter, r *http.Request) {
@@ -144,27 +136,22 @@ func (h *AuthHandler) handleCompanyLogin(w http.ResponseWriter, r *http.Request)
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	loginData := map[string]any{
-		"Error":       "Invalid username or password",
-		"Username":    username,
-		"CompanyName": company.CompanyName,
-		"LoginAction": "/c/" + slug + "/login",
-	}
+	loginAction := "/c/" + slug + "/login"
 
 	user, err := h.users.GetByUsername(r.Context(), username)
 	if err != nil || !user.Active {
-		h.deps.render(w, r, "login.html", loginData)
+		h.deps.renderTempl(w, r, authpages.LoginPage(company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
 		return
 	}
 
 	// Verify user belongs to this company
 	if user.CompanyID == nil || *user.CompanyID != company.ID {
-		h.deps.render(w, r, "login.html", loginData)
+		h.deps.renderTempl(w, r, authpages.LoginPage(company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
 		return
 	}
 
 	if err := auth.CheckPassword(user.PasswordHash, password); err != nil {
-		h.deps.render(w, r, "login.html", loginData)
+		h.deps.renderTempl(w, r, authpages.LoginPage(company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
 		return
 	}
 
@@ -195,9 +182,7 @@ func (h *AuthHandler) showRegister(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.deps.render(w, r, "login.html", map[string]any{
-		"ActiveTab": "register",
-	})
+	h.deps.renderTempl(w, r, authpages.LoginPage("", "", "register", "", "", "", "", "", nil, nil))
 }
 
 func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
@@ -269,11 +254,7 @@ func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(errs) > 0 {
-		h.deps.render(w, r, "login.html", map[string]any{
-			"ActiveTab":           "register",
-			"RegisterFieldErrors": errs,
-			"RegisterForm":        formData,
-		})
+		h.deps.renderTempl(w, r, authpages.LoginPage("", "", "register", "", "", "", "", "", formData, errs))
 		return
 	}
 
@@ -294,29 +275,18 @@ func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 	token, err := h.pendingStore.Create(r.Context(), reg)
 	if err != nil {
-		h.deps.render(w, r, "login.html", map[string]any{
-			"ActiveTab":     "register",
-			"RegisterError": "Failed to start registration. Please try again.",
-			"RegisterForm":  formData,
-		})
+		h.deps.renderTempl(w, r, authpages.LoginPage("", "", "register", "", "", "", "", "Failed to start registration. Please try again.", formData, nil))
 		return
 	}
 
 	verifyURL := h.appBaseURL + "/verify-email/" + token
 	if err := h.emailSvc.SendVerification(emailAddr, companyName, verifyURL); err != nil {
 		log.Printf("ERROR: send verification email to %s: %v", emailAddr, err)
-		h.deps.render(w, r, "login.html", map[string]any{
-			"ActiveTab":     "register",
-			"RegisterError": "Failed to send verification email. Please try again.",
-			"RegisterForm":  formData,
-		})
+		h.deps.renderTempl(w, r, authpages.LoginPage("", "", "register", "", "", "", "", "Failed to send verification email. Please try again.", formData, nil))
 		return
 	}
 
-	h.deps.render(w, r, "login.html", map[string]any{
-		"ActiveTab":       "register",
-		"RegisterSuccess": fmt.Sprintf("Verification email sent to %s. Please check your inbox to complete registration.", emailAddr),
-	})
+	h.deps.renderTempl(w, r, authpages.LoginPage("", "", "register", "", "", "", fmt.Sprintf("Verification email sent to %s. Please check your inbox to complete registration.", emailAddr), "", nil, nil))
 }
 
 func (h *AuthHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request) {
@@ -324,23 +294,17 @@ func (h *AuthHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request) 
 
 	reg, err := h.pendingStore.Validate(r.Context(), token)
 	if err != nil {
-		h.deps.render(w, r, "forgot_password.html", map[string]any{
-			"Error": "This verification link is invalid or has expired. Please register again.",
-		})
+		h.deps.renderTempl(w, r, authpages.ForgotPasswordPage("This verification link is invalid or has expired. Please register again.", "", ""))
 		return
 	}
 
 	// Re-check uniqueness (slug/username could have been taken while pending)
 	if _, err := h.companyStore.GetBySlug(r.Context(), reg.Slug); err == nil {
-		h.deps.render(w, r, "forgot_password.html", map[string]any{
-			"Error": "The company URL slug has already been taken. Please register again with a different slug.",
-		})
+		h.deps.renderTempl(w, r, authpages.ForgotPasswordPage("The company URL slug has already been taken. Please register again with a different slug.", "", ""))
 		return
 	}
 	if _, err := h.users.GetByUsername(r.Context(), reg.Username); err == nil {
-		h.deps.render(w, r, "forgot_password.html", map[string]any{
-			"Error": "The username has already been taken. Please register again with a different username.",
-		})
+		h.deps.renderTempl(w, r, authpages.ForgotPasswordPage("The username has already been taken. Please register again with a different username.", "", ""))
 		return
 	}
 
@@ -394,7 +358,7 @@ func (h *AuthHandler) handleLogout(w http.ResponseWriter, r *http.Request) {
 // --- Password Reset ---
 
 func (h *AuthHandler) showForgotPassword(w http.ResponseWriter, r *http.Request) {
-	h.deps.render(w, r, "forgot_password.html", nil)
+	h.deps.renderTempl(w, r, authpages.ForgotPasswordPage("", "", ""))
 }
 
 func (h *AuthHandler) handleForgotPassword(w http.ResponseWriter, r *http.Request) {
@@ -404,9 +368,7 @@ func (h *AuthHandler) handleForgotPassword(w http.ResponseWriter, r *http.Reques
 	genericMsg := "If an account exists with that username and has an email on file, we've sent a password reset link."
 
 	if username == "" {
-		h.deps.render(w, r, "forgot_password.html", map[string]any{
-			"Error": "Please enter your username",
-		})
+		h.deps.renderTempl(w, r, authpages.ForgotPasswordPage("Please enter your username", "", ""))
 		return
 	}
 
@@ -428,10 +390,7 @@ func (h *AuthHandler) handleForgotPassword(w http.ResponseWriter, r *http.Reques
 		log.Printf("Password reset requested for user %q but no email on file", username)
 	}
 
-	h.deps.render(w, r, "forgot_password.html", map[string]any{
-		"Success":  genericMsg,
-		"Username": username,
-	})
+	h.deps.renderTempl(w, r, authpages.ForgotPasswordPage("", genericMsg, username))
 }
 
 func (h *AuthHandler) showResetPassword(w http.ResponseWriter, r *http.Request) {
@@ -439,16 +398,11 @@ func (h *AuthHandler) showResetPassword(w http.ResponseWriter, r *http.Request) 
 
 	_, _, err := h.resetStore.Validate(r.Context(), token)
 	if err != nil {
-		h.deps.render(w, r, "reset_password.html", map[string]any{
-			"Error":        "This reset link is invalid or has expired. Please request a new one.",
-			"TokenInvalid": true,
-		})
+		h.deps.renderTempl(w, r, authpages.ResetPasswordPage("", "This reset link is invalid or has expired. Please request a new one.", true))
 		return
 	}
 
-	h.deps.render(w, r, "reset_password.html", map[string]any{
-		"Token": token,
-	})
+	h.deps.renderTempl(w, r, authpages.ResetPasswordPage(token, "", false))
 }
 
 func (h *AuthHandler) handleResetPassword(w http.ResponseWriter, r *http.Request) {
@@ -457,27 +411,18 @@ func (h *AuthHandler) handleResetPassword(w http.ResponseWriter, r *http.Request
 	confirm := r.FormValue("confirm_password")
 
 	if password == "" {
-		h.deps.render(w, r, "reset_password.html", map[string]any{
-			"Token": token,
-			"Error": "Password is required",
-		})
+		h.deps.renderTempl(w, r, authpages.ResetPasswordPage(token, "Password is required", false))
 		return
 	}
 
 	if password != confirm {
-		h.deps.render(w, r, "reset_password.html", map[string]any{
-			"Token": token,
-			"Error": "Passwords do not match",
-		})
+		h.deps.renderTempl(w, r, authpages.ResetPasswordPage(token, "Passwords do not match", false))
 		return
 	}
 
 	userID, tokenID, err := h.resetStore.Validate(r.Context(), token)
 	if err != nil {
-		h.deps.render(w, r, "reset_password.html", map[string]any{
-			"Error":        "This reset link is invalid or has expired. Please request a new one.",
-			"TokenInvalid": true,
-		})
+		h.deps.renderTempl(w, r, authpages.ResetPasswordPage("", "This reset link is invalid or has expired. Please request a new one.", true))
 		return
 	}
 

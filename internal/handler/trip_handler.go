@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/brady1408/atlinks/internal/handler/components/trips"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/store"
@@ -62,27 +63,18 @@ func (h *TripHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Result": result,
-		"Filter": filter,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "trip_table", data)
+		h.deps.renderTempl(w, r, trips.Table(*result))
 		return
 	}
-	h.deps.render(w, r, "trip_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, trips.ListPage(pg, *result, filter))
 }
 
 func (h *TripHandler) newForm(w http.ResponseWriter, r *http.Request) {
 	loadNum, _ := h.store.NextLoadNumber(r.Context())
-	h.deps.render(w, r, "trip_form.html", map[string]any{
-		"Trip": &models.Trip{
-			LoadNumber: loadNum,
-			Active:     true,
-		},
-		"IsNew": true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, trips.FormPage(pg, &models.Trip{LoadNumber: loadNum, Active: true}, true, ""))
 }
 
 func (h *TripHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -91,22 +83,16 @@ func (h *TripHandler) create(w http.ResponseWriter, r *http.Request) {
 	if t.LoadNumber == "" {
 		num, err := h.store.NextLoadNumber(r.Context())
 		if err != nil {
-			h.deps.render(w, r, "trip_form.html", map[string]any{
-				"Trip":  t,
-				"IsNew": true,
-				"Error": "Failed to generate load number: " + err.Error(),
-			})
+			pg := h.deps.pageContext(w, r)
+			h.deps.renderTempl(w, r, trips.FormPage(pg, t, true, "Failed to generate load number: "+err.Error()))
 			return
 		}
 		t.LoadNumber = num
 	}
 
 	if err := h.store.Create(r.Context(), t); err != nil {
-		h.deps.render(w, r, "trip_form.html", map[string]any{
-			"Trip":  t,
-			"IsNew": true,
-			"Error": "Failed to create trip: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, trips.FormPage(pg, t, true, "Failed to create trip: "+err.Error()))
 		return
 	}
 
@@ -139,11 +125,8 @@ func (h *TripHandler) show(w http.ResponseWriter, r *http.Request) {
 		log.Printf("ERROR loading trip %d manifest: %v", id, err)
 	}
 
-	h.deps.render(w, r, "trip_show.html", map[string]any{
-		"Trip":         t,
-		"Loads":        loads,
-		"VehicleCount": len(loads),
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, trips.ShowPage(pg, t, loads, len(loads)))
 }
 
 func (h *TripHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -159,10 +142,8 @@ func (h *TripHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "trip_form.html", map[string]any{
-		"Trip":  t,
-		"IsNew": false,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, trips.FormPage(pg, t, false, ""))
 }
 
 func (h *TripHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -183,11 +164,8 @@ func (h *TripHandler) update(w http.ResponseWriter, r *http.Request) {
 	t.LoadNumber = old.LoadNumber // load_number is immutable
 
 	if err := h.store.Update(r.Context(), t); err != nil {
-		h.deps.render(w, r, "trip_form.html", map[string]any{
-			"Trip":  t,
-			"IsNew": false,
-			"Error": "Failed to update trip: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, trips.FormPage(pg, t, false, "Failed to update trip: "+err.Error()))
 		return
 	}
 
@@ -341,10 +319,7 @@ func (h *TripHandler) updateBayNumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderPartial(w, "load_table", map[string]any{
-		"Loads":  loads,
-		"TripID": tripID,
-	})
+	h.deps.renderTempl(w, r, trips.LoadTable(loads, tripID))
 }
 
 func (h *TripHandler) availableVehicles(w http.ResponseWriter, r *http.Request) {
@@ -375,15 +350,7 @@ func (h *TripHandler) availableVehicles(w http.ResponseWriter, r *http.Request) 
 		totalPages = 1
 	}
 
-	h.deps.renderPartial(w, "available_vehicles_table", map[string]any{
-		"Vehicles":   vehicles,
-		"TripID":     tripID,
-		"Search":     search,
-		"TotalCount": totalCount,
-		"Page":       page,
-		"TotalPages": totalPages,
-		"PageSize":   pageSize,
-	})
+	h.deps.renderTempl(w, r, trips.AvailableVehicles(vehicles, tripID, search, totalCount, page, totalPages, pageSize))
 }
 
 func (h *TripHandler) loadManifest(w http.ResponseWriter, r *http.Request) {
@@ -398,10 +365,7 @@ func (h *TripHandler) loadManifest(w http.ResponseWriter, r *http.Request) {
 		log.Printf("ERROR loading trip %d manifest: %v", tripID, err)
 	}
 
-	h.deps.renderPartial(w, "load_table", map[string]any{
-		"Loads":  loads,
-		"TripID": tripID,
-	})
+	h.deps.renderTempl(w, r, trips.LoadTable(loads, tripID))
 }
 
 func bindTripForm(r *http.Request) *models.Trip {

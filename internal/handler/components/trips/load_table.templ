@@ -1,0 +1,68 @@
+package trips
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ LoadTable(loads []store.LoadDetailWithOrder, tripID int) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Bay</th>
+					<th>Order</th>
+					<th>VIN</th>
+					<th>Year</th>
+					<th>Make</th>
+					<th>Model</th>
+					<th>Color</th>
+					<th>Status</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(loads) > 0 {
+					for _, ld := range loads {
+						<tr>
+							<td>
+								<input
+									type="text"
+									value={ components.Deref(ld.BayNumber) }
+									name="bay_number"
+									hx-put={ fmt.Sprintf("/dispatch/trips/%d/loads/%d", ld.TripID, ld.ID) }
+									hx-trigger="blur changed, keydown[key=='Enter']"
+									hx-target="#load-manifest"
+									hx-swap="innerHTML"
+									style="width:50px;padding:2px 4px;text-align:center;border:1px solid #ddd;background:transparent;font:inherit;color:inherit"
+								/>
+							</td>
+							<td>
+								if ld.OrderID != nil {
+									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", components.DerefInt(ld.OrderID))) }>{ ld.OrderNumber }</a>
+								}
+							</td>
+							<td>{ components.Deref(ld.VIN) }</td>
+							<td>{ components.Deref(ld.Year) }</td>
+							<td>{ components.Deref(ld.Make) }</td>
+							<td>{ components.Deref(ld.Model) }</td>
+							<td>{ components.Deref(ld.Color) }</td>
+							<td>{ components.Deref(ld.Status) }</td>
+							<td class="text-right">
+								<button
+									class="btn btn-sm btn-danger"
+									hx-delete={ fmt.Sprintf("/dispatch/trips/%d/loads/%d", ld.TripID, ld.ID) }
+									hx-swap="none"
+								>Remove</button>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="9" class="text-center text-muted">No vehicles assigned to this trip</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

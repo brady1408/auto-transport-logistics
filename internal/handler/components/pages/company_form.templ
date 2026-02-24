@@ -1,0 +1,129 @@
+package pages
+
+import (
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ CompanyFormPage(pg components.PageContext, company *models.Company, errMsg string) {
+	@components.Layout(pg, "Company Settings - ATLinks") {
+		<div class="page-header">
+			<h1>Company Settings</h1>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form method="POST" action="/utilities/company" hx-put="/utilities/company">
+			<fieldset>
+				<legend>Company Information</legend>
+				<div class="form-row">
+					<div class="form-group" style="grid-column:span 2">
+						<label for="company_name">Company Name *</label>
+						<input type="text" id="company_name" name="company_name" class="form-control" value={ company.CompanyName } required maxlength="40"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group" style="grid-column:span 2">
+						<label for="address">Address</label>
+						<input type="text" id="address" name="address" class="form-control" value={ components.Deref(company.Address) } maxlength="30"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group" style="grid-column:span 2">
+						<label for="address2">Address 2</label>
+						<input type="text" id="address2" name="address2" class="form-control" value={ components.Deref(company.Address2) } maxlength="30"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="city">City</label>
+						<input type="text" id="city" name="city" class="form-control" value={ components.Deref(company.City) } maxlength="25"/>
+					</div>
+					<div class="form-group">
+						<label for="state">State</label>
+						<input type="text" id="state" name="state" class="form-control" value={ components.Deref(company.State) } maxlength="2" style="text-transform:uppercase"/>
+					</div>
+					<div class="form-group">
+						<label for="zip">Zip</label>
+						<input type="text" id="zip" name="zip" class="form-control" value={ components.Deref(company.Zip) } maxlength="10"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="phone">Phone</label>
+						<input type="text" id="phone" name="phone" class="form-control" value={ components.Deref(company.Phone) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="fax">Fax</label>
+						<input type="text" id="fax" name="fax" class="form-control" value={ components.Deref(company.Fax) } maxlength="10"/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Carrier Identifiers</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="scac">SCAC</label>
+						<input type="text" id="scac" name="scac" class="form-control" value={ components.Deref(company.SCAC) } maxlength="4"/>
+					</div>
+					<div class="form-group">
+						<label for="federal_id">Federal ID</label>
+						<input type="text" id="federal_id" name="federal_id" class="form-control" value={ components.Deref(company.FederalID) } maxlength="15"/>
+					</div>
+					<div class="form-group">
+						<label for="mc_number">MC Number</label>
+						<input type="text" id="mc_number" name="mc_number" class="form-control" value={ components.Deref(company.MCNumber) } maxlength="15"/>
+					</div>
+					<div class="form-group">
+						<label for="dot_number">DOT Number</label>
+						<input type="text" id="dot_number" name="dot_number" class="form-control" value={ components.Deref(company.DOTNumber) } maxlength="15"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="splc">SPLC</label>
+						<input type="text" id="splc" name="splc" class="form-control" value={ components.Deref(company.SPLC) } maxlength="10"/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Insurance</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="insurance_carrier">Carrier</label>
+						<input type="text" id="insurance_carrier" name="insurance_carrier" class="form-control" value={ components.Deref(company.InsuranceCarrier) } maxlength="40"/>
+					</div>
+					<div class="form-group">
+						<label for="insurance_policy_number">Policy #</label>
+						<input type="text" id="insurance_policy_number" name="insurance_policy_number" class="form-control" value={ components.Deref(company.InsurancePolicyNumber) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="insurance_agent">Agent</label>
+						<input type="text" id="insurance_agent" name="insurance_agent" class="form-control" value={ components.Deref(company.InsuranceAgent) } maxlength="30"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="insurance_phone">Phone</label>
+						<input type="text" id="insurance_phone" name="insurance_phone" class="form-control" value={ components.Deref(company.InsurancePhone) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="insurance_fax">Fax</label>
+						<input type="text" id="insurance_fax" name="insurance_fax" class="form-control" value={ components.Deref(company.InsuranceFax) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="insurance_exp_date">Exp Date</label>
+						<input type="date" id="insurance_exp_date" name="insurance_exp_date" class="form-control" value={ components.FormatDate(company.InsuranceExpDate) }/>
+					</div>
+					<div class="form-group">
+						<label for="insurance_coverage_amt">Coverage Amt</label>
+						<input type="text" id="insurance_coverage_amt" name="insurance_coverage_amt" class="form-control" value={ components.Deref(company.InsuranceCoverageAmt) }/>
+					</div>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">Save Company Settings</button>
+			</div>
+		</form>
+	}
+}

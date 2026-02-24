@@ -1,0 +1,72 @@
+package orders
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ChargeTable(charges []models.OrderCharge, orderID int) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Description</th>
+					<th>Item Code</th>
+					<th>Qty</th>
+					<th>Rate</th>
+					<th>Amount</th>
+					<th class="text-center">Taxable</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(charges) > 0 {
+					for _, c := range charges {
+						<tr>
+							<td>{ components.Deref(c.Description) }</td>
+							<td>{ components.Deref(c.ItemCode) }</td>
+							<td>{ fmt.Sprintf("%d", components.DerefInt(c.Qty)) }</td>
+							<td>{ components.Deref(c.Rate) }</td>
+							<td>{ components.Deref(c.Amount) }</td>
+							<td class="text-center">
+								if c.Taxable {
+									Y
+								}
+							</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<button
+										class="btn btn-sm btn-danger"
+										hx-delete={ fmt.Sprintf("/dispatch/charges/%d", c.ID) }
+										hx-target="#charge-table"
+										hx-confirm="Delete this charge?"
+									>Delete</button>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="7" class="text-center text-muted">No charges</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if orderID > 0 {
+		<form
+			class="inline-form mt-2"
+			hx-post={ fmt.Sprintf("/dispatch/orders/%d/charges", orderID) }
+			hx-target="#charge-table"
+			hx-swap="innerHTML"
+		>
+			<input type="text" name="description" class="form-control" placeholder="Description" style="min-width:200px"/>
+			<input type="text" name="item_code" class="form-control" placeholder="Item Code" style="width:100px"/>
+			<input type="number" name="qty" class="form-control" placeholder="Qty" style="width:60px" value="1"/>
+			<input type="text" name="rate" class="form-control" placeholder="Rate" style="width:80px"/>
+			<input type="text" name="amount" class="form-control" placeholder="Amount" style="width:100px"/>
+			<label class="form-check" style="margin:0"><input type="checkbox" name="taxable"/> Tax</label>
+			<button type="submit" class="btn btn-sm btn-primary">Add</button>
+		</form>
+	}
+}

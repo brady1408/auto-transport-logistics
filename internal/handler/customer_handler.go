@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/brady1408/atlinks/internal/handler/components/customers"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -43,43 +44,31 @@ func (h *CustomerHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Result": result,
-		"Filter": filter,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "customer_table", data)
+		h.deps.renderTempl(w, r, customers.Table(*result, filter))
 		return
 	}
-	h.deps.render(w, r, "customer_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, customers.ListPage(pg, *result, filter))
 }
 
 func (h *CustomerHandler) newForm(w http.ResponseWriter, r *http.Request) {
-	h.deps.render(w, r, "customer_form.html", map[string]any{
-		"Customer": &models.Customer{},
-		"IsNew":    true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, customers.FormPage(pg, &models.Customer{}, true, ""))
 }
 
 func (h *CustomerHandler) create(w http.ResponseWriter, r *http.Request) {
 	c := bindCustomerForm(r)
 
 	if c.Name == "" {
-		h.deps.render(w, r, "customer_form.html", map[string]any{
-			"Customer": c,
-			"IsNew":    true,
-			"Error":    "Name is required",
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, customers.FormPage(pg, c, true, "Name is required"))
 		return
 	}
 
 	if err := h.store.Create(r.Context(), c); err != nil {
-		h.deps.render(w, r, "customer_form.html", map[string]any{
-			"Customer": c,
-			"IsNew":    true,
-			"Error":    "Failed to create customer: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, customers.FormPage(pg, c, true, "Failed to create customer: "+err.Error()))
 		return
 	}
 
@@ -107,10 +96,8 @@ func (h *CustomerHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "customer_form.html", map[string]any{
-		"Customer": c,
-		"IsNew":    false,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, customers.FormPage(pg, c, false, ""))
 }
 
 func (h *CustomerHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -130,20 +117,14 @@ func (h *CustomerHandler) update(w http.ResponseWriter, r *http.Request) {
 	c.ID = id
 
 	if c.Name == "" {
-		h.deps.render(w, r, "customer_form.html", map[string]any{
-			"Customer": c,
-			"IsNew":    false,
-			"Error":    "Name is required",
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, customers.FormPage(pg, c, false, "Name is required"))
 		return
 	}
 
 	if err := h.store.Update(r.Context(), c); err != nil {
-		h.deps.render(w, r, "customer_form.html", map[string]any{
-			"Customer": c,
-			"IsNew":    false,
-			"Error":    "Failed to update customer: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, customers.FormPage(pg, c, false, "Failed to update customer: "+err.Error()))
 		return
 	}
 

@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/brady1408/atlinks/internal/handler/components/trips"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -38,10 +39,7 @@ func (h *FuelHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderPartial(w, "fuel_table", map[string]any{
-		"FuelEntries": items,
-		"TripID":      tripID,
-	})
+	h.deps.renderTempl(w, r, trips.FuelTable(items, tripID))
 }
 
 func (h *FuelHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -100,10 +98,7 @@ func (h *FuelHandler) update(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "trip_fuel", f.ID, "UPDATE", old, f)
 
 	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
-	h.deps.renderPartial(w, "fuel_table", map[string]any{
-		"FuelEntries": items,
-		"TripID":      old.TripID,
-	})
+	h.deps.renderTempl(w, r, trips.FuelTable(items, old.TripID))
 }
 
 func (h *FuelHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -127,10 +122,7 @@ func (h *FuelHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "trip_fuel", id, "DELETE", old, nil)
 
 	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
-	h.deps.renderPartial(w, "fuel_table", map[string]any{
-		"FuelEntries": items,
-		"TripID":      old.TripID,
-	})
+	h.deps.renderTempl(w, r, trips.FuelTable(items, old.TripID))
 }
 
 // Expense handler
@@ -164,10 +156,7 @@ func (h *ExpenseHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderPartial(w, "expense_table", map[string]any{
-		"Expenses": items,
-		"TripID":   tripID,
-	})
+	h.deps.renderTempl(w, r, trips.ExpenseTable(items, tripID))
 }
 
 func (h *ExpenseHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -222,10 +211,7 @@ func (h *ExpenseHandler) update(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "trip_expenses", e.ID, "UPDATE", old, e)
 
 	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
-	h.deps.renderPartial(w, "expense_table", map[string]any{
-		"Expenses": items,
-		"TripID":   old.TripID,
-	})
+	h.deps.renderTempl(w, r, trips.ExpenseTable(items, old.TripID))
 }
 
 func (h *ExpenseHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -249,10 +235,7 @@ func (h *ExpenseHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "trip_expenses", id, "DELETE", old, nil)
 
 	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
-	h.deps.renderPartial(w, "expense_table", map[string]any{
-		"Expenses": items,
-		"TripID":   old.TripID,
-	})
+	h.deps.renderTempl(w, r, trips.ExpenseTable(items, old.TripID))
 }
 
 // Route handler
@@ -286,10 +269,7 @@ func (h *RouteHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderPartial(w, "route_table", map[string]any{
-		"Routes": items,
-		"TripID": tripID,
-	})
+	h.deps.renderTempl(w, r, trips.RouteTable(items, tripID))
 }
 
 func (h *RouteHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -354,10 +334,7 @@ func (h *RouteHandler) update(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "trip_routes", rt.ID, "UPDATE", old, rt)
 
 	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
-	h.deps.renderPartial(w, "route_table", map[string]any{
-		"Routes": items,
-		"TripID": old.TripID,
-	})
+	h.deps.renderTempl(w, r, trips.RouteTable(items, old.TripID))
 }
 
 func (h *RouteHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -381,8 +358,5 @@ func (h *RouteHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "trip_routes", id, "DELETE", old, nil)
 
 	items, _ := h.store.ListByTrip(r.Context(), old.TripID)
-	h.deps.renderPartial(w, "route_table", map[string]any{
-		"Routes": items,
-		"TripID": old.TripID,
-	})
+	h.deps.renderTempl(w, r, trips.RouteTable(items, old.TripID))
 }
