@@ -1,21 +1,30 @@
 package handler
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/handler/components/creditmemos"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type creditMemoStore interface {
+	List(ctx context.Context, f models.CreditMemoFilter) (*models.CreditMemoListResult, error)
+	GetByID(ctx context.Context, id int) (*models.CreditMemo, error)
+	Create(ctx context.Context, cm *models.CreditMemo) error
+	Update(ctx context.Context, cm *models.CreditMemo) error
+	Delete(ctx context.Context, id int) error
+	NextCreditNumber(ctx context.Context) (string, error)
+}
+
 type CreditMemoHandler struct {
-	store *store.CreditMemoStore
+	store creditMemoStore
 	deps  *Deps
 }
 
-func NewCreditMemoHandler(s *store.CreditMemoStore, deps *Deps) *CreditMemoHandler {
+func NewCreditMemoHandler(s creditMemoStore, deps *Deps) *CreditMemoHandler {
 	return &CreditMemoHandler{store: s, deps: deps}
 }
 
@@ -86,14 +95,9 @@ func (h *CreditMemoHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "credit_memos", cm.ID, "INSERT", nil, cm)
-	setFlash(w, "Credit memo created successfully")
+	h.deps.setFlash(w, "Credit memo created successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/credit-memos")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/credit-memos", http.StatusSeeOther)
+	redirect(w, r, "/accounting/credit-memos")
 }
 
 func (h *CreditMemoHandler) show(w http.ResponseWriter, r *http.Request) {
@@ -155,14 +159,9 @@ func (h *CreditMemoHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "credit_memos", cm.ID, "UPDATE", old, cm)
-	setFlash(w, "Credit memo updated successfully")
+	h.deps.setFlash(w, "Credit memo updated successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/credit-memos")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/credit-memos", http.StatusSeeOther)
+	redirect(w, r, "/accounting/credit-memos")
 }
 
 func (h *CreditMemoHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -184,14 +183,9 @@ func (h *CreditMemoHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "credit_memos", id, "DELETE", old, nil)
-	setFlash(w, "Credit memo deleted")
+	h.deps.setFlash(w, "Credit memo deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/credit-memos")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/credit-memos", http.StatusSeeOther)
+	redirect(w, r, "/accounting/credit-memos")
 }
 
 func bindCreditMemoForm(r *http.Request) *models.CreditMemo {

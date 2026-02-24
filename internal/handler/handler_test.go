@@ -157,15 +157,16 @@ func TestFormBool(t *testing.T) {
 func TestFlashCookie(t *testing.T) {
 	// setFlash sets a cookie
 	w := httptest.NewRecorder()
-	setFlash(w, "Item created")
+	d := &Deps{}
+	d.setFlash(w, "Item created")
 
 	cookies := w.Result().Cookies()
 	var found bool
 	for _, c := range cookies {
 		if c.Name == "flash" {
 			found = true
-			if c.Value != "Item created" {
-				t.Errorf("flash value = %q, want %q", c.Value, "Item created")
+			if c.Value != "Item+created" {
+				t.Errorf("flash value = %q, want %q", c.Value, "Item+created")
 			}
 		}
 	}
@@ -177,7 +178,7 @@ func TestFlashCookie(t *testing.T) {
 	r := httptest.NewRequest("GET", "/", nil)
 	r.AddCookie(&http.Cookie{Name: "flash", Value: "Hello"})
 	w2 := httptest.NewRecorder()
-	msg := getFlash(w2, r)
+	msg := d.getFlash(w2, r)
 	if msg != "Hello" {
 		t.Errorf("getFlash = %q, want Hello", msg)
 	}
@@ -190,9 +191,10 @@ func TestFlashCookie(t *testing.T) {
 }
 
 func TestGetFlashNoCookie(t *testing.T) {
+	d := &Deps{}
 	r := httptest.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
-	msg := getFlash(w, r)
+	msg := d.getFlash(w, r)
 	if msg != "" {
 		t.Errorf("getFlash with no cookie = %q, want empty", msg)
 	}

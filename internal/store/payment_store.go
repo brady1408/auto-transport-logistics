@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
@@ -41,67 +40,49 @@ func (s *PaymentStore) List(ctx context.Context, f models.PaymentFilter) (*model
 		f.PageSize = 25
 	}
 
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
 
 	if f.Search != "" {
-		where = append(where, fmt.Sprintf(
-			"(customer_name ILIKE $%d OR check_number ILIKE $%d)",
-			argN, argN))
-		args = append(args, "%"+f.Search+"%")
-		argN++
+		search := "%" + f.Search + "%"
+		qb.Add("(customer_name ILIKE ? OR check_number ILIKE ?)", search, search)
 	}
 	if f.CustomerID != "" {
-		where = append(where, fmt.Sprintf("customer_id = $%d", argN))
-		args = append(args, f.CustomerID)
-		argN++
+		qb.Add("customer_id = ?", f.CustomerID)
 	}
 	if f.DateFrom != "" {
-		where = append(where, fmt.Sprintf("payment_date >= $%d", argN))
-		args = append(args, f.DateFrom)
-		argN++
+		qb.Add("payment_date >= ?", f.DateFrom)
 	}
 	if f.DateTo != "" {
-		where = append(where, fmt.Sprintf("payment_date <= $%d", argN))
-		args = append(args, f.DateTo)
-		argN++
+		qb.Add("payment_date <= ?", f.DateTo)
 	}
 
-	whereClause := "WHERE " + strings.Join(where, " AND ")
-
 	var total int
-	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM payments "+whereClause, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM payments "+qb.Where(), qb.Args()...).Scan(&total); err != nil {
 		return nil, fmt.Errorf("count payments: %w", err)
 	}
 
-	offset := (f.Page - 1) * f.PageSize
-	query := fmt.Sprintf("SELECT %s FROM payments %s ORDER BY id DESC LIMIT $%d OFFSET $%d",
-		paymentColumns, whereClause, argN, argN+1)
-	args = append(args, f.PageSize, offset)
+	query := fmt.Sprintf("SELECT %s FROM payments %s ORDER BY id DESC %s",
+		paymentColumns, qb.Where(), qb.Paginate(f.PageSize, f.Page))
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("list payments: %w", err)
 	}
-	defer rows.Close()
-
-	var items []models.Payment
-	for rows.Next() {
-		p, err := scanPayment(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Payment, error) {
+		p, err := scanPayment(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan payment: %w", err)
+			return models.Payment{}, err
 		}
-		items = append(items, *p)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list payments rows: %w", err)
+		return *p, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan payment: %w", err)
 	}
 
 	return &models.PaymentListResult{
@@ -113,7 +94,10 @@ func (s *PaymentStore) List(ctx context.Context, f models.PaymentFilter) (*model
 }
 
 func (s *PaymentStore) GetByID(ctx context.Context, id int) (*models.Payment, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM payments WHERE id = $1 AND company_id = $2", paymentColumns)
 	p, err := scanPayment(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -123,7 +107,10 @@ func (s *PaymentStore) GetByID(ctx context.Context, id int) (*models.Payment, er
 }
 
 func (s *PaymentStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*models.Payment, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM payments WHERE id = $1 AND company_id = $2", paymentColumns)
 	p, err := scanPayment(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -133,8 +120,12 @@ func (s *PaymentStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*model
 }
 
 func (s *PaymentStore) Create(ctx context.Context, p *models.Payment) error {
-	p.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	p.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO payments (
 			company_id, customer_id, customer_number, customer_name,
 			payment_date, check_number, amount, applied_amount, unapplied_amount,
@@ -153,8 +144,11 @@ func (s *PaymentStore) Create(ctx context.Context, p *models.Payment) error {
 }
 
 func (s *PaymentStore) Update(ctx context.Context, p *models.Payment) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE payments SET
 			customer_id=$1, customer_number=$2, customer_name=$3,
 			payment_date=$4, check_number=$5, amount=$6, applied_amount=$7, unapplied_amount=$8,
@@ -168,14 +162,23 @@ func (s *PaymentStore) Update(ctx context.Context, p *models.Payment) error {
 	if err != nil {
 		return fmt.Errorf("update payment %d: %w", p.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("payment %d not found", p.ID)
+	}
 	return nil
 }
 
 func (s *PaymentStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM payments WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM payments WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete payment %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("payment %d not found", id)
 	}
 	return nil
 }
@@ -193,28 +196,20 @@ type PaymentReportRow struct {
 }
 
 func (s *PaymentStore) PaymentReport(ctx context.Context, dateFrom, dateTo string) ([]PaymentReportRow, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("p.company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
+	qb := newQueryBuilder()
+	qb.Add("p.company_id = ?", companyID)
 
 	if dateFrom != "" {
-		where = append(where, fmt.Sprintf("p.payment_date >= $%d", argN))
-		args = append(args, dateFrom)
-		argN++
+		qb.Add("p.payment_date >= ?", dateFrom)
 	}
 	if dateTo != "" {
-		where = append(where, fmt.Sprintf("p.payment_date <= $%d", argN))
-		args = append(args, dateTo)
-		argN++
+		qb.Add("p.payment_date <= ?", dateTo)
 	}
-
-	whereClause := "WHERE " + strings.Join(where, " AND ")
 
 	query := fmt.Sprintf(`SELECT
 		p.id,
@@ -228,38 +223,41 @@ func (s *PaymentStore) PaymentReport(ctx context.Context, dateFrom, dateTo strin
 	LEFT JOIN invoices i ON i.id = pd.invoice_id
 	%s
 	GROUP BY p.id, p.payment_date, p.customer_name, p.check_number, p.amount, p.applied_amount, p.payment_method
-	ORDER BY p.payment_date DESC NULLS LAST`, whereClause)
+	ORDER BY p.payment_date DESC NULLS LAST`, qb.Where())
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("payment report: %w", err)
 	}
-	defer rows.Close()
-
-	var items []PaymentReportRow
-	for rows.Next() {
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (PaymentReportRow, error) {
 		var r PaymentReportRow
-		if err := rows.Scan(&r.ID, &r.PaymentDate, &r.CustomerName, &r.CheckNumber,
+		if err := row.Scan(&r.ID, &r.PaymentDate, &r.CustomerName, &r.CheckNumber,
 			&r.Amount, &r.AppliedAmount, &r.PaymentMethod, &r.InvoiceNumbers); err != nil {
-			return nil, fmt.Errorf("scan payment report row: %w", err)
+			return PaymentReportRow{}, err
 		}
-		items = append(items, r)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("payment report rows: %w", err)
+		return r, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan payment report row: %w", err)
 	}
 	return items, nil
 }
 
 // UpdateAmountsTx updates the applied/unapplied amounts within a transaction.
 func (s *PaymentStore) UpdateAmountsTx(ctx context.Context, tx pgx.Tx, id int, applied string, unapplied string) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := tx.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := tx.Exec(ctx,
 		`UPDATE payments SET applied_amount=$1, unapplied_amount=$2 WHERE id=$3 AND company_id=$4`,
 		applied, unapplied, id, companyID,
 	)
 	if err != nil {
 		return fmt.Errorf("update payment amounts %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("payment %d not found", id)
 	}
 	return nil
 }

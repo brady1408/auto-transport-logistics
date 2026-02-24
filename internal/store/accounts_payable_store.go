@@ -3,10 +3,10 @@ package store
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -40,67 +40,49 @@ func (s *AccountsPayableStore) List(ctx context.Context, f models.APFilter) (*mo
 		f.PageSize = 25
 	}
 
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
-
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
 	if f.Search != "" {
-		where = append(where, fmt.Sprintf(
-			"(vendor_name ILIKE $%d OR description ILIKE $%d OR check_number ILIKE $%d)",
-			argN, argN, argN))
-		args = append(args, "%"+f.Search+"%")
-		argN++
+		search := "%" + f.Search + "%"
+		qb.Add("(vendor_name ILIKE ? OR description ILIKE ? OR check_number ILIKE ?)", search, search, search)
 	}
 	if f.Status != "" {
-		where = append(where, fmt.Sprintf("status = $%d", argN))
-		args = append(args, f.Status)
-		argN++
+		qb.Add("status = ?", f.Status)
 	}
 	if f.EmployeeID != "" {
-		where = append(where, fmt.Sprintf("employee_id = $%d", argN))
-		args = append(args, f.EmployeeID)
-		argN++
+		qb.Add("employee_id = ?", f.EmployeeID)
 	}
 	if f.TruckID != "" {
-		where = append(where, fmt.Sprintf("truck_id = $%d", argN))
-		args = append(args, f.TruckID)
-		argN++
+		qb.Add("truck_id = ?", f.TruckID)
 	}
 
-	whereClause := "WHERE " + strings.Join(where, " AND ")
-
 	var total int
-	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM accounts_payable "+whereClause, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM accounts_payable "+qb.Where(), qb.Args()...).Scan(&total); err != nil {
 		return nil, fmt.Errorf("count accounts payable: %w", err)
 	}
 
-	offset := (f.Page - 1) * f.PageSize
-	query := fmt.Sprintf("SELECT %s FROM accounts_payable %s ORDER BY id DESC LIMIT $%d OFFSET $%d",
-		apColumns, whereClause, argN, argN+1)
-	args = append(args, f.PageSize, offset)
+	paginate := qb.Paginate(f.PageSize, f.Page)
+	query := fmt.Sprintf("SELECT %s FROM accounts_payable %s ORDER BY id DESC %s",
+		apColumns, qb.Where(), paginate)
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("list accounts payable: %w", err)
 	}
-	defer rows.Close()
-
-	var items []models.AccountsPayable
-	for rows.Next() {
-		ap, err := scanAP(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.AccountsPayable, error) {
+		ap, err := scanAP(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan accounts payable: %w", err)
+			return models.AccountsPayable{}, err
 		}
-		items = append(items, *ap)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list accounts payable rows: %w", err)
+		return *ap, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan accounts payable: %w", err)
 	}
 
 	return &models.APListResult{
@@ -112,7 +94,10 @@ func (s *AccountsPayableStore) List(ctx context.Context, f models.APFilter) (*mo
 }
 
 func (s *AccountsPayableStore) GetByID(ctx context.Context, id int) (*models.AccountsPayable, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM accounts_payable WHERE id = $1 AND company_id = $2", apColumns)
 	ap, err := scanAP(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -122,8 +107,12 @@ func (s *AccountsPayableStore) GetByID(ctx context.Context, id int) (*models.Acc
 }
 
 func (s *AccountsPayableStore) Create(ctx context.Context, ap *models.AccountsPayable) error {
-	ap.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	ap.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO accounts_payable (
 			company_id, trip_id, employee_id, truck_id, vendor_name,
 			payable_date, amount, paid_amount, status, description,
@@ -142,8 +131,11 @@ func (s *AccountsPayableStore) Create(ctx context.Context, ap *models.AccountsPa
 }
 
 func (s *AccountsPayableStore) Update(ctx context.Context, ap *models.AccountsPayable) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE accounts_payable SET
 			trip_id=$1, employee_id=$2, truck_id=$3, vendor_name=$4,
 			payable_date=$5, amount=$6, paid_amount=$7, status=$8, description=$9,
@@ -157,14 +149,23 @@ func (s *AccountsPayableStore) Update(ctx context.Context, ap *models.AccountsPa
 	if err != nil {
 		return fmt.Errorf("update accounts payable %d: %w", ap.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("accounts payable %d not found", ap.ID)
+	}
 	return nil
 }
 
 func (s *AccountsPayableStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM accounts_payable WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM accounts_payable WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete accounts payable %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("accounts payable %d not found", id)
 	}
 	return nil
 }

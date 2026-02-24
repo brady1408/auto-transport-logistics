@@ -17,20 +17,21 @@ import (
 	"github.com/brady1408/atlinks/internal/audit"
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/handler/components"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/atlinks/internal/models"
 )
 
-// BuildVersion is set from main.go and used for static asset cache busting.
-var BuildVersion string
-
-// SecureCookies is set from main.go; true when serving over HTTPS.
-var SecureCookies bool
+// depsCompanyStore is the subset of CompanyStore used by Deps for company name lookups.
+type depsCompanyStore interface {
+	Get(ctx context.Context) (*models.Company, error)
+}
 
 type Deps struct {
-	JWT          *auth.JWTService
-	Audit        *audit.Service
-	CompanyStore *store.CompanyStore
-	companyNames sync.Map // cache: companyID(int) -> companyName(string)
+	JWT           *auth.JWTService
+	Audit         *audit.Service
+	CompanyStore  depsCompanyStore
+	BuildVersion  string
+	SecureCookies bool
+	companyNames  sync.Map // cache: companyID(int) -> companyName(string)
 }
 
 func parseID(r *http.Request) (int, error) {
@@ -83,6 +84,11 @@ func (d *Deps) getCompanyName(ctx context.Context) string {
 	return c.CompanyName
 }
 
+// InvalidateCompanyName removes a cached company name so it will be re-fetched.
+func (d *Deps) InvalidateCompanyName(companyID int) {
+	d.companyNames.Delete(companyID)
+}
+
 // pageContext builds a PageContext from the current request.
 func (d *Deps) pageContext(w http.ResponseWriter, r *http.Request) components.PageContext {
 	ctx := components.PageContext{}
@@ -92,7 +98,7 @@ func (d *Deps) pageContext(w http.ResponseWriter, r *http.Request) components.Pa
 	if companyName := d.getCompanyName(r.Context()); companyName != "" {
 		ctx.CompanyName = companyName
 	}
-	if flash := getFlash(w, r); flash != "" {
+	if flash := d.getFlash(w, r); flash != "" {
 		ctx.Flash = flash
 	}
 	if cookie, err := r.Cookie("csrf_token"); err == nil {
@@ -110,24 +116,34 @@ func (d *Deps) renderTempl(w http.ResponseWriter, r *http.Request, c templ.Compo
 	}
 }
 
+// redirect sends an HTMX-aware redirect.
+func redirect(w http.ResponseWriter, r *http.Request, url string) {
+	if isHTMX(r) {
+		w.Header().Set("HX-Redirect", url)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	http.Redirect(w, r, url, http.StatusSeeOther)
+}
+
 // serverError logs the full error server-side and returns a generic message to the client.
 func serverError(w http.ResponseWriter, err error) {
 	log.Printf("server error: %v", err)
 	http.Error(w, "Internal server error", http.StatusInternalServerError)
 }
 
-func setFlash(w http.ResponseWriter, msg string) {
+func (d *Deps) setFlash(w http.ResponseWriter, msg string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "flash",
 		Value:    url.QueryEscape(msg),
 		Path:     "/",
 		MaxAge:   5,
 		HttpOnly: true,
-		Secure:   SecureCookies,
+		Secure:   d.SecureCookies,
 	})
 }
 
-func getFlash(w http.ResponseWriter, r *http.Request) string {
+func (d *Deps) getFlash(w http.ResponseWriter, r *http.Request) string {
 	cookie, err := r.Cookie("flash")
 	if err != nil {
 		return ""
@@ -139,7 +155,7 @@ func getFlash(w http.ResponseWriter, r *http.Request) string {
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
-		Secure:   SecureCookies,
+		Secure:   d.SecureCookies,
 	})
 	val, err := url.QueryUnescape(cookie.Value)
 	if err != nil {

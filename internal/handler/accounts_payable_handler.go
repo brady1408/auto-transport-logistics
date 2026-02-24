@@ -1,21 +1,29 @@
 package handler
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
 
 	apcomp "github.com/brady1408/atlinks/internal/handler/components/ap"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type accountsPayableStore interface {
+	List(ctx context.Context, f models.APFilter) (*models.APListResult, error)
+	GetByID(ctx context.Context, id int) (*models.AccountsPayable, error)
+	Create(ctx context.Context, ap *models.AccountsPayable) error
+	Update(ctx context.Context, ap *models.AccountsPayable) error
+	Delete(ctx context.Context, id int) error
+}
+
 type AccountsPayableHandler struct {
-	store *store.AccountsPayableStore
+	store accountsPayableStore
 	deps  *Deps
 }
 
-func NewAccountsPayableHandler(s *store.AccountsPayableStore, deps *Deps) *AccountsPayableHandler {
+func NewAccountsPayableHandler(s accountsPayableStore, deps *Deps) *AccountsPayableHandler {
 	return &AccountsPayableHandler{store: s, deps: deps}
 }
 
@@ -74,14 +82,9 @@ func (h *AccountsPayableHandler) create(w http.ResponseWriter, r *http.Request) 
 	}
 
 	h.deps.Audit.Log(r.Context(), "accounts_payable", ap.ID, "INSERT", nil, ap)
-	setFlash(w, "AP record created successfully")
+	h.deps.setFlash(w, "AP record created successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/ap")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/ap", http.StatusSeeOther)
+	redirect(w, r, "/accounting/ap")
 }
 
 func (h *AccountsPayableHandler) show(w http.ResponseWriter, r *http.Request) {
@@ -142,14 +145,9 @@ func (h *AccountsPayableHandler) update(w http.ResponseWriter, r *http.Request) 
 	}
 
 	h.deps.Audit.Log(r.Context(), "accounts_payable", ap.ID, "UPDATE", old, ap)
-	setFlash(w, "AP record updated successfully")
+	h.deps.setFlash(w, "AP record updated successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/ap")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/ap", http.StatusSeeOther)
+	redirect(w, r, "/accounting/ap")
 }
 
 func (h *AccountsPayableHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -171,14 +169,9 @@ func (h *AccountsPayableHandler) delete(w http.ResponseWriter, r *http.Request) 
 	}
 
 	h.deps.Audit.Log(r.Context(), "accounts_payable", id, "DELETE", old, nil)
-	setFlash(w, "AP record deleted")
+	h.deps.setFlash(w, "AP record deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/ap")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/ap", http.StatusSeeOther)
+	redirect(w, r, "/accounting/ap")
 }
 
 func bindAPForm(r *http.Request) *models.AccountsPayable {

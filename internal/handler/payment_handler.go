@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,23 +9,43 @@ import (
 
 	"github.com/brady1408/atlinks/internal/handler/components/payments"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/service"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type paymentStore interface {
+	List(ctx context.Context, f models.PaymentFilter) (*models.PaymentListResult, error)
+	GetByID(ctx context.Context, id int) (*models.Payment, error)
+	Create(ctx context.Context, p *models.Payment) error
+	Update(ctx context.Context, p *models.Payment) error
+	Delete(ctx context.Context, id int) error
+}
+
+type paymentDetailStore interface {
+	ListByPayment(ctx context.Context, paymentID int) ([]models.PaymentDetail, error)
+	GetByID(ctx context.Context, id int) (*models.PaymentDetail, error)
+}
+
+type paymentInvoiceStore interface {
+	List(ctx context.Context, f models.InvoiceFilter) (*models.InvoiceListResult, error)
+}
+
+type paymentService interface {
+	ApplyPayment(ctx context.Context, paymentID, invoiceID int, amount, discount string) error
+	UnapplyPayment(ctx context.Context, detailID int) error
+}
+
 type PaymentHandler struct {
-	store        *store.PaymentStore
-	detailStore  *store.PaymentDetailStore
-	invoiceStore *store.InvoiceStore
-	paymentSvc   *service.PaymentService
+	store        paymentStore
+	detailStore  paymentDetailStore
+	invoiceStore paymentInvoiceStore
+	paymentSvc   paymentService
 	deps         *Deps
 }
 
 func NewPaymentHandler(
-	s *store.PaymentStore,
-	ds *store.PaymentDetailStore,
-	is *store.InvoiceStore,
-	svc *service.PaymentService,
+	s paymentStore,
+	ds paymentDetailStore,
+	is paymentInvoiceStore,
+	svc paymentService,
 	deps *Deps,
 ) *PaymentHandler {
 	return &PaymentHandler{store: s, detailStore: ds, invoiceStore: is, paymentSvc: svc, deps: deps}
@@ -94,14 +115,9 @@ func (h *PaymentHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "payments", p.ID, "INSERT", nil, p)
-	setFlash(w, "Payment created successfully")
+	h.deps.setFlash(w, "Payment created successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", fmt.Sprintf("/accounting/payments/%d", p.ID))
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, fmt.Sprintf("/accounting/payments/%d", p.ID), http.StatusSeeOther)
+	redirect(w, r, fmt.Sprintf("/accounting/payments/%d", p.ID))
 }
 
 func (h *PaymentHandler) show(w http.ResponseWriter, r *http.Request) {
@@ -186,14 +202,9 @@ func (h *PaymentHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "payments", p.ID, "UPDATE", old, p)
-	setFlash(w, "Payment updated successfully")
+	h.deps.setFlash(w, "Payment updated successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/payments")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/payments", http.StatusSeeOther)
+	redirect(w, r, "/accounting/payments")
 }
 
 func (h *PaymentHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -215,14 +226,9 @@ func (h *PaymentHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "payments", id, "DELETE", old, nil)
-	setFlash(w, "Payment deleted")
+	h.deps.setFlash(w, "Payment deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/payments")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/payments", http.StatusSeeOther)
+	redirect(w, r, "/accounting/payments")
 }
 
 func (h *PaymentHandler) apply(w http.ResponseWriter, r *http.Request) {
@@ -251,14 +257,9 @@ func (h *PaymentHandler) apply(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setFlash(w, "Payment applied to invoice")
+	h.deps.setFlash(w, "Payment applied to invoice")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", fmt.Sprintf("/accounting/payments/%d", paymentID))
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, fmt.Sprintf("/accounting/payments/%d", paymentID), http.StatusSeeOther)
+	redirect(w, r, fmt.Sprintf("/accounting/payments/%d", paymentID))
 }
 
 func (h *PaymentHandler) unapply(w http.ResponseWriter, r *http.Request) {
@@ -281,14 +282,9 @@ func (h *PaymentHandler) unapply(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setFlash(w, "Payment application removed")
+	h.deps.setFlash(w, "Payment application removed")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", fmt.Sprintf("/accounting/payments/%d", paymentID))
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, fmt.Sprintf("/accounting/payments/%d", paymentID), http.StatusSeeOther)
+	redirect(w, r, fmt.Sprintf("/accounting/payments/%d", paymentID))
 }
 
 func bindPaymentForm(r *http.Request) *models.Payment {

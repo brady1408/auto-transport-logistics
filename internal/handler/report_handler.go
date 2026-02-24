@@ -1,30 +1,61 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/brady1408/atlinks/internal/handler/components/reports"
+	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
+type reportOrderStore interface {
+	GetByID(ctx context.Context, id int) (*models.Order, error)
+	StatusSummary(ctx context.Context, dateFrom, dateTo string) ([]store.OrderStatusRow, error)
+}
+
+type reportInvoiceStore interface {
+	GetArAgingReport(ctx context.Context) ([]store.ArAgingRow, error)
+	RevenueByCustomer(ctx context.Context, dateFrom, dateTo string) ([]store.RevenueByCustomerRow, error)
+}
+
+type reportTripStore interface {
+	TripSummaryReport(ctx context.Context, dateFrom, dateTo string) ([]store.TripSummaryRow, error)
+	DriverSettlement(ctx context.Context, employeeID int, dateFrom, dateTo string) ([]store.DriverSettlementRow, error)
+}
+
+type reportVehicleStore interface {
+	ListByOrder(ctx context.Context, orderID int) ([]models.OrderVehicle, error)
+	VehicleHistory(ctx context.Context, vin string) ([]store.VehicleHistoryRow, error)
+}
+
+type reportPaymentStore interface {
+	PaymentReport(ctx context.Context, dateFrom, dateTo string) ([]store.PaymentReportRow, error)
+}
+
+type reportDamageClaimStore interface {
+	DamageReport(ctx context.Context, dateFrom, dateTo string) ([]store.DamageReportRow, error)
+}
+
 type ReportHandler struct {
-	orderStore   *store.OrderStore
-	invoiceStore *store.InvoiceStore
-	tripStore    *store.TripStore
-	vehicleStore *store.VehicleStore
-	paymentStore *store.PaymentStore
-	damageStore  *store.DamageClaimStore
+	orderStore   reportOrderStore
+	invoiceStore reportInvoiceStore
+	tripStore    reportTripStore
+	vehicleStore reportVehicleStore
+	paymentStore reportPaymentStore
+	damageStore  reportDamageClaimStore
 	deps         *Deps
 }
 
 func NewReportHandler(
-	orderStore *store.OrderStore,
-	invoiceStore *store.InvoiceStore,
-	tripStore *store.TripStore,
-	vehicleStore *store.VehicleStore,
-	paymentStore *store.PaymentStore,
-	damageStore *store.DamageClaimStore,
+	orderStore reportOrderStore,
+	invoiceStore reportInvoiceStore,
+	tripStore reportTripStore,
+	vehicleStore reportVehicleStore,
+	paymentStore reportPaymentStore,
+	damageStore reportDamageClaimStore,
 	deps *Deps,
 ) *ReportHandler {
 	return &ReportHandler{
@@ -243,7 +274,7 @@ func (h *ReportHandler) driverSettlement(w http.ResponseWriter, r *http.Request)
 	var employeeID int
 	if employeeIDStr != "" {
 		var err error
-		employeeID, err = parseInt(employeeIDStr)
+		employeeID, err = strconv.Atoi(employeeIDStr)
 		if err == nil {
 			rows, err = h.tripStore.DriverSettlement(r.Context(), employeeID, dateFrom, dateTo)
 			if err != nil {
@@ -262,7 +293,7 @@ func (h *ReportHandler) driverSettlementCSV(w http.ResponseWriter, r *http.Reque
 	dateTo := r.URL.Query().Get("date_to")
 	employeeIDStr := r.URL.Query().Get("employee_id")
 
-	employeeID, err := parseInt(employeeIDStr)
+	employeeID, err := strconv.Atoi(employeeIDStr)
 	if err != nil {
 		http.Error(w, "Employee ID required", http.StatusBadRequest)
 		return

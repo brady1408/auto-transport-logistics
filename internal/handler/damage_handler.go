@@ -1,21 +1,29 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/handler/components/orders"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type damageStore interface {
+	ListByVehicle(ctx context.Context, vehicleID int) ([]models.VehicleDamage, error)
+	GetByID(ctx context.Context, id int) (*models.VehicleDamage, error)
+	Create(ctx context.Context, d *models.VehicleDamage) error
+	Update(ctx context.Context, d *models.VehicleDamage) error
+	Delete(ctx context.Context, id int) error
+}
+
 type DamageHandler struct {
-	store *store.DamageStore
+	store damageStore
 	deps  *Deps
 }
 
-func NewDamageHandler(store *store.DamageStore, deps *Deps) *DamageHandler {
+func NewDamageHandler(store damageStore, deps *Deps) *DamageHandler {
 	return &DamageHandler{store: store, deps: deps}
 }
 
@@ -132,12 +140,18 @@ func bindDamageForm(r *http.Request) *models.VehicleDamage {
 
 // Note handler
 
+type noteStore interface {
+	ListByVehicle(ctx context.Context, vehicleID int) ([]models.VehicleNote, error)
+	Create(ctx context.Context, n *models.VehicleNote) error
+	Delete(ctx context.Context, id int) error
+}
+
 type NoteHandler struct {
-	store *store.NoteStore
+	store noteStore
 	deps  *Deps
 }
 
-func NewNoteHandler(store *store.NoteStore, deps *Deps) *NoteHandler {
+func NewNoteHandler(store noteStore, deps *Deps) *NoteHandler {
 	return &NoteHandler{store: store, deps: deps}
 }
 

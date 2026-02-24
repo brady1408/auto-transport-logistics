@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
@@ -69,81 +68,61 @@ func (s *OrderStore) List(ctx context.Context, f models.OrderFilter) (*models.Or
 		f.PageSize = 25
 	}
 
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
 
 	if f.Search != "" {
-		where = append(where, fmt.Sprintf(
-			"(order_number ILIKE $%d OR bill_customer_name ILIKE $%d OR load_customer_name ILIKE $%d OR drop_customer_name ILIKE $%d)",
-			argN, argN, argN, argN))
-		args = append(args, "%"+f.Search+"%")
-		argN++
+		search := "%" + f.Search + "%"
+		qb.Add("(order_number ILIKE ? OR bill_customer_name ILIKE ? OR load_customer_name ILIKE ? OR drop_customer_name ILIKE ?)",
+			search, search, search, search)
 	}
 	if f.Zone != "" {
-		where = append(where, fmt.Sprintf("zone = $%d", argN))
-		args = append(args, f.Zone)
-		argN++
+		qb.Add("zone = ?", f.Zone)
 	}
 	if f.DispatchCode != "" {
-		where = append(where, fmt.Sprintf("dispatch_code = $%d", argN))
-		args = append(args, f.DispatchCode)
-		argN++
+		qb.Add("dispatch_code = ?", f.DispatchCode)
 	}
 	if f.DateFrom != "" {
-		where = append(where, fmt.Sprintf("create_date >= $%d", argN))
-		args = append(args, f.DateFrom)
-		argN++
+		qb.Add("create_date >= ?", f.DateFrom)
 	}
 	if f.DateTo != "" {
-		where = append(where, fmt.Sprintf("create_date <= $%d", argN))
-		args = append(args, f.DateTo)
-		argN++
+		qb.Add("create_date <= ?", f.DateTo)
 	}
 	switch f.Active {
 	case "active":
-		where = append(where, "active = true")
+		qb.AddRaw("active = true")
 	case "inactive":
-		where = append(where, "active = false")
+		qb.AddRaw("active = false")
 	}
 
-	whereClause := "WHERE " + strings.Join(where, " AND ")
-
 	// Count
-	countQuery := "SELECT COUNT(*) FROM orders " + whereClause
 	var total int
-	if err := s.pool.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM orders "+qb.Where(), qb.Args()...).Scan(&total); err != nil {
 		return nil, fmt.Errorf("count orders: %w", err)
 	}
 
 	// Fetch
-	offset := (f.Page - 1) * f.PageSize
-	query := fmt.Sprintf("SELECT %s FROM orders %s ORDER BY order_number DESC LIMIT $%d OFFSET $%d",
-		orderColumns, whereClause, argN, argN+1)
-	args = append(args, f.PageSize, offset)
+	query := fmt.Sprintf("SELECT %s FROM orders %s ORDER BY order_number DESC %s",
+		orderColumns, qb.Where(), qb.Paginate(f.PageSize, f.Page))
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("list orders: %w", err)
 	}
-	defer rows.Close()
-
-	var items []models.Order
-	for rows.Next() {
-		o, err := scanOrder(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Order, error) {
+		o, err := scanOrder(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan order: %w", err)
+			return models.Order{}, err
 		}
-		items = append(items, *o)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list orders rows: %w", err)
+		return *o, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan order: %w", err)
 	}
 
 	return &models.OrderListResult{
@@ -155,7 +134,10 @@ func (s *OrderStore) List(ctx context.Context, f models.OrderFilter) (*models.Or
 }
 
 func (s *OrderStore) GetByID(ctx context.Context, id int) (*models.Order, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM orders WHERE id = $1 AND company_id = $2", orderColumns)
 	o, err := scanOrder(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -165,8 +147,12 @@ func (s *OrderStore) GetByID(ctx context.Context, id int) (*models.Order, error)
 }
 
 func (s *OrderStore) Create(ctx context.Context, o *models.Order) error {
-	o.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	o.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO orders (
 			company_id, order_number, active, zone, dispatch_code, bol_number,
 			bill_customer_id, bill_customer_number, bill_customer_name,
@@ -210,8 +196,11 @@ func (s *OrderStore) Create(ctx context.Context, o *models.Order) error {
 }
 
 func (s *OrderStore) Update(ctx context.Context, o *models.Order) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE orders SET
 			active=$1, zone=$2, dispatch_code=$3, bol_number=$4,
 			bill_customer_id=$5, bill_customer_number=$6, bill_customer_name=$7,
@@ -247,14 +236,23 @@ func (s *OrderStore) Update(ctx context.Context, o *models.Order) error {
 	if err != nil {
 		return fmt.Errorf("update order %d: %w", o.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("order %d not found", o.ID)
+	}
 	return nil
 }
 
 func (s *OrderStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM orders WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM orders WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete order %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("order %d not found", id)
 	}
 	return nil
 }
@@ -262,7 +260,10 @@ func (s *OrderStore) Delete(ctx context.Context, id int) error {
 // NextOrderNumber returns the next order number within a short-lived advisory-locked
 // transaction to prevent race conditions with concurrent inserts.
 func (s *OrderStore) NextOrderNumber(ctx context.Context) (string, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return "", err
+	}
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return "", fmt.Errorf("begin tx for next order number: %w", err)
@@ -292,8 +293,11 @@ func (s *OrderStore) NextOrderNumber(ctx context.Context) (string, error) {
 // UpdateCounts updates the denormalized vehicle status counts on an order.
 // Accepts pgx.Tx for transactional use.
 func (s *OrderStore) UpdateCounts(ctx context.Context, tx pgx.Tx, orderID int, counts VehicleCounts) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := tx.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := tx.Exec(ctx,
 		`UPDATE orders SET
 			vehicle_count=$1, waiting_count=$2, scheduled_count=$3, loaded_count=$4,
 			delivered_count=$5, confirmed_count=$6, invoiced_count=$7, staging_count=$8
@@ -305,6 +309,9 @@ func (s *OrderStore) UpdateCounts(ctx context.Context, tx pgx.Tx, orderID int, c
 	if err != nil {
 		return fmt.Errorf("update order counts %d: %w", orderID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("order %d not found", orderID)
+	}
 	return nil
 }
 
@@ -315,9 +322,12 @@ type OrderDashboardCounts struct {
 }
 
 func (s *OrderStore) DashboardCounts(ctx context.Context) (OrderDashboardCounts, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return OrderDashboardCounts{}, err
+	}
 	var c OrderDashboardCounts
-	err := s.pool.QueryRow(ctx,
+	err = s.pool.QueryRow(ctx,
 		`SELECT
 			COUNT(*) FILTER (WHERE active = true),
 			COUNT(*) FILTER (WHERE active = true AND (delivered_count + confirmed_count) > 0 AND invoiced_count = 0)
@@ -337,57 +347,49 @@ type OrderStatusRow struct {
 }
 
 func (s *OrderStore) StatusSummary(ctx context.Context, dateFrom, dateTo string) ([]OrderStatusRow, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
 
 	if dateFrom != "" {
-		where = append(where, fmt.Sprintf("create_date >= $%d", argN))
-		args = append(args, dateFrom)
-		argN++
+		qb.Add("create_date >= ?", dateFrom)
 	}
 	if dateTo != "" {
-		where = append(where, fmt.Sprintf("create_date <= $%d", argN))
-		args = append(args, dateTo)
-		argN++
+		qb.Add("create_date <= ?", dateTo)
 	}
-
-	whereClause := "WHERE " + strings.Join(where, " AND ")
 
 	query := fmt.Sprintf(`SELECT COALESCE(dispatch_code, ''), COALESCE(zone, ''), COUNT(*)
 		FROM orders %s
 		GROUP BY dispatch_code, zone
-		ORDER BY COUNT(*) DESC`, whereClause)
+		ORDER BY COUNT(*) DESC`, qb.Where())
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("order status summary: %w", err)
 	}
-	defer rows.Close()
-
-	var items []OrderStatusRow
-	for rows.Next() {
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (OrderStatusRow, error) {
 		var r OrderStatusRow
-		if err := rows.Scan(&r.DispatchCode, &r.Zone, &r.Count); err != nil {
-			return nil, fmt.Errorf("scan order status row: %w", err)
+		if err := row.Scan(&r.DispatchCode, &r.Zone, &r.Count); err != nil {
+			return OrderStatusRow{}, err
 		}
-		items = append(items, r)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("order status summary rows: %w", err)
+		return r, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan order status row: %w", err)
 	}
 	return items, nil
 }
 
 // GetByIDTx fetches an order within a transaction.
 func (s *OrderStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*models.Order, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM orders WHERE id = $1 AND company_id = $2", orderColumns)
 	o, err := scanOrder(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {

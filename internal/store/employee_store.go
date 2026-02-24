@@ -3,10 +3,10 @@ package store
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -58,62 +58,51 @@ func (s *EmployeeStore) List(ctx context.Context, f models.EmployeeFilter) (*mod
 		f.PageSize = 25
 	}
 
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
 
 	if f.Search != "" {
-		where = append(where, fmt.Sprintf("(name ILIKE $%d OR emp_id_number ILIKE $%d)", argN, argN))
-		args = append(args, "%"+f.Search+"%")
-		argN++
+		qb.Add("(name ILIKE ? OR emp_id_number ILIKE ?)", "%"+f.Search+"%", "%"+f.Search+"%")
 	}
 	switch f.Active {
 	case "active":
-		where = append(where, "active = true")
+		qb.AddRaw("active = true")
 	case "inactive":
-		where = append(where, "active = false")
+		qb.AddRaw("active = false")
 	}
 	switch f.IsDriver {
 	case "yes":
-		where = append(where, "is_driver = true")
+		qb.AddRaw("is_driver = true")
 	case "no":
-		where = append(where, "is_driver = false")
+		qb.AddRaw("is_driver = false")
 	}
 
-	whereClause := "WHERE " + strings.Join(where, " AND ")
-
 	var total int
-	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM employees "+whereClause, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM employees "+qb.Where(), qb.Args()...).Scan(&total); err != nil {
 		return nil, fmt.Errorf("count employees: %w", err)
 	}
 
-	offset := (f.Page - 1) * f.PageSize
-	query := fmt.Sprintf("SELECT %s FROM employees %s ORDER BY name LIMIT $%d OFFSET $%d",
-		employeeColumns, whereClause, argN, argN+1)
-	args = append(args, f.PageSize, offset)
+	query := fmt.Sprintf("SELECT %s FROM employees %s ORDER BY name %s",
+		employeeColumns, qb.Where(), qb.Paginate(f.PageSize, f.Page))
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("list employees: %w", err)
 	}
-	defer rows.Close()
-
-	var items []models.Employee
-	for rows.Next() {
-		e, err := scanEmployee(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Employee, error) {
+		e, err := scanEmployee(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan employee: %w", err)
+			return models.Employee{}, err
 		}
-		items = append(items, *e)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list employees rows: %w", err)
+		return *e, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan employee: %w", err)
 	}
 
 	return &models.EmployeeListResult{
@@ -125,7 +114,10 @@ func (s *EmployeeStore) List(ctx context.Context, f models.EmployeeFilter) (*mod
 }
 
 func (s *EmployeeStore) GetByID(ctx context.Context, id int) (*models.Employee, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM employees WHERE id = $1 AND company_id = $2", employeeColumns)
 	e, err := scanEmployee(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -135,8 +127,12 @@ func (s *EmployeeStore) GetByID(ctx context.Context, id int) (*models.Employee, 
 }
 
 func (s *EmployeeStore) Create(ctx context.Context, e *models.Employee) error {
-	e.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	e.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO employees (
 			company_id, name, address, address2, city, state, zip, phone,
 			rate, reserve, employment_date, termination_date,
@@ -178,8 +174,11 @@ func (s *EmployeeStore) Create(ctx context.Context, e *models.Employee) error {
 }
 
 func (s *EmployeeStore) Update(ctx context.Context, e *models.Employee) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE employees SET
 			name=$1, address=$2, address2=$3, city=$4, state=$5, zip=$6, phone=$7,
 			rate=$8, reserve=$9, employment_date=$10, termination_date=$11,
@@ -213,14 +212,23 @@ func (s *EmployeeStore) Update(ctx context.Context, e *models.Employee) error {
 	if err != nil {
 		return fmt.Errorf("update employee %d: %w", e.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("employee %d not found", e.ID)
+	}
 	return nil
 }
 
 func (s *EmployeeStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM employees WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM employees WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete employee %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("employee %d not found", id)
 	}
 	return nil
 }

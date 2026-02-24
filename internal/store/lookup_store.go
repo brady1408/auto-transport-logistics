@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -60,31 +61,34 @@ func (s *LookupStore) codeColumn() string {
 }
 
 func (s *LookupStore) List(ctx context.Context) ([]LookupItem, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	col := s.codeColumn()
 	query := fmt.Sprintf("SELECT id, %s, description FROM %s WHERE company_id = $1 ORDER BY %s", col, s.tableName, col)
 	rows, err := s.pool.Query(ctx, query, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list %s: %w", s.tableName, err)
 	}
-	defer rows.Close()
-
-	var items []LookupItem
-	for rows.Next() {
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (LookupItem, error) {
 		var item LookupItem
-		if err := rows.Scan(&item.ID, &item.Code, &item.Description); err != nil {
-			return nil, fmt.Errorf("scan %s: %w", s.tableName, err)
+		if err := row.Scan(&item.ID, &item.Code, &item.Description); err != nil {
+			return LookupItem{}, err
 		}
-		items = append(items, item)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list %s rows: %w", s.tableName, err)
+		return item, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan %s: %w", s.tableName, err)
 	}
 	return items, nil
 }
 
 func (s *LookupStore) GetByID(ctx context.Context, id int) (*LookupItem, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	col := s.codeColumn()
 	query := fmt.Sprintf("SELECT id, %s, description FROM %s WHERE id = $1 AND company_id = $2", col, s.tableName)
 	var item LookupItem
@@ -95,7 +99,10 @@ func (s *LookupStore) GetByID(ctx context.Context, id int) (*LookupItem, error) 
 }
 
 func (s *LookupStore) Create(ctx context.Context, code, description string) (*LookupItem, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	col := s.codeColumn()
 	query := fmt.Sprintf("INSERT INTO %s (company_id, %s, description) VALUES ($1, $2, $3) RETURNING id", s.tableName, col)
 	var item LookupItem
@@ -108,10 +115,13 @@ func (s *LookupStore) Create(ctx context.Context, code, description string) (*Lo
 }
 
 func (s *LookupStore) Update(ctx context.Context, id int, code, description string) error {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
 	col := s.codeColumn()
 	query := fmt.Sprintf("UPDATE %s SET %s = $1, description = $2 WHERE id = $3 AND company_id = $4", s.tableName, col)
-	_, err := s.pool.Exec(ctx, query, code, description, id, companyID)
+	_, err = s.pool.Exec(ctx, query, code, description, id, companyID)
 	if err != nil {
 		return fmt.Errorf("update %s %d: %w", s.tableName, id, err)
 	}
@@ -119,9 +129,12 @@ func (s *LookupStore) Update(ctx context.Context, id int, code, description stri
 }
 
 func (s *LookupStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
 	query := fmt.Sprintf("DELETE FROM %s WHERE id = $1 AND company_id = $2", s.tableName)
-	_, err := s.pool.Exec(ctx, query, id, companyID)
+	_, err = s.pool.Exec(ctx, query, id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete %s %d: %w", s.tableName, id, err)
 	}

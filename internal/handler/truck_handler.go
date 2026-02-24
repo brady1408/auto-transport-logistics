@@ -1,21 +1,29 @@
 package handler
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/handler/components/trucks"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type truckStore interface {
+	List(ctx context.Context, f models.TruckFilter) (*models.TruckListResult, error)
+	GetByID(ctx context.Context, id int) (*models.Truck, error)
+	Create(ctx context.Context, t *models.Truck) error
+	Update(ctx context.Context, t *models.Truck) error
+	Delete(ctx context.Context, id int) error
+}
+
 type TruckHandler struct {
-	store *store.TruckStore
+	store truckStore
 	deps  *Deps
 }
 
-func NewTruckHandler(store *store.TruckStore, deps *Deps) *TruckHandler {
+func NewTruckHandler(store truckStore, deps *Deps) *TruckHandler {
 	return &TruckHandler{store: store, deps: deps}
 }
 
@@ -74,13 +82,9 @@ func (h *TruckHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "trucks", t.ID, "INSERT", nil, t)
-	setFlash(w, "Truck created successfully")
+	h.deps.setFlash(w, "Truck created successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/trucks")
-		return
-	}
-	http.Redirect(w, r, "/global/trucks", http.StatusSeeOther)
+	redirect(w, r, "/global/trucks")
 }
 
 func (h *TruckHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -127,13 +131,9 @@ func (h *TruckHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "trucks", t.ID, "UPDATE", old, t)
-	setFlash(w, "Truck updated successfully")
+	h.deps.setFlash(w, "Truck updated successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/trucks")
-		return
-	}
-	http.Redirect(w, r, "/global/trucks", http.StatusSeeOther)
+	redirect(w, r, "/global/trucks")
 }
 
 func (h *TruckHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -152,13 +152,9 @@ func (h *TruckHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "trucks", id, "DELETE", old, nil)
-	setFlash(w, "Truck deleted")
+	h.deps.setFlash(w, "Truck deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/trucks")
-		return
-	}
-	http.Redirect(w, r, "/global/trucks", http.StatusSeeOther)
+	redirect(w, r, "/global/trucks")
 }
 
 func bindTruckForm(r *http.Request) *models.Truck {

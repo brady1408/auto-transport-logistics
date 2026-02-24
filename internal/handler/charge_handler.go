@@ -1,19 +1,27 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/handler/components/orders"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type chargeStore interface {
+	ListByOrder(ctx context.Context, orderID int) ([]models.OrderCharge, error)
+	GetByID(ctx context.Context, id int) (*models.OrderCharge, error)
+	Create(ctx context.Context, c *models.OrderCharge) error
+	Update(ctx context.Context, c *models.OrderCharge) error
+	Delete(ctx context.Context, id int) error
+}
+
 type ChargeHandler struct {
-	store *store.ChargeStore
+	store chargeStore
 	deps  *Deps
 }
 
-func NewChargeHandler(store *store.ChargeStore, deps *Deps) *ChargeHandler {
+func NewChargeHandler(store chargeStore, deps *Deps) *ChargeHandler {
 	return &ChargeHandler{store: store, deps: deps}
 }
 

@@ -1,20 +1,30 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/handler/components/lookup"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
+type lookupStore interface {
+	List(ctx context.Context) ([]store.LookupItem, error)
+	GetByID(ctx context.Context, id int) (*store.LookupItem, error)
+	Create(ctx context.Context, code, description string) (*store.LookupItem, error)
+	Update(ctx context.Context, id int, code, description string) error
+	Delete(ctx context.Context, id int) error
+	TableName() string
+}
+
 type LookupHandler struct {
-	store    *store.LookupStore
+	store    lookupStore
 	deps     *Deps
 	basePath string
 	title    string
 }
 
-func NewLookupHandler(deps *Deps, lookupStore *store.LookupStore, basePath, title string) *LookupHandler {
+func NewLookupHandler(deps *Deps, lookupStore lookupStore, basePath, title string) *LookupHandler {
 	return &LookupHandler{
 		store:    lookupStore,
 		deps:     deps,
@@ -61,13 +71,9 @@ func (h *LookupHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), h.store.TableName(), item.ID, "INSERT", nil, item)
-	setFlash(w, h.title+" entry created")
+	h.deps.setFlash(w, h.title+" entry created")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", h.basePath)
-		return
-	}
-	http.Redirect(w, r, h.basePath, http.StatusSeeOther)
+	redirect(w, r, h.basePath)
 }
 
 func (h *LookupHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -92,13 +98,9 @@ func (h *LookupHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), h.store.TableName(), id, "UPDATE", old, map[string]any{"code": code, "description": desc})
-	setFlash(w, h.title+" entry updated")
+	h.deps.setFlash(w, h.title+" entry updated")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", h.basePath)
-		return
-	}
-	http.Redirect(w, r, h.basePath, http.StatusSeeOther)
+	redirect(w, r, h.basePath)
 }
 
 func (h *LookupHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -120,11 +122,7 @@ func (h *LookupHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), h.store.TableName(), id, "DELETE", old, nil)
-	setFlash(w, h.title+" entry deleted")
+	h.deps.setFlash(w, h.title+" entry deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", h.basePath)
-		return
-	}
-	http.Redirect(w, r, h.basePath, http.StatusSeeOther)
+	redirect(w, r, h.basePath)
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -32,30 +33,33 @@ func scanRoute(row interface{ Scan(dest ...any) error }) (*models.TripRoute, err
 }
 
 func (s *TripRouteStore) ListByTrip(ctx context.Context, tripID int) ([]models.TripRoute, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM trip_routes WHERE trip_id = $1 AND company_id = $2 ORDER BY sequence, id", routeColumns)
 	rows, err := s.pool.Query(ctx, query, tripID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list routes for trip %d: %w", tripID, err)
 	}
-	defer rows.Close()
-
-	var items []models.TripRoute
-	for rows.Next() {
-		r, err := scanRoute(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.TripRoute, error) {
+		r, err := scanRoute(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan route: %w", err)
+			return models.TripRoute{}, err
 		}
-		items = append(items, *r)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list routes rows: %w", err)
+		return *r, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan route: %w", err)
 	}
 	return items, nil
 }
 
 func (s *TripRouteStore) GetByID(ctx context.Context, id int) (*models.TripRoute, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM trip_routes WHERE id = $1 AND company_id = $2", routeColumns)
 	r, err := scanRoute(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -65,8 +69,12 @@ func (s *TripRouteStore) GetByID(ctx context.Context, id int) (*models.TripRoute
 }
 
 func (s *TripRouteStore) Create(ctx context.Context, r *models.TripRoute) error {
-	r.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	r.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO trip_routes (company_id, trip_id, sequence, customer_id, customer_name, city, state, stop_type, miles, est_arrival)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
 		RETURNING id, created_at, updated_at`,
@@ -79,8 +87,11 @@ func (s *TripRouteStore) Create(ctx context.Context, r *models.TripRoute) error 
 }
 
 func (s *TripRouteStore) Update(ctx context.Context, r *models.TripRoute) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE trip_routes SET
 			sequence=$1, customer_id=$2, customer_name=$3, city=$4, state=$5,
 			stop_type=$6, miles=$7, est_arrival=$8
@@ -92,14 +103,23 @@ func (s *TripRouteStore) Update(ctx context.Context, r *models.TripRoute) error 
 	if err != nil {
 		return fmt.Errorf("update route %d: %w", r.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("route %d not found", r.ID)
+	}
 	return nil
 }
 
 func (s *TripRouteStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM trip_routes WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM trip_routes WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete route %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("route %d not found", id)
 	}
 	return nil
 }

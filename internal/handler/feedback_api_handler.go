@@ -6,15 +6,14 @@ import (
 	"strconv"
 
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
 type FeedbackAPIHandler struct {
-	store *store.FeedbackStore
+	store feedbackStore
 	deps  *Deps
 }
 
-func NewFeedbackAPIHandler(s *store.FeedbackStore, deps *Deps) *FeedbackAPIHandler {
+func NewFeedbackAPIHandler(s feedbackStore, deps *Deps) *FeedbackAPIHandler {
 	return &FeedbackAPIHandler{store: s, deps: deps}
 }
 

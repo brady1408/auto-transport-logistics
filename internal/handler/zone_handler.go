@@ -1,20 +1,36 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/handler/components/zones"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type zoneStore interface {
+	List(ctx context.Context) ([]models.Zone, error)
+	GetByID(ctx context.Context, id int) (*models.Zone, error)
+	Create(ctx context.Context, z *models.Zone) error
+	Update(ctx context.Context, z *models.Zone) error
+	Delete(ctx context.Context, id int) error
+}
+
+type zonePricingStore interface {
+	List(ctx context.Context) ([]models.ZonePricing, error)
+	GetByID(ctx context.Context, id int) (*models.ZonePricing, error)
+	Create(ctx context.Context, zp *models.ZonePricing) error
+	Update(ctx context.Context, zp *models.ZonePricing) error
+	Delete(ctx context.Context, id int) error
+}
+
 type ZoneHandler struct {
-	store   *store.ZoneStore
-	pricing *store.ZonePricingStore
+	store   zoneStore
+	pricing zonePricingStore
 	deps    *Deps
 }
 
-func NewZoneHandler(store *store.ZoneStore, pricing *store.ZonePricingStore, deps *Deps) *ZoneHandler {
+func NewZoneHandler(store zoneStore, pricing zonePricingStore, deps *Deps) *ZoneHandler {
 	return &ZoneHandler{store: store, pricing: pricing, deps: deps}
 }
 
@@ -58,13 +74,9 @@ func (h *ZoneHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zones", z.ID, "INSERT", nil, z)
-	setFlash(w, "Zone created")
+	h.deps.setFlash(w, "Zone created")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/zones")
-		return
-	}
-	http.Redirect(w, r, "/global/zones", http.StatusSeeOther)
+	redirect(w, r, "/global/zones")
 }
 
 func (h *ZoneHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -89,13 +101,9 @@ func (h *ZoneHandler) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zones", id, "UPDATE", old, z)
-	setFlash(w, "Zone updated")
+	h.deps.setFlash(w, "Zone updated")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/zones")
-		return
-	}
-	http.Redirect(w, r, "/global/zones", http.StatusSeeOther)
+	redirect(w, r, "/global/zones")
 }
 
 func (h *ZoneHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -114,13 +122,9 @@ func (h *ZoneHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zones", id, "DELETE", old, nil)
-	setFlash(w, "Zone deleted")
+	h.deps.setFlash(w, "Zone deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/zones")
-		return
-	}
-	http.Redirect(w, r, "/global/zones", http.StatusSeeOther)
+	redirect(w, r, "/global/zones")
 }
 
 // Zone Pricing
@@ -158,13 +162,9 @@ func (h *ZoneHandler) pricingCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zone_pricing", zp.ID, "INSERT", nil, zp)
-	setFlash(w, "Zone pricing created")
+	h.deps.setFlash(w, "Zone pricing created")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/zone-pricing")
-		return
-	}
-	http.Redirect(w, r, "/global/zone-pricing", http.StatusSeeOther)
+	redirect(w, r, "/global/zone-pricing")
 }
 
 func (h *ZoneHandler) pricingUpdate(w http.ResponseWriter, r *http.Request) {
@@ -193,13 +193,9 @@ func (h *ZoneHandler) pricingUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zone_pricing", id, "UPDATE", old, zp)
-	setFlash(w, "Zone pricing updated")
+	h.deps.setFlash(w, "Zone pricing updated")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/zone-pricing")
-		return
-	}
-	http.Redirect(w, r, "/global/zone-pricing", http.StatusSeeOther)
+	redirect(w, r, "/global/zone-pricing")
 }
 
 func (h *ZoneHandler) pricingDelete(w http.ResponseWriter, r *http.Request) {
@@ -218,11 +214,7 @@ func (h *ZoneHandler) pricingDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "zone_pricing", id, "DELETE", old, nil)
-	setFlash(w, "Zone pricing deleted")
+	h.deps.setFlash(w, "Zone pricing deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/zone-pricing")
-		return
-	}
-	http.Redirect(w, r, "/global/zone-pricing", http.StatusSeeOther)
+	redirect(w, r, "/global/zone-pricing")
 }

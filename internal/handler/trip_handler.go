@@ -1,29 +1,53 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/handler/components/trips"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
+type tripStore interface {
+	List(ctx context.Context, f models.TripFilter) (*models.TripListResult, error)
+	GetByID(ctx context.Context, id int) (*models.Trip, error)
+	Create(ctx context.Context, t *models.Trip) error
+	Update(ctx context.Context, t *models.Trip) error
+	Delete(ctx context.Context, id int) error
+	NextLoadNumber(ctx context.Context) (string, error)
+}
+
+type tripLoadDetailStore interface {
+	ListByTripWithOrder(ctx context.Context, tripID int) ([]store.LoadDetailWithOrder, error)
+	UpdateBayNumber(ctx context.Context, id int, bayNumber string) error
+}
+
+type tripVehicleStore interface {
+	ListUnassigned(ctx context.Context, search string, limit, offset int) ([]store.UnassignedVehicleRow, int, error)
+}
+
+type tripService interface {
+	AssignVehicleToTrip(ctx context.Context, tripID, vehicleID int, bayNumber string) error
+	UnassignVehicle(ctx context.Context, loadDetailID int) error
+	AssignAllFromOrder(ctx context.Context, tripID, orderID int) (int, error)
+}
+
 type TripHandler struct {
-	store     *store.TripStore
-	loadStore *store.LoadDetailStore
-	vehStore  *store.VehicleStore
-	tripSvc   *service.TripService
+	store     tripStore
+	loadStore tripLoadDetailStore
+	vehStore  tripVehicleStore
+	tripSvc   tripService
 	deps      *Deps
 }
 
 func NewTripHandler(
-	store *store.TripStore,
-	loadStore *store.LoadDetailStore,
-	vehStore *store.VehicleStore,
-	tripSvc *service.TripService,
+	store tripStore,
+	loadStore tripLoadDetailStore,
+	vehStore tripVehicleStore,
+	tripSvc tripService,
 	deps *Deps,
 ) *TripHandler {
 	return &TripHandler{store: store, loadStore: loadStore, vehStore: vehStore, tripSvc: tripSvc, deps: deps}
@@ -99,14 +123,9 @@ func (h *TripHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "trips", t.ID, "INSERT", nil, t)
-	setFlash(w, "Trip created successfully")
+	h.deps.setFlash(w, "Trip created successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/dispatch/trips")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/dispatch/trips", http.StatusSeeOther)
+	redirect(w, r, "/dispatch/trips")
 }
 
 func (h *TripHandler) show(w http.ResponseWriter, r *http.Request) {
@@ -173,14 +192,9 @@ func (h *TripHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "trips", t.ID, "UPDATE", old, t)
-	setFlash(w, "Trip updated successfully")
+	h.deps.setFlash(w, "Trip updated successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/dispatch/trips")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/dispatch/trips", http.StatusSeeOther)
+	redirect(w, r, "/dispatch/trips")
 }
 
 func (h *TripHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -202,14 +216,9 @@ func (h *TripHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "trips", id, "DELETE", old, nil)
-	setFlash(w, "Trip deleted")
+	h.deps.setFlash(w, "Trip deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/dispatch/trips")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/dispatch/trips", http.StatusSeeOther)
+	redirect(w, r, "/dispatch/trips")
 }
 
 func (h *TripHandler) assignVehicle(w http.ResponseWriter, r *http.Request) {

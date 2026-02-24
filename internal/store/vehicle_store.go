@@ -45,30 +45,33 @@ func scanVehicle(row interface{ Scan(dest ...any) error }) (*models.OrderVehicle
 }
 
 func (s *VehicleStore) ListByOrder(ctx context.Context, orderID int) ([]models.OrderVehicle, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM order_vehicles WHERE order_id = $1 AND company_id = $2 ORDER BY id", vehicleColumns)
 	rows, err := s.pool.Query(ctx, query, orderID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list vehicles for order %d: %w", orderID, err)
 	}
-	defer rows.Close()
-
-	var items []models.OrderVehicle
-	for rows.Next() {
-		v, err := scanVehicle(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.OrderVehicle, error) {
+		v, err := scanVehicle(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan vehicle: %w", err)
+			return models.OrderVehicle{}, err
 		}
-		items = append(items, *v)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list vehicles by order rows: %w", err)
+		return *v, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan vehicle: %w", err)
 	}
 	return items, nil
 }
 
 func (s *VehicleStore) GetByID(ctx context.Context, id int) (*models.OrderVehicle, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM order_vehicles WHERE id = $1 AND company_id = $2", vehicleColumns)
 	v, err := scanVehicle(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -78,7 +81,10 @@ func (s *VehicleStore) GetByID(ctx context.Context, id int) (*models.OrderVehicl
 }
 
 func (s *VehicleStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*models.OrderVehicle, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM order_vehicles WHERE id = $1 AND company_id = $2", vehicleColumns)
 	v, err := scanVehicle(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -88,8 +94,12 @@ func (s *VehicleStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*model
 }
 
 func (s *VehicleStore) Create(ctx context.Context, v *models.OrderVehicle) error {
-	v.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	v.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO order_vehicles (
 			company_id, order_id, active, vin, year, make, model, color, weight, category, body_style,
 			status, trip_id, load_number, bay_number,
@@ -120,8 +130,11 @@ func (s *VehicleStore) Create(ctx context.Context, v *models.OrderVehicle) error
 }
 
 func (s *VehicleStore) Update(ctx context.Context, v *models.OrderVehicle) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE order_vehicles SET
 			active=$1, vin=$2, year=$3, make=$4, model=$5, color=$6, weight=$7, category=$8, body_style=$9,
 			transport_amt=$10, transport_calc_type=$11, fuel_surcharge=$12, fuel_calc_type=$13,
@@ -139,23 +152,38 @@ func (s *VehicleStore) Update(ctx context.Context, v *models.OrderVehicle) error
 	if err != nil {
 		return fmt.Errorf("update vehicle %d: %w", v.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("vehicle %d not found", v.ID)
+	}
 	return nil
 }
 
 func (s *VehicleStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM order_vehicles WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM order_vehicles WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete vehicle %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("vehicle %d not found", id)
 	}
 	return nil
 }
 
 func (s *VehicleStore) DeleteTx(ctx context.Context, tx pgx.Tx, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := tx.Exec(ctx, "DELETE FROM order_vehicles WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := tx.Exec(ctx, "DELETE FROM order_vehicles WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete vehicle %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("vehicle %d not found", id)
 	}
 	return nil
 }
@@ -173,9 +201,12 @@ type VehicleCounts struct {
 }
 
 func (s *VehicleStore) CountByOrder(ctx context.Context, orderID int) (VehicleCounts, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return VehicleCounts{}, err
+	}
 	var c VehicleCounts
-	err := s.pool.QueryRow(ctx,
+	err = s.pool.QueryRow(ctx,
 		`SELECT
 			COUNT(*),
 			COUNT(*) FILTER (WHERE status = 'Waiting'),
@@ -194,9 +225,12 @@ func (s *VehicleStore) CountByOrder(ctx context.Context, orderID int) (VehicleCo
 }
 
 func (s *VehicleStore) CountByOrderTx(ctx context.Context, tx pgx.Tx, orderID int) (VehicleCounts, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return VehicleCounts{}, err
+	}
 	var c VehicleCounts
-	err := tx.QueryRow(ctx,
+	err = tx.QueryRow(ctx,
 		`SELECT
 			COUNT(*),
 			COUNT(*) FILTER (WHERE status = 'Waiting'),
@@ -226,24 +260,36 @@ func (s *VehicleStore) UpdateStatusTx(ctx context.Context, tx pgx.Tx, id int, st
 	if !allowedDateColumns[dateCol] {
 		return fmt.Errorf("invalid date column: %s", dateCol)
 	}
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
 	query := fmt.Sprintf(
 		`UPDATE order_vehicles SET status=$1, %s=$2 WHERE id=$3 AND company_id=$4`, dateCol)
-	_, err := tx.Exec(ctx, query, status, dateVal, id, companyID)
+	result, err := tx.Exec(ctx, query, status, dateVal, id, companyID)
 	if err != nil {
 		return fmt.Errorf("update vehicle status %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("vehicle %d not found", id)
 	}
 	return nil
 }
 
 // UpdateTripAssignmentTx updates vehicle trip assignment fields within a transaction.
 func (s *VehicleStore) UpdateTripAssignmentTx(ctx context.Context, tx pgx.Tx, id int, tripID *int, loadNumber *string, bayNumber *string, status string) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := tx.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := tx.Exec(ctx,
 		`UPDATE order_vehicles SET trip_id=$1, load_number=$2, bay_number=$3, status=$4 WHERE id=$5 AND company_id=$6`,
 		tripID, loadNumber, bayNumber, status, id, companyID)
 	if err != nil {
 		return fmt.Errorf("update vehicle trip assignment %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("vehicle %d not found", id)
 	}
 	return nil
 }
@@ -266,7 +312,10 @@ type GlobalSearchResult struct {
 
 // SearchGlobal searches all vehicles (not just unassigned) with order context.
 func (s *VehicleStore) SearchGlobal(ctx context.Context, query string, limit int) ([]GlobalSearchResult, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	sql := `SELECT
 		ov.id, COALESCE(ov.vin, ''), COALESCE(ov.year, ''), COALESCE(ov.make, ''), COALESCE(ov.model, ''),
 		COALESCE(ov.status, ''), COALESCE(o.id, 0), COALESCE(o.order_number, ''),
@@ -281,20 +330,17 @@ func (s *VehicleStore) SearchGlobal(ctx context.Context, query string, limit int
 	if err != nil {
 		return nil, fmt.Errorf("global vehicle search: %w", err)
 	}
-	defer rows.Close()
-
-	var items []GlobalSearchResult
-	for rows.Next() {
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (GlobalSearchResult, error) {
 		var r GlobalSearchResult
-		if err := rows.Scan(&r.ID, &r.VIN, &r.Year, &r.Make, &r.Model, &r.Status,
+		if err := row.Scan(&r.ID, &r.VIN, &r.Year, &r.Make, &r.Model, &r.Status,
 			&r.OrderID, &r.OrderNumber, &r.CustomerName, &r.TripID,
 			&r.LoadNumber, &r.InvoiceNumber); err != nil {
-			return nil, fmt.Errorf("scan global search result: %w", err)
+			return GlobalSearchResult{}, err
 		}
-		items = append(items, r)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("global vehicle search rows: %w", err)
+		return r, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan global search result: %w", err)
 	}
 	return items, nil
 }
@@ -315,58 +361,63 @@ type UnassignedVehicleRow struct {
 // ListUnassigned returns active vehicles in Waiting status with no trip assignment.
 // Returns the matching rows (up to limit at the given offset) and the total count of matching rows.
 func (s *VehicleStore) ListUnassigned(ctx context.Context, search string, limit, offset int) ([]UnassignedVehicleRow, int, error) {
-	companyID := auth.GetCompanyID(ctx)
-	baseWhere := `ov.active = true AND ov.status = 'Waiting' AND ov.trip_id IS NULL AND ov.company_id = $1`
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
 
-	args := []any{companyID}
-	argN := 2
+	qb := newQueryBuilder()
+	qb.Add("ov.company_id = ?", companyID)
+	qb.AddRaw("ov.active = true")
+	qb.AddRaw("ov.status = 'Waiting'")
+	qb.AddRaw("ov.trip_id IS NULL")
+
 	if search != "" {
-		baseWhere += fmt.Sprintf(` AND (ov.vin ILIKE $%d OR o.order_number ILIKE $%d OR o.bill_customer_name ILIKE $%d)`, argN, argN, argN)
-		args = append(args, "%"+search+"%")
-		argN++
+		pat := "%" + search + "%"
+		qb.Add("(ov.vin ILIKE ? OR o.order_number ILIKE ? OR o.bill_customer_name ILIKE ?)", pat, pat, pat)
 	}
 
 	// Count total matching rows
-	countQuery := `SELECT COUNT(*) FROM order_vehicles ov LEFT JOIN orders o ON o.id = ov.order_id WHERE ` + baseWhere
 	var totalCount int
-	if err := s.pool.QueryRow(ctx, countQuery, args...).Scan(&totalCount); err != nil {
+	if err := s.pool.QueryRow(ctx,
+		"SELECT COUNT(*) FROM order_vehicles ov LEFT JOIN orders o ON o.id = ov.order_id "+qb.Where(),
+		qb.Args()...).Scan(&totalCount); err != nil {
 		return nil, 0, fmt.Errorf("count unassigned vehicles: %w", err)
 	}
 
-	// Fetch rows up to limit at offset
-	fetchQuery := `SELECT
+	// Fetch rows up to limit at offset (raw offset, not page-based)
+	fetchArgs := append(qb.Args(), limit, offset)
+	fetchQuery := fmt.Sprintf(`SELECT
 		ov.id, COALESCE(ov.order_id, 0), COALESCE(o.order_number, ''), COALESCE(o.bill_customer_name, ''),
 		COALESCE(ov.vin, ''), COALESCE(ov.year, ''), COALESCE(ov.make, ''), COALESCE(ov.model, ''), COALESCE(ov.color, '')
 	FROM order_vehicles ov
 	LEFT JOIN orders o ON o.id = ov.order_id
-	WHERE ` + baseWhere
-	fetchQuery += fmt.Sprintf(` ORDER BY o.order_number, ov.id LIMIT $%d OFFSET $%d`, argN, argN+1)
-	fetchArgs := append(args, limit, offset)
+	%s ORDER BY o.order_number, ov.id LIMIT $%d OFFSET $%d`, qb.Where(), len(qb.Args())+1, len(qb.Args())+2)
 
 	rows, err := s.pool.Query(ctx, fetchQuery, fetchArgs...)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list unassigned vehicles: %w", err)
 	}
-	defer rows.Close()
-
-	var items []UnassignedVehicleRow
-	for rows.Next() {
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (UnassignedVehicleRow, error) {
 		var r UnassignedVehicleRow
-		if err := rows.Scan(&r.ID, &r.OrderID, &r.OrderNumber, &r.CustomerName,
+		if err := row.Scan(&r.ID, &r.OrderID, &r.OrderNumber, &r.CustomerName,
 			&r.VIN, &r.Year, &r.Make, &r.Model, &r.Color); err != nil {
-			return nil, 0, fmt.Errorf("scan unassigned vehicle: %w", err)
+			return UnassignedVehicleRow{}, err
 		}
-		items = append(items, r)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, 0, fmt.Errorf("list unassigned vehicles rows: %w", err)
+		return r, nil
+	})
+	if err != nil {
+		return nil, 0, fmt.Errorf("scan unassigned vehicle: %w", err)
 	}
 	return items, totalCount, nil
 }
 
 // ListUnassignedByOrder returns waiting, unassigned vehicles for a specific order.
 func (s *VehicleStore) ListUnassignedByOrder(ctx context.Context, orderID int) ([]models.OrderVehicle, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf(`SELECT %s FROM order_vehicles
 		WHERE order_id = $1 AND active = true AND status = 'Waiting' AND trip_id IS NULL AND company_id = $2
 		ORDER BY id`, vehicleColumns)
@@ -374,18 +425,15 @@ func (s *VehicleStore) ListUnassignedByOrder(ctx context.Context, orderID int) (
 	if err != nil {
 		return nil, fmt.Errorf("list unassigned vehicles for order %d: %w", orderID, err)
 	}
-	defer rows.Close()
-
-	var items []models.OrderVehicle
-	for rows.Next() {
-		v, err := scanVehicle(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.OrderVehicle, error) {
+		v, err := scanVehicle(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan vehicle: %w", err)
+			return models.OrderVehicle{}, err
 		}
-		items = append(items, *v)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list unassigned vehicles by order rows: %w", err)
+		return *v, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan vehicle: %w", err)
 	}
 	return items, nil
 }
@@ -411,7 +459,10 @@ type VehicleHistoryRow struct {
 
 // VehicleHistory returns all records for a VIN across orders.
 func (s *VehicleStore) VehicleHistory(ctx context.Context, vin string) ([]VehicleHistoryRow, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	rows, err := s.pool.Query(ctx,
 		`SELECT
 			ov.id, COALESCE(ov.vin, ''), COALESCE(ov.year, ''), COALESCE(ov.make, ''), COALESCE(ov.model, ''),
@@ -429,28 +480,28 @@ func (s *VehicleStore) VehicleHistory(ctx context.Context, vin string) ([]Vehicl
 	if err != nil {
 		return nil, fmt.Errorf("vehicle history: %w", err)
 	}
-	defer rows.Close()
-
-	var items []VehicleHistoryRow
-	for rows.Next() {
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (VehicleHistoryRow, error) {
 		var r VehicleHistoryRow
-		if err := rows.Scan(&r.ID, &r.VIN, &r.Year, &r.Make, &r.Model, &r.Status,
+		if err := row.Scan(&r.ID, &r.VIN, &r.Year, &r.Make, &r.Model, &r.Status,
 			&r.OrderID, &r.OrderNumber, &r.CustomerName,
 			&r.LoadNumber, &r.InvoiceNumber,
 			&r.ScheduledDate, &r.LoadedDate, &r.DeliveredDate, &r.ConfirmedDate); err != nil {
-			return nil, fmt.Errorf("scan vehicle history row: %w", err)
+			return VehicleHistoryRow{}, err
 		}
-		items = append(items, r)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("vehicle history rows: %w", err)
+		return r, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan vehicle history row: %w", err)
 	}
 	return items, nil
 }
 
 // SearchUnassigned finds vehicles that are in Waiting status and not assigned to a trip.
 func (s *VehicleStore) SearchUnassigned(ctx context.Context, search string, limit int) ([]models.OrderVehicle, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf(`SELECT %s FROM order_vehicles
 		WHERE company_id = $1 AND active = true AND status = 'Waiting' AND trip_id IS NULL
 		AND (vin ILIKE $2 OR EXISTS (SELECT 1 FROM orders WHERE orders.id = order_vehicles.order_id AND orders.order_number ILIKE $2))
@@ -459,18 +510,15 @@ func (s *VehicleStore) SearchUnassigned(ctx context.Context, search string, limi
 	if err != nil {
 		return nil, fmt.Errorf("search unassigned vehicles: %w", err)
 	}
-	defer rows.Close()
-
-	var items []models.OrderVehicle
-	for rows.Next() {
-		v, err := scanVehicle(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.OrderVehicle, error) {
+		v, err := scanVehicle(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan vehicle: %w", err)
+			return models.OrderVehicle{}, err
 		}
-		items = append(items, *v)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("search unassigned vehicles rows: %w", err)
+		return *v, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan vehicle: %w", err)
 	}
 	return items, nil
 }

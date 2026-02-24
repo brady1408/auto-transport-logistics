@@ -3,10 +3,10 @@ package store
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -42,57 +42,43 @@ func (s *DamageClaimStore) List(ctx context.Context, f models.DamageClaimFilter)
 		f.PageSize = 25
 	}
 
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
-
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
 	if f.Search != "" {
-		where = append(where, fmt.Sprintf(
-			"(claim_number ILIKE $%d OR vin ILIKE $%d OR description ILIKE $%d)",
-			argN, argN, argN))
-		args = append(args, "%"+f.Search+"%")
-		argN++
+		search := "%" + f.Search + "%"
+		qb.Add("(claim_number ILIKE ? OR vin ILIKE ? OR description ILIKE ?)", search, search, search)
 	}
 	if f.Status != "" {
-		where = append(where, fmt.Sprintf("status = $%d", argN))
-		args = append(args, f.Status)
-		argN++
+		qb.Add("status = ?", f.Status)
 	}
 
-	whereClause := "WHERE " + strings.Join(where, " AND ")
-
 	var total int
-	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM damage_claims "+whereClause, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM damage_claims "+qb.Where(), qb.Args()...).Scan(&total); err != nil {
 		return nil, fmt.Errorf("count damage claims: %w", err)
 	}
 
-	offset := (f.Page - 1) * f.PageSize
-	query := fmt.Sprintf("SELECT %s FROM damage_claims %s ORDER BY id DESC LIMIT $%d OFFSET $%d",
-		damageClaimColumns, whereClause, argN, argN+1)
-	args = append(args, f.PageSize, offset)
+	paginate := qb.Paginate(f.PageSize, f.Page)
+	query := fmt.Sprintf("SELECT %s FROM damage_claims %s ORDER BY id DESC %s",
+		damageClaimColumns, qb.Where(), paginate)
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("list damage claims: %w", err)
 	}
-	defer rows.Close()
-
-	var items []models.DamageClaim
-	for rows.Next() {
-		dc, err := scanDamageClaim(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.DamageClaim, error) {
+		dc, err := scanDamageClaim(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan damage claim: %w", err)
+			return models.DamageClaim{}, err
 		}
-		items = append(items, *dc)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list damage claims rows: %w", err)
+		return *dc, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan damage claim: %w", err)
 	}
 
 	return &models.DamageClaimListResult{
@@ -104,7 +90,10 @@ func (s *DamageClaimStore) List(ctx context.Context, f models.DamageClaimFilter)
 }
 
 func (s *DamageClaimStore) GetByID(ctx context.Context, id int) (*models.DamageClaim, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM damage_claims WHERE id = $1 AND company_id = $2", damageClaimColumns)
 	dc, err := scanDamageClaim(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -114,8 +103,12 @@ func (s *DamageClaimStore) GetByID(ctx context.Context, id int) (*models.DamageC
 }
 
 func (s *DamageClaimStore) Create(ctx context.Context, dc *models.DamageClaim) error {
-	dc.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	dc.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO damage_claims (
 			company_id, claim_number, order_id, vehicle_id, trip_id, vin,
 			claim_date, claim_amount, paid_amount, status, description,
@@ -134,8 +127,11 @@ func (s *DamageClaimStore) Create(ctx context.Context, dc *models.DamageClaim) e
 }
 
 func (s *DamageClaimStore) Update(ctx context.Context, dc *models.DamageClaim) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE damage_claims SET
 			order_id=$1, vehicle_id=$2, trip_id=$3, vin=$4,
 			claim_date=$5, claim_amount=$6, paid_amount=$7, status=$8, description=$9,
@@ -149,14 +145,23 @@ func (s *DamageClaimStore) Update(ctx context.Context, dc *models.DamageClaim) e
 	if err != nil {
 		return fmt.Errorf("update damage claim %d: %w", dc.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("damage claim %d not found", dc.ID)
+	}
 	return nil
 }
 
 func (s *DamageClaimStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM damage_claims WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM damage_claims WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete damage claim %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("damage claim %d not found", id)
 	}
 	return nil
 }
@@ -175,28 +180,19 @@ type DamageReportRow struct {
 }
 
 func (s *DamageClaimStore) DamageReport(ctx context.Context, dateFrom, dateTo string) ([]DamageReportRow, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
-
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
 	if dateFrom != "" {
-		where = append(where, fmt.Sprintf("claim_date >= $%d", argN))
-		args = append(args, dateFrom)
-		argN++
+		qb.Add("claim_date >= ?", dateFrom)
 	}
 	if dateTo != "" {
-		where = append(where, fmt.Sprintf("claim_date <= $%d", argN))
-		args = append(args, dateTo)
-		argN++
+		qb.Add("claim_date <= ?", dateTo)
 	}
-
-	whereClause := "WHERE " + strings.Join(where, " AND ")
 
 	query := fmt.Sprintf(`SELECT
 		id, COALESCE(claim_number, ''),
@@ -205,33 +201,33 @@ func (s *DamageClaimStore) DamageReport(ctx context.Context, dateFrom, dateTo st
 		COALESCE(description, ''),
 		COALESCE(claim_amount, '0.00'), COALESCE(paid_amount, '0.00')
 	FROM damage_claims %s
-	ORDER BY claim_date DESC NULLS LAST`, whereClause)
+	ORDER BY claim_date DESC NULLS LAST`, qb.Where())
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("damage report: %w", err)
 	}
-	defer rows.Close()
-
-	var items []DamageReportRow
-	for rows.Next() {
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (DamageReportRow, error) {
 		var r DamageReportRow
-		if err := rows.Scan(&r.ID, &r.ClaimNumber, &r.ClaimDate, &r.VIN, &r.OrderID,
+		if err := row.Scan(&r.ID, &r.ClaimNumber, &r.ClaimDate, &r.VIN, &r.OrderID,
 			&r.Status, &r.Description, &r.ClaimAmount, &r.PaidAmount); err != nil {
-			return nil, fmt.Errorf("scan damage report row: %w", err)
+			return DamageReportRow{}, err
 		}
-		items = append(items, r)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("damage report rows: %w", err)
+		return r, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan damage report row: %w", err)
 	}
 	return items, nil
 }
 
 func (s *DamageClaimStore) NextClaimNumber(ctx context.Context) (string, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return "", err
+	}
 	var next int
-	err := s.pool.QueryRow(ctx,
+	err = s.pool.QueryRow(ctx,
 		`SELECT COALESCE(MAX(SUBSTRING(claim_number FROM '\d+')::int), 0) + 1 FROM damage_claims WHERE claim_number ~ '\d+' AND company_id = $1`,
 		companyID,
 	).Scan(&next)

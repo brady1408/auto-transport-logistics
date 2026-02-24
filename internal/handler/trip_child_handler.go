@@ -1,21 +1,29 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/handler/components/trips"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
 // Fuel handler
 
+type tripFuelStore interface {
+	ListByTrip(ctx context.Context, tripID int) ([]models.TripFuel, error)
+	GetByID(ctx context.Context, id int) (*models.TripFuel, error)
+	Create(ctx context.Context, f *models.TripFuel) error
+	Update(ctx context.Context, f *models.TripFuel) error
+	Delete(ctx context.Context, id int) error
+}
+
 type FuelHandler struct {
-	store *store.TripFuelStore
+	store tripFuelStore
 	deps  *Deps
 }
 
-func NewFuelHandler(store *store.TripFuelStore, deps *Deps) *FuelHandler {
+func NewFuelHandler(store tripFuelStore, deps *Deps) *FuelHandler {
 	return &FuelHandler{store: store, deps: deps}
 }
 
@@ -127,12 +135,20 @@ func (h *FuelHandler) delete(w http.ResponseWriter, r *http.Request) {
 
 // Expense handler
 
+type tripExpenseStore interface {
+	ListByTrip(ctx context.Context, tripID int) ([]models.TripExpense, error)
+	GetByID(ctx context.Context, id int) (*models.TripExpense, error)
+	Create(ctx context.Context, e *models.TripExpense) error
+	Update(ctx context.Context, e *models.TripExpense) error
+	Delete(ctx context.Context, id int) error
+}
+
 type ExpenseHandler struct {
-	store *store.TripExpenseStore
+	store tripExpenseStore
 	deps  *Deps
 }
 
-func NewExpenseHandler(store *store.TripExpenseStore, deps *Deps) *ExpenseHandler {
+func NewExpenseHandler(store tripExpenseStore, deps *Deps) *ExpenseHandler {
 	return &ExpenseHandler{store: store, deps: deps}
 }
 
@@ -240,12 +256,20 @@ func (h *ExpenseHandler) delete(w http.ResponseWriter, r *http.Request) {
 
 // Route handler
 
+type tripRouteStore interface {
+	ListByTrip(ctx context.Context, tripID int) ([]models.TripRoute, error)
+	GetByID(ctx context.Context, id int) (*models.TripRoute, error)
+	Create(ctx context.Context, r *models.TripRoute) error
+	Update(ctx context.Context, r *models.TripRoute) error
+	Delete(ctx context.Context, id int) error
+}
+
 type RouteHandler struct {
-	store *store.TripRouteStore
+	store tripRouteStore
 	deps  *Deps
 }
 
-func NewRouteHandler(store *store.TripRouteStore, deps *Deps) *RouteHandler {
+func NewRouteHandler(store tripRouteStore, deps *Deps) *RouteHandler {
 	return &RouteHandler{store: store, deps: deps}
 }
 

@@ -24,6 +24,7 @@ import (
 	"github.com/brady1408/atlinks/internal/middleware"
 	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/store"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var buildVersion string
@@ -64,66 +65,40 @@ func main() {
 	}
 	defer pool.Close()
 
-	// Services
+	deps := initDeps(pool, cfg)
+	mux := initRoutes(pool, cfg, deps)
+
+	// Apply logging middleware to all routes
+	var httpHandler http.Handler = mux
+	httpHandler = middleware.RequestLogger(httpHandler)
+
+	runServer(cfg, httpHandler, ctx)
+}
+
+func initDeps(pool *pgxpool.Pool, cfg *config.Config) *handler.Deps {
 	jwtSvc := auth.NewJWTService(cfg.JWTSecret)
 	auditSvc := audit.NewService(pool)
 
-	// Set build version for cache busting
-	if buildVersion != "" {
-		handler.BuildVersion = buildVersion
-	} else {
-		handler.BuildVersion = strconv.FormatInt(time.Now().Unix(), 10)
+	version := buildVersion
+	if version == "" {
+		version = strconv.FormatInt(time.Now().Unix(), 10)
 	}
-	components.SetBuildVersion(handler.BuildVersion)
+	components.SetBuildVersion(version)
 
-	// Enable Secure flag on cookies when serving over HTTPS
-	handler.SecureCookies = strings.HasPrefix(cfg.AppBaseURL, "https://")
+	secureCookies := strings.HasPrefix(cfg.AppBaseURL, "https://")
 
-	// Stores
-	userStore := store.NewUserStore(pool)
-	customerStore := store.NewCustomerStore(pool)
-	employeeStore := store.NewEmployeeStore(pool)
-	truckStore := store.NewTruckStore(pool)
-	zoneStore := store.NewZoneStore(pool)
-	zonePricingStore := store.NewZonePricingStore(pool)
 	companyStore := store.NewCompanyStore(pool)
 
-	deps := &handler.Deps{
-		JWT:          jwtSvc,
-		Audit:        auditSvc,
-		CompanyStore: companyStore,
+	return &handler.Deps{
+		JWT:           jwtSvc,
+		Audit:         auditSvc,
+		CompanyStore:  companyStore,
+		BuildVersion:  version,
+		SecureCookies: secureCookies,
 	}
+}
 
-	// Phase 2 stores
-	orderStore := store.NewOrderStore(pool)
-	vehicleStore := store.NewVehicleStore(pool)
-	tripStore := store.NewTripStore(pool)
-	loadDetailStore := store.NewLoadDetailStore(pool)
-	chargeStore := store.NewChargeStore(pool)
-	damageStore := store.NewDamageStore(pool)
-	noteStore := store.NewNoteStore(pool)
-	fuelStore := store.NewTripFuelStore(pool)
-	expenseStore := store.NewTripExpenseStore(pool)
-	routeStore := store.NewTripRouteStore(pool)
-
-	// Phase 3 stores (Accounting)
-	invoiceStore := store.NewInvoiceStore(pool)
-	invoiceDetailStore := store.NewInvoiceDetailStore(pool)
-	paymentStore := store.NewPaymentStore(pool)
-	paymentDetailStore := store.NewPaymentDetailStore(pool)
-	creditMemoStore := store.NewCreditMemoStore(pool)
-	damageClaimStore := store.NewDamageClaimStore(pool)
-	apStore := store.NewAccountsPayableStore(pool)
-
-	// Phase 2 services
-	orderSvc := service.NewOrderService(pool, orderStore, vehicleStore, auditSvc)
-	tripSvc := service.NewTripService(pool, tripStore, loadDetailStore, vehicleStore, orderStore, auditSvc)
-
-	// Phase 3 services (Accounting)
-	invoiceSvc := service.NewInvoiceService(pool, invoiceStore, invoiceDetailStore, orderStore, vehicleStore, auditSvc)
-	paymentSvc := service.NewPaymentService(pool, paymentStore, paymentDetailStore, invoiceStore, auditSvc)
-
-	// Mux
+func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Static files
@@ -139,7 +114,41 @@ func main() {
 		fmt.Fprintln(w, "ok")
 	})
 
-	// Email + password reset + registration verification
+	// Stores
+	userStore := store.NewUserStore(pool)
+	customerStore := store.NewCustomerStore(pool)
+	employeeStore := store.NewEmployeeStore(pool)
+	truckStore := store.NewTruckStore(pool)
+	zoneStore := store.NewZoneStore(pool)
+	zonePricingStore := store.NewZonePricingStore(pool)
+	companyStore := store.NewCompanyStore(pool)
+	orderStore := store.NewOrderStore(pool)
+	vehicleStore := store.NewVehicleStore(pool)
+	tripStore := store.NewTripStore(pool)
+	loadDetailStore := store.NewLoadDetailStore(pool)
+	chargeStore := store.NewChargeStore(pool)
+	damageStore := store.NewDamageStore(pool)
+	noteStore := store.NewNoteStore(pool)
+	fuelStore := store.NewTripFuelStore(pool)
+	expenseStore := store.NewTripExpenseStore(pool)
+	routeStore := store.NewTripRouteStore(pool)
+	invoiceStore := store.NewInvoiceStore(pool)
+	invoiceDetailStore := store.NewInvoiceDetailStore(pool)
+	paymentStore := store.NewPaymentStore(pool)
+	paymentDetailStore := store.NewPaymentDetailStore(pool)
+	creditMemoStore := store.NewCreditMemoStore(pool)
+	damageClaimStore := store.NewDamageClaimStore(pool)
+	apStore := store.NewAccountsPayableStore(pool)
+	feedbackStore := store.NewFeedbackStore(pool)
+
+	// Services
+	auditSvc := deps.Audit
+	orderSvc := service.NewOrderService(pool, orderStore, vehicleStore, auditSvc)
+	tripSvc := service.NewTripService(pool, tripStore, loadDetailStore, vehicleStore, orderStore, auditSvc)
+	invoiceSvc := service.NewInvoiceService(pool, invoiceStore, invoiceDetailStore, orderStore, vehicleStore, auditSvc)
+	paymentSvc := service.NewPaymentService(pool, paymentStore, paymentDetailStore, invoiceStore, auditSvc)
+
+	// Email + password reset + registration
 	emailSvc := email.NewService(cfg.ResendAPIKey, cfg.FromEmail)
 	resetTokenStore := store.NewResetTokenStore(pool)
 	pendingRegStore := store.NewPendingRegistrationStore(pool)
@@ -155,27 +164,69 @@ func main() {
 	dashHandler := handler.NewDashboardHandler(orderStore, invoiceStore, tripStore, deps)
 	dashHandler.Register(protectedMux)
 
-	// Customer CRUD
-	custHandler := handler.NewCustomerHandler(customerStore, deps)
-	custHandler.Register(protectedMux)
+	// Global Masters
+	handler.NewCustomerHandler(customerStore, deps).Register(protectedMux)
+	handler.NewEmployeeHandler(employeeStore, deps).Register(protectedMux)
+	handler.NewTruckHandler(truckStore, deps).Register(protectedMux)
+	handler.NewZoneHandler(zoneStore, zonePricingStore, deps).Register(protectedMux)
+	handler.NewCompanyHandler(companyStore, deps).Register(protectedMux)
 
-	// Employee CRUD
-	empHandler := handler.NewEmployeeHandler(employeeStore, deps)
-	empHandler.Register(protectedMux)
+	// Lookup tables
+	registerLookups(protectedMux, pool, deps)
 
-	// Truck CRUD
-	truckHandler := handler.NewTruckHandler(truckStore, deps)
-	truckHandler.Register(protectedMux)
+	// Terms, Tax Codes, Items
+	handler.NewTermsHandler(store.NewTermsStore(pool), deps).Register(protectedMux)
+	handler.NewTaxCodeHandler(store.NewTaxCodeStore(pool), deps).Register(protectedMux)
+	handler.NewItemHandler(store.NewItemStore(pool), deps).Register(protectedMux)
 
-	// Zone + Zone Pricing CRUD
-	zoneHandler := handler.NewZoneHandler(zoneStore, zonePricingStore, deps)
-	zoneHandler.Register(protectedMux)
+	// Dispatch
+	handler.NewOrderHandler(orderStore, invoiceSvc, deps).Register(protectedMux)
+	handler.NewVehicleHandler(vehicleStore, orderStore, orderSvc, deps).Register(protectedMux)
+	handler.NewTripHandler(tripStore, loadDetailStore, vehicleStore, tripSvc, deps).Register(protectedMux)
+	handler.NewChargeHandler(chargeStore, deps).Register(protectedMux)
+	handler.NewDamageHandler(damageStore, deps).Register(protectedMux)
+	handler.NewNoteHandler(noteStore, deps).Register(protectedMux)
+	handler.NewFuelHandler(fuelStore, deps).Register(protectedMux)
+	handler.NewExpenseHandler(expenseStore, deps).Register(protectedMux)
+	handler.NewRouteHandler(routeStore, deps).Register(protectedMux)
+	handler.NewAPIHandler(customerStore, vehicleStore, deps).Register(protectedMux)
 
-	// Company settings
-	companyHandler := handler.NewCompanyHandler(companyStore, deps)
-	companyHandler.Register(protectedMux)
+	// Accounting
+	handler.NewInvoiceHandler(invoiceStore, invoiceDetailStore, paymentDetailStore, invoiceSvc, deps).Register(protectedMux)
+	handler.NewPaymentHandler(paymentStore, paymentDetailStore, invoiceStore, paymentSvc, deps).Register(protectedMux)
+	handler.NewCreditMemoHandler(creditMemoStore, deps).Register(protectedMux)
+	handler.NewDamageClaimHandler(damageClaimStore, deps).Register(protectedMux)
+	handler.NewAccountsPayableHandler(apStore, deps).Register(protectedMux)
 
-	// Lookup tables (generic code+description)
+	// Feedback
+	handler.NewFeedbackHandler(feedbackStore, deps).Register(protectedMux)
+
+	// Feedback API (API key auth, separate from JWT-protected routes)
+	feedbackAPIHandler := handler.NewFeedbackAPIHandler(feedbackStore, deps)
+	apiMux := http.NewServeMux()
+	feedbackAPIHandler.Register(apiMux)
+	apiKeyMiddleware := middleware.RequireAPIKey(cfg.APIKey)
+	mux.Handle("/api/feedback", apiKeyMiddleware(apiMux))
+	mux.Handle("/api/feedback/", apiKeyMiddleware(apiMux))
+
+	// VIN Search + Reports
+	handler.NewVinSearchHandler(vehicleStore, deps).Register(protectedMux)
+	handler.NewReportHandler(orderStore, invoiceStore, tripStore, vehicleStore, paymentStore, damageClaimStore, deps).Register(protectedMux)
+
+	// Admin + User Management
+	adminHandler := handler.NewAdminHandler(companyStore, userStore, deps)
+	adminHandler.RegisterAdmin(protectedMux, middleware.RequireRole("super_admin"))
+	adminHandler.RegisterSettings(protectedMux, middleware.RequireRole("company_admin", "super_admin"))
+
+	// Wrap protected routes with auth + CSRF middleware
+	authMiddleware := middleware.RequireAuth(deps.JWT)
+	csrfMiddleware := middleware.CSRF(deps.SecureCookies)
+	mux.Handle("/", authMiddleware(csrfMiddleware(protectedMux)))
+
+	return mux
+}
+
+func registerLookups(mux *http.ServeMux, pool *pgxpool.Pool, deps *handler.Deps) {
 	lookups := []struct{ table, path, title string }{
 		{"dispatch_codes", "/global/dispatch-codes", "Dispatch Codes"},
 		{"damage_areas", "/global/damage-areas", "Damage Areas"},
@@ -196,107 +247,14 @@ func main() {
 		if err != nil {
 			log.Fatalf("lookup store %s: %v", l.table, err)
 		}
-		lh := handler.NewLookupHandler(deps, ls, l.path, l.title)
-		lh.Register(protectedMux)
+		handler.NewLookupHandler(deps, ls, l.path, l.title).Register(mux)
 	}
+}
 
-	// Terms, Tax Codes, Items (extra-field lookup tables)
-	termsStore := store.NewTermsStore(pool)
-	termsHandler := handler.NewTermsHandler(termsStore, deps)
-	termsHandler.Register(protectedMux)
-
-	taxCodeStore := store.NewTaxCodeStore(pool)
-	taxCodeHandler := handler.NewTaxCodeHandler(taxCodeStore, deps)
-	taxCodeHandler.Register(protectedMux)
-
-	itemStore := store.NewItemStore(pool)
-	itemHandler := handler.NewItemHandler(itemStore, deps)
-	itemHandler.Register(protectedMux)
-
-	// Phase 2: Dispatch
-	orderHandler := handler.NewOrderHandler(orderStore, customerStore, orderSvc, invoiceSvc, deps)
-	orderHandler.Register(protectedMux)
-
-	vehicleHandler := handler.NewVehicleHandler(vehicleStore, orderStore, orderSvc, deps)
-	vehicleHandler.Register(protectedMux)
-
-	tripHandler := handler.NewTripHandler(tripStore, loadDetailStore, vehicleStore, tripSvc, deps)
-	tripHandler.Register(protectedMux)
-
-	chargeHandler := handler.NewChargeHandler(chargeStore, deps)
-	chargeHandler.Register(protectedMux)
-
-	damageHandler := handler.NewDamageHandler(damageStore, deps)
-	damageHandler.Register(protectedMux)
-
-	noteHandler := handler.NewNoteHandler(noteStore, deps)
-	noteHandler.Register(protectedMux)
-
-	fuelHandler := handler.NewFuelHandler(fuelStore, deps)
-	fuelHandler.Register(protectedMux)
-
-	expenseHandler := handler.NewExpenseHandler(expenseStore, deps)
-	expenseHandler.Register(protectedMux)
-
-	routeHandler := handler.NewRouteHandler(routeStore, deps)
-	routeHandler.Register(protectedMux)
-
-	apiHandler := handler.NewAPIHandler(customerStore, vehicleStore, deps)
-	apiHandler.Register(protectedMux)
-
-	// Phase 3: Accounting
-	invoiceHandler := handler.NewInvoiceHandler(invoiceStore, invoiceDetailStore, paymentDetailStore, invoiceSvc, deps)
-	invoiceHandler.Register(protectedMux)
-
-	paymentHandler := handler.NewPaymentHandler(paymentStore, paymentDetailStore, invoiceStore, paymentSvc, deps)
-	paymentHandler.Register(protectedMux)
-
-	creditMemoHandler := handler.NewCreditMemoHandler(creditMemoStore, deps)
-	creditMemoHandler.Register(protectedMux)
-
-	damageClaimHandler := handler.NewDamageClaimHandler(damageClaimStore, deps)
-	damageClaimHandler.Register(protectedMux)
-
-	apHandler := handler.NewAccountsPayableHandler(apStore, deps)
-	apHandler.Register(protectedMux)
-
-	// Feedback
-	feedbackStore := store.NewFeedbackStore(pool)
-	feedbackHandler := handler.NewFeedbackHandler(feedbackStore, deps)
-	feedbackHandler.Register(protectedMux)
-
-	// Feedback API (API key auth, separate from JWT-protected routes)
-	feedbackAPIHandler := handler.NewFeedbackAPIHandler(feedbackStore, deps)
-	apiMux := http.NewServeMux()
-	feedbackAPIHandler.Register(apiMux)
-	apiKeyMiddleware := middleware.RequireAPIKey(cfg.APIKey)
-	mux.Handle("/api/feedback", apiKeyMiddleware(apiMux))
-	mux.Handle("/api/feedback/", apiKeyMiddleware(apiMux))
-
-	// Phase 4: VIN Search + Reports
-	vinSearchHandler := handler.NewVinSearchHandler(vehicleStore, deps)
-	vinSearchHandler.Register(protectedMux)
-
-	reportHandler := handler.NewReportHandler(orderStore, invoiceStore, tripStore, vehicleStore, paymentStore, damageClaimStore, deps)
-	reportHandler.Register(protectedMux)
-
-	// Phase 5: Admin + User Management
-	adminHandler := handler.NewAdminHandler(companyStore, userStore, deps)
-	adminHandler.RegisterAdmin(protectedMux, middleware.RequireRole("super_admin"))
-	adminHandler.RegisterSettings(protectedMux, middleware.RequireRole("company_admin", "super_admin"))
-
-	// Wrap protected routes with auth + CSRF middleware
-	authMiddleware := middleware.RequireAuth(jwtSvc)
-	csrfMiddleware := middleware.CSRF(handler.SecureCookies)
-	mux.Handle("/", authMiddleware(csrfMiddleware(protectedMux)))
-
-	// Apply logging middleware to all routes
-	var httpHandler http.Handler = mux
-	httpHandler = middleware.RequestLogger(httpHandler)
-
+func runServer(cfg *config.Config, handler http.Handler, ctx context.Context) {
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
-		Handler:      httpHandler,
+		Handler:      handler,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
