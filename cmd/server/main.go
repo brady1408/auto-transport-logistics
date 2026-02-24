@@ -244,6 +244,11 @@ func main() {
 	apHandler := handler.NewAccountsPayableHandler(apStore, deps)
 	apHandler.Register(protectedMux)
 
+	// Feedback
+	feedbackStore := store.NewFeedbackStore(pool)
+	feedbackHandler := handler.NewFeedbackHandler(feedbackStore, deps)
+	feedbackHandler.Register(protectedMux)
+
 	// Phase 4: VIN Search + Reports
 	vinSearchHandler := handler.NewVinSearchHandler(vehicleStore, deps)
 	vinSearchHandler.Register(protectedMux)
