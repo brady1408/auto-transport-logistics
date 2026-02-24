@@ -75,6 +75,8 @@
                 {{if or (eq .User.Role "super_admin") (eq .User.Role "company_admin")}}
                 <a href="/settings/users" class="dropdown-item">Users</a>
                 {{end}}
+                <hr class="dropdown-divider">
+                <a href="/feedback" class="dropdown-item">Feedback</a>
             </div>
         </div>
         {{if eq .User.Role "super_admin"}}
@@ -83,7 +85,6 @@
             <button class="nav-link">Admin</button>
             <div class="dropdown-menu" x-show="open === 'admin'" x-cloak>
                 <a href="/admin/companies" class="dropdown-item">Companies</a>
-                <a href="/admin/feedback" class="dropdown-item">Feedback</a>
             </div>
         </div>
         {{end}}

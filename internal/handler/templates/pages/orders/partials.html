@@ -52,36 +52,37 @@
     <td class="text-right">
         <div class="btn-group">
             {{if eq .Vehicle.Status "Waiting"}}
-                <button class="btn btn-sm btn-success"
-                        hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/schedule"
-                        hx-target="#vehicle-row-{{.Vehicle.ID}}"
-                        hx-swap="outerHTML">Schedule</button>
-            {{else if eq .Vehicle.Status "Scheduled"}}
-                <button class="btn btn-sm btn-success"
-                        hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/load"
-                        hx-target="#vehicle-row-{{.Vehicle.ID}}"
-                        hx-swap="outerHTML">Mark Loaded</button>
-            {{else if eq .Vehicle.Status "Loaded"}}
-                <button class="btn btn-sm btn-success"
-                        hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/deliver"
-                        hx-target="#vehicle-row-{{.Vehicle.ID}}"
-                        hx-swap="outerHTML">Mark Delivered</button>
-            {{else if eq .Vehicle.Status "Delivered"}}
-                <button class="btn btn-sm btn-success"
-                        hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/confirm"
-                        hx-target="#vehicle-row-{{.Vehicle.ID}}"
-                        hx-swap="outerHTML">Confirm</button>
+            <button class="btn-icon" disabled title="Already at first status">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 3 5 8 10 13"/></svg>
+            </button>
+            {{else}}
+            <button class="btn-icon" title="Revert to {{if eq .Vehicle.Status "Scheduled"}}Waiting{{else if eq .Vehicle.Status "Loaded"}}Scheduled{{else if eq .Vehicle.Status "Delivered"}}Loaded{{else if eq .Vehicle.Status "Confirmed"}}Delivered{{end}}"
+                    hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/revert"
+                    hx-target="#vehicle-row-{{.Vehicle.ID}}"
+                    hx-swap="outerHTML">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 3 5 8 10 13"/></svg>
+            </button>
             {{end}}
-            {{if and (ne .Vehicle.Status "Waiting") (ne .Vehicle.Status "Confirmed")}}
-                <button class="btn btn-sm"
-                        hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/revert"
-                        hx-target="#vehicle-row-{{.Vehicle.ID}}"
-                        hx-swap="outerHTML">Revert</button>
+            {{if eq .Vehicle.Status "Confirmed"}}
+            <button class="btn-icon" disabled title="Already at final status">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3 11 8 6 13"/></svg>
+            </button>
+            {{else}}
+            <button class="btn-icon btn-icon-success" title="Advance to {{if eq .Vehicle.Status "Waiting"}}Scheduled{{else if eq .Vehicle.Status "Scheduled"}}Loaded{{else if eq .Vehicle.Status "Loaded"}}Delivered{{else if eq .Vehicle.Status "Delivered"}}Confirmed{{end}}"
+                    hx-post="/dispatch/vehicles/{{.Vehicle.ID}}/{{if eq .Vehicle.Status "Waiting"}}schedule{{else if eq .Vehicle.Status "Scheduled"}}load{{else if eq .Vehicle.Status "Loaded"}}deliver{{else if eq .Vehicle.Status "Delivered"}}confirm{{end}}"
+                    hx-target="#vehicle-row-{{.Vehicle.ID}}"
+                    hx-swap="outerHTML">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3 11 8 6 13"/></svg>
+            </button>
             {{end}}
-            <a href="/dispatch/vehicles/{{.Vehicle.ID}}/edit" class="btn btn-sm">Edit</a>
-            <button class="btn btn-sm btn-danger"
+            <a href="/dispatch/vehicles/{{.Vehicle.ID}}/edit" class="btn-icon" title="Edit vehicle">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.5a1.8 1.8 0 0 1 2.5 2.5L5.5 13.5 2 14.5l1-3.5z"/></svg>
+            </a>
+            <button class="btn-icon btn-icon-danger" title="Delete vehicle"
                     hx-delete="/dispatch/vehicles/{{.Vehicle.ID}}"
-                    hx-confirm="Delete this vehicle?">Delete</button>
+                    hx-confirm="Delete this vehicle?">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 4 12 4"/><path d="M5.5 4V3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1"/><path d="M12 4v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4"/></svg>
+            </button>
         </div>
     </td>
 </tr>

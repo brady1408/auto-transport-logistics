@@ -337,6 +337,35 @@ legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-70
     .feedback-fab, .feedback-overlay { display: none !important; }
 }
 
+/* Feedback comment cards */
+.comment-card {
+    border-left: 3px solid var(--primary);
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    background: white;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    border: 1px solid var(--gray-200);
+    border-left: 3px solid var(--primary);
+}
+.comment-internal {
+    border-left-color: #f59e0b;
+    background-color: #fffbeb;
+}
+
+/* Icon buttons (vehicle actions) */
+.btn-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; padding: 0; border: 1px solid var(--gray-300);
+    border-radius: var(--radius); background: white; color: var(--gray-600);
+    cursor: pointer; text-decoration: none; line-height: 1;
+}
+.btn-icon:hover { background: var(--gray-100); color: var(--gray-800); text-decoration: none; }
+.btn-icon-success { border-color: var(--success); color: var(--success); }
+.btn-icon-success:hover { background: var(--success); color: white; }
+.btn-icon-danger { border-color: var(--danger); color: var(--danger); }
+.btn-icon-danger:hover { background: var(--danger); color: white; }
+.btn-icon:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+
 /* HTMX loading indicator */
 .htmx-indicator { display: none; }
 .htmx-request .htmx-indicator { display: inline-block; }

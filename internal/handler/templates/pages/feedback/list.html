@@ -10,21 +10,23 @@
     <div class="form-group">
         <label for="status">Status</label>
         <select id="status" name="status" class="form-control"
-                hx-get="/admin/feedback"
+                hx-get="/feedback"
                 hx-trigger="change"
                 hx-target="#feedback-table"
                 hx-include=".filter-bar [name]"
                 hx-push-url="true">
-            <option value="" {{selected .Filter.Status ""}}>All</option>
+            <option value="active" {{selected .Filter.Status "active"}}>Active</option>
+            <option value="all" {{selected .Filter.Status "all"}}>All</option>
             <option value="open" {{selected .Filter.Status "open"}}>Open</option>
             <option value="reviewed" {{selected .Filter.Status "reviewed"}}>Reviewed</option>
             <option value="resolved" {{selected .Filter.Status "resolved"}}>Resolved</option>
+            <option value="closed" {{selected .Filter.Status "closed"}}>Closed</option>
         </select>
     </div>
     <div class="form-group">
         <label for="category">Category</label>
         <select id="category" name="category" class="form-control"
-                hx-get="/admin/feedback"
+                hx-get="/feedback"
                 hx-trigger="change"
                 hx-target="#feedback-table"
                 hx-include=".filter-bar [name]"
