@@ -33,6 +33,7 @@ templ FormPage(pg components.PageContext, creditMemo *models.CreditMemo, isNew b
 			}
 			x-data="creditMemoForm()"
 		>
+			@components.CSRFField(pg.CSRFToken)
 			<fieldset>
 				<legend>Credit Memo Information</legend>
 				<div class="form-row">

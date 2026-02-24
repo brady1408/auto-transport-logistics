@@ -57,6 +57,7 @@ templ CompanyUserFormPage(pg components.PageContext, company *models.Company, is
 			}
 			class="form-card"
 		>
+			@components.CSRFField(pg.CSRFToken)
 			<div class="form-row">
 				<div class="form-group">
 					<label for="username">Username *</label>

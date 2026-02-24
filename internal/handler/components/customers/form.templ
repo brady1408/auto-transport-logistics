@@ -32,6 +32,7 @@ templ FormPage(pg components.PageContext, customer *models.Customer, isNew bool,
 				hx-put={ fmt.Sprintf("/global/customers/%d", customer.ID) }
 			}
 		>
+			@components.CSRFField(pg.CSRFToken)
 			<fieldset>
 				<legend>General Information</legend>
 				<div class="form-row">

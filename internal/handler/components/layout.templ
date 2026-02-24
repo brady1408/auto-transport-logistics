@@ -1,5 +1,10 @@
 package components
 
+// CSRFField renders a hidden input with the CSRF token for non-HTMX form submissions.
+templ CSRFField(token string) {
+	<input type="hidden" name="csrf_token" value={ token }/>
+}
+
 templ Layout(pg PageContext, title string) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -10,6 +15,15 @@ templ Layout(pg PageContext, title string) {
 		<link rel="stylesheet" href={ AssetVersion("/static/css/app.css") }/>
 		<script src={ AssetVersion("/static/js/htmx.min.js") }></script>
 		<script defer src={ AssetVersion("/static/js/alpine.min.js") }></script>
+		<script>
+			// Configure HTMX to send CSRF token from cookie on every request
+			document.addEventListener('htmx:configRequest', function(evt) {
+				var match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
+				if (match) {
+					evt.detail.headers['X-CSRF-Token'] = match[1];
+				}
+			});
+		</script>
 	</head>
 	<body>
 		if pg.User != nil {

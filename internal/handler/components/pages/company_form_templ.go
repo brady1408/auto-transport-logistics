@@ -69,267 +69,275 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, errMsg 
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " <form method=\"POST\" action=\"/utilities/company\" hx-put=\"/utilities/company\"><fieldset><legend>Company Information</legend><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column:span 2\"><label for=\"company_name\">Company Name *</label> <input type=\"text\" id=\"company_name\" name=\"company_name\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " <form method=\"POST\" action=\"/utilities/company\" hx-put=\"/utilities/company\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.CSRFField(pg.CSRFToken).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<fieldset><legend>Company Information</legend><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column:span 2\"><label for=\"company_name\">Company Name *</label> <input type=\"text\" id=\"company_name\" name=\"company_name\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(company.CompanyName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 22, Col: 111}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 23, Col: 111}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" required maxlength=\"40\"></div></div><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column:span 2\"><label for=\"address\">Address</label> <input type=\"text\" id=\"address\" name=\"address\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" required maxlength=\"40\"></div></div><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column:span 2\"><label for=\"address\">Address</label> <input type=\"text\" id=\"address\" name=\"address\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.Address))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 28, Col: 115}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 29, Col: 115}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column:span 2\"><label for=\"address2\">Address 2</label> <input type=\"text\" id=\"address2\" name=\"address2\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column:span 2\"><label for=\"address2\">Address 2</label> <input type=\"text\" id=\"address2\" name=\"address2\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.Address2))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 34, Col: 118}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 35, Col: 118}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"city\">City</label> <input type=\"text\" id=\"city\" name=\"city\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"city\">City</label> <input type=\"text\" id=\"city\" name=\"city\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.City))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 40, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 41, Col: 106}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" maxlength=\"25\"></div><div class=\"form-group\"><label for=\"state\">State</label> <input type=\"text\" id=\"state\" name=\"state\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" maxlength=\"25\"></div><div class=\"form-group\"><label for=\"state\">State</label> <input type=\"text\" id=\"state\" name=\"state\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.State))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 44, Col: 109}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 45, Col: 109}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" maxlength=\"2\" style=\"text-transform:uppercase\"></div><div class=\"form-group\"><label for=\"zip\">Zip</label> <input type=\"text\" id=\"zip\" name=\"zip\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\" maxlength=\"2\" style=\"text-transform:uppercase\"></div><div class=\"form-group\"><label for=\"zip\">Zip</label> <input type=\"text\" id=\"zip\" name=\"zip\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.Zip))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 48, Col: 103}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 49, Col: 103}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\" maxlength=\"10\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"phone\">Phone</label> <input type=\"text\" id=\"phone\" name=\"phone\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" maxlength=\"10\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"phone\">Phone</label> <input type=\"text\" id=\"phone\" name=\"phone\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.Phone))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 54, Col: 109}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 55, Col: 109}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"fax\">Fax</label> <input type=\"text\" id=\"fax\" name=\"fax\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"fax\">Fax</label> <input type=\"text\" id=\"fax\" name=\"fax\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.Fax))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 58, Col: 103}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 59, Col: 103}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" maxlength=\"10\"></div></div></fieldset><fieldset><legend>Carrier Identifiers</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"scac\">SCAC</label> <input type=\"text\" id=\"scac\" name=\"scac\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" maxlength=\"10\"></div></div></fieldset><fieldset><legend>Carrier Identifiers</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"scac\">SCAC</label> <input type=\"text\" id=\"scac\" name=\"scac\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.SCAC))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 67, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 68, Col: 106}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" maxlength=\"4\"></div><div class=\"form-group\"><label for=\"federal_id\">Federal ID</label> <input type=\"text\" id=\"federal_id\" name=\"federal_id\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\" maxlength=\"4\"></div><div class=\"form-group\"><label for=\"federal_id\">Federal ID</label> <input type=\"text\" id=\"federal_id\" name=\"federal_id\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.FederalID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 71, Col: 123}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 72, Col: 123}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\" maxlength=\"15\"></div><div class=\"form-group\"><label for=\"mc_number\">MC Number</label> <input type=\"text\" id=\"mc_number\" name=\"mc_number\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\" maxlength=\"15\"></div><div class=\"form-group\"><label for=\"mc_number\">MC Number</label> <input type=\"text\" id=\"mc_number\" name=\"mc_number\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.MCNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 75, Col: 120}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 76, Col: 120}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\" maxlength=\"15\"></div><div class=\"form-group\"><label for=\"dot_number\">DOT Number</label> <input type=\"text\" id=\"dot_number\" name=\"dot_number\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\" maxlength=\"15\"></div><div class=\"form-group\"><label for=\"dot_number\">DOT Number</label> <input type=\"text\" id=\"dot_number\" name=\"dot_number\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.DOTNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 79, Col: 123}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 80, Col: 123}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\" maxlength=\"15\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"splc\">SPLC</label> <input type=\"text\" id=\"splc\" name=\"splc\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" maxlength=\"15\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"splc\">SPLC</label> <input type=\"text\" id=\"splc\" name=\"splc\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.SPLC))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 85, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 86, Col: 106}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" maxlength=\"10\"></div></div></fieldset><fieldset><legend>Insurance</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"insurance_carrier\">Carrier</label> <input type=\"text\" id=\"insurance_carrier\" name=\"insurance_carrier\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" maxlength=\"10\"></div></div></fieldset><fieldset><legend>Insurance</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"insurance_carrier\">Carrier</label> <input type=\"text\" id=\"insurance_carrier\" name=\"insurance_carrier\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.InsuranceCarrier))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 94, Col: 144}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 95, Col: 144}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" maxlength=\"40\"></div><div class=\"form-group\"><label for=\"insurance_policy_number\">Policy #</label> <input type=\"text\" id=\"insurance_policy_number\" name=\"insurance_policy_number\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\" maxlength=\"40\"></div><div class=\"form-group\"><label for=\"insurance_policy_number\">Policy #</label> <input type=\"text\" id=\"insurance_policy_number\" name=\"insurance_policy_number\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.InsurancePolicyNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 98, Col: 161}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 99, Col: 161}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\" maxlength=\"20\"></div><div class=\"form-group\"><label for=\"insurance_agent\">Agent</label> <input type=\"text\" id=\"insurance_agent\" name=\"insurance_agent\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" maxlength=\"20\"></div><div class=\"form-group\"><label for=\"insurance_agent\">Agent</label> <input type=\"text\" id=\"insurance_agent\" name=\"insurance_agent\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.InsuranceAgent))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 102, Col: 138}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 103, Col: 138}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"insurance_phone\">Phone</label> <input type=\"text\" id=\"insurance_phone\" name=\"insurance_phone\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"insurance_phone\">Phone</label> <input type=\"text\" id=\"insurance_phone\" name=\"insurance_phone\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var20 string
 			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.InsurancePhone))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 108, Col: 138}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 109, Col: 138}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"insurance_fax\">Fax</label> <input type=\"text\" id=\"insurance_fax\" name=\"insurance_fax\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"insurance_fax\">Fax</label> <input type=\"text\" id=\"insurance_fax\" name=\"insurance_fax\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var21 string
 			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.InsuranceFax))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 112, Col: 132}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 113, Col: 132}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"insurance_exp_date\">Exp Date</label> <input type=\"date\" id=\"insurance_exp_date\" name=\"insurance_exp_date\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"insurance_exp_date\">Exp Date</label> <input type=\"date\" id=\"insurance_exp_date\" name=\"insurance_exp_date\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(company.InsuranceExpDate))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 116, Col: 151}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 117, Col: 151}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\"></div><div class=\"form-group\"><label for=\"insurance_coverage_amt\">Coverage Amt</label> <input type=\"text\" id=\"insurance_coverage_amt\" name=\"insurance_coverage_amt\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\"></div><div class=\"form-group\"><label for=\"insurance_coverage_amt\">Coverage Amt</label> <input type=\"text\" id=\"insurance_coverage_amt\" name=\"insurance_coverage_amt\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var23 string
 			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.InsuranceCoverageAmt))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 120, Col: 158}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/company_form.templ`, Line: 121, Col: 158}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\"></div></div></fieldset><div class=\"form-actions\"><button type=\"submit\" class=\"btn btn-primary\">Save Company Settings</button></div></form>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\"></div></div></fieldset><div class=\"form-actions\"><button type=\"submit\" class=\"btn btn-primary\">Save Company Settings</button></div></form>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

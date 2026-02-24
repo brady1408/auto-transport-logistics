@@ -33,6 +33,7 @@ templ FormPage(pg components.PageContext, order *models.Order, isNew bool, errMs
 			}
 			x-data="orderForm()"
 		>
+			@components.CSRFField(pg.CSRFToken)
 			<fieldset>
 				<legend>Order Information</legend>
 				<div class="form-row">

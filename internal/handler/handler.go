@@ -21,6 +21,9 @@ import (
 // BuildVersion is set from main.go and used for static asset cache busting.
 var BuildVersion string
 
+// SecureCookies is set from main.go; true when serving over HTTPS.
+var SecureCookies bool
+
 type Deps struct {
 	JWT          *auth.JWTService
 	Audit        *audit.Service
@@ -90,6 +93,9 @@ func (d *Deps) pageContext(w http.ResponseWriter, r *http.Request) components.Pa
 	if flash := getFlash(w, r); flash != "" {
 		ctx.Flash = flash
 	}
+	if cookie, err := r.Cookie("csrf_token"); err == nil {
+		ctx.CSRFToken = cookie.Value
+	}
 	return ctx
 }
 
@@ -108,6 +114,7 @@ func setFlash(w http.ResponseWriter, msg string) {
 		Path:     "/",
 		MaxAge:   5,
 		HttpOnly: true,
+		Secure:   SecureCookies,
 	})
 }
 

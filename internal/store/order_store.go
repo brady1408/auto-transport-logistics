@@ -256,15 +256,32 @@ func (s *OrderStore) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
+// NextOrderNumber returns the next order number within a short-lived advisory-locked
+// transaction to prevent race conditions with concurrent inserts.
 func (s *OrderStore) NextOrderNumber(ctx context.Context) (string, error) {
 	companyID := auth.GetCompanyID(ctx)
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return "", fmt.Errorf("begin tx for next order number: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Advisory lock keyed on company_id to serialize number generation
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1, 1)`, companyID); err != nil {
+		return "", fmt.Errorf("advisory lock for next order number: %w", err)
+	}
+
 	var next int
-	err := s.pool.QueryRow(ctx,
+	err = tx.QueryRow(ctx,
 		`SELECT COALESCE(MAX(order_number::int), 0) + 1 FROM orders WHERE order_number ~ '^\d+$' AND company_id = $1`,
 		companyID,
 	).Scan(&next)
 	if err != nil {
 		return "", fmt.Errorf("next order number: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return "", fmt.Errorf("commit next order number: %w", err)
 	}
 	return fmt.Sprintf("%06d", next), nil
 }

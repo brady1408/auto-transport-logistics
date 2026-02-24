@@ -39,6 +39,7 @@ templ FormPage(pg components.PageContext, employee *models.Employee, isNew bool,
 				hx-put={ fmt.Sprintf("/global/employees/%d", employee.ID) }
 			}
 		>
+			@components.CSRFField(pg.CSRFToken)
 			<fieldset>
 				<legend>Personal Information</legend>
 				<div class="form-row">

@@ -202,8 +202,18 @@ func (s *VehicleStore) CountByOrderTx(ctx context.Context, tx pgx.Tx, orderID in
 	return c, nil
 }
 
+var allowedDateColumns = map[string]bool{
+	"scheduled_date": true,
+	"loaded_date":    true,
+	"delivered_date": true,
+	"confirmed_date": true,
+}
+
 // UpdateStatusTx updates a vehicle's status and corresponding date within a transaction.
 func (s *VehicleStore) UpdateStatusTx(ctx context.Context, tx pgx.Tx, id int, status string, dateCol string, dateVal any) error {
+	if !allowedDateColumns[dateCol] {
+		return fmt.Errorf("invalid date column: %s", dateCol)
+	}
 	companyID := auth.GetCompanyID(ctx)
 	query := fmt.Sprintf(
 		`UPDATE order_vehicles SET status=$1, %s=$2 WHERE id=$3 AND company_id=$4`, dateCol)

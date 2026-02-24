@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -74,6 +75,9 @@ func main() {
 		handler.BuildVersion = strconv.FormatInt(time.Now().Unix(), 10)
 	}
 	components.SetBuildVersion(handler.BuildVersion)
+
+	// Enable Secure flag on cookies when serving over HTTPS
+	handler.SecureCookies = strings.HasPrefix(cfg.AppBaseURL, "https://")
 
 	// Stores
 	userStore := store.NewUserStore(pool)
@@ -278,11 +282,13 @@ func main() {
 
 	// Phase 5: Admin + User Management
 	adminHandler := handler.NewAdminHandler(companyStore, userStore, deps)
-	adminHandler.Register(protectedMux)
+	adminHandler.RegisterAdmin(protectedMux, middleware.RequireRole("super_admin"))
+	adminHandler.RegisterSettings(protectedMux, middleware.RequireRole("company_admin", "super_admin"))
 
-	// Wrap protected routes with auth middleware
+	// Wrap protected routes with auth + CSRF middleware
 	authMiddleware := middleware.RequireAuth(jwtSvc)
-	mux.Handle("/", authMiddleware(protectedMux))
+	csrfMiddleware := middleware.CSRF(handler.SecureCookies)
+	mux.Handle("/", authMiddleware(csrfMiddleware(protectedMux)))
 
 	// Apply logging middleware to all routes
 	var httpHandler http.Handler = mux
