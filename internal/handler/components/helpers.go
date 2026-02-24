@@ -13,6 +13,7 @@ type PageContext struct {
 	User        *auth.ContextUser
 	CompanyName string
 	Flash       string
+	CSRFToken   string
 }
 
 // PaginationData holds computed values for pagination controls.

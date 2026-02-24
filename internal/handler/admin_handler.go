@@ -111,38 +111,34 @@ func NewAdminHandler(companyStore *store.CompanyStore, userStore *store.UserStor
 	return &AdminHandler{companyStore: companyStore, userStore: userStore, deps: deps}
 }
 
-func (h *AdminHandler) Register(mux *http.ServeMux) {
-	// Super admin: company management
-	mux.HandleFunc("GET /admin/companies", h.listCompanies)
-	mux.HandleFunc("GET /admin/companies/new", h.newCompany)
-	mux.HandleFunc("POST /admin/companies", h.createCompany)
-	mux.HandleFunc("GET /admin/companies/{id}/edit", h.editCompany)
-	mux.HandleFunc("POST /admin/companies/{id}", h.updateCompany)
+// RegisterAdmin registers super_admin-only routes with the given middleware applied per-handler.
+func (h *AdminHandler) RegisterAdmin(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
+	wrap := func(fn http.HandlerFunc) http.Handler { return mw(fn) }
+	mux.Handle("GET /admin/companies", wrap(h.listCompanies))
+	mux.Handle("GET /admin/companies/new", wrap(h.newCompany))
+	mux.Handle("POST /admin/companies", wrap(h.createCompany))
+	mux.Handle("GET /admin/companies/{id}/edit", wrap(h.editCompany))
+	mux.Handle("POST /admin/companies/{id}", wrap(h.updateCompany))
+	mux.Handle("GET /admin/companies/{companyID}/users", wrap(h.adminListUsers))
+	mux.Handle("GET /admin/companies/{companyID}/users/new", wrap(h.adminNewUser))
+	mux.Handle("POST /admin/companies/{companyID}/users", wrap(h.adminCreateUser))
+	mux.Handle("GET /admin/companies/{companyID}/users/{id}/edit", wrap(h.adminEditUser))
+	mux.Handle("POST /admin/companies/{companyID}/users/{id}", wrap(h.adminUpdateUser))
+}
 
-	// Super admin: user management per company
-	mux.HandleFunc("GET /admin/companies/{companyID}/users", h.adminListUsers)
-	mux.HandleFunc("GET /admin/companies/{companyID}/users/new", h.adminNewUser)
-	mux.HandleFunc("POST /admin/companies/{companyID}/users", h.adminCreateUser)
-	mux.HandleFunc("GET /admin/companies/{companyID}/users/{id}/edit", h.adminEditUser)
-	mux.HandleFunc("POST /admin/companies/{companyID}/users/{id}", h.adminUpdateUser)
-
-	// Company admin: user management (own company)
-	mux.HandleFunc("GET /settings/users", h.listUsers)
-	mux.HandleFunc("GET /settings/users/new", h.newUser)
-	mux.HandleFunc("POST /settings/users", h.createUser)
-	mux.HandleFunc("GET /settings/users/{id}/edit", h.editUser)
-	mux.HandleFunc("POST /settings/users/{id}", h.updateUser)
+// RegisterSettings registers company-level user management routes with the given middleware.
+func (h *AdminHandler) RegisterSettings(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
+	wrap := func(fn http.HandlerFunc) http.Handler { return mw(fn) }
+	mux.Handle("GET /settings/users", wrap(h.listUsers))
+	mux.Handle("GET /settings/users/new", wrap(h.newUser))
+	mux.Handle("POST /settings/users", wrap(h.createUser))
+	mux.Handle("GET /settings/users/{id}/edit", wrap(h.editUser))
+	mux.Handle("POST /settings/users/{id}", wrap(h.updateUser))
 }
 
 // --- Company Management (super_admin only) ---
 
 func (h *AdminHandler) listCompanies(w http.ResponseWriter, r *http.Request) {
-	user, _ := auth.GetUserFromRequest(r)
-	if user.Role != "super_admin" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-
 	companies, err := h.companyStore.ListAll(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -154,23 +150,11 @@ func (h *AdminHandler) listCompanies(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AdminHandler) newCompany(w http.ResponseWriter, r *http.Request) {
-	user, _ := auth.GetUserFromRequest(r)
-	if user.Role != "super_admin" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-
 	pg := h.deps.pageContext(w, r)
 	h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, nil, true, nil, ""))
 }
 
 func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
-	user, _ := auth.GetUserFromRequest(r)
-	if user.Role != "super_admin" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-
 	c := &models.Company{
 		CompanyName: formStringRequired(r, "company_name"),
 		Slug:        formStringRequired(r, "slug"),
@@ -199,12 +183,6 @@ func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AdminHandler) editCompany(w http.ResponseWriter, r *http.Request) {
-	user, _ := auth.GetUserFromRequest(r)
-	if user.Role != "super_admin" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -222,12 +200,6 @@ func (h *AdminHandler) editCompany(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AdminHandler) updateCompany(w http.ResponseWriter, r *http.Request) {
-	user, _ := auth.GetUserFromRequest(r)
-	if user.Role != "super_admin" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -294,12 +266,6 @@ func validateUser(username, email, password, role string, isNew bool) map[string
 // --- User Management (company_admin + super_admin) ---
 
 func (h *AdminHandler) listUsers(w http.ResponseWriter, r *http.Request) {
-	user, _ := auth.GetUserFromRequest(r)
-	if user.Role != "super_admin" && user.Role != "company_admin" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-
 	companyID := auth.GetCompanyID(r.Context())
 	users, err := h.userStore.ListByCompany(r.Context(), companyID)
 	if err != nil {
@@ -312,23 +278,12 @@ func (h *AdminHandler) listUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AdminHandler) newUser(w http.ResponseWriter, r *http.Request) {
-	user, _ := auth.GetUserFromRequest(r)
-	if user.Role != "super_admin" && user.Role != "company_admin" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-
 	pg := h.deps.pageContext(w, r)
 	h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, nil, nil, nil, ""))
 }
 
 func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
 	ctxUser, _ := auth.GetUserFromRequest(r)
-	if ctxUser.Role != "super_admin" && ctxUser.Role != "company_admin" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-
 	companyID := auth.GetCompanyID(r.Context())
 	username := formStringRequired(r, "username")
 	email := formStringRequired(r, "email")
@@ -374,12 +329,6 @@ func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AdminHandler) editUser(w http.ResponseWriter, r *http.Request) {
-	ctxUser, _ := auth.GetUserFromRequest(r)
-	if ctxUser.Role != "super_admin" && ctxUser.Role != "company_admin" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -405,11 +354,6 @@ func (h *AdminHandler) editUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 	ctxUser, _ := auth.GetUserFromRequest(r)
-	if ctxUser.Role != "super_admin" && ctxUser.Role != "company_admin" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -467,15 +411,9 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 
 // --- Super Admin: User Management per Company ---
 
-// adminCompanyContext loads the company by path param and verifies super_admin role.
+// adminCompanyContext loads the company by path param.
 // Returns the company and true on success, or writes an error response and returns false.
 func (h *AdminHandler) adminCompanyContext(w http.ResponseWriter, r *http.Request) (*models.Company, bool) {
-	user, _ := auth.GetUserFromRequest(r)
-	if user.Role != "super_admin" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return nil, false
-	}
-
 	cid, err := parsePathID(r, "companyID")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

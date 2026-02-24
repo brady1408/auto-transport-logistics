@@ -32,6 +32,7 @@ templ VehicleFormPage(pg components.PageContext, vehicle *models.OrderVehicle, o
 				hx-put={ fmt.Sprintf("/dispatch/vehicles/%d", vehicle.ID) }
 			}
 		>
+			@components.CSRFField(pg.CSRFToken)
 			<fieldset x-data="{ decoding: false, decoded: false, decodeError: '' }">
 				<legend>Vehicle Information</legend>
 				<div class="form-row">

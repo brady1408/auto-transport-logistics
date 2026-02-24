@@ -33,6 +33,7 @@ templ FormPage(pg components.PageContext, payment *models.Payment, isNew bool, e
 			}
 			x-data="paymentForm()"
 		>
+			@components.CSRFField(pg.CSRFToken)
 			<fieldset>
 				<legend>Payment Information</legend>
 				<div class="form-row">

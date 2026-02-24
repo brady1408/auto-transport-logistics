@@ -14,6 +14,7 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, errMsg
 			<div class="alert alert-danger">{ errMsg }</div>
 		}
 		<form method="POST" action="/utilities/company" hx-put="/utilities/company">
+			@components.CSRFField(pg.CSRFToken)
 			<fieldset>
 				<legend>Company Information</legend>
 				<div class="form-row">

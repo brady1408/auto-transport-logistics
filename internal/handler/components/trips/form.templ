@@ -32,6 +32,7 @@ templ FormPage(pg components.PageContext, trip *models.Trip, isNew bool, errMsg 
 				hx-put={ fmt.Sprintf("/dispatch/trips/%d", trip.ID) }
 			}
 		>
+			@components.CSRFField(pg.CSRFToken)
 			<fieldset>
 				<legend>Trip Information</legend>
 				<div class="form-row">

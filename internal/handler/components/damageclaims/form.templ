@@ -32,6 +32,7 @@ templ FormPage(pg components.PageContext, claim *models.DamageClaim, isNew bool,
 				hx-put={ fmt.Sprintf("/accounting/damage-claims/%d", claim.ID) }
 			}
 		>
+			@components.CSRFField(pg.CSRFToken)
 			<fieldset>
 				<legend>Claim Information</legend>
 				<div class="form-row">

@@ -33,6 +33,7 @@ templ FormPage(pg components.PageContext, invoice *models.Invoice, isNew bool, e
 			}
 			x-data="invoiceForm()"
 		>
+			@components.CSRFField(pg.CSRFToken)
 			<fieldset>
 				<legend>Invoice Information</legend>
 				<div class="form-row">

@@ -118,6 +118,7 @@ templ ShowPage(pg components.PageContext, payment *models.Payment, details []mod
 						action={ templ.SafeURL(fmt.Sprintf("/accounting/payments/%d/apply", payment.ID)) }
 						hx-post={ fmt.Sprintf("/accounting/payments/%d/apply", payment.ID) }
 					>
+						@components.CSRFField(pg.CSRFToken)
 						<div class="form-row">
 							<div class="form-group">
 								<label for="invoice_id">Invoice</label>
