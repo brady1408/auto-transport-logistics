@@ -1,7 +1,7 @@
 .PHONY: build run dev migrate-up migrate-down test
 
 build:
-	go build -o bin/server ./cmd/server
+	go build -ldflags "-X main.buildVersion=$$(git rev-parse --short HEAD)" -o bin/server ./cmd/server
 
 run:
 	go run ./cmd/server

@@ -5,7 +5,8 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o /server ./cmd/server
+RUN VERSION=$(git rev-parse --short HEAD 2>/dev/null || echo "docker") && \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags "-X main.buildVersion=$VERSION" -o /server ./cmd/server
 
 # Runtime stage
 FROM debian:bookworm-slim

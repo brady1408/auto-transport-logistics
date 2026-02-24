@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -22,6 +23,8 @@ import (
 	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/store"
 )
+
+var buildVersion string
 
 func main() {
 	migrateUp := flag.Bool("migrate-up", false, "Run database migrations up")
@@ -62,6 +65,13 @@ func main() {
 	// Services
 	jwtSvc := auth.NewJWTService(cfg.JWTSecret)
 	auditSvc := audit.NewService(pool)
+
+	// Set build version for cache busting
+	if buildVersion != "" {
+		handler.BuildVersion = buildVersion
+	} else {
+		handler.BuildVersion = strconv.FormatInt(time.Now().Unix(), 10)
+	}
 
 	// Parse templates
 	tmpl, err := handler.ParseTemplates()
