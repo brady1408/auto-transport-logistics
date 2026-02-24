@@ -32,7 +32,8 @@ var validTransitions = map[string][]string{
 	"Waiting":   {"Scheduled"},
 	"Scheduled": {"Loaded", "Waiting"},
 	"Loaded":    {"Delivered", "Scheduled"},
-	"Delivered": {"Confirmed", "Loaded"},
+	"Delivered":  {"Confirmed", "Loaded"},
+	"Confirmed": {"Delivered"},
 }
 
 // statusDateColumn maps status to the date column to set
@@ -96,6 +97,14 @@ func (s *OrderService) UpdateVehicleStatus(ctx context.Context, vehicleID int, n
 		_, err := tx.Exec(ctx, "UPDATE order_vehicles SET confirmed_by=$1 WHERE id=$2", confirmedBy, vehicleID)
 		if err != nil {
 			return fmt.Errorf("set confirmed_by: %w", err)
+		}
+	}
+
+	// When reverting FROM Confirmed, clear confirmed_by
+	if v.Status == "Confirmed" && newStatus != "Confirmed" {
+		_, err := tx.Exec(ctx, "UPDATE order_vehicles SET confirmed_by=NULL WHERE id=$1", vehicleID)
+		if err != nil {
+			return fmt.Errorf("clear confirmed_by: %w", err)
 		}
 	}
 
@@ -164,6 +173,8 @@ func (s *OrderService) RevertVehicleStatus(ctx context.Context, vehicleID int) e
 		prevStatus = "Scheduled"
 	case "Delivered":
 		prevStatus = "Loaded"
+	case "Confirmed":
+		prevStatus = "Delivered"
 	default:
 		return fmt.Errorf("cannot revert from status: %s", v.Status)
 	}

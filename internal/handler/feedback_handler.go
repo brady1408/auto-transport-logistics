@@ -18,11 +18,17 @@ func NewFeedbackHandler(s *store.FeedbackStore, deps *Deps) *FeedbackHandler {
 }
 
 func (h *FeedbackHandler) Register(mux *http.ServeMux) {
-	mux.HandleFunc("POST /feedback", h.submit)
-	mux.HandleFunc("GET /admin/feedback", h.list)
-	mux.HandleFunc("GET /admin/feedback/{id}", h.show)
-	mux.HandleFunc("PUT /admin/feedback/{id}", h.update)
-	mux.HandleFunc("DELETE /admin/feedback/{id}", h.delete)
+	mux.HandleFunc("POST /feedback/submit", h.submit)
+	mux.HandleFunc("GET /feedback", h.list)
+	mux.HandleFunc("GET /feedback/{id}", h.show)
+	mux.HandleFunc("PUT /feedback/{id}", h.update)
+	mux.HandleFunc("DELETE /feedback/{id}", h.delete)
+	mux.HandleFunc("POST /feedback/{id}/comments", h.addComment)
+}
+
+func isSuperAdmin(r *http.Request) bool {
+	user, ok := auth.GetUserFromRequest(r)
+	return ok && user.Role == "super_admin"
 }
 
 func (h *FeedbackHandler) submit(w http.ResponseWriter, r *http.Request) {
@@ -63,18 +69,13 @@ func (h *FeedbackHandler) submit(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`<div class="alert alert-success" style="margin:0;">Feedback submitted — thank you!</div>`))
 }
 
-func requireSuperAdmin(r *http.Request) bool {
-	user, ok := auth.GetUserFromRequest(r)
-	return ok && user.Role == "super_admin"
-}
-
 func (h *FeedbackHandler) list(w http.ResponseWriter, r *http.Request) {
-	if !requireSuperAdmin(r) {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
+	status := r.URL.Query().Get("status")
+	if status == "" {
+		status = "active"
 	}
 	filter := models.FeedbackFilter{
-		Status:   r.URL.Query().Get("status"),
+		Status:   status,
 		Category: r.URL.Query().Get("category"),
 		Page:     intParam(r, "page", 1),
 		PageSize: 25,
@@ -87,8 +88,9 @@ func (h *FeedbackHandler) list(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]any{
-		"Result": result,
-		"Filter": filter,
+		"Result":       result,
+		"Filter":       filter,
+		"IsSuperAdmin": isSuperAdmin(r),
 	}
 
 	if isHTMX(r) {
@@ -99,11 +101,6 @@ func (h *FeedbackHandler) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FeedbackHandler) show(w http.ResponseWriter, r *http.Request) {
-	if !requireSuperAdmin(r) {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -116,13 +113,22 @@ func (h *FeedbackHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	superAdmin := isSuperAdmin(r)
+	comments, err := h.store.ListComments(r.Context(), id, superAdmin)
+	if err != nil {
+		http.Error(w, "Failed to load comments", http.StatusInternalServerError)
+		return
+	}
+
 	h.deps.render(w, r, "feedback_show.html", map[string]any{
-		"Feedback": fb,
+		"Feedback":     fb,
+		"Comments":     comments,
+		"IsSuperAdmin": superAdmin,
 	})
 }
 
 func (h *FeedbackHandler) update(w http.ResponseWriter, r *http.Request) {
-	if !requireSuperAdmin(r) {
+	if !isSuperAdmin(r) {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
@@ -141,9 +147,8 @@ func (h *FeedbackHandler) update(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	fb := &models.Feedback{
-		ID:         id,
-		Status:     r.FormValue("status"),
-		AdminNotes: formString(r, "admin_notes"),
+		ID:     id,
+		Status: r.FormValue("status"),
 	}
 	if fb.Status == "" {
 		fb.Status = old.Status
@@ -158,15 +163,15 @@ func (h *FeedbackHandler) update(w http.ResponseWriter, r *http.Request) {
 	setFlash(w, "Feedback updated")
 
 	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/admin/feedback/"+r.PathValue("id"))
+		w.Header().Set("HX-Redirect", "/feedback/"+r.PathValue("id"))
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	http.Redirect(w, r, "/admin/feedback", http.StatusSeeOther)
+	http.Redirect(w, r, "/feedback", http.StatusSeeOther)
 }
 
 func (h *FeedbackHandler) delete(w http.ResponseWriter, r *http.Request) {
-	if !requireSuperAdmin(r) {
+	if !isSuperAdmin(r) {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
@@ -192,9 +197,68 @@ func (h *FeedbackHandler) delete(w http.ResponseWriter, r *http.Request) {
 	setFlash(w, "Feedback deleted")
 
 	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/admin/feedback")
+		w.Header().Set("HX-Redirect", "/feedback")
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	http.Redirect(w, r, "/admin/feedback", http.StatusSeeOther)
+	http.Redirect(w, r, "/feedback", http.StatusSeeOther)
+}
+
+func (h *FeedbackHandler) addComment(w http.ResponseWriter, r *http.Request) {
+	user, ok := auth.GetUserFromRequest(r)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Verify feedback exists and user has access
+	fb, err := h.store.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Feedback not found", http.StatusNotFound)
+		return
+	}
+
+	r.ParseForm()
+	message := r.FormValue("message")
+	if message == "" {
+		http.Error(w, "Message is required", http.StatusBadRequest)
+		return
+	}
+
+	superAdmin := user.Role == "super_admin"
+	internal := superAdmin && formBool(r, "internal")
+
+	comment := &models.FeedbackComment{
+		FeedbackID: id,
+		UserID:     user.ID,
+		CompanyID:  fb.CompanyID,
+		Message:    message,
+		Internal:   internal,
+	}
+
+	if err := h.store.CreateComment(r.Context(), comment); err != nil {
+		http.Error(w, "Failed to add comment", http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "feedback_comment", comment.ID, "INSERT", nil, comment)
+
+	// Return updated comment thread
+	comments, err := h.store.ListComments(r.Context(), id, superAdmin)
+	if err != nil {
+		http.Error(w, "Failed to load comments", http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.renderPartial(w, "feedback_comments", map[string]any{
+		"Comments":     comments,
+		"Feedback":     fb,
+		"IsSuperAdmin": superAdmin,
+	})
 }
