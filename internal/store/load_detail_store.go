@@ -61,7 +61,12 @@ type LoadDetailWithOrder struct {
 // ListByTripWithOrder returns load details joined with order number for display.
 func (s *LoadDetailStore) ListByTripWithOrder(ctx context.Context, tripID int) ([]LoadDetailWithOrder, error) {
 	companyID := auth.GetCompanyID(ctx)
-	query := `SELECT ` + loadDetailColumns + `, COALESCE(o.order_number, '')
+	query := `SELECT load_details.id, load_details.company_id, load_details.trip_id, load_details.order_id,
+			load_details.vehicle_id, load_details.vin, load_details.year, load_details.make, load_details.model, load_details.color,
+			load_details.weight, load_details.category, load_details.bay_number, load_details.status,
+			load_details.loaded_date, load_details.delivered_date,
+			load_details.created_at, load_details.updated_at,
+			COALESCE(o.order_number, '')
 		FROM load_details
 		LEFT JOIN orders o ON o.id = load_details.order_id
 		WHERE load_details.trip_id = $1 AND load_details.company_id = $2 ORDER BY load_details.id`
