@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -17,7 +18,7 @@ func NewTruckStore(pool *pgxpool.Pool) *TruckStore {
 	return &TruckStore{pool: pool}
 }
 
-const truckColumns = `id, legacy_id, truck_number, truck_make, truck_model, truck_year,
+const truckColumns = `id, company_id, legacy_id, truck_number, truck_make, truck_model, truck_year,
 	truck_serial_number, truck_manufacture_date, truck_license, truck_license_exp,
 	truck_safety_inspection,
 	trailer_number, trailer_make, trailer_model, trailer_year,
@@ -43,7 +44,7 @@ const truckColumns = `id, legacy_id, truck_number, truck_make, truck_model, truc
 func scanTruck(row interface{ Scan(dest ...any) error }) (*models.Truck, error) {
 	var t models.Truck
 	err := row.Scan(
-		&t.ID, &t.LegacyID, &t.TruckNumber, &t.TruckMake, &t.TruckModel, &t.TruckYear,
+		&t.ID, &t.CompanyID, &t.LegacyID, &t.TruckNumber, &t.TruckMake, &t.TruckModel, &t.TruckYear,
 		&t.TruckSerialNumber, &t.TruckManufactureDate, &t.TruckLicense, &t.TruckLicenseExp,
 		&t.TruckSafetyInspection,
 		&t.TrailerNumber, &t.TrailerMake, &t.TrailerModel, &t.TrailerYear,
@@ -77,9 +78,15 @@ func (s *TruckStore) List(ctx context.Context, f models.TruckFilter) (*models.Tr
 		f.PageSize = 25
 	}
 
+	companyID := auth.GetCompanyID(ctx)
+
 	var where []string
 	var args []any
 	argN := 1
+
+	where = append(where, fmt.Sprintf("company_id = $%d", argN))
+	args = append(args, companyID)
+	argN++
 
 	if f.Search != "" {
 		where = append(where, fmt.Sprintf("(truck_number ILIKE $%d OR driver1 ILIKE $%d)", argN, argN))
@@ -104,10 +111,7 @@ func (s *TruckStore) List(ctx context.Context, f models.TruckFilter) (*models.Tr
 		argN++
 	}
 
-	whereClause := ""
-	if len(where) > 0 {
-		whereClause = "WHERE " + strings.Join(where, " AND ")
-	}
+	whereClause := "WHERE " + strings.Join(where, " AND ")
 
 	var total int
 	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM trucks "+whereClause, args...).Scan(&total); err != nil {
@@ -143,8 +147,9 @@ func (s *TruckStore) List(ctx context.Context, f models.TruckFilter) (*models.Tr
 }
 
 func (s *TruckStore) GetByID(ctx context.Context, id int) (*models.Truck, error) {
-	query := fmt.Sprintf("SELECT %s FROM trucks WHERE id = $1", truckColumns)
-	t, err := scanTruck(s.pool.QueryRow(ctx, query, id))
+	companyID := auth.GetCompanyID(ctx)
+	query := fmt.Sprintf("SELECT %s FROM trucks WHERE id = $1 AND company_id = $2", truckColumns)
+	t, err := scanTruck(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get truck %d: %w", id, err)
 	}
@@ -152,9 +157,10 @@ func (s *TruckStore) GetByID(ctx context.Context, id int) (*models.Truck, error)
 }
 
 func (s *TruckStore) Create(ctx context.Context, t *models.Truck) error {
+	t.CompanyID = auth.GetCompanyID(ctx)
 	err := s.pool.QueryRow(ctx,
 		`INSERT INTO trucks (
-			truck_number, truck_make, truck_model, truck_year,
+			company_id, truck_number, truck_make, truck_model, truck_year,
 			truck_serial_number, truck_manufacture_date, truck_license, truck_license_exp,
 			truck_safety_inspection,
 			trailer_number, trailer_make, trailer_model, trailer_year,
@@ -176,11 +182,12 @@ func (s *TruckStore) Create(ctx context.Context, t *models.Truck) error {
 			active, class, straps, exclude_fuel, cargo_coverage_amt,
 			w9_date, workers_comp_date, carrier_agreement_date
 		) VALUES (
-			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
-			$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,
-			$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60,
-			$61,$62,$63,$64,$65,$66,$67,$68,$69,$70,$71,$72,$73
+			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,
+			$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,
+			$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60,$61,
+			$62,$63,$64,$65,$66,$67,$68,$69,$70,$71,$72,$73,$74
 		) RETURNING id, created_at, updated_at`,
+		t.CompanyID,
 		t.TruckNumber, t.TruckMake, t.TruckModel, t.TruckYear,
 		t.TruckSerialNumber, t.TruckManufactureDate, t.TruckLicense, t.TruckLicenseExp,
 		t.TruckSafetyInspection,
@@ -210,6 +217,7 @@ func (s *TruckStore) Create(ctx context.Context, t *models.Truck) error {
 }
 
 func (s *TruckStore) Update(ctx context.Context, t *models.Truck) error {
+	companyID := auth.GetCompanyID(ctx)
 	_, err := s.pool.Exec(ctx,
 		`UPDATE trucks SET
 			truck_number=$1, truck_make=$2, truck_model=$3, truck_year=$4,
@@ -233,7 +241,7 @@ func (s *TruckStore) Update(ctx context.Context, t *models.Truck) error {
 			trailer_tire_model=$64, trailer_tire_size=$65,
 			active=$66, class=$67, straps=$68, exclude_fuel=$69, cargo_coverage_amt=$70,
 			w9_date=$71, workers_comp_date=$72, carrier_agreement_date=$73
-		WHERE id=$74`,
+		WHERE id=$74 AND company_id=$75`,
 		t.TruckNumber, t.TruckMake, t.TruckModel, t.TruckYear,
 		t.TruckSerialNumber, t.TruckManufactureDate, t.TruckLicense, t.TruckLicenseExp,
 		t.TruckSafetyInspection,
@@ -255,7 +263,7 @@ func (s *TruckStore) Update(ctx context.Context, t *models.Truck) error {
 		t.TrailerTireModel, t.TrailerTireSize,
 		t.Active, t.Class, t.Straps, t.ExcludeFuel, t.CargoCoverageAmt,
 		t.W9Date, t.WorkersCompDate, t.CarrierAgreementDate,
-		t.ID,
+		t.ID, companyID,
 	)
 	if err != nil {
 		return fmt.Errorf("update truck %d: %w", t.ID, err)
@@ -264,7 +272,8 @@ func (s *TruckStore) Update(ctx context.Context, t *models.Truck) error {
 }
 
 func (s *TruckStore) Delete(ctx context.Context, id int) error {
-	_, err := s.pool.Exec(ctx, "DELETE FROM trucks WHERE id = $1", id)
+	companyID := auth.GetCompanyID(ctx)
+	_, err := s.pool.Exec(ctx, "DELETE FROM trucks WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete truck %d: %w", id, err)
 	}

@@ -128,6 +128,10 @@ tr:hover td .btn-group { opacity: 1; }
 .alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 .alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 
+/* Inline field errors */
+.input-error { border-color: var(--danger) !important; }
+.field-error { color: var(--danger); font-size: 0.85em; display: block; margin-top: 2px; }
+
 /* Pagination */
 .pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; font-size: 13px; color: var(--gray-500); }
 .pagination-links { display: flex; gap: 4px; }

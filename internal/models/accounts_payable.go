@@ -4,6 +4,7 @@ import "time"
 
 type AccountsPayable struct {
 	ID           int        `json:"id"`
+	CompanyID    int        `json:"company_id"`
 	TripID       *int       `json:"trip_id,omitempty"`
 	EmployeeID   *int       `json:"employee_id,omitempty"`
 	TruckID      *int       `json:"truck_id,omitempty"`

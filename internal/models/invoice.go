@@ -4,6 +4,7 @@ import "time"
 
 type Invoice struct {
 	ID             int       `json:"id"`
+	CompanyID      int       `json:"company_id"`
 	InvoiceNumber  string    `json:"invoice_number"`
 	Active         bool      `json:"active"`
 	CustomerID     *int      `json:"customer_id,omitempty"`
@@ -35,6 +36,7 @@ type Invoice struct {
 
 type InvoiceDetail struct {
 	ID          int       `json:"id"`
+	CompanyID   int       `json:"company_id"`
 	InvoiceID   int       `json:"invoice_id"`
 	OrderID     *int      `json:"order_id,omitempty"`
 	VehicleID   *int      `json:"vehicle_id,omitempty"`

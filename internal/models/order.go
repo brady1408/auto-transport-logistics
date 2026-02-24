@@ -4,6 +4,7 @@ import "time"
 
 type Order struct {
 	ID          int    `json:"id"`
+	CompanyID   int    `json:"company_id"`
 	OrderNumber string `json:"order_number"`
 	Active      bool   `json:"active"`
 	Zone        *string `json:"zone,omitempty"`

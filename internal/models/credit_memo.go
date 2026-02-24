@@ -4,6 +4,7 @@ import "time"
 
 type CreditMemo struct {
 	ID             int        `json:"id"`
+	CompanyID      int        `json:"company_id"`
 	CreditNumber   string     `json:"credit_number"`
 	CustomerID     *int       `json:"customer_id,omitempty"`
 	CustomerNumber *string    `json:"customer_number,omitempty"`

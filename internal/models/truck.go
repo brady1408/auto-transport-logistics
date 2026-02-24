@@ -4,6 +4,7 @@ import "time"
 
 type Truck struct {
 	ID                       int        `json:"id"`
+	CompanyID                int        `json:"company_id"`
 	LegacyID                 *int       `json:"legacy_id,omitempty"`
 	TruckNumber              string     `json:"truck_number"`
 	TruckMake                *string    `json:"truck_make,omitempty"`

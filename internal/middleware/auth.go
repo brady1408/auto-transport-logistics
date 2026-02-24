@@ -23,10 +23,17 @@ func RequireAuth(jwt *auth.JWTService) func(http.Handler) http.Handler {
 				return
 			}
 
+			// Require company assignment for non-super_admin users
+			if claims.CompanyID == 0 && claims.Role != "super_admin" {
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				return
+			}
+
 			ctx := auth.SetUser(r.Context(), auth.ContextUser{
-				ID:       claims.UserID,
-				Username: claims.Username,
-				Role:     claims.Role,
+				ID:        claims.UserID,
+				Username:  claims.Username,
+				Role:      claims.Role,
+				CompanyID: claims.CompanyID,
 			})
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

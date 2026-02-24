@@ -68,12 +68,6 @@ func main() {
 		log.Fatalf("parse templates: %v", err)
 	}
 
-	deps := &handler.Deps{
-		JWT:   jwtSvc,
-		Audit: auditSvc,
-		Tmpl:  tmpl,
-	}
-
 	// Stores
 	userStore := store.NewUserStore(pool)
 	customerStore := store.NewCustomerStore(pool)
@@ -82,6 +76,13 @@ func main() {
 	zoneStore := store.NewZoneStore(pool)
 	zonePricingStore := store.NewZonePricingStore(pool)
 	companyStore := store.NewCompanyStore(pool)
+
+	deps := &handler.Deps{
+		JWT:          jwtSvc,
+		Audit:        auditSvc,
+		Tmpl:         tmpl,
+		CompanyStore: companyStore,
+	}
 
 	// Phase 2 stores
 	orderStore := store.NewOrderStore(pool)
@@ -129,7 +130,7 @@ func main() {
 	})
 
 	// Auth routes (public)
-	authHandler := handler.NewAuthHandler(userStore, deps)
+	authHandler := handler.NewAuthHandler(userStore, companyStore, deps)
 	authHandler.Register(mux)
 
 	// Protected routes
@@ -255,6 +256,10 @@ func main() {
 
 	reportHandler := handler.NewReportHandler(orderStore, invoiceStore, tripStore, vehicleStore, paymentStore, damageClaimStore, deps)
 	reportHandler.Register(protectedMux)
+
+	// Phase 5: Admin + User Management
+	adminHandler := handler.NewAdminHandler(companyStore, userStore, deps)
+	adminHandler.Register(protectedMux)
 
 	// Wrap protected routes with auth middleware
 	authMiddleware := middleware.RequireAuth(jwtSvc)

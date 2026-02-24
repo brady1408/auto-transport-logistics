@@ -1,0 +1,36 @@
+{{define "settings_users.html"}}
+{{template "base" .}}
+{{define "title"}}Users - Settings{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h2>Users</h2>
+    <a href="/settings/users/new" class="btn btn-primary">New User</a>
+</div>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Active</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Users}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Username}}</td>
+            <td>{{.Email}}</td>
+            <td>{{.Role}}</td>
+            <td>{{if .Active}}Yes{{else}}No{{end}}</td>
+            <td><a href="/settings/users/{{.ID}}/edit" class="btn btn-sm">Edit</a></td>
+        </tr>
+        {{else}}
+        <tr><td colspan="6" class="text-center">No users found</td></tr>
+        {{end}}
+    </tbody>
+</table>
+{{end}}
+{{end}}

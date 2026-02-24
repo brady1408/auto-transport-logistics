@@ -4,6 +4,7 @@ import "time"
 
 type Trip struct {
 	ID               int     `json:"id"`
+	CompanyID        int     `json:"company_id"`
 	LoadNumber       string  `json:"load_number"`
 	Active           bool    `json:"active"`
 	TruckNumber      *string `json:"truck_number,omitempty"`
@@ -55,6 +56,7 @@ type TripListResult struct {
 
 type LoadDetail struct {
 	ID            int        `json:"id"`
+	CompanyID     int        `json:"company_id"`
 	TripID        int        `json:"trip_id"`
 	OrderID       *int       `json:"order_id,omitempty"`
 	VehicleID     *int       `json:"vehicle_id,omitempty"`

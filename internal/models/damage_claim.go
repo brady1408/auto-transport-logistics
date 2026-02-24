@@ -4,6 +4,7 @@ import "time"
 
 type DamageClaim struct {
 	ID                   int        `json:"id"`
+	CompanyID            int        `json:"company_id"`
 	ClaimNumber          string     `json:"claim_number"`
 	OrderID              *int       `json:"order_id,omitempty"`
 	VehicleID            *int       `json:"vehicle_id,omitempty"`

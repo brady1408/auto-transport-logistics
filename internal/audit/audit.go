@@ -29,9 +29,9 @@ func (s *Service) Log(ctx context.Context, tableName string, recordID int, actio
 
 	// Fire-and-forget audit logging — don't block the request on audit insert failure
 	_, _ = s.pool.Exec(ctx,
-		`INSERT INTO audit_log (table_name, record_id, action, old_values, new_values, user_id, username)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-		tableName, recordID, action, oldJSON, newJSON, nilIfZero(user.ID), user.Username,
+		`INSERT INTO audit_log (table_name, record_id, action, old_values, new_values, user_id, username, company_id)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+		tableName, recordID, action, oldJSON, newJSON, nilIfZero(user.ID), user.Username, nilIfZero(user.CompanyID),
 	)
 }
 

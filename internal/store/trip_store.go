@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -17,7 +18,7 @@ func NewTripStore(pool *pgxpool.Pool) *TripStore {
 	return &TripStore{pool: pool}
 }
 
-const tripColumns = `id, load_number, active, truck_number, truck_id, trailer_number,
+const tripColumns = `id, company_id, load_number, active, truck_number, truck_id, trailer_number,
 	driver, driver1_id, driver2, driver2_id,
 	trip_date, est_deliver_date, deliver_date, arrival_date, return_date,
 	total_mileage, total_fuel_gallons, fuel_advance, trip_advance, tolls_advance,
@@ -29,7 +30,7 @@ const tripColumns = `id, load_number, active, truck_number, truck_id, trailer_nu
 func scanTrip(row interface{ Scan(dest ...any) error }) (*models.Trip, error) {
 	var t models.Trip
 	err := row.Scan(
-		&t.ID, &t.LoadNumber, &t.Active, &t.TruckNumber, &t.TruckID, &t.TrailerNumber,
+		&t.ID, &t.CompanyID, &t.LoadNumber, &t.Active, &t.TruckNumber, &t.TruckID, &t.TrailerNumber,
 		&t.Driver, &t.Driver1ID, &t.Driver2, &t.Driver2ID,
 		&t.TripDate, &t.EstDeliverDate, &t.DeliverDate, &t.ArrivalDate, &t.ReturnDate,
 		&t.TotalMileage, &t.TotalFuelGallons, &t.FuelAdvance, &t.TripAdvance, &t.TollsAdvance,
@@ -49,9 +50,15 @@ func (s *TripStore) List(ctx context.Context, f models.TripFilter) (*models.Trip
 		f.PageSize = 25
 	}
 
+	companyID := auth.GetCompanyID(ctx)
+
 	var where []string
 	var args []any
 	argN := 1
+
+	where = append(where, fmt.Sprintf("company_id = $%d", argN))
+	args = append(args, companyID)
+	argN++
 
 	if f.Search != "" {
 		where = append(where, fmt.Sprintf(
@@ -77,10 +84,7 @@ func (s *TripStore) List(ctx context.Context, f models.TripFilter) (*models.Trip
 		where = append(where, "active = false")
 	}
 
-	whereClause := ""
-	if len(where) > 0 {
-		whereClause = "WHERE " + strings.Join(where, " AND ")
-	}
+	whereClause := "WHERE " + strings.Join(where, " AND ")
 
 	countQuery := "SELECT COUNT(*) FROM trips " + whereClause
 	var total int
@@ -117,8 +121,9 @@ func (s *TripStore) List(ctx context.Context, f models.TripFilter) (*models.Trip
 }
 
 func (s *TripStore) GetByID(ctx context.Context, id int) (*models.Trip, error) {
-	query := fmt.Sprintf("SELECT %s FROM trips WHERE id = $1", tripColumns)
-	t, err := scanTrip(s.pool.QueryRow(ctx, query, id))
+	companyID := auth.GetCompanyID(ctx)
+	query := fmt.Sprintf("SELECT %s FROM trips WHERE id = $1 AND company_id = $2", tripColumns)
+	t, err := scanTrip(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get trip %d: %w", id, err)
 	}
@@ -126,9 +131,10 @@ func (s *TripStore) GetByID(ctx context.Context, id int) (*models.Trip, error) {
 }
 
 func (s *TripStore) Create(ctx context.Context, t *models.Trip) error {
+	t.CompanyID = auth.GetCompanyID(ctx)
 	err := s.pool.QueryRow(ctx,
 		`INSERT INTO trips (
-			load_number, active, truck_number, truck_id, trailer_number,
+			company_id, load_number, active, truck_number, truck_id, trailer_number,
 			driver, driver1_id, driver2, driver2_id,
 			trip_date, est_deliver_date, deliver_date, arrival_date, return_date,
 			total_mileage, total_fuel_gallons, fuel_advance, trip_advance, tolls_advance,
@@ -136,8 +142,9 @@ func (s *TripStore) Create(ctx context.Context, t *models.Trip) error {
 			truck_rate, truck_calc_type,
 			comments, status, equipment_type, zone
 		) VALUES (
-			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29
+			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30
 		) RETURNING id, created_at, updated_at`,
+		t.CompanyID,
 		t.LoadNumber, t.Active, t.TruckNumber, t.TruckID, t.TrailerNumber,
 		t.Driver, t.Driver1ID, t.Driver2, t.Driver2ID,
 		t.TripDate, t.EstDeliverDate, t.DeliverDate, t.ArrivalDate, t.ReturnDate,
@@ -153,6 +160,7 @@ func (s *TripStore) Create(ctx context.Context, t *models.Trip) error {
 }
 
 func (s *TripStore) Update(ctx context.Context, t *models.Trip) error {
+	companyID := auth.GetCompanyID(ctx)
 	_, err := s.pool.Exec(ctx,
 		`UPDATE trips SET
 			active=$1, truck_number=$2, truck_id=$3, trailer_number=$4,
@@ -162,7 +170,7 @@ func (s *TripStore) Update(ctx context.Context, t *models.Trip) error {
 			driver_rate=$19, driver_calc_type=$20, driver_add_rate=$21, driver_add_calc_type=$22,
 			truck_rate=$23, truck_calc_type=$24,
 			comments=$25, status=$26, equipment_type=$27, zone=$28
-		WHERE id=$29`,
+		WHERE id=$29 AND company_id=$30`,
 		t.Active, t.TruckNumber, t.TruckID, t.TrailerNumber,
 		t.Driver, t.Driver1ID, t.Driver2, t.Driver2ID,
 		t.TripDate, t.EstDeliverDate, t.DeliverDate, t.ArrivalDate, t.ReturnDate,
@@ -170,7 +178,7 @@ func (s *TripStore) Update(ctx context.Context, t *models.Trip) error {
 		t.DriverRate, t.DriverCalcType, t.DriverAddRate, t.DriverAddCalcType,
 		t.TruckRate, t.TruckCalcType,
 		t.Comments, t.Status, t.EquipmentType, t.Zone,
-		t.ID,
+		t.ID, companyID,
 	)
 	if err != nil {
 		return fmt.Errorf("update trip %d: %w", t.ID, err)
@@ -179,7 +187,8 @@ func (s *TripStore) Update(ctx context.Context, t *models.Trip) error {
 }
 
 func (s *TripStore) Delete(ctx context.Context, id int) error {
-	_, err := s.pool.Exec(ctx, "DELETE FROM trips WHERE id = $1", id)
+	companyID := auth.GetCompanyID(ctx)
+	_, err := s.pool.Exec(ctx, "DELETE FROM trips WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete trip %d: %w", id, err)
 	}
@@ -193,12 +202,13 @@ type TripDashboardCounts struct {
 }
 
 func (s *TripStore) DashboardCounts(ctx context.Context) (TripDashboardCounts, error) {
+	companyID := auth.GetCompanyID(ctx)
 	var c TripDashboardCounts
 	err := s.pool.QueryRow(ctx,
 		`SELECT
 			COUNT(*) FILTER (WHERE active = true),
-			(SELECT COUNT(*) FROM order_vehicles WHERE status = 'Loaded' AND trip_id IS NOT NULL)
-		FROM trips`,
+			(SELECT COUNT(*) FROM order_vehicles WHERE status = 'Loaded' AND trip_id IS NOT NULL AND company_id = $1)
+		FROM trips WHERE company_id = $1`, companyID,
 	).Scan(&c.Active, &c.InTransit)
 	if err != nil {
 		return c, fmt.Errorf("dashboard trip counts: %w", err)
@@ -208,21 +218,27 @@ func (s *TripStore) DashboardCounts(ctx context.Context) (TripDashboardCounts, e
 
 // TripSummaryRow is a single row in the trip summary report.
 type TripSummaryRow struct {
-	ID             int
-	LoadNumber     string
-	TripDate       *string
-	Driver         string
-	TruckNumber    string
-	VehicleCount   int
-	TotalMileage   string
-	Status         string
-	DeliverDate    *string
+	ID           int
+	LoadNumber   string
+	TripDate     *string
+	Driver       string
+	TruckNumber  string
+	VehicleCount int
+	TotalMileage string
+	Status       string
+	DeliverDate  *string
 }
 
 func (s *TripStore) TripSummaryReport(ctx context.Context, dateFrom, dateTo string) ([]TripSummaryRow, error) {
+	companyID := auth.GetCompanyID(ctx)
+
 	var where []string
 	var args []any
 	argN := 1
+
+	where = append(where, fmt.Sprintf("t.company_id = $%d", argN))
+	args = append(args, companyID)
+	argN++
 
 	if dateFrom != "" {
 		where = append(where, fmt.Sprintf("t.trip_date >= $%d", argN))
@@ -235,10 +251,7 @@ func (s *TripStore) TripSummaryReport(ctx context.Context, dateFrom, dateTo stri
 		argN++
 	}
 
-	whereClause := ""
-	if len(where) > 0 {
-		whereClause = "WHERE " + strings.Join(where, " AND ")
-	}
+	whereClause := "WHERE " + strings.Join(where, " AND ")
 
 	query := fmt.Sprintf(`SELECT
 		t.id, t.load_number,
@@ -284,9 +297,15 @@ type DriverSettlementRow struct {
 }
 
 func (s *TripStore) DriverSettlement(ctx context.Context, employeeID int, dateFrom, dateTo string) ([]DriverSettlementRow, error) {
+	companyID := auth.GetCompanyID(ctx)
+
 	var where []string
 	var args []any
 	argN := 1
+
+	where = append(where, fmt.Sprintf("t.company_id = $%d", argN))
+	args = append(args, companyID)
+	argN++
 
 	where = append(where, fmt.Sprintf("t.driver1_id = $%d", argN))
 	args = append(args, employeeID)
@@ -341,9 +360,11 @@ func (s *TripStore) DriverSettlement(ctx context.Context, employeeID int, dateFr
 }
 
 func (s *TripStore) NextLoadNumber(ctx context.Context) (string, error) {
+	companyID := auth.GetCompanyID(ctx)
 	var next int
 	err := s.pool.QueryRow(ctx,
-		`SELECT COALESCE(MAX(load_number::int), 0) + 1 FROM trips WHERE load_number ~ '^\d+$'`,
+		`SELECT COALESCE(MAX(load_number::int), 0) + 1 FROM trips WHERE load_number ~ '^\d+$' AND company_id = $1`,
+		companyID,
 	).Scan(&next)
 	if err != nil {
 		return "", fmt.Errorf("next load number: %w", err)

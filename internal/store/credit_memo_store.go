@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -17,14 +18,14 @@ func NewCreditMemoStore(pool *pgxpool.Pool) *CreditMemoStore {
 	return &CreditMemoStore{pool: pool}
 }
 
-const creditMemoColumns = `id, credit_number, customer_id, customer_number, customer_name,
+const creditMemoColumns = `id, company_id, credit_number, customer_id, customer_number, customer_name,
 	invoice_id, invoice_number, credit_date, amount, reason, status,
 	created_by, comments, created_at, updated_at`
 
 func scanCreditMemo(row interface{ Scan(dest ...any) error }) (*models.CreditMemo, error) {
 	var cm models.CreditMemo
 	err := row.Scan(
-		&cm.ID, &cm.CreditNumber, &cm.CustomerID, &cm.CustomerNumber, &cm.CustomerName,
+		&cm.ID, &cm.CompanyID, &cm.CreditNumber, &cm.CustomerID, &cm.CustomerNumber, &cm.CustomerName,
 		&cm.InvoiceID, &cm.InvoiceNumber, &cm.CreditDate, &cm.Amount, &cm.Reason, &cm.Status,
 		&cm.CreatedBy, &cm.Comments, &cm.CreatedAt, &cm.UpdatedAt,
 	)
@@ -39,9 +40,15 @@ func (s *CreditMemoStore) List(ctx context.Context, f models.CreditMemoFilter) (
 		f.PageSize = 25
 	}
 
+	companyID := auth.GetCompanyID(ctx)
+
 	var where []string
 	var args []any
 	argN := 1
+
+	where = append(where, fmt.Sprintf("company_id = $%d", argN))
+	args = append(args, companyID)
+	argN++
 
 	if f.Search != "" {
 		where = append(where, fmt.Sprintf(
@@ -61,10 +68,7 @@ func (s *CreditMemoStore) List(ctx context.Context, f models.CreditMemoFilter) (
 		argN++
 	}
 
-	whereClause := ""
-	if len(where) > 0 {
-		whereClause = "WHERE " + strings.Join(where, " AND ")
-	}
+	whereClause := "WHERE " + strings.Join(where, " AND ")
 
 	var total int
 	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM credit_memos "+whereClause, args...).Scan(&total); err != nil {
@@ -100,8 +104,9 @@ func (s *CreditMemoStore) List(ctx context.Context, f models.CreditMemoFilter) (
 }
 
 func (s *CreditMemoStore) GetByID(ctx context.Context, id int) (*models.CreditMemo, error) {
-	query := fmt.Sprintf("SELECT %s FROM credit_memos WHERE id = $1", creditMemoColumns)
-	cm, err := scanCreditMemo(s.pool.QueryRow(ctx, query, id))
+	companyID := auth.GetCompanyID(ctx)
+	query := fmt.Sprintf("SELECT %s FROM credit_memos WHERE id = $1 AND company_id = $2", creditMemoColumns)
+	cm, err := scanCreditMemo(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get credit memo %d: %w", id, err)
 	}
@@ -109,13 +114,15 @@ func (s *CreditMemoStore) GetByID(ctx context.Context, id int) (*models.CreditMe
 }
 
 func (s *CreditMemoStore) Create(ctx context.Context, cm *models.CreditMemo) error {
+	cm.CompanyID = auth.GetCompanyID(ctx)
 	err := s.pool.QueryRow(ctx,
 		`INSERT INTO credit_memos (
-			credit_number, customer_id, customer_number, customer_name,
+			company_id, credit_number, customer_id, customer_number, customer_name,
 			invoice_id, invoice_number, credit_date, amount, reason, status,
 			created_by, comments
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
 		RETURNING id, created_at, updated_at`,
+		cm.CompanyID,
 		cm.CreditNumber, cm.CustomerID, cm.CustomerNumber, cm.CustomerName,
 		cm.InvoiceID, cm.InvoiceNumber, cm.CreditDate, cm.Amount, cm.Reason, cm.Status,
 		cm.CreatedBy, cm.Comments,
@@ -127,16 +134,17 @@ func (s *CreditMemoStore) Create(ctx context.Context, cm *models.CreditMemo) err
 }
 
 func (s *CreditMemoStore) Update(ctx context.Context, cm *models.CreditMemo) error {
+	companyID := auth.GetCompanyID(ctx)
 	_, err := s.pool.Exec(ctx,
 		`UPDATE credit_memos SET
 			customer_id=$1, customer_number=$2, customer_name=$3,
 			invoice_id=$4, invoice_number=$5, credit_date=$6, amount=$7, reason=$8, status=$9,
 			comments=$10
-		WHERE id=$11`,
+		WHERE id=$11 AND company_id=$12`,
 		cm.CustomerID, cm.CustomerNumber, cm.CustomerName,
 		cm.InvoiceID, cm.InvoiceNumber, cm.CreditDate, cm.Amount, cm.Reason, cm.Status,
 		cm.Comments,
-		cm.ID,
+		cm.ID, companyID,
 	)
 	if err != nil {
 		return fmt.Errorf("update credit memo %d: %w", cm.ID, err)
@@ -145,7 +153,8 @@ func (s *CreditMemoStore) Update(ctx context.Context, cm *models.CreditMemo) err
 }
 
 func (s *CreditMemoStore) Delete(ctx context.Context, id int) error {
-	_, err := s.pool.Exec(ctx, "DELETE FROM credit_memos WHERE id = $1", id)
+	companyID := auth.GetCompanyID(ctx)
+	_, err := s.pool.Exec(ctx, "DELETE FROM credit_memos WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete credit memo %d: %w", id, err)
 	}
@@ -153,9 +162,11 @@ func (s *CreditMemoStore) Delete(ctx context.Context, id int) error {
 }
 
 func (s *CreditMemoStore) NextCreditNumber(ctx context.Context) (string, error) {
+	companyID := auth.GetCompanyID(ctx)
 	var next int
 	err := s.pool.QueryRow(ctx,
-		`SELECT COALESCE(MAX(credit_number::int), 0) + 1 FROM credit_memos WHERE credit_number ~ '^\d+$'`,
+		`SELECT COALESCE(MAX(credit_number::int), 0) + 1 FROM credit_memos WHERE credit_number ~ '^\d+$' AND company_id = $1`,
+		companyID,
 	).Scan(&next)
 	if err != nil {
 		return "", fmt.Errorf("next credit number: %w", err)

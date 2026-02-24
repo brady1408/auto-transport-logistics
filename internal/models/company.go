@@ -6,6 +6,8 @@ type Company struct {
 	ID                    int        `json:"id"`
 	LegacyID              *int       `json:"legacy_id,omitempty"`
 	CompanyName           string     `json:"company_name"`
+	Slug                  string     `json:"slug"`
+	Active                bool       `json:"active"`
 	Address               *string    `json:"address,omitempty"`
 	Address2              *string    `json:"address2,omitempty"`
 	City                  *string    `json:"city,omitempty"`

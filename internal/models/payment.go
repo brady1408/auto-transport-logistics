@@ -4,6 +4,7 @@ import "time"
 
 type Payment struct {
 	ID              int        `json:"id"`
+	CompanyID       int        `json:"company_id"`
 	CustomerID      *int       `json:"customer_id,omitempty"`
 	CustomerNumber  *string    `json:"customer_number,omitempty"`
 	CustomerName    *string    `json:"customer_name,omitempty"`
@@ -21,6 +22,7 @@ type Payment struct {
 
 type PaymentDetail struct {
 	ID             int       `json:"id"`
+	CompanyID      int       `json:"company_id"`
 	PaymentID      int       `json:"payment_id"`
 	InvoiceID      *int      `json:"invoice_id,omitempty"`
 	InvoiceNumber  *string   `json:"invoice_number,omitempty"`

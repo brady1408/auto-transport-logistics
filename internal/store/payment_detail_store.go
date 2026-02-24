@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,21 +18,22 @@ func NewPaymentDetailStore(pool *pgxpool.Pool) *PaymentDetailStore {
 	return &PaymentDetailStore{pool: pool}
 }
 
-const paymentDetailColumns = `id, payment_id, invoice_id, invoice_number,
+const paymentDetailColumns = `id, company_id, payment_id, invoice_id, invoice_number,
 	amount, discount_amount, created_at, updated_at`
 
 func scanPaymentDetail(row interface{ Scan(dest ...any) error }) (*models.PaymentDetail, error) {
 	var pd models.PaymentDetail
 	err := row.Scan(
-		&pd.ID, &pd.PaymentID, &pd.InvoiceID, &pd.InvoiceNumber,
+		&pd.ID, &pd.CompanyID, &pd.PaymentID, &pd.InvoiceID, &pd.InvoiceNumber,
 		&pd.Amount, &pd.DiscountAmount, &pd.CreatedAt, &pd.UpdatedAt,
 	)
 	return &pd, err
 }
 
 func (s *PaymentDetailStore) ListByPayment(ctx context.Context, paymentID int) ([]models.PaymentDetail, error) {
-	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE payment_id = $1 ORDER BY id", paymentDetailColumns)
-	rows, err := s.pool.Query(ctx, query, paymentID)
+	companyID := auth.GetCompanyID(ctx)
+	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE payment_id = $1 AND company_id = $2 ORDER BY id", paymentDetailColumns)
+	rows, err := s.pool.Query(ctx, query, paymentID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list payment details for payment %d: %w", paymentID, err)
 	}
@@ -49,8 +51,9 @@ func (s *PaymentDetailStore) ListByPayment(ctx context.Context, paymentID int) (
 }
 
 func (s *PaymentDetailStore) ListByInvoice(ctx context.Context, invoiceID int) ([]models.PaymentDetail, error) {
-	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE invoice_id = $1 ORDER BY id", paymentDetailColumns)
-	rows, err := s.pool.Query(ctx, query, invoiceID)
+	companyID := auth.GetCompanyID(ctx)
+	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE invoice_id = $1 AND company_id = $2 ORDER BY id", paymentDetailColumns)
+	rows, err := s.pool.Query(ctx, query, invoiceID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list payment details for invoice %d: %w", invoiceID, err)
 	}
@@ -68,8 +71,9 @@ func (s *PaymentDetailStore) ListByInvoice(ctx context.Context, invoiceID int) (
 }
 
 func (s *PaymentDetailStore) GetByID(ctx context.Context, id int) (*models.PaymentDetail, error) {
-	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE id = $1", paymentDetailColumns)
-	pd, err := scanPaymentDetail(s.pool.QueryRow(ctx, query, id))
+	companyID := auth.GetCompanyID(ctx)
+	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE id = $1 AND company_id = $2", paymentDetailColumns)
+	pd, err := scanPaymentDetail(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get payment detail %d: %w", id, err)
 	}
@@ -77,8 +81,9 @@ func (s *PaymentDetailStore) GetByID(ctx context.Context, id int) (*models.Payme
 }
 
 func (s *PaymentDetailStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*models.PaymentDetail, error) {
-	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE id = $1", paymentDetailColumns)
-	pd, err := scanPaymentDetail(tx.QueryRow(ctx, query, id))
+	companyID := auth.GetCompanyID(ctx)
+	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE id = $1 AND company_id = $2", paymentDetailColumns)
+	pd, err := scanPaymentDetail(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get payment detail %d: %w", id, err)
 	}
@@ -86,11 +91,13 @@ func (s *PaymentDetailStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (
 }
 
 func (s *PaymentDetailStore) CreateTx(ctx context.Context, tx pgx.Tx, pd *models.PaymentDetail) error {
+	pd.CompanyID = auth.GetCompanyID(ctx)
 	err := tx.QueryRow(ctx,
 		`INSERT INTO payment_details (
-			payment_id, invoice_id, invoice_number, amount, discount_amount
-		) VALUES ($1,$2,$3,$4,$5)
+			company_id, payment_id, invoice_id, invoice_number, amount, discount_amount
+		) VALUES ($1,$2,$3,$4,$5,$6)
 		RETURNING id, created_at, updated_at`,
+		pd.CompanyID,
 		pd.PaymentID, pd.InvoiceID, pd.InvoiceNumber, pd.Amount, pd.DiscountAmount,
 	).Scan(&pd.ID, &pd.CreatedAt, &pd.UpdatedAt)
 	if err != nil {
@@ -100,7 +107,8 @@ func (s *PaymentDetailStore) CreateTx(ctx context.Context, tx pgx.Tx, pd *models
 }
 
 func (s *PaymentDetailStore) DeleteTx(ctx context.Context, tx pgx.Tx, id int) error {
-	_, err := tx.Exec(ctx, "DELETE FROM payment_details WHERE id = $1", id)
+	companyID := auth.GetCompanyID(ctx)
+	_, err := tx.Exec(ctx, "DELETE FROM payment_details WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete payment detail %d: %w", id, err)
 	}
