@@ -12,6 +12,7 @@ import (
 )
 
 var digitsOnly = regexp.MustCompile(`\D`)
+var slugRegex = regexp.MustCompile(`^[a-z0-9]([a-z0-9-]*[a-z0-9])?$`)
 
 // stripPhone removes all non-digit characters from a phone string.
 func stripPhone(s *string) *string {
@@ -35,8 +36,10 @@ func validateCompany(c *models.Company) map[string]string {
 	}
 	if c.Slug == "" {
 		errs["slug"] = "Slug is required"
-	} else if len(c.Slug) > 30 {
-		errs["slug"] = "Slug must be 30 characters or less"
+	} else if len(c.Slug) < 3 || len(c.Slug) > 30 {
+		errs["slug"] = "Slug must be 3-30 characters"
+	} else if !slugRegex.MatchString(c.Slug) {
+		errs["slug"] = "Only lowercase letters, numbers, and hyphens allowed"
 	}
 	if s := derefStr(c.Address); len(s) > 30 {
 		errs["address"] = "Address must be 30 characters or less"

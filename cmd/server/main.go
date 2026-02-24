@@ -16,6 +16,7 @@ import (
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/config"
 	"github.com/brady1408/atlinks/internal/database"
+	"github.com/brady1408/atlinks/internal/email"
 	"github.com/brady1408/atlinks/internal/handler"
 	"github.com/brady1408/atlinks/internal/middleware"
 	"github.com/brady1408/atlinks/internal/service"
@@ -129,8 +130,13 @@ func main() {
 		fmt.Fprintln(w, "ok")
 	})
 
+	// Email + password reset + registration verification
+	emailSvc := email.NewService(cfg.ResendAPIKey, cfg.FromEmail)
+	resetTokenStore := store.NewResetTokenStore(pool)
+	pendingRegStore := store.NewPendingRegistrationStore(pool)
+
 	// Auth routes (public)
-	authHandler := handler.NewAuthHandler(userStore, companyStore, deps)
+	authHandler := handler.NewAuthHandler(userStore, companyStore, cfg.InviteCode, deps, emailSvc, resetTokenStore, pendingRegStore, cfg.AppBaseURL)
 	authHandler.Register(mux)
 
 	// Protected routes
