@@ -13,6 +13,7 @@ type Config struct {
 	ResendAPIKey  string
 	AppBaseURL    string
 	FromEmail     string
+	APIKey        string
 }
 
 func Load() (*Config, error) {
@@ -24,6 +25,7 @@ func Load() (*Config, error) {
 		ResendAPIKey: getEnv("RESEND_API_KEY", ""),
 		AppBaseURL:   getEnv("APP_BASE_URL", "http://localhost:8080"),
 		FromEmail:    getEnv("FROM_EMAIL", "noreply@atlinks.app"),
+		APIKey:       getEnv("API_KEY", ""),
 	}
 
 	if cfg.JWTSecret == "dev-secret-change-in-production" {

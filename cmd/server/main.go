@@ -256,6 +256,14 @@ func main() {
 	feedbackHandler := handler.NewFeedbackHandler(feedbackStore, deps)
 	feedbackHandler.Register(protectedMux)
 
+	// Feedback API (API key auth, separate from JWT-protected routes)
+	feedbackAPIHandler := handler.NewFeedbackAPIHandler(feedbackStore, deps)
+	apiMux := http.NewServeMux()
+	feedbackAPIHandler.Register(apiMux)
+	apiKeyMiddleware := middleware.RequireAPIKey(cfg.APIKey)
+	mux.Handle("/api/feedback", apiKeyMiddleware(apiMux))
+	mux.Handle("/api/feedback/", apiKeyMiddleware(apiMux))
+
 	// Phase 4: VIN Search + Reports
 	vinSearchHandler := handler.NewVinSearchHandler(vehicleStore, deps)
 	vinSearchHandler.Register(protectedMux)
