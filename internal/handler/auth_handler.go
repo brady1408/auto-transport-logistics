@@ -58,11 +58,13 @@ func (h *AuthHandler) Register(mux *http.ServeMux) {
 }
 
 func (h *AuthHandler) showLogin(w http.ResponseWriter, r *http.Request) {
-	// If already logged in, redirect to dashboard
+	// If already logged in with a valid, complete token, redirect to dashboard
 	if cookie, err := r.Cookie(middleware.CookieName); err == nil {
-		if _, err := h.deps.JWT.ValidateToken(cookie.Value); err == nil {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return
+		if claims, err := h.deps.JWT.ValidateToken(cookie.Value); err == nil {
+			if claims.CompanyID != 0 || claims.Role == "super_admin" {
+				http.Redirect(w, r, "/", http.StatusSeeOther)
+				return
+			}
 		}
 	}
 
@@ -115,11 +117,13 @@ func (h *AuthHandler) showCompanyLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// If already logged in, redirect to dashboard
+	// If already logged in with a valid, complete token, redirect to dashboard
 	if cookie, err := r.Cookie(middleware.CookieName); err == nil {
-		if _, err := h.deps.JWT.ValidateToken(cookie.Value); err == nil {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return
+		if claims, err := h.deps.JWT.ValidateToken(cookie.Value); err == nil {
+			if claims.CompanyID != 0 || claims.Role == "super_admin" {
+				http.Redirect(w, r, "/", http.StatusSeeOther)
+				return
+			}
 		}
 	}
 
@@ -176,11 +180,13 @@ func (h *AuthHandler) handleCompanyLogin(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *AuthHandler) showRegister(w http.ResponseWriter, r *http.Request) {
-	// If already logged in, redirect to dashboard
+	// If already logged in with a valid, complete token, redirect to dashboard
 	if cookie, err := r.Cookie(middleware.CookieName); err == nil {
-		if _, err := h.deps.JWT.ValidateToken(cookie.Value); err == nil {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return
+		if claims, err := h.deps.JWT.ValidateToken(cookie.Value); err == nil {
+			if claims.CompanyID != 0 || claims.Role == "super_admin" {
+				http.Redirect(w, r, "/", http.StatusSeeOther)
+				return
+			}
 		}
 	}
 
