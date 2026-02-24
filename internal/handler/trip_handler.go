@@ -40,6 +40,7 @@ func (h *TripHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /dispatch/trips/{id}/assign", h.assignVehicle)
 	mux.HandleFunc("POST /dispatch/trips/{id}/assign-order", h.assignOrder)
 	mux.HandleFunc("DELETE /dispatch/trips/{id}/loads/{loadID}", h.unassignVehicle)
+	mux.HandleFunc("PUT /dispatch/trips/{id}/loads/{loadID}", h.updateBayNumber)
 	// HTMX partials
 	mux.HandleFunc("GET /dispatch/trips/{id}/available-vehicles", h.availableVehicles)
 	mux.HandleFunc("GET /dispatch/trips/{id}/loads", h.loadManifest)
@@ -310,6 +311,40 @@ func (h *TripHandler) unassignVehicle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/dispatch/trips/"+itoa(tripID), http.StatusSeeOther)
+}
+
+func (h *TripHandler) updateBayNumber(w http.ResponseWriter, r *http.Request) {
+	tripID, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	loadID, err := parsePathID(r, "loadID")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	bayNumber := formStringRequired(r, "bay_number")
+
+	if err := h.loadStore.UpdateBayNumber(r.Context(), loadID, bayNumber); err != nil {
+		http.Error(w, "Failed to update bay number: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "load_details", loadID, "UPDATE", map[string]any{"field": "bay_number"}, map[string]any{"bay_number": bayNumber})
+
+	loads, err := h.loadStore.ListByTripWithOrder(r.Context(), tripID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.renderPartial(w, "load_table", map[string]any{
+		"Loads":  loads,
+		"TripID": tripID,
+	})
 }
 
 func (h *TripHandler) availableVehicles(w http.ResponseWriter, r *http.Request) {

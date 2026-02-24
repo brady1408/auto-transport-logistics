@@ -143,6 +143,18 @@ func (s *LoadDetailStore) NextBayNumber(ctx context.Context, tripID int) (string
 	return fmt.Sprintf("%d", next), nil
 }
 
+func (s *LoadDetailStore) UpdateBayNumber(ctx context.Context, id int, bayNumber string) error {
+	companyID := auth.GetCompanyID(ctx)
+	_, err := s.pool.Exec(ctx,
+		`UPDATE load_details SET bay_number = $1 WHERE id = $2 AND company_id = $3`,
+		bayNumber, id, companyID,
+	)
+	if err != nil {
+		return fmt.Errorf("update bay number for load detail %d: %w", id, err)
+	}
+	return nil
+}
+
 func (s *LoadDetailStore) Delete(ctx context.Context, id int) error {
 	companyID := auth.GetCompanyID(ctx)
 	_, err := s.pool.Exec(ctx, "DELETE FROM load_details WHERE id = $1 AND company_id = $2", id, companyID)

@@ -22,7 +22,15 @@
             {{if .Loads}}
             {{range .Loads}}
             <tr>
-                <td>{{deref .BayNumber}}</td>
+                <td>
+                    <input type="text" value="{{deref .BayNumber}}"
+                           name="bay_number"
+                           hx-put="/dispatch/trips/{{.TripID}}/loads/{{.ID}}"
+                           hx-trigger="blur changed, keydown[key=='Enter']"
+                           hx-target="#load-manifest"
+                           hx-swap="innerHTML"
+                           style="width:50px;padding:2px 4px;text-align:center">
+                </td>
                 <td>{{if .OrderID}}<a href="/dispatch/orders/{{derefInt .OrderID}}">{{.OrderNumber}}</a>{{end}}</td>
                 <td>{{deref .VIN}}</td>
                 <td>{{deref .Year}}</td>
