@@ -37,7 +37,14 @@ func (m *TemplateMap) RenderTemplate(w io.Writer, name string, data any) error {
 	return m.partials.ExecuteTemplate(w, name, data)
 }
 
+// BuildVersion is set from main.go before ParseTemplates is called.
+// It is appended to static asset URLs for cache busting.
+var BuildVersion string
+
 var funcMap = template.FuncMap{
+	"assetVersion": func(path string) string {
+		return path + "?v=" + BuildVersion
+	},
 	"add": func(a, b int) int { return a + b },
 	"sub": func(a, b int) int { return a - b },
 	"mul": func(a, b int) int { return a * b },
