@@ -1,7 +1,7 @@
 {{define "nav"}}
 <nav class="main-nav" x-data="{ open: '' }">
     <div class="nav-brand">
-        <a href="/">ATLinks</a>
+        <a href="/">{{if .CompanyName}}{{.CompanyName}}{{else}}ATLinks{{end}}</a>
     </div>
     <div class="nav-menu">
         <!-- VIN Search (top-level) -->
@@ -72,10 +72,21 @@
             <button class="nav-link">Utilities</button>
             <div class="dropdown-menu" x-show="open === 'utilities'" x-cloak>
                 <a href="/utilities/company" class="dropdown-item">Company Settings</a>
-                <hr class="dropdown-divider">
+                {{if or (eq .User.Role "super_admin") (eq .User.Role "company_admin")}}
+                <a href="/settings/users" class="dropdown-item">Users</a>
+                {{end}}
+            </div>
+        </div>
+        {{if eq .User.Role "super_admin"}}
+        <!-- Admin (super_admin only) -->
+        <div class="nav-dropdown" @mouseenter="open = 'admin'" @mouseleave="open = ''">
+            <button class="nav-link">Admin</button>
+            <div class="dropdown-menu" x-show="open === 'admin'" x-cloak>
+                <a href="/admin/companies" class="dropdown-item">Companies</a>
                 <a href="/admin/feedback" class="dropdown-item">Feedback</a>
             </div>
         </div>
+        {{end}}
     </div>
     <div class="nav-user">
         <span>{{.User.Username}}</span>

@@ -1,21 +1,26 @@
 package handler
 
 import (
+	"context"
 	"encoding/csv"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/audit"
 	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/atlinks/internal/store"
 )
 
 type Deps struct {
-	JWT      *auth.JWTService
-	Audit    *audit.Service
-	Tmpl     *TemplateMap
+	JWT          *auth.JWTService
+	Audit        *audit.Service
+	Tmpl         *TemplateMap
+	CompanyStore *store.CompanyStore
+	companyNames sync.Map // cache: companyID(int) -> companyName(string)
 }
 
 func parseID(r *http.Request) (int, error) {
@@ -52,6 +57,22 @@ func isHTMX(r *http.Request) bool {
 	return r.Header.Get("HX-Request") == "true"
 }
 
+func (d *Deps) getCompanyName(ctx context.Context) string {
+	user, ok := auth.GetUser(ctx)
+	if !ok || user.CompanyID == 0 || d.CompanyStore == nil {
+		return ""
+	}
+	if name, ok := d.companyNames.Load(user.CompanyID); ok {
+		return name.(string)
+	}
+	c, err := d.CompanyStore.Get(ctx)
+	if err != nil {
+		return ""
+	}
+	d.companyNames.Store(user.CompanyID, c.CompanyName)
+	return c.CompanyName
+}
+
 func (d *Deps) render(w http.ResponseWriter, r *http.Request, page string, data map[string]any) {
 	if data == nil {
 		data = make(map[string]any)
@@ -60,6 +81,11 @@ func (d *Deps) render(w http.ResponseWriter, r *http.Request, page string, data 
 	// Add user to all templates
 	if user, ok := auth.GetUserFromRequest(r); ok {
 		data["User"] = user
+	}
+
+	// Add company name to all templates
+	if companyName := d.getCompanyName(r.Context()); companyName != "" {
+		data["CompanyName"] = companyName
 	}
 
 	// Add flash message if present

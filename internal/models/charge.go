@@ -4,6 +4,7 @@ import "time"
 
 type OrderCharge struct {
 	ID          int     `json:"id"`
+	CompanyID   int     `json:"company_id"`
 	OrderID     *int    `json:"order_id,omitempty"`
 	VehicleID   *int    `json:"vehicle_id,omitempty"`
 	TripID      *int    `json:"trip_id,omitempty"`

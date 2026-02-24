@@ -4,6 +4,7 @@ import "time"
 
 type Zone struct {
 	ID          int       `json:"id"`
+	CompanyID   int       `json:"company_id"`
 	LegacyID    *int      `json:"legacy_id,omitempty"`
 	Zone        string    `json:"zone"`
 	Description *string   `json:"description,omitempty"`
@@ -14,6 +15,7 @@ type Zone struct {
 
 type ZonePricing struct {
 	ID            int       `json:"id"`
+	CompanyID     int       `json:"company_id"`
 	LegacyID      *int      `json:"legacy_id,omitempty"`
 	ZoneA         string    `json:"zone_a"`
 	ZoneB         string    `json:"zone_b"`

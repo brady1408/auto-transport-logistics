@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -23,7 +24,8 @@ func NewTermsStore(pool *pgxpool.Pool) *TermsStore {
 }
 
 func (s *TermsStore) List(ctx context.Context) ([]TermItem, error) {
-	rows, err := s.pool.Query(ctx, "SELECT id, term, description, days FROM terms ORDER BY term")
+	companyID := auth.GetCompanyID(ctx)
+	rows, err := s.pool.Query(ctx, "SELECT id, term, description, days FROM terms WHERE company_id = $1 ORDER BY term", companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list terms: %w", err)
 	}
@@ -41,8 +43,9 @@ func (s *TermsStore) List(ctx context.Context) ([]TermItem, error) {
 }
 
 func (s *TermsStore) GetByID(ctx context.Context, id int) (*TermItem, error) {
+	companyID := auth.GetCompanyID(ctx)
 	var t TermItem
-	err := s.pool.QueryRow(ctx, "SELECT id, term, description, days FROM terms WHERE id = $1", id).
+	err := s.pool.QueryRow(ctx, "SELECT id, term, description, days FROM terms WHERE id = $1 AND company_id = $2", id, companyID).
 		Scan(&t.ID, &t.Term, &t.Description, &t.Days)
 	if err != nil {
 		return nil, fmt.Errorf("get terms %d: %w", id, err)
@@ -51,12 +54,13 @@ func (s *TermsStore) GetByID(ctx context.Context, id int) (*TermItem, error) {
 }
 
 func (s *TermsStore) Create(ctx context.Context, term, description string, days *int) (*TermItem, error) {
+	companyID := auth.GetCompanyID(ctx)
 	var t TermItem
 	t.Term = term
 	t.Description = description
 	t.Days = days
-	err := s.pool.QueryRow(ctx, "INSERT INTO terms (term, description, days) VALUES ($1, $2, $3) RETURNING id",
-		term, description, days).Scan(&t.ID)
+	err := s.pool.QueryRow(ctx, "INSERT INTO terms (company_id, term, description, days) VALUES ($1, $2, $3, $4) RETURNING id",
+		companyID, term, description, days).Scan(&t.ID)
 	if err != nil {
 		return nil, fmt.Errorf("create terms: %w", err)
 	}
@@ -64,8 +68,9 @@ func (s *TermsStore) Create(ctx context.Context, term, description string, days 
 }
 
 func (s *TermsStore) Update(ctx context.Context, id int, term, description string, days *int) error {
-	_, err := s.pool.Exec(ctx, "UPDATE terms SET term = $1, description = $2, days = $3 WHERE id = $4",
-		term, description, days, id)
+	companyID := auth.GetCompanyID(ctx)
+	_, err := s.pool.Exec(ctx, "UPDATE terms SET term = $1, description = $2, days = $3 WHERE id = $4 AND company_id = $5",
+		term, description, days, id, companyID)
 	if err != nil {
 		return fmt.Errorf("update terms %d: %w", id, err)
 	}
@@ -73,7 +78,8 @@ func (s *TermsStore) Update(ctx context.Context, id int, term, description strin
 }
 
 func (s *TermsStore) Delete(ctx context.Context, id int) error {
-	_, err := s.pool.Exec(ctx, "DELETE FROM terms WHERE id = $1", id)
+	companyID := auth.GetCompanyID(ctx)
+	_, err := s.pool.Exec(ctx, "DELETE FROM terms WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete terms %d: %w", id, err)
 	}
@@ -98,7 +104,8 @@ func NewTaxCodeStore(pool *pgxpool.Pool) *TaxCodeStore {
 }
 
 func (s *TaxCodeStore) List(ctx context.Context) ([]TaxCodeItem, error) {
-	rows, err := s.pool.Query(ctx, "SELECT id, code, description, rate FROM tax_codes ORDER BY code")
+	companyID := auth.GetCompanyID(ctx)
+	rows, err := s.pool.Query(ctx, "SELECT id, code, description, rate FROM tax_codes WHERE company_id = $1 ORDER BY code", companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list tax_codes: %w", err)
 	}
@@ -116,8 +123,9 @@ func (s *TaxCodeStore) List(ctx context.Context) ([]TaxCodeItem, error) {
 }
 
 func (s *TaxCodeStore) GetByID(ctx context.Context, id int) (*TaxCodeItem, error) {
+	companyID := auth.GetCompanyID(ctx)
 	var t TaxCodeItem
-	err := s.pool.QueryRow(ctx, "SELECT id, code, description, rate FROM tax_codes WHERE id = $1", id).
+	err := s.pool.QueryRow(ctx, "SELECT id, code, description, rate FROM tax_codes WHERE id = $1 AND company_id = $2", id, companyID).
 		Scan(&t.ID, &t.Code, &t.Description, &t.Rate)
 	if err != nil {
 		return nil, fmt.Errorf("get tax_codes %d: %w", id, err)
@@ -126,12 +134,13 @@ func (s *TaxCodeStore) GetByID(ctx context.Context, id int) (*TaxCodeItem, error
 }
 
 func (s *TaxCodeStore) Create(ctx context.Context, code, description string, rate *string) (*TaxCodeItem, error) {
+	companyID := auth.GetCompanyID(ctx)
 	var t TaxCodeItem
 	t.Code = code
 	t.Description = description
 	t.Rate = rate
-	err := s.pool.QueryRow(ctx, "INSERT INTO tax_codes (code, description, rate) VALUES ($1, $2, $3) RETURNING id",
-		code, description, rate).Scan(&t.ID)
+	err := s.pool.QueryRow(ctx, "INSERT INTO tax_codes (company_id, code, description, rate) VALUES ($1, $2, $3, $4) RETURNING id",
+		companyID, code, description, rate).Scan(&t.ID)
 	if err != nil {
 		return nil, fmt.Errorf("create tax_codes: %w", err)
 	}
@@ -139,8 +148,9 @@ func (s *TaxCodeStore) Create(ctx context.Context, code, description string, rat
 }
 
 func (s *TaxCodeStore) Update(ctx context.Context, id int, code, description string, rate *string) error {
-	_, err := s.pool.Exec(ctx, "UPDATE tax_codes SET code = $1, description = $2, rate = $3 WHERE id = $4",
-		code, description, rate, id)
+	companyID := auth.GetCompanyID(ctx)
+	_, err := s.pool.Exec(ctx, "UPDATE tax_codes SET code = $1, description = $2, rate = $3 WHERE id = $4 AND company_id = $5",
+		code, description, rate, id, companyID)
 	if err != nil {
 		return fmt.Errorf("update tax_codes %d: %w", id, err)
 	}
@@ -148,7 +158,8 @@ func (s *TaxCodeStore) Update(ctx context.Context, id int, code, description str
 }
 
 func (s *TaxCodeStore) Delete(ctx context.Context, id int) error {
-	_, err := s.pool.Exec(ctx, "DELETE FROM tax_codes WHERE id = $1", id)
+	companyID := auth.GetCompanyID(ctx)
+	_, err := s.pool.Exec(ctx, "DELETE FROM tax_codes WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete tax_codes %d: %w", id, err)
 	}
@@ -174,7 +185,8 @@ func NewItemStore(pool *pgxpool.Pool) *ItemStore {
 }
 
 func (s *ItemStore) List(ctx context.Context) ([]ItemRecord, error) {
-	rows, err := s.pool.Query(ctx, "SELECT id, item, description, default_amount, calc_type FROM items ORDER BY item")
+	companyID := auth.GetCompanyID(ctx)
+	rows, err := s.pool.Query(ctx, "SELECT id, item, description, default_amount, calc_type FROM items WHERE company_id = $1 ORDER BY item", companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list items: %w", err)
 	}
@@ -192,8 +204,9 @@ func (s *ItemStore) List(ctx context.Context) ([]ItemRecord, error) {
 }
 
 func (s *ItemStore) GetByID(ctx context.Context, id int) (*ItemRecord, error) {
+	companyID := auth.GetCompanyID(ctx)
 	var i ItemRecord
-	err := s.pool.QueryRow(ctx, "SELECT id, item, description, default_amount, calc_type FROM items WHERE id = $1", id).
+	err := s.pool.QueryRow(ctx, "SELECT id, item, description, default_amount, calc_type FROM items WHERE id = $1 AND company_id = $2", id, companyID).
 		Scan(&i.ID, &i.Item, &i.Description, &i.DefaultAmount, &i.CalcType)
 	if err != nil {
 		return nil, fmt.Errorf("get items %d: %w", id, err)
@@ -202,14 +215,15 @@ func (s *ItemStore) GetByID(ctx context.Context, id int) (*ItemRecord, error) {
 }
 
 func (s *ItemStore) Create(ctx context.Context, item, description string, defaultAmount, calcType *string) (*ItemRecord, error) {
+	companyID := auth.GetCompanyID(ctx)
 	var rec ItemRecord
 	rec.Item = item
 	rec.Description = description
 	rec.DefaultAmount = defaultAmount
 	rec.CalcType = calcType
 	err := s.pool.QueryRow(ctx,
-		"INSERT INTO items (item, description, default_amount, calc_type) VALUES ($1, $2, $3, $4) RETURNING id",
-		item, description, defaultAmount, calcType).Scan(&rec.ID)
+		"INSERT INTO items (company_id, item, description, default_amount, calc_type) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+		companyID, item, description, defaultAmount, calcType).Scan(&rec.ID)
 	if err != nil {
 		return nil, fmt.Errorf("create items: %w", err)
 	}
@@ -217,9 +231,10 @@ func (s *ItemStore) Create(ctx context.Context, item, description string, defaul
 }
 
 func (s *ItemStore) Update(ctx context.Context, id int, item, description string, defaultAmount, calcType *string) error {
+	companyID := auth.GetCompanyID(ctx)
 	_, err := s.pool.Exec(ctx,
-		"UPDATE items SET item = $1, description = $2, default_amount = $3, calc_type = $4 WHERE id = $5",
-		item, description, defaultAmount, calcType, id)
+		"UPDATE items SET item = $1, description = $2, default_amount = $3, calc_type = $4 WHERE id = $5 AND company_id = $6",
+		item, description, defaultAmount, calcType, id, companyID)
 	if err != nil {
 		return fmt.Errorf("update items %d: %w", id, err)
 	}
@@ -227,7 +242,8 @@ func (s *ItemStore) Update(ctx context.Context, id int, item, description string
 }
 
 func (s *ItemStore) Delete(ctx context.Context, id int) error {
-	_, err := s.pool.Exec(ctx, "DELETE FROM items WHERE id = $1", id)
+	companyID := auth.GetCompanyID(ctx)
+	_, err := s.pool.Exec(ctx, "DELETE FROM items WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete items %d: %w", id, err)
 	}

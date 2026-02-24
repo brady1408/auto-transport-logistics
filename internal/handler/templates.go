@@ -90,6 +90,25 @@ var funcMap = template.FuncMap{
 		}
 		return *i
 	},
+	"formatPhone": func(s *string) string {
+		if s == nil {
+			return ""
+		}
+		d := *s
+		if len(d) == 10 {
+			return "(" + d[:3] + ") " + d[3:6] + "-" + d[6:]
+		}
+		return d
+	},
+	"fieldError": func(errs any, field string) string {
+		if errs == nil {
+			return ""
+		}
+		if m, ok := errs.(map[string]string); ok {
+			return m[field]
+		}
+		return ""
+	},
 	"dict": func(values ...any) map[string]any {
 		d := make(map[string]any, len(values)/2)
 		for i := 0; i < len(values)-1; i += 2 {

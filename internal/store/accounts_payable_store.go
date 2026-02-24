@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -17,14 +18,14 @@ func NewAccountsPayableStore(pool *pgxpool.Pool) *AccountsPayableStore {
 	return &AccountsPayableStore{pool: pool}
 }
 
-const apColumns = `id, trip_id, employee_id, truck_id, vendor_name,
+const apColumns = `id, company_id, trip_id, employee_id, truck_id, vendor_name,
 	payable_date, amount, paid_amount, status, description,
 	check_number, check_date, comments, created_at, updated_at`
 
 func scanAP(row interface{ Scan(dest ...any) error }) (*models.AccountsPayable, error) {
 	var ap models.AccountsPayable
 	err := row.Scan(
-		&ap.ID, &ap.TripID, &ap.EmployeeID, &ap.TruckID, &ap.VendorName,
+		&ap.ID, &ap.CompanyID, &ap.TripID, &ap.EmployeeID, &ap.TruckID, &ap.VendorName,
 		&ap.PayableDate, &ap.Amount, &ap.PaidAmount, &ap.Status, &ap.Description,
 		&ap.CheckNumber, &ap.CheckDate, &ap.Comments, &ap.CreatedAt, &ap.UpdatedAt,
 	)
@@ -39,9 +40,15 @@ func (s *AccountsPayableStore) List(ctx context.Context, f models.APFilter) (*mo
 		f.PageSize = 25
 	}
 
+	companyID := auth.GetCompanyID(ctx)
+
 	var where []string
 	var args []any
 	argN := 1
+
+	where = append(where, fmt.Sprintf("company_id = $%d", argN))
+	args = append(args, companyID)
+	argN++
 
 	if f.Search != "" {
 		where = append(where, fmt.Sprintf(
@@ -66,10 +73,7 @@ func (s *AccountsPayableStore) List(ctx context.Context, f models.APFilter) (*mo
 		argN++
 	}
 
-	whereClause := ""
-	if len(where) > 0 {
-		whereClause = "WHERE " + strings.Join(where, " AND ")
-	}
+	whereClause := "WHERE " + strings.Join(where, " AND ")
 
 	var total int
 	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM accounts_payable "+whereClause, args...).Scan(&total); err != nil {
@@ -105,8 +109,9 @@ func (s *AccountsPayableStore) List(ctx context.Context, f models.APFilter) (*mo
 }
 
 func (s *AccountsPayableStore) GetByID(ctx context.Context, id int) (*models.AccountsPayable, error) {
-	query := fmt.Sprintf("SELECT %s FROM accounts_payable WHERE id = $1", apColumns)
-	ap, err := scanAP(s.pool.QueryRow(ctx, query, id))
+	companyID := auth.GetCompanyID(ctx)
+	query := fmt.Sprintf("SELECT %s FROM accounts_payable WHERE id = $1 AND company_id = $2", apColumns)
+	ap, err := scanAP(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get accounts payable %d: %w", id, err)
 	}
@@ -114,13 +119,15 @@ func (s *AccountsPayableStore) GetByID(ctx context.Context, id int) (*models.Acc
 }
 
 func (s *AccountsPayableStore) Create(ctx context.Context, ap *models.AccountsPayable) error {
+	ap.CompanyID = auth.GetCompanyID(ctx)
 	err := s.pool.QueryRow(ctx,
 		`INSERT INTO accounts_payable (
-			trip_id, employee_id, truck_id, vendor_name,
+			company_id, trip_id, employee_id, truck_id, vendor_name,
 			payable_date, amount, paid_amount, status, description,
 			check_number, check_date, comments
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
 		RETURNING id, created_at, updated_at`,
+		ap.CompanyID,
 		ap.TripID, ap.EmployeeID, ap.TruckID, ap.VendorName,
 		ap.PayableDate, ap.Amount, ap.PaidAmount, ap.Status, ap.Description,
 		ap.CheckNumber, ap.CheckDate, ap.Comments,
@@ -132,16 +139,17 @@ func (s *AccountsPayableStore) Create(ctx context.Context, ap *models.AccountsPa
 }
 
 func (s *AccountsPayableStore) Update(ctx context.Context, ap *models.AccountsPayable) error {
+	companyID := auth.GetCompanyID(ctx)
 	_, err := s.pool.Exec(ctx,
 		`UPDATE accounts_payable SET
 			trip_id=$1, employee_id=$2, truck_id=$3, vendor_name=$4,
 			payable_date=$5, amount=$6, paid_amount=$7, status=$8, description=$9,
 			check_number=$10, check_date=$11, comments=$12
-		WHERE id=$13`,
+		WHERE id=$13 AND company_id=$14`,
 		ap.TripID, ap.EmployeeID, ap.TruckID, ap.VendorName,
 		ap.PayableDate, ap.Amount, ap.PaidAmount, ap.Status, ap.Description,
 		ap.CheckNumber, ap.CheckDate, ap.Comments,
-		ap.ID,
+		ap.ID, companyID,
 	)
 	if err != nil {
 		return fmt.Errorf("update accounts payable %d: %w", ap.ID, err)
@@ -150,7 +158,8 @@ func (s *AccountsPayableStore) Update(ctx context.Context, ap *models.AccountsPa
 }
 
 func (s *AccountsPayableStore) Delete(ctx context.Context, id int) error {
-	_, err := s.pool.Exec(ctx, "DELETE FROM accounts_payable WHERE id = $1", id)
+	companyID := auth.GetCompanyID(ctx)
+	_, err := s.pool.Exec(ctx, "DELETE FROM accounts_payable WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete accounts payable %d: %w", id, err)
 	}

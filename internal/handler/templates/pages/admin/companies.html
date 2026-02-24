@@ -1,0 +1,45 @@
+{{define "admin_companies.html"}}
+{{template "base" .}}
+{{define "title"}}Companies - Admin{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h2>Companies</h2>
+    <a href="/admin/companies/new" class="btn btn-primary">New Company</a>
+</div>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Active</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Phone</th>
+            <th>Login URL</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Companies}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.CompanyName}}</td>
+            <td>{{.Slug}}</td>
+            <td>{{if .Active}}Yes{{else}}No{{end}}</td>
+            <td>{{deref .City}}</td>
+            <td>{{deref .State}}</td>
+            <td>{{deref .Phone}}</td>
+            <td><code>/c/{{.Slug}}/login</code></td>
+            <td>
+                <a href="/admin/companies/{{.ID}}/users" class="btn btn-sm">Users</a>
+                <a href="/admin/companies/{{.ID}}/edit" class="btn btn-sm">Edit</a>
+            </td>
+        </tr>
+        {{else}}
+        <tr><td colspan="9" class="text-center">No companies found</td></tr>
+        {{end}}
+    </tbody>
+</table>
+{{end}}
+{{end}}

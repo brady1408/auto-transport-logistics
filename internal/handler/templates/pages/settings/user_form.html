@@ -1,0 +1,68 @@
+{{define "settings_user_form.html"}}
+{{template "base" .}}
+{{define "title"}}{{if .IsNew}}New User{{else}}Edit User{{end}} - Settings{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h2>{{if .IsNew}}New User{{else}}Edit User{{end}}</h2>
+    <a href="/settings/users" class="btn">Back to Users</a>
+</div>
+{{if .Error}}
+<div class="alert alert-danger">{{.Error}}</div>
+{{end}}
+<form method="POST" action="{{if .IsNew}}/settings/users{{else}}/settings/users/{{.EditUser.ID}}{{end}}" class="form-card">
+    <div class="form-row">
+        <div class="form-group">
+            <label for="username">Username *</label>
+            <input type="text" id="username" name="username"
+                   class="form-control{{if fieldError .FieldErrors "username"}} input-error{{end}}"
+                   value="{{if .EditUser}}{{.EditUser.Username}}{{else if .Form}}{{index .Form "username"}}{{end}}"
+                   required maxlength="50">
+            {{with fieldError .FieldErrors "username"}}<small class="field-error">{{.}}</small>{{end}}
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email"
+                   class="form-control{{if fieldError .FieldErrors "email"}} input-error{{end}}"
+                   value="{{if .EditUser}}{{.EditUser.Email}}{{else if .Form}}{{index .Form "email"}}{{end}}"
+                   maxlength="255">
+            {{with fieldError .FieldErrors "email"}}<small class="field-error">{{.}}</small>{{end}}
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="password">Password{{if not .IsNew}} (leave blank to keep current){{end}}</label>
+            <input type="password" id="password" name="password"
+                   class="form-control{{if fieldError .FieldErrors "password"}} input-error{{end}}"
+                   {{if .IsNew}}required{{end}}>
+            {{with fieldError .FieldErrors "password"}}<small class="field-error">{{.}}</small>{{end}}
+        </div>
+        <div class="form-group">
+            <label for="role">Role</label>
+            <select id="role" name="role"
+                    class="form-control{{if fieldError .FieldErrors "role"}} input-error{{end}}">
+                <option value="user" {{if .EditUser}}{{selected .EditUser.Role "user"}}{{else if .Form}}{{selected (index .Form "role") "user"}}{{end}}>User</option>
+                <option value="company_admin" {{if .EditUser}}{{selected .EditUser.Role "company_admin"}}{{else if .Form}}{{selected (index .Form "role") "company_admin"}}{{end}}>Company Admin</option>
+                {{if eq .User.Role "super_admin"}}
+                <option value="super_admin" {{if .EditUser}}{{selected .EditUser.Role "super_admin"}}{{end}}>Super Admin</option>
+                {{end}}
+            </select>
+            {{with fieldError .FieldErrors "role"}}<small class="field-error">{{.}}</small>{{end}}
+        </div>
+    </div>
+    {{if .EditUser}}
+    <div class="form-row">
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="active" value="on" {{checked .EditUser.Active}}>
+                Active
+            </label>
+        </div>
+    </div>
+    {{end}}
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{if .IsNew}}Create User{{else}}Save Changes{{end}}</button>
+        <a href="/settings/users" class="btn">Cancel</a>
+    </div>
+</form>
+{{end}}
+{{end}}

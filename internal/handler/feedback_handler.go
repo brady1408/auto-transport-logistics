@@ -63,7 +63,16 @@ func (h *FeedbackHandler) submit(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`<div class="alert alert-success" style="margin:0;">Feedback submitted — thank you!</div>`))
 }
 
+func requireSuperAdmin(r *http.Request) bool {
+	user, ok := auth.GetUserFromRequest(r)
+	return ok && user.Role == "super_admin"
+}
+
 func (h *FeedbackHandler) list(w http.ResponseWriter, r *http.Request) {
+	if !requireSuperAdmin(r) {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
 	filter := models.FeedbackFilter{
 		Status:   r.URL.Query().Get("status"),
 		Category: r.URL.Query().Get("category"),
@@ -90,6 +99,11 @@ func (h *FeedbackHandler) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FeedbackHandler) show(w http.ResponseWriter, r *http.Request) {
+	if !requireSuperAdmin(r) {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
+
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -108,6 +122,11 @@ func (h *FeedbackHandler) show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FeedbackHandler) update(w http.ResponseWriter, r *http.Request) {
+	if !requireSuperAdmin(r) {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
+
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -147,6 +166,11 @@ func (h *FeedbackHandler) update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FeedbackHandler) delete(w http.ResponseWriter, r *http.Request) {
+	if !requireSuperAdmin(r) {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
+
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

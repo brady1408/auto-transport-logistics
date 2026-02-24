@@ -4,6 +4,7 @@ import "time"
 
 type Customer struct {
 	ID                 int        `json:"id"`
+	CompanyID          int        `json:"company_id"`
 	LegacyID           *int       `json:"legacy_id,omitempty"`
 	Number             *string    `json:"number,omitempty"`
 	Name               string     `json:"name"`

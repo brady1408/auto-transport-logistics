@@ -4,6 +4,7 @@ import "time"
 
 type TripFuel struct {
 	ID          int     `json:"id"`
+	CompanyID   int     `json:"company_id"`
 	TripID      int     `json:"trip_id"`
 	LoadedMiles bool    `json:"loaded_miles"`
 	TruckNumber *string `json:"truck_number,omitempty"`
@@ -16,6 +17,7 @@ type TripFuel struct {
 
 type TripExpense struct {
 	ID          int        `json:"id"`
+	CompanyID   int        `json:"company_id"`
 	TripID      int        `json:"trip_id"`
 	Description *string    `json:"description,omitempty"`
 	Amount      *string    `json:"amount,omitempty"`
@@ -26,6 +28,7 @@ type TripExpense struct {
 
 type TripRoute struct {
 	ID           int        `json:"id"`
+	CompanyID    int        `json:"company_id"`
 	TripID       int        `json:"trip_id"`
 	Sequence     *int       `json:"sequence,omitempty"`
 	CustomerID   *int       `json:"customer_id,omitempty"`

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -17,7 +18,7 @@ func NewEmployeeStore(pool *pgxpool.Pool) *EmployeeStore {
 	return &EmployeeStore{pool: pool}
 }
 
-const employeeColumns = `id, legacy_id, name, address, address2, city, state, zip, phone,
+const employeeColumns = `id, company_id, legacy_id, name, address, address2, city, state, zip, phone,
 	rate, reserve, employment_date, termination_date, emergency_contact, emergency_phone,
 	com_data_number, drivers_license_number, drivers_license_state,
 	state_driving_rec, state_driving_rec_exp, driving_rec_review, driving_rec_review_exp,
@@ -33,7 +34,7 @@ const employeeColumns = `id, legacy_id, name, address, address2, city, state, zi
 func scanEmployee(row interface{ Scan(dest ...any) error }) (*models.Employee, error) {
 	var e models.Employee
 	err := row.Scan(
-		&e.ID, &e.LegacyID, &e.Name, &e.Address, &e.Address2, &e.City, &e.State, &e.Zip, &e.Phone,
+		&e.ID, &e.CompanyID, &e.LegacyID, &e.Name, &e.Address, &e.Address2, &e.City, &e.State, &e.Zip, &e.Phone,
 		&e.Rate, &e.Reserve, &e.EmploymentDate, &e.TerminationDate, &e.EmergencyContact, &e.EmergencyPhone,
 		&e.ComDataNumber, &e.DriversLicenseNumber, &e.DriversLicenseState,
 		&e.StateDrivingRec, &e.StateDrivingRecExp, &e.DrivingRecReview, &e.DrivingRecReviewExp,
@@ -57,9 +58,15 @@ func (s *EmployeeStore) List(ctx context.Context, f models.EmployeeFilter) (*mod
 		f.PageSize = 25
 	}
 
+	companyID := auth.GetCompanyID(ctx)
+
 	var where []string
 	var args []any
 	argN := 1
+
+	where = append(where, fmt.Sprintf("company_id = $%d", argN))
+	args = append(args, companyID)
+	argN++
 
 	if f.Search != "" {
 		where = append(where, fmt.Sprintf("(name ILIKE $%d OR emp_id_number ILIKE $%d)", argN, argN))
@@ -79,10 +86,7 @@ func (s *EmployeeStore) List(ctx context.Context, f models.EmployeeFilter) (*mod
 		where = append(where, "is_driver = false")
 	}
 
-	whereClause := ""
-	if len(where) > 0 {
-		whereClause = "WHERE " + strings.Join(where, " AND ")
-	}
+	whereClause := "WHERE " + strings.Join(where, " AND ")
 
 	var total int
 	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM employees "+whereClause, args...).Scan(&total); err != nil {
@@ -118,8 +122,9 @@ func (s *EmployeeStore) List(ctx context.Context, f models.EmployeeFilter) (*mod
 }
 
 func (s *EmployeeStore) GetByID(ctx context.Context, id int) (*models.Employee, error) {
-	query := fmt.Sprintf("SELECT %s FROM employees WHERE id = $1", employeeColumns)
-	e, err := scanEmployee(s.pool.QueryRow(ctx, query, id))
+	companyID := auth.GetCompanyID(ctx)
+	query := fmt.Sprintf("SELECT %s FROM employees WHERE id = $1 AND company_id = $2", employeeColumns)
+	e, err := scanEmployee(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get employee %d: %w", id, err)
 	}
@@ -127,9 +132,10 @@ func (s *EmployeeStore) GetByID(ctx context.Context, id int) (*models.Employee, 
 }
 
 func (s *EmployeeStore) Create(ctx context.Context, e *models.Employee) error {
+	e.CompanyID = auth.GetCompanyID(ctx)
 	err := s.pool.QueryRow(ctx,
 		`INSERT INTO employees (
-			name, address, address2, city, state, zip, phone,
+			company_id, name, address, address2, city, state, zip, phone,
 			rate, reserve, employment_date, termination_date,
 			emergency_contact, emergency_phone, com_data_number,
 			drivers_license_number, drivers_license_state,
@@ -143,10 +149,11 @@ func (s *EmployeeStore) Create(ctx context.Context, e *models.Employee) error {
 			sales_rate2, sales_rate2_type, sales_rate2_duration,
 			emp_id_number, username, birth_date
 		) VALUES (
-			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,
-			$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,
-			$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49
+			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,
+			$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,
+			$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50
 		) RETURNING id, created_at, updated_at`,
+		e.CompanyID,
 		e.Name, e.Address, e.Address2, e.City, e.State, e.Zip, e.Phone,
 		e.Rate, e.Reserve, e.EmploymentDate, e.TerminationDate,
 		e.EmergencyContact, e.EmergencyPhone, e.ComDataNumber,
@@ -168,6 +175,7 @@ func (s *EmployeeStore) Create(ctx context.Context, e *models.Employee) error {
 }
 
 func (s *EmployeeStore) Update(ctx context.Context, e *models.Employee) error {
+	companyID := auth.GetCompanyID(ctx)
 	_, err := s.pool.Exec(ctx,
 		`UPDATE employees SET
 			name=$1, address=$2, address2=$3, city=$4, state=$5, zip=$6, phone=$7,
@@ -183,7 +191,7 @@ func (s *EmployeeStore) Update(ctx context.Context, e *models.Employee) error {
 			sales_rate1=$41, sales_rate1_type=$42, sales_rate1_duration=$43,
 			sales_rate2=$44, sales_rate2_type=$45, sales_rate2_duration=$46,
 			emp_id_number=$47, username=$48, birth_date=$49
-		WHERE id=$50`,
+		WHERE id=$50 AND company_id=$51`,
 		e.Name, e.Address, e.Address2, e.City, e.State, e.Zip, e.Phone,
 		e.Rate, e.Reserve, e.EmploymentDate, e.TerminationDate,
 		e.EmergencyContact, e.EmergencyPhone, e.ComDataNumber,
@@ -197,7 +205,7 @@ func (s *EmployeeStore) Update(ctx context.Context, e *models.Employee) error {
 		e.SalesRate1, e.SalesRate1Type, e.SalesRate1Duration,
 		e.SalesRate2, e.SalesRate2Type, e.SalesRate2Duration,
 		e.EmpIDNumber, e.Username, e.BirthDate,
-		e.ID,
+		e.ID, companyID,
 	)
 	if err != nil {
 		return fmt.Errorf("update employee %d: %w", e.ID, err)
@@ -206,7 +214,8 @@ func (s *EmployeeStore) Update(ctx context.Context, e *models.Employee) error {
 }
 
 func (s *EmployeeStore) Delete(ctx context.Context, id int) error {
-	_, err := s.pool.Exec(ctx, "DELETE FROM employees WHERE id = $1", id)
+	companyID := auth.GetCompanyID(ctx)
+	_, err := s.pool.Exec(ctx, "DELETE FROM employees WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete employee %d: %w", id, err)
 	}

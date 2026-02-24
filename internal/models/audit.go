@@ -4,6 +4,7 @@ import "time"
 
 type AuditEntry struct {
 	ID        int               `json:"id"`
+	CompanyID *int              `json:"company_id,omitempty"`
 	TableName string            `json:"table_name"`
 	RecordID  int               `json:"record_id"`
 	Action    string            `json:"action"`

@@ -3,8 +3,9 @@ package models
 import "time"
 
 type OrderVehicle struct {
-	ID      int  `json:"id"`
-	OrderID int  `json:"order_id"`
+	ID        int  `json:"id"`
+	CompanyID int  `json:"company_id"`
+	OrderID   int  `json:"order_id"`
 	Active  bool `json:"active"`
 	VIN     *string `json:"vin,omitempty"`
 	Year    *string `json:"year,omitempty"`

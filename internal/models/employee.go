@@ -4,6 +4,7 @@ import "time"
 
 type Employee struct {
 	ID                    int        `json:"id"`
+	CompanyID             int        `json:"company_id"`
 	LegacyID              *int       `json:"legacy_id,omitempty"`
 	Name                  string     `json:"name"`
 	Address               *string    `json:"address,omitempty"`

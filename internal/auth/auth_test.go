@@ -42,7 +42,7 @@ func TestHashPasswordDifferentHashes(t *testing.T) {
 func TestJWTGenerateAndValidate(t *testing.T) {
 	svc := NewJWTService("test-secret-key")
 
-	token, err := svc.GenerateToken(42, "testuser", "admin")
+	token, err := svc.GenerateToken(42, "testuser", "admin", 1)
 	if err != nil {
 		t.Fatalf("GenerateToken: %v", err)
 	}
@@ -77,7 +77,7 @@ func TestJWTWrongSecret(t *testing.T) {
 	svc1 := NewJWTService("secret-one")
 	svc2 := NewJWTService("secret-two")
 
-	token, _ := svc1.GenerateToken(1, "user", "user")
+	token, _ := svc1.GenerateToken(1, "user", "user", 1)
 	_, err := svc2.ValidateToken(token)
 	if err == nil {
 		t.Error("expected error when validating with wrong secret")
@@ -146,7 +146,7 @@ func TestRequireAuthRedirectsWithoutCookie(t *testing.T) {
 	}
 
 	// Valid cookie → should validate
-	token, _ := svc.GenerateToken(1, "admin", "admin")
+	token, _ := svc.GenerateToken(1, "admin", "admin", 1)
 	r2 := httptest.NewRequest("GET", "/protected", nil)
 	r2.AddCookie(&http.Cookie{Name: "atlinks_token", Value: token})
 	cookie2, err := r2.Cookie("atlinks_token")

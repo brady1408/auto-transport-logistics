@@ -4,6 +4,7 @@ import "time"
 
 type Feedback struct {
 	ID         int       `json:"id"`
+	CompanyID  int       `json:"company_id"`
 	UserID     int       `json:"user_id"`
 	Username   string    `json:"username"`
 	PageURL    string    `json:"page_url"`

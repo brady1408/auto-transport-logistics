@@ -48,7 +48,7 @@ func TestRequireAuthRedirectsWithBadToken(t *testing.T) {
 
 func TestRequireAuthPassesWithValidToken(t *testing.T) {
 	jwtSvc := auth.NewJWTService("test-secret")
-	token, _ := jwtSvc.GenerateToken(1, "admin", "admin")
+	token, _ := jwtSvc.GenerateToken(1, "admin", "admin", 1)
 	mw := RequireAuth(jwtSvc)
 
 	var gotUser auth.ContextUser

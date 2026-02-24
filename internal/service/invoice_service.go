@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/brady1408/atlinks/internal/audit"
+	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -63,12 +64,13 @@ func (s *InvoiceService) GenerateFromOrder(ctx context.Context, orderID int) (*m
 	}
 
 	// 2. Get uninvoiced delivered/confirmed vehicles
+	companyID := auth.GetCompanyID(ctx)
 	rows, err := tx.Query(ctx,
 		`SELECT id, vin, year, make, model, total_charge
 		FROM order_vehicles
-		WHERE order_id = $1 AND active = true AND invoice_id IS NULL
+		WHERE order_id = $1 AND company_id = $2 AND active = true AND invoice_id IS NULL
 		AND status IN ('Delivered', 'Confirmed')
-		ORDER BY id`, orderID)
+		ORDER BY id`, orderID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("query vehicles: %w", err)
 	}
@@ -173,8 +175,8 @@ func (s *InvoiceService) GenerateFromOrder(ctx context.Context, orderID int) (*m
 
 		// Update vehicle with invoice reference
 		_, err := tx.Exec(ctx,
-			`UPDATE order_vehicles SET invoice_id=$1, invoice_number=$2 WHERE id=$3`,
-			inv.ID, invNum, v.ID)
+			`UPDATE order_vehicles SET invoice_id=$1, invoice_number=$2 WHERE id=$3 AND company_id=$4`,
+			inv.ID, invNum, v.ID, companyID)
 		if err != nil {
 			return nil, fmt.Errorf("update vehicle invoice ref: %w", err)
 		}
@@ -261,9 +263,10 @@ func (s *InvoiceService) VoidInvoice(ctx context.Context, invoiceID int) error {
 	}
 
 	// Clear vehicle invoice references
+	companyID := auth.GetCompanyID(ctx)
 	_, err = tx.Exec(ctx,
-		`UPDATE order_vehicles SET invoice_id=NULL, invoice_number=NULL WHERE invoice_id=$1`,
-		invoiceID)
+		`UPDATE order_vehicles SET invoice_id=NULL, invoice_number=NULL WHERE invoice_id=$1 AND company_id=$2`,
+		invoiceID, companyID)
 	if err != nil {
 		return fmt.Errorf("clear vehicle refs: %w", err)
 	}

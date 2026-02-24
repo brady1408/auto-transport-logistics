@@ -4,6 +4,7 @@ import "time"
 
 type VehicleDamage struct {
 	ID              int        `json:"id"`
+	CompanyID       int        `json:"company_id"`
 	OrderID         *int       `json:"order_id,omitempty"`
 	VehicleID       *int       `json:"vehicle_id,omitempty"`
 	TripID          *int       `json:"trip_id,omitempty"`
@@ -24,6 +25,7 @@ type VehicleDamage struct {
 type VehicleNote struct {
 	ID          int        `json:"id"`
 	VehicleID   int        `json:"vehicle_id"`
+	CompanyID   int        `json:"company_id"`
 	NoteDate    *time.Time `json:"note_date,omitempty"`
 	Description *string    `json:"description,omitempty"`
 	Comment     *string    `json:"comment,omitempty"`
