@@ -81,6 +81,18 @@ func (s *UserStore) UpdatePassword(ctx context.Context, id int, companyID int, h
 	return nil
 }
 
+// UpdatePasswordByID updates a user's password without requiring company_id
+// (used by the password reset flow where we only have user_id from the token).
+func (s *UserStore) UpdatePasswordByID(ctx context.Context, id int, hash string) error {
+	_, err := s.pool.Exec(ctx,
+		`UPDATE users SET password_hash=$1, updated_at=NOW() WHERE id=$2`,
+		hash, id)
+	if err != nil {
+		return fmt.Errorf("update password for user %d: %w", id, err)
+	}
+	return nil
+}
+
 func (s *UserStore) Create(ctx context.Context, u *models.User) error {
 	err := s.pool.QueryRow(ctx,
 		`INSERT INTO users (username, email, password_hash, role, active, company_id)
