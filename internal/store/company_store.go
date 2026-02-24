@@ -6,6 +6,7 @@ import (
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -36,7 +37,10 @@ func scanCompany(row interface{ Scan(dest ...any) error }) (*models.Company, err
 }
 
 func (s *CompanyStore) Get(ctx context.Context) (*models.Company, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM companies WHERE id = $1", companyColumns)
 	c, err := scanCompany(s.pool.QueryRow(ctx, query, companyID))
 	if err != nil {
@@ -62,18 +66,15 @@ func (s *CompanyStore) ListAll(ctx context.Context) ([]models.Company, error) {
 	if err != nil {
 		return nil, fmt.Errorf("list all companies: %w", err)
 	}
-	defer rows.Close()
-
-	var items []models.Company
-	for rows.Next() {
-		c, err := scanCompany(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Company, error) {
+		c, err := scanCompany(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan company: %w", err)
+			return models.Company{}, err
 		}
-		items = append(items, *c)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list all companies rows: %w", err)
+		return *c, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan company: %w", err)
 	}
 	return items, nil
 }
@@ -121,8 +122,12 @@ func (s *CompanyStore) UpdateByID(ctx context.Context, c *models.Company) error 
 
 func (s *CompanyStore) Upsert(ctx context.Context, c *models.Company) error {
 	if c.ID == 0 {
-		c.ID = auth.GetCompanyID(ctx)
-		err := s.pool.QueryRow(ctx,
+		companyID, err := auth.GetCompanyID(ctx)
+		if err != nil {
+			return err
+		}
+		c.ID = companyID
+		err = s.pool.QueryRow(ctx,
 			`INSERT INTO companies (
 				id, company_name, slug, active, address, address2, city, state, zip,
 				phone, fax, scac, federal_id, mc_number, dot_number, splc,
@@ -141,8 +146,11 @@ func (s *CompanyStore) Upsert(ctx context.Context, c *models.Company) error {
 		return nil
 	}
 
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = s.pool.Exec(ctx,
 		`UPDATE companies SET
 			company_name=$1, address=$2, address2=$3, city=$4, state=$5, zip=$6,
 			phone=$7, fax=$8, scac=$9, federal_id=$10, mc_number=$11, dot_number=$12, splc=$13,

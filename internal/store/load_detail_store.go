@@ -33,24 +33,24 @@ func scanLoadDetail(row interface{ Scan(dest ...any) error }) (*models.LoadDetai
 }
 
 func (s *LoadDetailStore) ListByTrip(ctx context.Context, tripID int) ([]models.LoadDetail, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM load_details WHERE trip_id = $1 AND company_id = $2 ORDER BY id", loadDetailColumns)
 	rows, err := s.pool.Query(ctx, query, tripID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list load details for trip %d: %w", tripID, err)
 	}
-	defer rows.Close()
-
-	var items []models.LoadDetail
-	for rows.Next() {
-		ld, err := scanLoadDetail(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.LoadDetail, error) {
+		ld, err := scanLoadDetail(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan load detail: %w", err)
+			return models.LoadDetail{}, err
 		}
-		items = append(items, *ld)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list load details rows: %w", err)
+		return *ld, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan load detail: %w", err)
 	}
 	return items, nil
 }
@@ -63,7 +63,10 @@ type LoadDetailWithOrder struct {
 
 // ListByTripWithOrder returns load details joined with order number for display.
 func (s *LoadDetailStore) ListByTripWithOrder(ctx context.Context, tripID int) ([]LoadDetailWithOrder, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := `SELECT load_details.id, load_details.company_id, load_details.trip_id, load_details.order_id,
 			load_details.vehicle_id, load_details.vin, load_details.year, load_details.make, load_details.model, load_details.color,
 			load_details.weight, load_details.category, load_details.bay_number, load_details.status,
@@ -77,30 +80,30 @@ func (s *LoadDetailStore) ListByTripWithOrder(ctx context.Context, tripID int) (
 	if err != nil {
 		return nil, fmt.Errorf("list load details with order for trip %d: %w", tripID, err)
 	}
-	defer rows.Close()
-
-	var items []LoadDetailWithOrder
-	for rows.Next() {
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (LoadDetailWithOrder, error) {
 		var item LoadDetailWithOrder
-		err := rows.Scan(
+		err := row.Scan(
 			&item.ID, &item.CompanyID, &item.TripID, &item.OrderID, &item.VehicleID, &item.VIN, &item.Year, &item.Make, &item.Model, &item.Color,
 			&item.Weight, &item.Category, &item.BayNumber, &item.Status, &item.LoadedDate, &item.DeliveredDate,
 			&item.CreatedAt, &item.UpdatedAt,
 			&item.OrderNumber,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("scan load detail with order: %w", err)
+			return LoadDetailWithOrder{}, err
 		}
-		items = append(items, item)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list load details with order rows: %w", err)
+		return item, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan load detail with order: %w", err)
 	}
 	return items, nil
 }
 
 func (s *LoadDetailStore) GetByID(ctx context.Context, id int) (*models.LoadDetail, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM load_details WHERE id = $1 AND company_id = $2", loadDetailColumns)
 	ld, err := scanLoadDetail(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -110,8 +113,12 @@ func (s *LoadDetailStore) GetByID(ctx context.Context, id int) (*models.LoadDeta
 }
 
 func (s *LoadDetailStore) CreateTx(ctx context.Context, tx pgx.Tx, ld *models.LoadDetail) error {
-	ld.CompanyID = auth.GetCompanyID(ctx)
-	err := tx.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	ld.CompanyID = companyID
+	err = tx.QueryRow(ctx,
 		`INSERT INTO load_details (
 			company_id, trip_id, order_id, vehicle_id, vin, year, make, model, color,
 			weight, category, bay_number, status, loaded_date, delivered_date
@@ -128,19 +135,28 @@ func (s *LoadDetailStore) CreateTx(ctx context.Context, tx pgx.Tx, ld *models.Lo
 }
 
 func (s *LoadDetailStore) DeleteTx(ctx context.Context, tx pgx.Tx, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := tx.Exec(ctx, "DELETE FROM load_details WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := tx.Exec(ctx, "DELETE FROM load_details WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete load detail %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("load detail %d not found", id)
 	}
 	return nil
 }
 
 // NextBayNumber returns the next available bay number for a trip.
 func (s *LoadDetailStore) NextBayNumber(ctx context.Context, tripID int) (string, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return "", err
+	}
 	var next int
-	err := s.pool.QueryRow(ctx,
+	err = s.pool.QueryRow(ctx,
 		`SELECT COALESCE(MAX(CASE WHEN bay_number ~ '^\d+$' THEN bay_number::int ELSE 0 END), 0) + 1
 		FROM load_details WHERE trip_id = $1 AND company_id = $2`, tripID, companyID).Scan(&next)
 	if err != nil {
@@ -150,22 +166,34 @@ func (s *LoadDetailStore) NextBayNumber(ctx context.Context, tripID int) (string
 }
 
 func (s *LoadDetailStore) UpdateBayNumber(ctx context.Context, id int, bayNumber string) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE load_details SET bay_number = $1 WHERE id = $2 AND company_id = $3`,
 		bayNumber, id, companyID,
 	)
 	if err != nil {
 		return fmt.Errorf("update bay number for load detail %d: %w", id, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("load detail %d not found", id)
+	}
 	return nil
 }
 
 func (s *LoadDetailStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM load_details WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM load_details WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete load detail %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("load detail %d not found", id)
 	}
 	return nil
 }

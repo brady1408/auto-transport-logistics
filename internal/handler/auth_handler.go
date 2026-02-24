@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,18 +16,41 @@ import (
 	"github.com/brady1408/atlinks/internal/store"
 )
 
+type authUserStore interface {
+	GetByUsername(ctx context.Context, username string) (*models.User, error)
+	Create(ctx context.Context, u *models.User) error
+	UpdatePasswordByID(ctx context.Context, id int, hash string) error
+}
+
+type authCompanyStore interface {
+	GetBySlug(ctx context.Context, slug string) (*models.Company, error)
+	Create(ctx context.Context, c *models.Company) error
+}
+
+type authResetTokenStore interface {
+	Create(ctx context.Context, userID int) (string, error)
+	Validate(ctx context.Context, rawToken string) (userID int, tokenID int, err error)
+	MarkUsed(ctx context.Context, tokenID int) error
+}
+
+type authPendingRegistrationStore interface {
+	Create(ctx context.Context, reg *store.PendingRegistration) (string, error)
+	Validate(ctx context.Context, rawToken string) (*store.PendingRegistration, error)
+	Delete(ctx context.Context, id int) error
+}
+
 type AuthHandler struct {
-	users        *store.UserStore
-	companyStore *store.CompanyStore
+	users        authUserStore
+	companyStore authCompanyStore
 	inviteCode   string
 	deps         *Deps
 	emailSvc     *email.Service
-	resetStore   *store.ResetTokenStore
-	pendingStore *store.PendingRegistrationStore
+	resetStore   authResetTokenStore
+	pendingStore authPendingRegistrationStore
 	appBaseURL   string
 }
 
-func NewAuthHandler(users *store.UserStore, companyStore *store.CompanyStore, inviteCode string, deps *Deps, emailSvc *email.Service, resetStore *store.ResetTokenStore, pendingStore *store.PendingRegistrationStore, appBaseURL string) *AuthHandler {
+func NewAuthHandler(users authUserStore, companyStore authCompanyStore, inviteCode string, deps *Deps, emailSvc *email.Service, resetStore authResetTokenStore, pendingStore authPendingRegistrationStore, appBaseURL string) *AuthHandler {
 	return &AuthHandler{
 		users:        users,
 		companyStore: companyStore,
@@ -68,7 +92,7 @@ func (h *AuthHandler) showLogin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.deps.renderTempl(w, r, authpages.LoginPage("", "", "", "", "", getFlash(w, r), "", "", nil, nil))
+	h.deps.renderTempl(w, r, authpages.LoginPage("", "", "", "", "", h.deps.getFlash(w, r), "", "", nil, nil))
 }
 
 func (h *AuthHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +125,7 @@ func (h *AuthHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   SecureCookies,
+		Secure:   h.deps.SecureCookies,
 		SameSite: http.SameSiteLaxMode,
 		MaxAge:   int(24 * time.Hour / time.Second),
 	})
@@ -127,7 +151,7 @@ func (h *AuthHandler) showCompanyLogin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.deps.renderTempl(w, r, authpages.LoginPage(company.CompanyName, "/c/"+slug+"/login", "", "", "", getFlash(w, r), "", "", nil, nil))
+	h.deps.renderTempl(w, r, authpages.LoginPage(company.CompanyName, "/c/"+slug+"/login", "", "", "", h.deps.getFlash(w, r), "", "", nil, nil))
 }
 
 func (h *AuthHandler) handleCompanyLogin(w http.ResponseWriter, r *http.Request) {
@@ -171,7 +195,7 @@ func (h *AuthHandler) handleCompanyLogin(w http.ResponseWriter, r *http.Request)
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   SecureCookies,
+		Secure:   h.deps.SecureCookies,
 		SameSite: http.SameSiteLaxMode,
 		MaxAge:   int(24 * time.Hour / time.Second),
 	})
@@ -348,7 +372,7 @@ func (h *AuthHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request) 
 		log.Printf("ERROR: delete pending registration %d: %v", reg.ID, err)
 	}
 
-	setFlash(w, "Email verified! Your company has been created. Please sign in.")
+	h.deps.setFlash(w, "Email verified! Your company has been created. Please sign in.")
 	http.Redirect(w, r, "/c/"+reg.Slug+"/login", http.StatusSeeOther)
 }
 
@@ -449,6 +473,6 @@ func (h *AuthHandler) handleResetPassword(w http.ResponseWriter, r *http.Request
 		log.Printf("ERROR: mark token %d used: %v", tokenID, err)
 	}
 
-	setFlash(w, "Password updated successfully. Please sign in with your new password.")
+	h.deps.setFlash(w, "Password updated successfully. Please sign in with your new password.")
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,16 +10,23 @@ import (
 	"time"
 
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type apiCustomerStore interface {
+	List(ctx context.Context, f models.CustomerFilter) (*models.CustomerListResult, error)
+}
+
+type apiVehicleStore interface {
+	SearchUnassigned(ctx context.Context, search string, limit int) ([]models.OrderVehicle, error)
+}
+
 type APIHandler struct {
-	custStore *store.CustomerStore
-	vehStore  *store.VehicleStore
+	custStore apiCustomerStore
+	vehStore  apiVehicleStore
 	deps      *Deps
 }
 
-func NewAPIHandler(custStore *store.CustomerStore, vehStore *store.VehicleStore, deps *Deps) *APIHandler {
+func NewAPIHandler(custStore apiCustomerStore, vehStore apiVehicleStore, deps *Deps) *APIHandler {
 	return &APIHandler{custStore: custStore, vehStore: vehStore, deps: deps}
 }
 

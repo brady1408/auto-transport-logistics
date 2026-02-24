@@ -1,21 +1,30 @@
 package handler
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/handler/components/damageclaims"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type damageClaimStore interface {
+	List(ctx context.Context, f models.DamageClaimFilter) (*models.DamageClaimListResult, error)
+	GetByID(ctx context.Context, id int) (*models.DamageClaim, error)
+	Create(ctx context.Context, dc *models.DamageClaim) error
+	Update(ctx context.Context, dc *models.DamageClaim) error
+	Delete(ctx context.Context, id int) error
+	NextClaimNumber(ctx context.Context) (string, error)
+}
+
 type DamageClaimHandler struct {
-	store *store.DamageClaimStore
+	store damageClaimStore
 	deps  *Deps
 }
 
-func NewDamageClaimHandler(s *store.DamageClaimStore, deps *Deps) *DamageClaimHandler {
+func NewDamageClaimHandler(s damageClaimStore, deps *Deps) *DamageClaimHandler {
 	return &DamageClaimHandler{store: s, deps: deps}
 }
 
@@ -85,14 +94,9 @@ func (h *DamageClaimHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "damage_claims", dc.ID, "INSERT", nil, dc)
-	setFlash(w, "Damage claim created successfully")
+	h.deps.setFlash(w, "Damage claim created successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/damage-claims")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/damage-claims", http.StatusSeeOther)
+	redirect(w, r, "/accounting/damage-claims")
 }
 
 func (h *DamageClaimHandler) show(w http.ResponseWriter, r *http.Request) {
@@ -154,14 +158,9 @@ func (h *DamageClaimHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "damage_claims", dc.ID, "UPDATE", old, dc)
-	setFlash(w, "Damage claim updated successfully")
+	h.deps.setFlash(w, "Damage claim updated successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/damage-claims")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/damage-claims", http.StatusSeeOther)
+	redirect(w, r, "/accounting/damage-claims")
 }
 
 func (h *DamageClaimHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -183,14 +182,9 @@ func (h *DamageClaimHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "damage_claims", id, "DELETE", old, nil)
-	setFlash(w, "Damage claim deleted")
+	h.deps.setFlash(w, "Damage claim deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/damage-claims")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/damage-claims", http.StatusSeeOther)
+	redirect(w, r, "/accounting/damage-claims")
 }
 
 func bindDamageClaimForm(r *http.Request) *models.DamageClaim {

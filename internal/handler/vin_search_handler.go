@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -8,12 +9,16 @@ import (
 	"github.com/brady1408/atlinks/internal/store"
 )
 
+type vinSearchVehicleStore interface {
+	SearchGlobal(ctx context.Context, query string, limit int) ([]store.GlobalSearchResult, error)
+}
+
 type VinSearchHandler struct {
-	vehicleStore *store.VehicleStore
+	vehicleStore vinSearchVehicleStore
 	deps         *Deps
 }
 
-func NewVinSearchHandler(vehicleStore *store.VehicleStore, deps *Deps) *VinSearchHandler {
+func NewVinSearchHandler(vehicleStore vinSearchVehicleStore, deps *Deps) *VinSearchHandler {
 	return &VinSearchHandler{vehicleStore: vehicleStore, deps: deps}
 }
 

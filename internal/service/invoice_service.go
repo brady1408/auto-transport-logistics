@@ -63,7 +63,10 @@ func (s *InvoiceService) GenerateFromOrder(ctx context.Context, orderID int) (*m
 	}
 
 	// 2. Get uninvoiced delivered/confirmed vehicles
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	rows, err := tx.Query(ctx,
 		`SELECT id, vin, year, make, model, total_charge
 		FROM order_vehicles
@@ -256,7 +259,10 @@ func (s *InvoiceService) VoidInvoice(ctx context.Context, invoiceID int) error {
 	}
 
 	// Clear vehicle invoice references
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
 	_, err = tx.Exec(ctx,
 		`UPDATE order_vehicles SET invoice_id=NULL, invoice_number=NULL WHERE invoice_id=$1 AND company_id=$2`,
 		invoiceID, companyID)

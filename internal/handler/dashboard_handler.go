@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -8,14 +9,26 @@ import (
 	"github.com/brady1408/atlinks/internal/store"
 )
 
+type dashboardOrderStore interface {
+	DashboardCounts(ctx context.Context) (store.OrderDashboardCounts, error)
+}
+
+type dashboardInvoiceStore interface {
+	DashboardAging(ctx context.Context) (store.AgingBucket, error)
+}
+
+type dashboardTripStore interface {
+	DashboardCounts(ctx context.Context) (store.TripDashboardCounts, error)
+}
+
 type DashboardHandler struct {
-	orderStore   *store.OrderStore
-	invoiceStore *store.InvoiceStore
-	tripStore    *store.TripStore
+	orderStore   dashboardOrderStore
+	invoiceStore dashboardInvoiceStore
+	tripStore    dashboardTripStore
 	deps         *Deps
 }
 
-func NewDashboardHandler(orderStore *store.OrderStore, invoiceStore *store.InvoiceStore, tripStore *store.TripStore, deps *Deps) *DashboardHandler {
+func NewDashboardHandler(orderStore dashboardOrderStore, invoiceStore dashboardInvoiceStore, tripStore dashboardTripStore, deps *Deps) *DashboardHandler {
 	return &DashboardHandler{
 		orderStore:   orderStore,
 		invoiceStore: invoiceStore,

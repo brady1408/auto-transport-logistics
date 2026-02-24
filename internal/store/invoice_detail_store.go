@@ -31,30 +31,33 @@ func scanInvoiceDetail(row interface{ Scan(dest ...any) error }) (*models.Invoic
 }
 
 func (s *InvoiceDetailStore) ListByInvoice(ctx context.Context, invoiceID int) ([]models.InvoiceDetail, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM invoice_details WHERE invoice_id = $1 AND company_id = $2 ORDER BY id", invoiceDetailColumns)
 	rows, err := s.pool.Query(ctx, query, invoiceID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list invoice details for invoice %d: %w", invoiceID, err)
 	}
-	defer rows.Close()
-
-	var items []models.InvoiceDetail
-	for rows.Next() {
-		d, err := scanInvoiceDetail(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.InvoiceDetail, error) {
+		d, err := scanInvoiceDetail(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan invoice detail: %w", err)
+			return models.InvoiceDetail{}, err
 		}
-		items = append(items, *d)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list invoice details rows: %w", err)
+		return *d, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan invoice detail: %w", err)
 	}
 	return items, nil
 }
 
 func (s *InvoiceDetailStore) GetByID(ctx context.Context, id int) (*models.InvoiceDetail, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM invoice_details WHERE id = $1 AND company_id = $2", invoiceDetailColumns)
 	d, err := scanInvoiceDetail(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -64,8 +67,12 @@ func (s *InvoiceDetailStore) GetByID(ctx context.Context, id int) (*models.Invoi
 }
 
 func (s *InvoiceDetailStore) Create(ctx context.Context, d *models.InvoiceDetail) error {
-	d.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	d.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO invoice_details (
 			company_id, invoice_id, order_id, vehicle_id, vin, year, make, model,
 			description, qty, rate, amount, taxable, item_code
@@ -82,8 +89,12 @@ func (s *InvoiceDetailStore) Create(ctx context.Context, d *models.InvoiceDetail
 }
 
 func (s *InvoiceDetailStore) CreateTx(ctx context.Context, tx pgx.Tx, d *models.InvoiceDetail) error {
-	d.CompanyID = auth.GetCompanyID(ctx)
-	err := tx.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	d.CompanyID = companyID
+	err = tx.QueryRow(ctx,
 		`INSERT INTO invoice_details (
 			company_id, invoice_id, order_id, vehicle_id, vin, year, make, model,
 			description, qty, rate, amount, taxable, item_code
@@ -100,17 +111,26 @@ func (s *InvoiceDetailStore) CreateTx(ctx context.Context, tx pgx.Tx, d *models.
 }
 
 func (s *InvoiceDetailStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM invoice_details WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM invoice_details WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete invoice detail %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("invoice detail %d not found", id)
 	}
 	return nil
 }
 
 func (s *InvoiceDetailStore) DeleteByInvoiceTx(ctx context.Context, tx pgx.Tx, invoiceID int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := tx.Exec(ctx, "DELETE FROM invoice_details WHERE invoice_id = $1 AND company_id = $2", invoiceID, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(ctx, "DELETE FROM invoice_details WHERE invoice_id = $1 AND company_id = $2", invoiceID, companyID)
 	if err != nil {
 		return fmt.Errorf("delete invoice details for invoice %d: %w", invoiceID, err)
 	}

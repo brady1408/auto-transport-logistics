@@ -6,6 +6,7 @@ import (
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -30,30 +31,33 @@ func scanFuel(row interface{ Scan(dest ...any) error }) (*models.TripFuel, error
 }
 
 func (s *TripFuelStore) ListByTrip(ctx context.Context, tripID int) ([]models.TripFuel, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM trip_fuel WHERE trip_id = $1 AND company_id = $2 ORDER BY id", fuelColumns)
 	rows, err := s.pool.Query(ctx, query, tripID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list fuel for trip %d: %w", tripID, err)
 	}
-	defer rows.Close()
-
-	var items []models.TripFuel
-	for rows.Next() {
-		f, err := scanFuel(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.TripFuel, error) {
+		f, err := scanFuel(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan fuel: %w", err)
+			return models.TripFuel{}, err
 		}
-		items = append(items, *f)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list fuel entries rows: %w", err)
+		return *f, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan fuel: %w", err)
 	}
 	return items, nil
 }
 
 func (s *TripFuelStore) GetByID(ctx context.Context, id int) (*models.TripFuel, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM trip_fuel WHERE id = $1 AND company_id = $2", fuelColumns)
 	f, err := scanFuel(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -63,8 +67,12 @@ func (s *TripFuelStore) GetByID(ctx context.Context, id int) (*models.TripFuel, 
 }
 
 func (s *TripFuelStore) Create(ctx context.Context, f *models.TripFuel) error {
-	f.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	f.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO trip_fuel (company_id, trip_id, loaded_miles, truck_number, state, mileage, gallons)
 		VALUES ($1,$2,$3,$4,$5,$6,$7)
 		RETURNING id, created_at, updated_at`,
@@ -77,8 +85,11 @@ func (s *TripFuelStore) Create(ctx context.Context, f *models.TripFuel) error {
 }
 
 func (s *TripFuelStore) Update(ctx context.Context, f *models.TripFuel) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE trip_fuel SET
 			loaded_miles=$1, truck_number=$2, state=$3, mileage=$4, gallons=$5
 		WHERE id=$6 AND company_id=$7`,
@@ -88,14 +99,23 @@ func (s *TripFuelStore) Update(ctx context.Context, f *models.TripFuel) error {
 	if err != nil {
 		return fmt.Errorf("update fuel %d: %w", f.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("fuel %d not found", f.ID)
+	}
 	return nil
 }
 
 func (s *TripFuelStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM trip_fuel WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM trip_fuel WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete fuel %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("fuel %d not found", id)
 	}
 	return nil
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,18 +9,33 @@ import (
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/handler/components/orders"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/service"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type vehicleStore interface {
+	ListByOrder(ctx context.Context, orderID int) ([]models.OrderVehicle, error)
+	GetByID(ctx context.Context, id int) (*models.OrderVehicle, error)
+	Update(ctx context.Context, v *models.OrderVehicle) error
+}
+
+type vehicleOrderStore interface {
+	GetByID(ctx context.Context, id int) (*models.Order, error)
+}
+
+type vehicleOrderService interface {
+	CreateVehicleAndSync(ctx context.Context, v *models.OrderVehicle) error
+	DeleteVehicleAndSync(ctx context.Context, vehicleID int) error
+	UpdateVehicleStatus(ctx context.Context, vehicleID int, newStatus string, confirmedBy *string) error
+	RevertVehicleStatus(ctx context.Context, vehicleID int) error
+}
+
 type VehicleHandler struct {
-	store      *store.VehicleStore
-	orderStore *store.OrderStore
-	orderSvc   *service.OrderService
+	store      vehicleStore
+	orderStore vehicleOrderStore
+	orderSvc   vehicleOrderService
 	deps       *Deps
 }
 
-func NewVehicleHandler(store *store.VehicleStore, orderStore *store.OrderStore, orderSvc *service.OrderService, deps *Deps) *VehicleHandler {
+func NewVehicleHandler(store vehicleStore, orderStore vehicleOrderStore, orderSvc vehicleOrderService, deps *Deps) *VehicleHandler {
 	return &VehicleHandler{store: store, orderStore: orderStore, orderSvc: orderSvc, deps: deps}
 }
 
@@ -93,15 +109,9 @@ func (h *VehicleHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "order_vehicles", v.ID, "INSERT", nil, v)
-	setFlash(w, "Vehicle added successfully")
+	h.deps.setFlash(w, "Vehicle added successfully")
 
-	redirectURL := "/dispatch/orders/" + r.PathValue("id")
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", redirectURL)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+	redirect(w, r, "/dispatch/orders/"+r.PathValue("id"))
 }
 
 func (h *VehicleHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -149,15 +159,9 @@ func (h *VehicleHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "order_vehicles", v.ID, "UPDATE", old, v)
-	setFlash(w, "Vehicle updated successfully")
+	h.deps.setFlash(w, "Vehicle updated successfully")
 
-	redirectURL := "/dispatch/orders/" + itoa(v.OrderID)
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", redirectURL)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+	redirect(w, r, "/dispatch/orders/"+itoa(v.OrderID))
 }
 
 func (h *VehicleHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -179,15 +183,9 @@ func (h *VehicleHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "order_vehicles", id, "DELETE", old, nil)
-	setFlash(w, "Vehicle deleted")
+	h.deps.setFlash(w, "Vehicle deleted")
 
-	redirectURL := "/dispatch/orders/" + itoa(old.OrderID)
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", redirectURL)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+	redirect(w, r, "/dispatch/orders/"+itoa(old.OrderID))
 }
 
 // Status transition handlers

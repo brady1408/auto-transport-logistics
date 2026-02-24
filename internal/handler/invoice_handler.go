@@ -1,29 +1,53 @@
 package handler
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/handler/components/invoices"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/service"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type invoiceStore interface {
+	List(ctx context.Context, f models.InvoiceFilter) (*models.InvoiceListResult, error)
+	GetByID(ctx context.Context, id int) (*models.Invoice, error)
+	Create(ctx context.Context, inv *models.Invoice) error
+	Update(ctx context.Context, inv *models.Invoice) error
+	Delete(ctx context.Context, id int) error
+	NextInvoiceNumber(ctx context.Context) (string, error)
+}
+
+type invoiceDetailStore interface {
+	ListByInvoice(ctx context.Context, invoiceID int) ([]models.InvoiceDetail, error)
+	GetByID(ctx context.Context, id int) (*models.InvoiceDetail, error)
+	Create(ctx context.Context, d *models.InvoiceDetail) error
+	Delete(ctx context.Context, id int) error
+}
+
+type invoicePaymentDetailStore interface {
+	ListByInvoice(ctx context.Context, invoiceID int) ([]models.PaymentDetail, error)
+}
+
+type invoiceService interface {
+	VoidInvoice(ctx context.Context, id int) error
+	RecalcTotals(ctx context.Context, invoiceID int) error
+}
+
 type InvoiceHandler struct {
-	store       *store.InvoiceStore
-	detailStore *store.InvoiceDetailStore
-	payDetStore *store.PaymentDetailStore
-	invoiceSvc  *service.InvoiceService
+	store       invoiceStore
+	detailStore invoiceDetailStore
+	payDetStore invoicePaymentDetailStore
+	invoiceSvc  invoiceService
 	deps        *Deps
 }
 
 func NewInvoiceHandler(
-	s *store.InvoiceStore,
-	ds *store.InvoiceDetailStore,
-	pds *store.PaymentDetailStore,
-	svc *service.InvoiceService,
+	s invoiceStore,
+	ds invoiceDetailStore,
+	pds invoicePaymentDetailStore,
+	svc invoiceService,
 	deps *Deps,
 ) *InvoiceHandler {
 	return &InvoiceHandler{store: s, detailStore: ds, payDetStore: pds, invoiceSvc: svc, deps: deps}
@@ -111,14 +135,9 @@ func (h *InvoiceHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "invoices", inv.ID, "INSERT", nil, inv)
-	setFlash(w, "Invoice created successfully")
+	h.deps.setFlash(w, "Invoice created successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/invoices")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/invoices", http.StatusSeeOther)
+	redirect(w, r, "/accounting/invoices")
 }
 
 func (h *InvoiceHandler) show(w http.ResponseWriter, r *http.Request) {
@@ -192,14 +211,9 @@ func (h *InvoiceHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "invoices", inv.ID, "UPDATE", old, inv)
-	setFlash(w, "Invoice updated successfully")
+	h.deps.setFlash(w, "Invoice updated successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/invoices")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/invoices", http.StatusSeeOther)
+	redirect(w, r, "/accounting/invoices")
 }
 
 func (h *InvoiceHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -227,14 +241,9 @@ func (h *InvoiceHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "invoices", id, "DELETE", old, nil)
-	setFlash(w, "Invoice deleted")
+	h.deps.setFlash(w, "Invoice deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/invoices")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/invoices", http.StatusSeeOther)
+	redirect(w, r, "/accounting/invoices")
 }
 
 func (h *InvoiceHandler) void(w http.ResponseWriter, r *http.Request) {
@@ -249,14 +258,9 @@ func (h *InvoiceHandler) void(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setFlash(w, "Invoice voided")
+	h.deps.setFlash(w, "Invoice voided")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/accounting/invoices/"+r.PathValue("id"))
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/accounting/invoices", http.StatusSeeOther)
+	redirect(w, r, "/accounting/invoices/"+r.PathValue("id"))
 }
 
 func (h *InvoiceHandler) printView(w http.ResponseWriter, r *http.Request) {
@@ -325,12 +329,17 @@ func (h *InvoiceHandler) addDetail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Recalculate totals
-	_ = h.invoiceSvc.RecalcTotals(r.Context(), invoiceID)
+	if err := h.invoiceSvc.RecalcTotals(r.Context(), invoiceID); err != nil {
+		log.Printf("recalc totals for invoice %d: %v", invoiceID, err)
+	}
 
 	h.deps.Audit.Log(r.Context(), "invoice_details", d.ID, "INSERT", nil, d)
 
 	// Re-render detail table
-	details, _ := h.detailStore.ListByInvoice(r.Context(), invoiceID)
+	details, err := h.detailStore.ListByInvoice(r.Context(), invoiceID)
+	if err != nil {
+		log.Printf("list details for invoice %d: %v", invoiceID, err)
+	}
 	h.deps.renderTempl(w, r, invoices.DetailTable(details, invoiceID))
 }
 
@@ -355,12 +364,17 @@ func (h *InvoiceHandler) removeDetail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Recalculate totals
-	_ = h.invoiceSvc.RecalcTotals(r.Context(), invoiceID)
+	if err := h.invoiceSvc.RecalcTotals(r.Context(), invoiceID); err != nil {
+		log.Printf("recalc totals for invoice %d: %v", invoiceID, err)
+	}
 
 	h.deps.Audit.Log(r.Context(), "invoice_details", detailID, "DELETE", detail, nil)
 
 	// Re-render detail table
-	details, _ := h.detailStore.ListByInvoice(r.Context(), invoiceID)
+	details, err := h.detailStore.ListByInvoice(r.Context(), invoiceID)
+	if err != nil {
+		log.Printf("list details for invoice %d: %v", invoiceID, err)
+	}
 	h.deps.renderTempl(w, r, invoices.DetailTable(details, invoiceID))
 }
 

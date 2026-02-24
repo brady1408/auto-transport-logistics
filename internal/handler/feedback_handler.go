@@ -1,20 +1,30 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/handler/components/feedback"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type feedbackStore interface {
+	List(ctx context.Context, f models.FeedbackFilter) (*models.FeedbackListResult, error)
+	GetByID(ctx context.Context, id int) (*models.Feedback, error)
+	Create(ctx context.Context, fb *models.Feedback) error
+	Update(ctx context.Context, fb *models.Feedback) error
+	Delete(ctx context.Context, id int) error
+	ListComments(ctx context.Context, feedbackID int, includeInternal bool) ([]models.FeedbackComment, error)
+	CreateComment(ctx context.Context, c *models.FeedbackComment) error
+}
+
 type FeedbackHandler struct {
-	store *store.FeedbackStore
+	store feedbackStore
 	deps  *Deps
 }
 
-func NewFeedbackHandler(s *store.FeedbackStore, deps *Deps) *FeedbackHandler {
+func NewFeedbackHandler(s feedbackStore, deps *Deps) *FeedbackHandler {
 	return &FeedbackHandler{store: s, deps: deps}
 }
 
@@ -155,14 +165,9 @@ func (h *FeedbackHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "feedback", fb.ID, "UPDATE", old, fb)
-	setFlash(w, "Feedback updated")
+	h.deps.setFlash(w, "Feedback updated")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/feedback/"+r.PathValue("id"))
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/feedback", http.StatusSeeOther)
+	redirect(w, r, "/feedback/"+r.PathValue("id"))
 }
 
 func (h *FeedbackHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -189,14 +194,9 @@ func (h *FeedbackHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "feedback", id, "DELETE", old, nil)
-	setFlash(w, "Feedback deleted")
+	h.deps.setFlash(w, "Feedback deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/feedback")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/feedback", http.StatusSeeOther)
+	redirect(w, r, "/feedback")
 }
 
 func (h *FeedbackHandler) addComment(w http.ResponseWriter, r *http.Request) {

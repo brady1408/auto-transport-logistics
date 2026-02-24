@@ -3,10 +3,10 @@ package store
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -48,69 +48,53 @@ func (s *CustomerStore) List(ctx context.Context, f models.CustomerFilter) (*mod
 		f.PageSize = 25
 	}
 
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
 
 	if f.Search != "" {
-		where = append(where, fmt.Sprintf("(name ILIKE $%d OR number ILIKE $%d)", argN, argN))
-		args = append(args, "%"+f.Search+"%")
-		argN++
+		qb.Add("(name ILIKE ? OR number ILIKE ?)", "%"+f.Search+"%", "%"+f.Search+"%")
 	}
 	if f.Type != "" {
-		where = append(where, fmt.Sprintf("type = $%d", argN))
-		args = append(args, f.Type)
-		argN++
+		qb.Add("type = ?", f.Type)
 	}
 	if f.Zone != "" {
-		where = append(where, fmt.Sprintf("zone = $%d", argN))
-		args = append(args, f.Zone)
-		argN++
+		qb.Add("zone = ?", f.Zone)
 	}
 	switch f.Active {
 	case "active":
-		where = append(where, "inactive = false")
+		qb.AddRaw("inactive = false")
 	case "inactive":
-		where = append(where, "inactive = true")
+		qb.AddRaw("inactive = true")
 	}
 
-	whereClause := "WHERE " + strings.Join(where, " AND ")
-
 	// Count
-	countQuery := "SELECT COUNT(*) FROM customers " + whereClause
 	var total int
-	if err := s.pool.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM customers "+qb.Where(), qb.Args()...).Scan(&total); err != nil {
 		return nil, fmt.Errorf("count customers: %w", err)
 	}
 
 	// Fetch
-	offset := (f.Page - 1) * f.PageSize
-	query := fmt.Sprintf("SELECT %s FROM customers %s ORDER BY name LIMIT $%d OFFSET $%d",
-		customerColumns, whereClause, argN, argN+1)
-	args = append(args, f.PageSize, offset)
+	query := fmt.Sprintf("SELECT %s FROM customers %s ORDER BY name %s",
+		customerColumns, qb.Where(), qb.Paginate(f.PageSize, f.Page))
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("list customers: %w", err)
 	}
-	defer rows.Close()
-
-	var items []models.Customer
-	for rows.Next() {
-		c, err := scanCustomer(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Customer, error) {
+		c, err := scanCustomer(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan customer: %w", err)
+			return models.Customer{}, err
 		}
-		items = append(items, *c)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list customers rows: %w", err)
+		return *c, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan customer: %w", err)
 	}
 
 	return &models.CustomerListResult{
@@ -122,7 +106,10 @@ func (s *CustomerStore) List(ctx context.Context, f models.CustomerFilter) (*mod
 }
 
 func (s *CustomerStore) GetByID(ctx context.Context, id int) (*models.Customer, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM customers WHERE id = $1 AND company_id = $2", customerColumns)
 	c, err := scanCustomer(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -132,8 +119,12 @@ func (s *CustomerStore) GetByID(ctx context.Context, id int) (*models.Customer, 
 }
 
 func (s *CustomerStore) Create(ctx context.Context, c *models.Customer) error {
-	c.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	c.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO customers (
 			company_id, number, name, address, address2, city, state, zip,
 			phone, mobile, fax, contact, zone, type, cod, inactive,
@@ -160,8 +151,11 @@ func (s *CustomerStore) Create(ctx context.Context, c *models.Customer) error {
 }
 
 func (s *CustomerStore) Update(ctx context.Context, c *models.Customer) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE customers SET
 			number=$1, name=$2, address=$3, address2=$4, city=$5, state=$6, zip=$7,
 			phone=$8, mobile=$9, fax=$10, contact=$11, zone=$12, type=$13, cod=$14, inactive=$15,
@@ -181,14 +175,23 @@ func (s *CustomerStore) Update(ctx context.Context, c *models.Customer) error {
 	if err != nil {
 		return fmt.Errorf("update customer %d: %w", c.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("customer %d not found", c.ID)
+	}
 	return nil
 }
 
 func (s *CustomerStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM customers WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM customers WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete customer %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("customer %d not found", id)
 	}
 	return nil
 }

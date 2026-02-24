@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,20 +9,29 @@ import (
 
 	"github.com/brady1408/atlinks/internal/handler/components/orders"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/service"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type orderStore interface {
+	List(ctx context.Context, f models.OrderFilter) (*models.OrderListResult, error)
+	GetByID(ctx context.Context, id int) (*models.Order, error)
+	Create(ctx context.Context, o *models.Order) error
+	Update(ctx context.Context, o *models.Order) error
+	Delete(ctx context.Context, id int) error
+	NextOrderNumber(ctx context.Context) (string, error)
+}
+
+type orderInvoiceService interface {
+	GenerateFromOrder(ctx context.Context, orderID int) (*models.Invoice, error)
+}
+
 type OrderHandler struct {
-	store      *store.OrderStore
-	custStore  *store.CustomerStore
-	orderSvc   *service.OrderService
-	invoiceSvc *service.InvoiceService
+	store      orderStore
+	invoiceSvc orderInvoiceService
 	deps       *Deps
 }
 
-func NewOrderHandler(store *store.OrderStore, custStore *store.CustomerStore, orderSvc *service.OrderService, invoiceSvc *service.InvoiceService, deps *Deps) *OrderHandler {
-	return &OrderHandler{store: store, custStore: custStore, orderSvc: orderSvc, invoiceSvc: invoiceSvc, deps: deps}
+func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, deps *Deps) *OrderHandler {
+	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, deps: deps}
 }
 
 func (h *OrderHandler) Register(mux *http.ServeMux) {
@@ -94,14 +104,9 @@ func (h *OrderHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "orders", o.ID, "INSERT", nil, o)
-	setFlash(w, "Order created successfully")
+	h.deps.setFlash(w, "Order created successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/dispatch/orders")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/dispatch/orders", http.StatusSeeOther)
+	redirect(w, r, "/dispatch/orders")
 }
 
 func (h *OrderHandler) show(w http.ResponseWriter, r *http.Request) {
@@ -163,14 +168,9 @@ func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "orders", o.ID, "UPDATE", old, o)
-	setFlash(w, "Order updated successfully")
+	h.deps.setFlash(w, "Order updated successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/dispatch/orders")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/dispatch/orders", http.StatusSeeOther)
+	redirect(w, r, "/dispatch/orders")
 }
 
 func (h *OrderHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -192,14 +192,9 @@ func (h *OrderHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "orders", id, "DELETE", old, nil)
-	setFlash(w, "Order deleted")
+	h.deps.setFlash(w, "Order deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/dispatch/orders")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/dispatch/orders", http.StatusSeeOther)
+	redirect(w, r, "/dispatch/orders")
 }
 
 func (h *OrderHandler) generateInvoice(w http.ResponseWriter, r *http.Request) {
@@ -212,24 +207,14 @@ func (h *OrderHandler) generateInvoice(w http.ResponseWriter, r *http.Request) {
 	inv, err := h.invoiceSvc.GenerateFromOrder(r.Context(), id)
 	if err != nil {
 		log.Printf("generate invoice from order %d: %v", id, err)
-		setFlash(w, "Failed to generate invoice")
-		if isHTMX(r) {
-			w.Header().Set("HX-Redirect", fmt.Sprintf("/dispatch/orders/%d", id))
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		http.Redirect(w, r, fmt.Sprintf("/dispatch/orders/%d", id), http.StatusSeeOther)
+		h.deps.setFlash(w, "Failed to generate invoice")
+		redirect(w, r, fmt.Sprintf("/dispatch/orders/%d", id))
 		return
 	}
 
-	setFlash(w, "Invoice "+inv.InvoiceNumber+" generated successfully")
+	h.deps.setFlash(w, "Invoice "+inv.InvoiceNumber+" generated successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", fmt.Sprintf("/accounting/invoices/%d", inv.ID))
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, fmt.Sprintf("/accounting/invoices/%d", inv.ID), http.StatusSeeOther)
+	redirect(w, r, fmt.Sprintf("/accounting/invoices/%d", inv.ID))
 }
 
 func bindOrderForm(r *http.Request) *models.Order {

@@ -3,10 +3,10 @@ package store
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -43,68 +43,50 @@ func (s *FeedbackStore) List(ctx context.Context, f models.FeedbackFilter) (*mod
 		f.PageSize = 25
 	}
 
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
+	qb := newQueryBuilder()
 	// super_admin (companyID=0) sees all; others see only their company
 	if companyID != 0 {
-		where = append(where, fmt.Sprintf("f.company_id = $%d", argN))
-		args = append(args, companyID)
-		argN++
+		qb.Add("f.company_id = ?", companyID)
 	}
-
 	if f.Status == "active" {
-		where = append(where, fmt.Sprintf("f.status IN ($%d, $%d)", argN, argN+1))
-		args = append(args, "open", "reviewed")
-		argN += 2
+		qb.Add("f.status IN (?, ?)", "open", "reviewed")
 	} else if f.Status != "" && f.Status != "all" {
-		where = append(where, fmt.Sprintf("f.status = $%d", argN))
-		args = append(args, f.Status)
-		argN++
+		qb.Add("f.status = ?", f.Status)
 	}
 	if f.Category != "" {
-		where = append(where, fmt.Sprintf("f.category = $%d", argN))
-		args = append(args, f.Category)
-		argN++
-	}
-
-	whereClause := ""
-	if len(where) > 0 {
-		whereClause = "WHERE " + strings.Join(where, " AND ")
+		qb.Add("f.category = ?", f.Category)
 	}
 
 	var total int
-	countQuery := "SELECT COUNT(*) " + feedbackJoins + " " + whereClause
-	if err := s.pool.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
+	countQuery := "SELECT COUNT(*) " + feedbackJoins + " " + qb.Where()
+	if err := s.pool.QueryRow(ctx, countQuery, qb.Args()...).Scan(&total); err != nil {
 		return nil, fmt.Errorf("count feedback: %w", err)
 	}
 
-	offset := (f.Page - 1) * f.PageSize
+	paginate := qb.Paginate(f.PageSize, f.Page)
 	query := fmt.Sprintf(
-		"SELECT %s %s %s ORDER BY f.id DESC LIMIT $%d OFFSET $%d",
-		feedbackColumns, feedbackJoins, whereClause, argN, argN+1,
+		"SELECT %s %s %s ORDER BY f.id DESC %s",
+		feedbackColumns, feedbackJoins, qb.Where(), paginate,
 	)
-	args = append(args, f.PageSize, offset)
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("list feedback: %w", err)
 	}
-	defer rows.Close()
-
-	var items []models.Feedback
-	for rows.Next() {
-		fb, err := scanFeedback(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Feedback, error) {
+		fb, err := scanFeedback(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan feedback: %w", err)
+			return models.Feedback{}, err
 		}
-		items = append(items, *fb)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list feedback rows: %w", err)
+		return *fb, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan feedback: %w", err)
 	}
 
 	return &models.FeedbackListResult{
@@ -116,7 +98,10 @@ func (s *FeedbackStore) List(ctx context.Context, f models.FeedbackFilter) (*mod
 }
 
 func (s *FeedbackStore) GetByID(ctx context.Context, id int) (*models.Feedback, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	where := "WHERE f.id = $1"
 	args := []any{id}
 	if companyID != 0 {
@@ -132,8 +117,12 @@ func (s *FeedbackStore) GetByID(ctx context.Context, id int) (*models.Feedback, 
 }
 
 func (s *FeedbackStore) Create(ctx context.Context, fb *models.Feedback) error {
-	fb.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	fb.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO feedback (company_id, user_id, page_url, category, message)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, status, created_at, updated_at`,
@@ -146,46 +135,61 @@ func (s *FeedbackStore) Create(ctx context.Context, fb *models.Feedback) error {
 }
 
 func (s *FeedbackStore) Update(ctx context.Context, fb *models.Feedback) error {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
 	where := "WHERE id = $2"
 	args := []any{fb.Status, fb.ID}
 	if companyID != 0 {
 		where += " AND company_id = $3"
 		args = append(args, companyID)
 	}
-	_, err := s.pool.Exec(ctx,
+	result, err := s.pool.Exec(ctx,
 		"UPDATE feedback SET status = $1, updated_at = NOW() "+where,
 		args...,
 	)
 	if err != nil {
 		return fmt.Errorf("update feedback %d: %w", fb.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("feedback %d not found", fb.ID)
+	}
 	return nil
 }
 
 func (s *FeedbackStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
 	where := "WHERE id = $1"
 	args := []any{id}
 	if companyID != 0 {
 		where += " AND company_id = $2"
 		args = append(args, companyID)
 	}
-	_, err := s.pool.Exec(ctx, "DELETE FROM feedback "+where, args...)
+	result, err := s.pool.Exec(ctx, "DELETE FROM feedback "+where, args...)
 	if err != nil {
 		return fmt.Errorf("delete feedback %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("feedback %d not found", id)
 	}
 	return nil
 }
 
 func (s *FeedbackStore) CountOpen(ctx context.Context) (int, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return 0, err
+	}
 	var count int
 	if companyID == 0 {
 		err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM feedback WHERE status = 'open'").Scan(&count)
 		return count, err
 	}
-	err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM feedback WHERE status = 'open' AND company_id = $1", companyID).Scan(&count)
+	err = s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM feedback WHERE status = 'open' AND company_id = $1", companyID).Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("count open feedback: %w", err)
 	}
@@ -209,19 +213,16 @@ func (s *FeedbackStore) ListComments(ctx context.Context, feedbackID int, includ
 	if err != nil {
 		return nil, fmt.Errorf("list feedback comments: %w", err)
 	}
-	defer rows.Close()
-
-	var comments []models.FeedbackComment
-	for rows.Next() {
+	comments, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.FeedbackComment, error) {
 		var c models.FeedbackComment
-		if err := rows.Scan(&c.ID, &c.FeedbackID, &c.UserID, &c.Username, &c.UserRole,
+		if err := row.Scan(&c.ID, &c.FeedbackID, &c.UserID, &c.Username, &c.UserRole,
 			&c.CompanyID, &c.Message, &c.Internal, &c.CreatedAt); err != nil {
-			return nil, fmt.Errorf("scan feedback comment: %w", err)
+			return models.FeedbackComment{}, err
 		}
-		comments = append(comments, c)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list feedback comments rows: %w", err)
+		return c, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan feedback comment: %w", err)
 	}
 	return comments, nil
 }

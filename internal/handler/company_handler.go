@@ -1,22 +1,27 @@
 package handler
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/handler/components/pages"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 	"github.com/jackc/pgx/v5"
 )
 
+type companySettingsStore interface {
+	Get(ctx context.Context) (*models.Company, error)
+	Upsert(ctx context.Context, c *models.Company) error
+}
+
 type CompanyHandler struct {
-	store *store.CompanyStore
+	store companySettingsStore
 	deps  *Deps
 }
 
-func NewCompanyHandler(store *store.CompanyStore, deps *Deps) *CompanyHandler {
+func NewCompanyHandler(store companySettingsStore, deps *Deps) *CompanyHandler {
 	return &CompanyHandler{store: store, deps: deps}
 }
 
@@ -60,18 +65,16 @@ func (h *CompanyHandler) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.deps.InvalidateCompanyName(c.ID)
+
 	action := "UPDATE"
 	if old == nil {
 		action = "INSERT"
 	}
 	h.deps.Audit.Log(r.Context(), "companies", c.ID, action, old, c)
-	setFlash(w, "Company settings saved")
+	h.deps.setFlash(w, "Company settings saved")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/utilities/company")
-		return
-	}
-	http.Redirect(w, r, "/utilities/company", http.StatusSeeOther)
+	redirect(w, r, "/utilities/company")
 }
 
 func bindCompanyForm(r *http.Request) *models.Company {

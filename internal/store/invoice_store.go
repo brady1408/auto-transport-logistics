@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
@@ -45,72 +44,53 @@ func (s *InvoiceStore) List(ctx context.Context, f models.InvoiceFilter) (*model
 		f.PageSize = 25
 	}
 
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
 
 	if f.Search != "" {
-		where = append(where, fmt.Sprintf(
-			"(invoice_number ILIKE $%d OR customer_name ILIKE $%d OR order_number ILIKE $%d)",
-			argN, argN, argN))
-		args = append(args, "%"+f.Search+"%")
-		argN++
+		search := "%" + f.Search + "%"
+		qb.Add("(invoice_number ILIKE ? OR customer_name ILIKE ? OR order_number ILIKE ?)",
+			search, search, search)
 	}
 	if f.CustomerID != "" {
-		where = append(where, fmt.Sprintf("customer_id = $%d", argN))
-		args = append(args, f.CustomerID)
-		argN++
+		qb.Add("customer_id = ?", f.CustomerID)
 	}
 	if f.Status != "" {
-		where = append(where, fmt.Sprintf("status = $%d", argN))
-		args = append(args, f.Status)
-		argN++
+		qb.Add("status = ?", f.Status)
 	}
 	if f.DateFrom != "" {
-		where = append(where, fmt.Sprintf("invoice_date >= $%d", argN))
-		args = append(args, f.DateFrom)
-		argN++
+		qb.Add("invoice_date >= ?", f.DateFrom)
 	}
 	if f.DateTo != "" {
-		where = append(where, fmt.Sprintf("invoice_date <= $%d", argN))
-		args = append(args, f.DateTo)
-		argN++
+		qb.Add("invoice_date <= ?", f.DateTo)
 	}
 
-	whereClause := "WHERE " + strings.Join(where, " AND ")
-
 	var total int
-	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM invoices "+whereClause, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM invoices "+qb.Where(), qb.Args()...).Scan(&total); err != nil {
 		return nil, fmt.Errorf("count invoices: %w", err)
 	}
 
-	offset := (f.Page - 1) * f.PageSize
-	query := fmt.Sprintf("SELECT %s FROM invoices %s ORDER BY invoice_number DESC LIMIT $%d OFFSET $%d",
-		invoiceColumns, whereClause, argN, argN+1)
-	args = append(args, f.PageSize, offset)
+	query := fmt.Sprintf("SELECT %s FROM invoices %s ORDER BY invoice_number DESC %s",
+		invoiceColumns, qb.Where(), qb.Paginate(f.PageSize, f.Page))
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("list invoices: %w", err)
 	}
-	defer rows.Close()
-
-	var items []models.Invoice
-	for rows.Next() {
-		inv, err := scanInvoice(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Invoice, error) {
+		inv, err := scanInvoice(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan invoice: %w", err)
+			return models.Invoice{}, err
 		}
-		items = append(items, *inv)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list invoices rows: %w", err)
+		return *inv, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan invoice: %w", err)
 	}
 
 	return &models.InvoiceListResult{
@@ -122,7 +102,10 @@ func (s *InvoiceStore) List(ctx context.Context, f models.InvoiceFilter) (*model
 }
 
 func (s *InvoiceStore) GetByID(ctx context.Context, id int) (*models.Invoice, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM invoices WHERE id = $1 AND company_id = $2", invoiceColumns)
 	inv, err := scanInvoice(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -132,7 +115,10 @@ func (s *InvoiceStore) GetByID(ctx context.Context, id int) (*models.Invoice, er
 }
 
 func (s *InvoiceStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*models.Invoice, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM invoices WHERE id = $1 AND company_id = $2", invoiceColumns)
 	inv, err := scanInvoice(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -142,8 +128,12 @@ func (s *InvoiceStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*model
 }
 
 func (s *InvoiceStore) Create(ctx context.Context, inv *models.Invoice) error {
-	inv.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	inv.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO invoices (
 			company_id, invoice_number, active, customer_id, customer_number, customer_name,
 			order_id, order_number, invoice_date, due_date, terms, tax_code,
@@ -167,8 +157,12 @@ func (s *InvoiceStore) Create(ctx context.Context, inv *models.Invoice) error {
 }
 
 func (s *InvoiceStore) CreateTx(ctx context.Context, tx pgx.Tx, inv *models.Invoice) error {
-	inv.CompanyID = auth.GetCompanyID(ctx)
-	err := tx.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	inv.CompanyID = companyID
+	err = tx.QueryRow(ctx,
 		`INSERT INTO invoices (
 			company_id, invoice_number, active, customer_id, customer_number, customer_name,
 			order_id, order_number, invoice_date, due_date, terms, tax_code,
@@ -192,8 +186,11 @@ func (s *InvoiceStore) CreateTx(ctx context.Context, tx pgx.Tx, inv *models.Invo
 }
 
 func (s *InvoiceStore) Update(ctx context.Context, inv *models.Invoice) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE invoices SET
 			active=$1, customer_id=$2, customer_number=$3, customer_name=$4,
 			order_id=$5, order_number=$6, invoice_date=$7, due_date=$8, terms=$9, tax_code=$10,
@@ -209,14 +206,23 @@ func (s *InvoiceStore) Update(ctx context.Context, inv *models.Invoice) error {
 	if err != nil {
 		return fmt.Errorf("update invoice %d: %w", inv.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("invoice %d not found", inv.ID)
+	}
 	return nil
 }
 
 func (s *InvoiceStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM invoices WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM invoices WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete invoice %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("invoice %d not found", id)
 	}
 	return nil
 }
@@ -224,7 +230,10 @@ func (s *InvoiceStore) Delete(ctx context.Context, id int) error {
 // NextInvoiceNumber returns the next invoice number within a short-lived advisory-locked
 // transaction to prevent race conditions with concurrent inserts.
 func (s *InvoiceStore) NextInvoiceNumber(ctx context.Context) (string, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return "", err
+	}
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return "", fmt.Errorf("begin tx for next invoice number: %w", err)
@@ -252,9 +261,12 @@ func (s *InvoiceStore) NextInvoiceNumber(ctx context.Context) (string, error) {
 }
 
 func (s *InvoiceStore) NextInvoiceNumberTx(ctx context.Context, tx pgx.Tx) (string, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return "", err
+	}
 	var next int
-	err := tx.QueryRow(ctx,
+	err = tx.QueryRow(ctx,
 		`SELECT COALESCE(MAX(invoice_number::int), 0) + 1 FROM invoices WHERE invoice_number ~ '^\d+$' AND company_id = $1`,
 		companyID,
 	).Scan(&next)
@@ -275,9 +287,12 @@ type AgingBucket struct {
 }
 
 func (s *InvoiceStore) DashboardAging(ctx context.Context) (AgingBucket, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return AgingBucket{}, err
+	}
 	var a AgingBucket
-	err := s.pool.QueryRow(ctx,
+	err = s.pool.QueryRow(ctx,
 		`SELECT
 			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date >= CURRENT_DATE - INTERVAL '30 days'), 0)::text,
 			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '30 days' AND invoice_date >= CURRENT_DATE - INTERVAL '60 days'), 0)::text,
@@ -306,7 +321,10 @@ type ArAgingRow struct {
 }
 
 func (s *InvoiceStore) GetArAgingReport(ctx context.Context) ([]ArAgingRow, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	rows, err := s.pool.Query(ctx,
 		`SELECT
 			COALESCE(customer_id, 0),
@@ -323,19 +341,16 @@ func (s *InvoiceStore) GetArAgingReport(ctx context.Context) ([]ArAgingRow, erro
 	if err != nil {
 		return nil, fmt.Errorf("ar aging report: %w", err)
 	}
-	defer rows.Close()
-
-	var items []ArAgingRow
-	for rows.Next() {
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (ArAgingRow, error) {
 		var r ArAgingRow
-		if err := rows.Scan(&r.CustomerID, &r.CustomerNumber, &r.CustomerName,
+		if err := row.Scan(&r.CustomerID, &r.CustomerNumber, &r.CustomerName,
 			&r.Current, &r.Days31, &r.Days61, &r.Days90, &r.Total); err != nil {
-			return nil, fmt.Errorf("scan ar aging row: %w", err)
+			return ArAgingRow{}, err
 		}
-		items = append(items, r)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("ar aging report rows: %w", err)
+		return r, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan ar aging row: %w", err)
 	}
 	return items, nil
 }
@@ -350,30 +365,21 @@ type RevenueByCustomerRow struct {
 }
 
 func (s *InvoiceStore) RevenueByCustomer(ctx context.Context, dateFrom, dateTo string) ([]RevenueByCustomerRow, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
-
-	where = append(where, "status != 'Void'")
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
+	qb.AddRaw("status != 'Void'")
 
 	if dateFrom != "" {
-		where = append(where, fmt.Sprintf("invoice_date >= $%d", argN))
-		args = append(args, dateFrom)
-		argN++
+		qb.Add("invoice_date >= ?", dateFrom)
 	}
 	if dateTo != "" {
-		where = append(where, fmt.Sprintf("invoice_date <= $%d", argN))
-		args = append(args, dateTo)
-		argN++
+		qb.Add("invoice_date <= ?", dateTo)
 	}
-
-	whereClause := "WHERE " + strings.Join(where, " AND ")
 
 	query := fmt.Sprintf(`SELECT
 		COALESCE(customer_id, 0),
@@ -383,38 +389,41 @@ func (s *InvoiceStore) RevenueByCustomer(ctx context.Context, dateFrom, dateTo s
 		COALESCE(SUM(total_amount::numeric), 0)::text
 	FROM invoices %s
 	GROUP BY customer_id, customer_number, customer_name
-	ORDER BY SUM(total_amount::numeric) DESC`, whereClause)
+	ORDER BY SUM(total_amount::numeric) DESC`, qb.Where())
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("revenue by customer: %w", err)
 	}
-	defer rows.Close()
-
-	var items []RevenueByCustomerRow
-	for rows.Next() {
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (RevenueByCustomerRow, error) {
 		var r RevenueByCustomerRow
-		if err := rows.Scan(&r.CustomerID, &r.CustomerNumber, &r.CustomerName,
+		if err := row.Scan(&r.CustomerID, &r.CustomerNumber, &r.CustomerName,
 			&r.InvoiceCount, &r.TotalRevenue); err != nil {
-			return nil, fmt.Errorf("scan revenue row: %w", err)
+			return RevenueByCustomerRow{}, err
 		}
-		items = append(items, r)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("revenue by customer rows: %w", err)
+		return r, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan revenue row: %w", err)
 	}
 	return items, nil
 }
 
 // UpdateBalanceTx updates the payment-related fields on an invoice within a transaction.
 func (s *InvoiceStore) UpdateBalanceTx(ctx context.Context, tx pgx.Tx, id int, amountPaid string, balance string, status string) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := tx.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := tx.Exec(ctx,
 		`UPDATE invoices SET amount_paid=$1, balance=$2, status=$3 WHERE id=$4 AND company_id=$5`,
 		amountPaid, balance, status, id, companyID,
 	)
 	if err != nil {
 		return fmt.Errorf("update invoice balance %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("invoice %d not found", id)
 	}
 	return nil
 }

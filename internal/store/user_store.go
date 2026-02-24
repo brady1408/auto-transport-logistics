@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -47,18 +48,15 @@ func (s *UserStore) ListByCompany(ctx context.Context, companyID int) ([]models.
 	if err != nil {
 		return nil, fmt.Errorf("list users by company: %w", err)
 	}
-	defer rows.Close()
-
-	var users []models.User
-	for rows.Next() {
+	users, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.User, error) {
 		var u models.User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.Role, &u.Active, &u.CompanyID, &u.CreatedAt, &u.UpdatedAt); err != nil {
-			return nil, fmt.Errorf("scan user: %w", err)
+		if err := row.Scan(&u.ID, &u.Username, &u.Email, &u.Role, &u.Active, &u.CompanyID, &u.CreatedAt, &u.UpdatedAt); err != nil {
+			return models.User{}, err
 		}
-		users = append(users, u)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list users by company rows: %w", err)
+		return u, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan user: %w", err)
 	}
 	return users, nil
 }

@@ -1,21 +1,29 @@
 package handler
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/handler/components/employees"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type employeeStore interface {
+	List(ctx context.Context, f models.EmployeeFilter) (*models.EmployeeListResult, error)
+	GetByID(ctx context.Context, id int) (*models.Employee, error)
+	Create(ctx context.Context, e *models.Employee) error
+	Update(ctx context.Context, e *models.Employee) error
+	Delete(ctx context.Context, id int) error
+}
+
 type EmployeeHandler struct {
-	store *store.EmployeeStore
+	store employeeStore
 	deps  *Deps
 }
 
-func NewEmployeeHandler(store *store.EmployeeStore, deps *Deps) *EmployeeHandler {
+func NewEmployeeHandler(store employeeStore, deps *Deps) *EmployeeHandler {
 	return &EmployeeHandler{store: store, deps: deps}
 }
 
@@ -73,13 +81,9 @@ func (h *EmployeeHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "employees", e.ID, "INSERT", nil, e)
-	setFlash(w, "Employee created successfully")
+	h.deps.setFlash(w, "Employee created successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/employees")
-		return
-	}
-	http.Redirect(w, r, "/global/employees", http.StatusSeeOther)
+	redirect(w, r, "/global/employees")
 }
 
 func (h *EmployeeHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -126,13 +130,9 @@ func (h *EmployeeHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "employees", e.ID, "UPDATE", old, e)
-	setFlash(w, "Employee updated successfully")
+	h.deps.setFlash(w, "Employee updated successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/employees")
-		return
-	}
-	http.Redirect(w, r, "/global/employees", http.StatusSeeOther)
+	redirect(w, r, "/global/employees")
 }
 
 func (h *EmployeeHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -151,13 +151,9 @@ func (h *EmployeeHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "employees", id, "DELETE", old, nil)
-	setFlash(w, "Employee deleted")
+	h.deps.setFlash(w, "Employee deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/employees")
-		return
-	}
-	http.Redirect(w, r, "/global/employees", http.StatusSeeOther)
+	redirect(w, r, "/global/employees")
 }
 
 func bindEmployeeForm(r *http.Request) *models.Employee {

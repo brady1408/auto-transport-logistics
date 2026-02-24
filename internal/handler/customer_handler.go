@@ -1,22 +1,30 @@
 package handler
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/handler/components/customers"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
+type customerStore interface {
+	List(ctx context.Context, f models.CustomerFilter) (*models.CustomerListResult, error)
+	GetByID(ctx context.Context, id int) (*models.Customer, error)
+	Create(ctx context.Context, c *models.Customer) error
+	Update(ctx context.Context, c *models.Customer) error
+	Delete(ctx context.Context, id int) error
+}
+
 type CustomerHandler struct {
-	store *store.CustomerStore
+	store customerStore
 	deps  *Deps
 }
 
-func NewCustomerHandler(store *store.CustomerStore, deps *Deps) *CustomerHandler {
+func NewCustomerHandler(store customerStore, deps *Deps) *CustomerHandler {
 	return &CustomerHandler{store: store, deps: deps}
 }
 
@@ -75,14 +83,9 @@ func (h *CustomerHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "customers", c.ID, "INSERT", nil, c)
-	setFlash(w, "Customer created successfully")
+	h.deps.setFlash(w, "Customer created successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/customers")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/global/customers", http.StatusSeeOther)
+	redirect(w, r, "/global/customers")
 }
 
 func (h *CustomerHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -132,14 +135,9 @@ func (h *CustomerHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "customers", c.ID, "UPDATE", old, c)
-	setFlash(w, "Customer updated successfully")
+	h.deps.setFlash(w, "Customer updated successfully")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/customers")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/global/customers", http.StatusSeeOther)
+	redirect(w, r, "/global/customers")
 }
 
 func (h *CustomerHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -161,14 +159,9 @@ func (h *CustomerHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "customers", id, "DELETE", old, nil)
-	setFlash(w, "Customer deleted")
+	h.deps.setFlash(w, "Customer deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/customers")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	http.Redirect(w, r, "/global/customers", http.StatusSeeOther)
+	redirect(w, r, "/global/customers")
 }
 
 func bindCustomerForm(r *http.Request) *models.Customer {
@@ -222,20 +215,9 @@ func intParam(r *http.Request, key string, defaultVal int) int {
 	if v == "" {
 		return defaultVal
 	}
-	i, err := parseInt(v)
+	i, err := strconv.Atoi(v)
 	if err != nil {
 		return defaultVal
 	}
 	return i
-}
-
-func parseInt(s string) (int, error) {
-	var n int
-	for _, c := range s {
-		if c < '0' || c > '9' {
-			return 0, fmt.Errorf("invalid integer: %s", s)
-		}
-		n = n*10 + int(c-'0')
-	}
-	return n, nil
 }

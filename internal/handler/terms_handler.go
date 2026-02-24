@@ -1,18 +1,26 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/handler/components/lookup"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
+type termsStore interface {
+	List(ctx context.Context) ([]store.TermItem, error)
+	GetByID(ctx context.Context, id int) (*store.TermItem, error)
+	Create(ctx context.Context, term, description string, days *int) (*store.TermItem, error)
+	Delete(ctx context.Context, id int) error
+}
+
 type TermsHandler struct {
-	store *store.TermsStore
+	store termsStore
 	deps  *Deps
 }
 
-func NewTermsHandler(s *store.TermsStore, deps *Deps) *TermsHandler {
+func NewTermsHandler(s termsStore, deps *Deps) *TermsHandler {
 	return &TermsHandler{store: s, deps: deps}
 }
 
@@ -52,13 +60,9 @@ func (h *TermsHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "terms", item.ID, "INSERT", nil, item)
-	setFlash(w, "Term created")
+	h.deps.setFlash(w, "Term created")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/terms")
-		return
-	}
-	http.Redirect(w, r, "/global/terms", http.StatusSeeOther)
+	redirect(w, r, "/global/terms")
 }
 
 func (h *TermsHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -73,23 +77,26 @@ func (h *TermsHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "terms", id, "DELETE", old, nil)
-	setFlash(w, "Term deleted")
+	h.deps.setFlash(w, "Term deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/terms")
-		return
-	}
-	http.Redirect(w, r, "/global/terms", http.StatusSeeOther)
+	redirect(w, r, "/global/terms")
 }
 
 // Tax Codes Handler
 
+type taxCodeStore interface {
+	List(ctx context.Context) ([]store.TaxCodeItem, error)
+	GetByID(ctx context.Context, id int) (*store.TaxCodeItem, error)
+	Create(ctx context.Context, code, description string, rate *string) (*store.TaxCodeItem, error)
+	Delete(ctx context.Context, id int) error
+}
+
 type TaxCodeHandler struct {
-	store *store.TaxCodeStore
+	store taxCodeStore
 	deps  *Deps
 }
 
-func NewTaxCodeHandler(s *store.TaxCodeStore, deps *Deps) *TaxCodeHandler {
+func NewTaxCodeHandler(s taxCodeStore, deps *Deps) *TaxCodeHandler {
 	return &TaxCodeHandler{store: s, deps: deps}
 }
 
@@ -129,13 +136,9 @@ func (h *TaxCodeHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "tax_codes", item.ID, "INSERT", nil, item)
-	setFlash(w, "Tax code created")
+	h.deps.setFlash(w, "Tax code created")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/tax-codes")
-		return
-	}
-	http.Redirect(w, r, "/global/tax-codes", http.StatusSeeOther)
+	redirect(w, r, "/global/tax-codes")
 }
 
 func (h *TaxCodeHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -150,23 +153,26 @@ func (h *TaxCodeHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "tax_codes", id, "DELETE", old, nil)
-	setFlash(w, "Tax code deleted")
+	h.deps.setFlash(w, "Tax code deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/tax-codes")
-		return
-	}
-	http.Redirect(w, r, "/global/tax-codes", http.StatusSeeOther)
+	redirect(w, r, "/global/tax-codes")
 }
 
 // Items Handler
 
+type itemStore interface {
+	List(ctx context.Context) ([]store.ItemRecord, error)
+	GetByID(ctx context.Context, id int) (*store.ItemRecord, error)
+	Create(ctx context.Context, item, description string, defaultAmount, calcType *string) (*store.ItemRecord, error)
+	Delete(ctx context.Context, id int) error
+}
+
 type ItemHandler struct {
-	store *store.ItemStore
+	store itemStore
 	deps  *Deps
 }
 
-func NewItemHandler(s *store.ItemStore, deps *Deps) *ItemHandler {
+func NewItemHandler(s itemStore, deps *Deps) *ItemHandler {
 	return &ItemHandler{store: s, deps: deps}
 }
 
@@ -207,13 +213,9 @@ func (h *ItemHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "items", rec.ID, "INSERT", nil, rec)
-	setFlash(w, "Item created")
+	h.deps.setFlash(w, "Item created")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/items")
-		return
-	}
-	http.Redirect(w, r, "/global/items", http.StatusSeeOther)
+	redirect(w, r, "/global/items")
 }
 
 func (h *ItemHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -228,11 +230,7 @@ func (h *ItemHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "items", id, "DELETE", old, nil)
-	setFlash(w, "Item deleted")
+	h.deps.setFlash(w, "Item deleted")
 
-	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", "/global/items")
-		return
-	}
-	http.Redirect(w, r, "/global/items", http.StatusSeeOther)
+	redirect(w, r, "/global/items")
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"github.com/brady1408/atlinks/internal/handler/components/admin"
 	"github.com/brady1408/atlinks/internal/handler/components/settings"
 	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
 )
 
 var digitsOnly = regexp.MustCompile(`\D`)
@@ -102,13 +102,28 @@ func uppercaseState(s *string) *string {
 	return &v
 }
 
+type adminCompanyStore interface {
+	ListAll(ctx context.Context) ([]models.Company, error)
+	GetByID(ctx context.Context, id int) (*models.Company, error)
+	Create(ctx context.Context, c *models.Company) error
+	UpdateByID(ctx context.Context, c *models.Company) error
+}
+
+type adminUserStore interface {
+	ListByCompany(ctx context.Context, companyID int) ([]models.User, error)
+	GetByID(ctx context.Context, id int) (*models.User, error)
+	Create(ctx context.Context, u *models.User) error
+	Update(ctx context.Context, u *models.User) error
+	UpdatePassword(ctx context.Context, id int, companyID int, hash string) error
+}
+
 type AdminHandler struct {
-	companyStore *store.CompanyStore
-	userStore    *store.UserStore
+	companyStore adminCompanyStore
+	userStore    adminUserStore
 	deps         *Deps
 }
 
-func NewAdminHandler(companyStore *store.CompanyStore, userStore *store.UserStore, deps *Deps) *AdminHandler {
+func NewAdminHandler(companyStore adminCompanyStore, userStore adminUserStore, deps *Deps) *AdminHandler {
 	return &AdminHandler{companyStore: companyStore, userStore: userStore, deps: deps}
 }
 
@@ -180,7 +195,7 @@ func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setFlash(w, "Company created successfully")
+	h.deps.setFlash(w, "Company created successfully")
 	http.Redirect(w, r, "/admin/companies", http.StatusSeeOther)
 }
 
@@ -240,7 +255,7 @@ func (h *AdminHandler) updateCompany(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setFlash(w, "Company updated successfully")
+	h.deps.setFlash(w, "Company updated successfully")
 	http.Redirect(w, r, "/admin/companies", http.StatusSeeOther)
 }
 
@@ -269,7 +284,11 @@ func validateUser(username, email, password, role string, isNew bool) map[string
 // --- User Management (company_admin + super_admin) ---
 
 func (h *AdminHandler) listUsers(w http.ResponseWriter, r *http.Request) {
-	companyID := auth.GetCompanyID(r.Context())
+	companyID, err := auth.GetCompanyID(r.Context())
+	if err != nil {
+		serverError(w, err)
+		return
+	}
 	users, err := h.userStore.ListByCompany(r.Context(), companyID)
 	if err != nil {
 		serverError(w, err)
@@ -287,7 +306,11 @@ func (h *AdminHandler) newUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
 	ctxUser, _ := auth.GetUserFromRequest(r)
-	companyID := auth.GetCompanyID(r.Context())
+	companyID, err := auth.GetCompanyID(r.Context())
+	if err != nil {
+		serverError(w, err)
+		return
+	}
 	username := formStringRequired(r, "username")
 	email := formStringRequired(r, "email")
 	password := formStringRequired(r, "password")
@@ -328,7 +351,7 @@ func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setFlash(w, "User created successfully")
+	h.deps.setFlash(w, "User created successfully")
 	http.Redirect(w, r, "/settings/users", http.StatusSeeOther)
 }
 
@@ -346,7 +369,11 @@ func (h *AdminHandler) editUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify user belongs to same company
-	companyID := auth.GetCompanyID(r.Context())
+	companyID, err := auth.GetCompanyID(r.Context())
+	if err != nil {
+		serverError(w, err)
+		return
+	}
 	if u.CompanyID == nil || *u.CompanyID != companyID {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
@@ -364,7 +391,11 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	companyID := auth.GetCompanyID(r.Context())
+	companyID, err := auth.GetCompanyID(r.Context())
+	if err != nil {
+		serverError(w, err)
+		return
+	}
 	username := formStringRequired(r, "username")
 	email := formStringRequired(r, "email")
 	password := formStringRequired(r, "password")
@@ -411,7 +442,7 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	setFlash(w, "User updated successfully")
+	h.deps.setFlash(w, "User updated successfully")
 	http.Redirect(w, r, "/settings/users", http.StatusSeeOther)
 }
 
@@ -502,7 +533,7 @@ func (h *AdminHandler) adminCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setFlash(w, "User created successfully")
+	h.deps.setFlash(w, "User created successfully")
 	http.Redirect(w, r, basePath, http.StatusSeeOther)
 }
 
@@ -587,6 +618,6 @@ func (h *AdminHandler) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	setFlash(w, "User updated successfully")
+	h.deps.setFlash(w, "User updated successfully")
 	http.Redirect(w, r, basePath, http.StatusSeeOther)
 }

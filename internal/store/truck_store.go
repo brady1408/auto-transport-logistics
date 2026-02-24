@@ -3,10 +3,10 @@ package store
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -78,67 +78,54 @@ func (s *TruckStore) List(ctx context.Context, f models.TruckFilter) (*models.Tr
 		f.PageSize = 25
 	}
 
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	var where []string
-	var args []any
-	argN := 1
-
-	where = append(where, fmt.Sprintf("company_id = $%d", argN))
-	args = append(args, companyID)
-	argN++
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
 
 	if f.Search != "" {
-		where = append(where, fmt.Sprintf("(truck_number ILIKE $%d OR driver1 ILIKE $%d)", argN, argN))
-		args = append(args, "%"+f.Search+"%")
-		argN++
+		qb.Add("(truck_number ILIKE ? OR driver1 ILIKE ?)", "%"+f.Search+"%", "%"+f.Search+"%")
 	}
 	switch f.Active {
 	case "active":
-		where = append(where, "active = true")
+		qb.AddRaw("active = true")
 	case "inactive":
-		where = append(where, "active = false")
+		qb.AddRaw("active = false")
 	}
 	switch f.LeasedTruck {
 	case "yes":
-		where = append(where, "leased_truck = true")
+		qb.AddRaw("leased_truck = true")
 	case "no":
-		where = append(where, "leased_truck = false")
+		qb.AddRaw("leased_truck = false")
 	}
 	if f.Class != "" {
-		where = append(where, fmt.Sprintf("class = $%d", argN))
-		args = append(args, f.Class)
-		argN++
+		qb.Add("class = ?", f.Class)
 	}
 
-	whereClause := "WHERE " + strings.Join(where, " AND ")
-
 	var total int
-	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM trucks "+whereClause, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, "SELECT COUNT(*) FROM trucks "+qb.Where(), qb.Args()...).Scan(&total); err != nil {
 		return nil, fmt.Errorf("count trucks: %w", err)
 	}
 
-	offset := (f.Page - 1) * f.PageSize
-	query := fmt.Sprintf("SELECT %s FROM trucks %s ORDER BY truck_number LIMIT $%d OFFSET $%d",
-		truckColumns, whereClause, argN, argN+1)
-	args = append(args, f.PageSize, offset)
+	query := fmt.Sprintf("SELECT %s FROM trucks %s ORDER BY truck_number %s",
+		truckColumns, qb.Where(), qb.Paginate(f.PageSize, f.Page))
 
-	rows, err := s.pool.Query(ctx, query, args...)
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("list trucks: %w", err)
 	}
-	defer rows.Close()
-
-	var items []models.Truck
-	for rows.Next() {
-		t, err := scanTruck(rows)
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Truck, error) {
+		t, err := scanTruck(row)
 		if err != nil {
-			return nil, fmt.Errorf("scan truck: %w", err)
+			return models.Truck{}, err
 		}
-		items = append(items, *t)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("list trucks rows: %w", err)
+		return *t, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan truck: %w", err)
 	}
 
 	return &models.TruckListResult{
@@ -150,7 +137,10 @@ func (s *TruckStore) List(ctx context.Context, f models.TruckFilter) (*models.Tr
 }
 
 func (s *TruckStore) GetByID(ctx context.Context, id int) (*models.Truck, error) {
-	companyID := auth.GetCompanyID(ctx)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := fmt.Sprintf("SELECT %s FROM trucks WHERE id = $1 AND company_id = $2", truckColumns)
 	t, err := scanTruck(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
@@ -160,8 +150,12 @@ func (s *TruckStore) GetByID(ctx context.Context, id int) (*models.Truck, error)
 }
 
 func (s *TruckStore) Create(ctx context.Context, t *models.Truck) error {
-	t.CompanyID = auth.GetCompanyID(ctx)
-	err := s.pool.QueryRow(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	t.CompanyID = companyID
+	err = s.pool.QueryRow(ctx,
 		`INSERT INTO trucks (
 			company_id, truck_number, truck_make, truck_model, truck_year,
 			truck_serial_number, truck_manufacture_date, truck_license, truck_license_exp,
@@ -220,8 +214,11 @@ func (s *TruckStore) Create(ctx context.Context, t *models.Truck) error {
 }
 
 func (s *TruckStore) Update(ctx context.Context, t *models.Truck) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx,
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx,
 		`UPDATE trucks SET
 			truck_number=$1, truck_make=$2, truck_model=$3, truck_year=$4,
 			truck_serial_number=$5, truck_manufacture_date=$6, truck_license=$7, truck_license_exp=$8,
@@ -271,14 +268,23 @@ func (s *TruckStore) Update(ctx context.Context, t *models.Truck) error {
 	if err != nil {
 		return fmt.Errorf("update truck %d: %w", t.ID, err)
 	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("truck %d not found", t.ID)
+	}
 	return nil
 }
 
 func (s *TruckStore) Delete(ctx context.Context, id int) error {
-	companyID := auth.GetCompanyID(ctx)
-	_, err := s.pool.Exec(ctx, "DELETE FROM trucks WHERE id = $1 AND company_id = $2", id, companyID)
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, "DELETE FROM trucks WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete truck %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("truck %d not found", id)
 	}
 	return nil
 }
