@@ -42,7 +42,7 @@ func FlashMessage(msg string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><script>setTimeout(function(){ document.getElementById('flash-msg').remove(); }, 4000);</script>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><script>setTimeout(function(){ var el = document.getElementById('flash-msg'); if (el) el.remove(); }, 4000);</script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

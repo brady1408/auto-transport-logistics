@@ -4,5 +4,5 @@ templ FlashMessage(msg string) {
 	<div class="alert alert-success" id="flash-msg">
 		{ msg }
 	</div>
-	<script>setTimeout(function(){ document.getElementById('flash-msg').remove(); }, 4000);</script>
+	<script>setTimeout(function(){ var el = document.getElementById('flash-msg'); if (el) el.remove(); }, 4000);</script>
 }
