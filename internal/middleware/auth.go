@@ -20,12 +20,14 @@ func RequireAuth(jwt *auth.JWTService) func(http.Handler) http.Handler {
 
 			claims, err := jwt.ValidateToken(cookie.Value)
 			if err != nil {
+				clearAuthCookie(w)
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
 			}
 
 			// Require company assignment for non-super_admin users
 			if claims.CompanyID == 0 && claims.Role != "super_admin" {
+				clearAuthCookie(w)
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
 			}
@@ -39,6 +41,16 @@ func RequireAuth(jwt *auth.JWTService) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+func clearAuthCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     CookieName,
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		MaxAge:   -1,
+	})
 }
 
 func RequireAPIKey(apiKey string) func(http.Handler) http.Handler {
