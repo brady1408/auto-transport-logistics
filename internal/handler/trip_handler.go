@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/models"
@@ -132,7 +133,10 @@ func (h *TripHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loads, _ := h.loadStore.ListByTripWithOrder(r.Context(), id)
+	loads, err := h.loadStore.ListByTripWithOrder(r.Context(), id)
+	if err != nil {
+		log.Printf("ERROR loading trip %d manifest: %v", id, err)
+	}
 
 	h.deps.render(w, r, "trip_show.html", map[string]any{
 		"Trip":         t,
@@ -354,7 +358,10 @@ func (h *TripHandler) loadManifest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loads, _ := h.loadStore.ListByTripWithOrder(r.Context(), tripID)
+	loads, err := h.loadStore.ListByTripWithOrder(r.Context(), tripID)
+	if err != nil {
+		log.Printf("ERROR loading trip %d manifest: %v", tripID, err)
+	}
 
 	h.deps.renderPartial(w, "load_table", map[string]any{
 		"Loads":  loads,
