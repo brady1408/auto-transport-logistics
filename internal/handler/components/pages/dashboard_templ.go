@@ -100,7 +100,7 @@ func DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardCo
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div class=\"kpi-label\">Active Trips</div><a href=\"/dispatch/trips?active=active\" class=\"kpi-link\">View Trips</a></div></div><div class=\"dashboard-grid\" style=\"margin-top: 20px;\"><div class=\"card\"><div class=\"card-header\">AR Aging Summary</div><div class=\"card-body\"><table><thead><tr><th>Current (0-30)</th><th>31-60 Days</th><th>61-90 Days</th><th>90+ Days</th><th>Total</th></tr></thead> <tbody><tr><td>$")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div class=\"kpi-label\">Active Trips</div><a href=\"/dispatch/trips?active=active\" class=\"kpi-link\">View Trips</a></div></div><div class=\"dashboard-grid\"><div class=\"card\"><div class=\"card-header\">AR Aging Summary</div><div class=\"card-body\"><table><thead><tr><th>Current (0-30)</th><th>31-60 Days</th><th>61-90 Days</th><th>90+ Days</th><th>Total</th></tr></thead> <tbody><tr><td>$")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
