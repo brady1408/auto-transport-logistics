@@ -74,7 +74,7 @@ func DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardCo
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"kpi-label\">Uninvoiced Delivered</div><a href=\"/dispatch/orders?active=active\" class=\"kpi-link\">Review</a></div><div class=\"kpi-card\"><div class=\"kpi-value\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"kpi-label\">Uninvoiced Delivered</div><a href=\"/dispatch/orders?active=active&status=uninvoiced_delivered\" class=\"kpi-link\">Review</a></div><div class=\"kpi-card\"><div class=\"kpi-value\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

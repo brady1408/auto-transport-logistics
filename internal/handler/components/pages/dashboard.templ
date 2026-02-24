@@ -21,7 +21,7 @@ templ DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardC
 			<div class="kpi-card kpi-warning">
 				<div class="kpi-value">{ fmt.Sprintf("%d", orderCounts.UninvoicedDelivered) }</div>
 				<div class="kpi-label">Uninvoiced Delivered</div>
-				<a href="/dispatch/orders?active=active" class="kpi-link">Review</a>
+				<a href="/dispatch/orders?active=active&status=uninvoiced_delivered" class="kpi-link">Review</a>
 			</div>
 			<div class="kpi-card">
 				<div class="kpi-value">{ fmt.Sprintf("%d", aging.Count) }</div>
