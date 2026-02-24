@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/brady1408/atlinks/internal/models"
@@ -9,11 +10,11 @@ import (
 )
 
 type TripHandler struct {
-	store      *store.TripStore
-	loadStore  *store.LoadDetailStore
-	vehStore   *store.VehicleStore
-	tripSvc    *service.TripService
-	deps       *Deps
+	store     *store.TripStore
+	loadStore *store.LoadDetailStore
+	vehStore  *store.VehicleStore
+	tripSvc   *service.TripService
+	deps      *Deps
 }
 
 func NewTripHandler(
@@ -36,7 +37,11 @@ func (h *TripHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("DELETE /dispatch/trips/{id}", h.delete)
 	// Load assignment
 	mux.HandleFunc("POST /dispatch/trips/{id}/assign", h.assignVehicle)
+	mux.HandleFunc("POST /dispatch/trips/{id}/assign-order", h.assignOrder)
 	mux.HandleFunc("DELETE /dispatch/trips/{id}/loads/{loadID}", h.unassignVehicle)
+	// HTMX partials
+	mux.HandleFunc("GET /dispatch/trips/{id}/available-vehicles", h.availableVehicles)
+	mux.HandleFunc("GET /dispatch/trips/{id}/loads", h.loadManifest)
 }
 
 func (h *TripHandler) list(w http.ResponseWriter, r *http.Request) {
@@ -127,11 +132,12 @@ func (h *TripHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loads, _ := h.loadStore.ListByTrip(r.Context(), id)
+	loads, _ := h.loadStore.ListByTripWithOrder(r.Context(), id)
 
 	h.deps.render(w, r, "trip_show.html", map[string]any{
-		"Trip":  t,
-		"Loads": loads,
+		"Trip":         t,
+		"Loads":        loads,
+		"VehicleCount": len(loads),
 	})
 }
 
@@ -240,15 +246,40 @@ func (h *TripHandler) assignVehicle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setFlash(w, "Vehicle assigned to trip")
-
-	redirectURL := "/dispatch/trips/" + itoa(tripID)
 	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", redirectURL)
+		w.Header().Set("HX-Trigger", "vehicle-assigned")
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+	http.Redirect(w, r, "/dispatch/trips/"+itoa(tripID), http.StatusSeeOther)
+}
+
+func (h *TripHandler) assignOrder(w http.ResponseWriter, r *http.Request) {
+	tripID, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	orderID := formInt(r, "order_id")
+	if orderID == nil {
+		http.Error(w, "order_id is required", http.StatusBadRequest)
+		return
+	}
+
+	count, err := h.tripSvc.AssignAllFromOrder(r.Context(), tripID, *orderID)
+	if err != nil {
+		http.Error(w, "Failed to assign order: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if isHTMX(r) {
+		w.Header().Set("HX-Trigger", "vehicle-assigned")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "%d vehicles assigned", count)
+		return
+	}
+	http.Redirect(w, r, "/dispatch/trips/"+itoa(tripID), http.StatusSeeOther)
 }
 
 func (h *TripHandler) unassignVehicle(w http.ResponseWriter, r *http.Request) {
@@ -269,15 +300,62 @@ func (h *TripHandler) unassignVehicle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setFlash(w, "Vehicle removed from trip")
-
-	redirectURL := "/dispatch/trips/" + itoa(tripID)
 	if isHTMX(r) {
-		w.Header().Set("HX-Redirect", redirectURL)
+		w.Header().Set("HX-Trigger", "vehicle-assigned")
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+	http.Redirect(w, r, "/dispatch/trips/"+itoa(tripID), http.StatusSeeOther)
+}
+
+func (h *TripHandler) availableVehicles(w http.ResponseWriter, r *http.Request) {
+	tripID, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	search := r.URL.Query().Get("search")
+
+	// Don't query when search is empty — require a search term
+	if search == "" {
+		h.deps.renderPartial(w, "available_vehicles_table", map[string]any{
+			"Vehicles":   nil,
+			"TripID":     tripID,
+			"Search":     "",
+			"TotalCount": 0,
+			"NoSearch":   true,
+		})
+		return
+	}
+
+	vehicles, totalCount, err := h.vehStore.ListUnassigned(r.Context(), search, 25)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.deps.renderPartial(w, "available_vehicles_table", map[string]any{
+		"Vehicles":   vehicles,
+		"TripID":     tripID,
+		"Search":     search,
+		"TotalCount": totalCount,
+	})
+}
+
+func (h *TripHandler) loadManifest(w http.ResponseWriter, r *http.Request) {
+	tripID, err := parseID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	loads, _ := h.loadStore.ListByTripWithOrder(r.Context(), tripID)
+
+	h.deps.renderPartial(w, "load_table", map[string]any{
+		"Loads":  loads,
+		"TripID": tripID,
+	})
 }
 
 func bindTripForm(r *http.Request) *models.Trip {

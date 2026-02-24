@@ -261,6 +261,89 @@ func (s *VehicleStore) SearchGlobal(ctx context.Context, query string, limit int
 	return items, nil
 }
 
+// UnassignedVehicleRow represents a waiting vehicle with order context for the dispatch panel.
+type UnassignedVehicleRow struct {
+	ID           int
+	OrderID      int
+	OrderNumber  string
+	CustomerName string
+	VIN          string
+	Year         string
+	Make         string
+	Model        string
+	Color        string
+}
+
+// ListUnassigned returns active vehicles in Waiting status with no trip assignment.
+// Returns the matching rows (up to limit) and the total count of matching rows.
+func (s *VehicleStore) ListUnassigned(ctx context.Context, search string, limit int) ([]UnassignedVehicleRow, int, error) {
+	baseWhere := `ov.active = true AND ov.status = 'Waiting' AND ov.trip_id IS NULL`
+
+	args := []any{}
+	argN := 1
+	if search != "" {
+		baseWhere += fmt.Sprintf(` AND (ov.vin ILIKE $%d OR o.order_number ILIKE $%d OR o.bill_customer_name ILIKE $%d)`, argN, argN, argN)
+		args = append(args, "%"+search+"%")
+		argN++
+	}
+
+	// Count total matching rows
+	countQuery := `SELECT COUNT(*) FROM order_vehicles ov LEFT JOIN orders o ON o.id = ov.order_id WHERE ` + baseWhere
+	var totalCount int
+	if err := s.pool.QueryRow(ctx, countQuery, args...).Scan(&totalCount); err != nil {
+		return nil, 0, fmt.Errorf("count unassigned vehicles: %w", err)
+	}
+
+	// Fetch rows up to limit
+	query := `SELECT
+		ov.id, COALESCE(ov.order_id, 0), COALESCE(o.order_number, ''), COALESCE(o.bill_customer_name, ''),
+		COALESCE(ov.vin, ''), COALESCE(ov.year, ''), COALESCE(ov.make, ''), COALESCE(ov.model, ''), COALESCE(ov.color, '')
+	FROM order_vehicles ov
+	LEFT JOIN orders o ON o.id = ov.order_id
+	WHERE ` + baseWhere
+	query += fmt.Sprintf(` ORDER BY o.order_number, ov.id LIMIT $%d`, argN)
+	fetchArgs := append(args, limit)
+
+	rows, err := s.pool.Query(ctx, query, fetchArgs...)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list unassigned vehicles: %w", err)
+	}
+	defer rows.Close()
+
+	var items []UnassignedVehicleRow
+	for rows.Next() {
+		var r UnassignedVehicleRow
+		if err := rows.Scan(&r.ID, &r.OrderID, &r.OrderNumber, &r.CustomerName,
+			&r.VIN, &r.Year, &r.Make, &r.Model, &r.Color); err != nil {
+			return nil, 0, fmt.Errorf("scan unassigned vehicle: %w", err)
+		}
+		items = append(items, r)
+	}
+	return items, totalCount, nil
+}
+
+// ListUnassignedByOrder returns waiting, unassigned vehicles for a specific order.
+func (s *VehicleStore) ListUnassignedByOrder(ctx context.Context, orderID int) ([]models.OrderVehicle, error) {
+	query := fmt.Sprintf(`SELECT %s FROM order_vehicles
+		WHERE order_id = $1 AND active = true AND status = 'Waiting' AND trip_id IS NULL
+		ORDER BY id`, vehicleColumns)
+	rows, err := s.pool.Query(ctx, query, orderID)
+	if err != nil {
+		return nil, fmt.Errorf("list unassigned vehicles for order %d: %w", orderID, err)
+	}
+	defer rows.Close()
+
+	var items []models.OrderVehicle
+	for rows.Next() {
+		v, err := scanVehicle(rows)
+		if err != nil {
+			return nil, fmt.Errorf("scan vehicle: %w", err)
+		}
+		items = append(items, *v)
+	}
+	return items, nil
+}
+
 // VehicleHistoryRow represents a single vehicle record across orders.
 type VehicleHistoryRow struct {
 	ID            int
