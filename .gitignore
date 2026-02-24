@@ -17,6 +17,7 @@ coverage.html
 # Environment
 .env
 .env.local
+.env.prod
 
 # IDE
 .idea/

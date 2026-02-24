@@ -1,0 +1,12 @@
+.git
+Stargazer_Source/
+atlinks-migration/
+AutoStrap_DB.bak
+tmp/
+bin/
+server
+.claude/
+*.bak
+docker-compose.yml
+docker-compose.prod.yml
+.env*

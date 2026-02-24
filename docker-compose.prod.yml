@@ -1,0 +1,29 @@
+services:
+  atlinks:
+    image: atlinks:latest
+    container_name: atlinks
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: "8080"
+    networks:
+      - tunnel
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: atlinks-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    networks:
+      - tunnel
+    depends_on:
+      - atlinks
+
+networks:
+  tunnel:
+    driver: bridge
