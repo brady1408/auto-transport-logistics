@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"log"
 	"net/http"
 )
 
@@ -32,7 +33,8 @@ func GetUserFromRequest(r *http.Request) (ContextUser, bool) {
 func GetCompanyID(ctx context.Context) int {
 	user, ok := GetUser(ctx)
 	if !ok {
-		panic("GetCompanyID called without authenticated user in context")
+		log.Println("ERROR: GetCompanyID called without authenticated user in context")
+		return 0
 	}
 	return user.CompanyID
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -39,7 +40,7 @@ func (h *CreditMemoHandler) list(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.store.List(r.Context(), filter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -69,16 +70,18 @@ func (h *CreditMemoHandler) create(w http.ResponseWriter, r *http.Request) {
 	if cm.CreditNumber == "" {
 		num, err := h.store.NextCreditNumber(r.Context())
 		if err != nil {
+			log.Printf("generate credit number: %v", err)
 			pg := h.deps.pageContext(w, r)
-			h.deps.renderTempl(w, r, creditmemos.FormPage(pg, cm, true, "Failed to generate credit number: "+err.Error()))
+			h.deps.renderTempl(w, r, creditmemos.FormPage(pg, cm, true, "Failed to generate credit number"))
 			return
 		}
 		cm.CreditNumber = num
 	}
 
 	if err := h.store.Create(r.Context(), cm); err != nil {
+		log.Printf("create credit memo: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, creditmemos.FormPage(pg, cm, true, "Failed to create credit memo: "+err.Error()))
+		h.deps.renderTempl(w, r, creditmemos.FormPage(pg, cm, true, "Failed to create credit memo"))
 		return
 	}
 
@@ -96,7 +99,7 @@ func (h *CreditMemoHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *CreditMemoHandler) show(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -113,7 +116,7 @@ func (h *CreditMemoHandler) show(w http.ResponseWriter, r *http.Request) {
 func (h *CreditMemoHandler) editForm(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -130,7 +133,7 @@ func (h *CreditMemoHandler) editForm(w http.ResponseWriter, r *http.Request) {
 func (h *CreditMemoHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -145,8 +148,9 @@ func (h *CreditMemoHandler) update(w http.ResponseWriter, r *http.Request) {
 	cm.CreditNumber = old.CreditNumber
 
 	if err := h.store.Update(r.Context(), cm); err != nil {
+		log.Printf("update credit memo: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, creditmemos.FormPage(pg, cm, false, "Failed to update credit memo: "+err.Error()))
+		h.deps.renderTempl(w, r, creditmemos.FormPage(pg, cm, false, "Failed to update credit memo"))
 		return
 	}
 
@@ -164,7 +168,7 @@ func (h *CreditMemoHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *CreditMemoHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -175,7 +179,7 @@ func (h *CreditMemoHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete credit memo: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

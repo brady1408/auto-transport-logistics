@@ -91,6 +91,9 @@ func (s *DamageClaimStore) List(ctx context.Context, f models.DamageClaimFilter)
 		}
 		items = append(items, *dc)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list damage claims rows: %w", err)
+	}
 
 	return &models.DamageClaimListResult{
 		Items:      items,
@@ -218,6 +221,9 @@ func (s *DamageClaimStore) DamageReport(ctx context.Context, dateFrom, dateTo st
 			return nil, fmt.Errorf("scan damage report row: %w", err)
 		}
 		items = append(items, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("damage report rows: %w", err)
 	}
 	return items, nil
 }

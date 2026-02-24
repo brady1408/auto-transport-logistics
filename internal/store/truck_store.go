@@ -137,6 +137,9 @@ func (s *TruckStore) List(ctx context.Context, f models.TruckFilter) (*models.Tr
 		}
 		items = append(items, *t)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list trucks rows: %w", err)
+	}
 
 	return &models.TruckListResult{
 		Items:      items,

@@ -52,6 +52,9 @@ func (s *DamageStore) ListByVehicle(ctx context.Context, vehicleID int) ([]model
 		}
 		items = append(items, *d)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list vehicle damage rows: %w", err)
+	}
 	return items, nil
 }
 
@@ -153,6 +156,9 @@ func (s *NoteStore) ListByVehicle(ctx context.Context, vehicleID int) ([]models.
 			return nil, fmt.Errorf("scan note: %w", err)
 		}
 		items = append(items, *n)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list vehicle notes rows: %w", err)
 	}
 	return items, nil
 }

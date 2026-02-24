@@ -190,14 +190,29 @@ func (s *OrderService) CreateVehicleAndSync(ctx context.Context, v *models.Order
 	return s.SyncOrderCounts(ctx, v.OrderID)
 }
 
-// DeleteVehicleAndSync deletes a vehicle and syncs order counts.
+// DeleteVehicleAndSync deletes a vehicle and syncs order counts atomically.
 func (s *OrderService) DeleteVehicleAndSync(ctx context.Context, vehicleID int) error {
-	v, err := s.vehicleStore.GetByID(ctx, vehicleID)
+	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("begin tx: %w", err)
 	}
-	if err := s.vehicleStore.Delete(ctx, vehicleID); err != nil {
-		return err
+	defer tx.Rollback(ctx)
+
+	v, err := s.vehicleStore.GetByIDTx(ctx, tx, vehicleID)
+	if err != nil {
+		return fmt.Errorf("get vehicle: %w", err)
 	}
-	return s.SyncOrderCounts(ctx, v.OrderID)
+	if err := s.vehicleStore.DeleteTx(ctx, tx, vehicleID); err != nil {
+		return fmt.Errorf("delete vehicle: %w", err)
+	}
+
+	counts, err := s.vehicleStore.CountByOrderTx(ctx, tx, v.OrderID)
+	if err != nil {
+		return fmt.Errorf("count vehicles: %w", err)
+	}
+	if err := s.orderStore.UpdateCounts(ctx, tx, v.OrderID, counts); err != nil {
+		return fmt.Errorf("update order counts: %w", err)
+	}
+
+	return tx.Commit(ctx)
 }

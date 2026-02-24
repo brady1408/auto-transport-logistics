@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/audit"
@@ -93,6 +92,9 @@ func (s *InvoiceService) GenerateFromOrder(ctx context.Context, orderID int) (*m
 		vehicles = append(vehicles, v)
 	}
 	rows.Close()
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate vehicles: %w", err)
+	}
 
 	if len(vehicles) == 0 {
 		return nil, fmt.Errorf("no uninvoiced delivered/confirmed vehicles on order %s", order.OrderNumber)
@@ -104,15 +106,12 @@ func (s *InvoiceService) GenerateFromOrder(ctx context.Context, orderID int) (*m
 		return nil, fmt.Errorf("next invoice number: %w", err)
 	}
 
-	// 4. Calculate totals
-	var subtotal float64
+	// 4. Calculate totals (integer cents to avoid float rounding)
+	var subtotalCents int64
 	for _, v := range vehicles {
-		if v.TotalCharge != nil {
-			amt, _ := strconv.ParseFloat(*v.TotalCharge, 64)
-			subtotal += amt
-		}
+		subtotalCents += parseCentsPtr(v.TotalCharge)
 	}
-	subtotalStr := fmt.Sprintf("%.2f", subtotal)
+	subtotalStr := centsToStr(subtotalCents)
 	zeroStr := "0.00"
 	totalStr := subtotalStr
 	now := time.Now()
@@ -208,12 +207,9 @@ func (s *InvoiceService) RecalcTotals(ctx context.Context, invoiceID int) error 
 		return fmt.Errorf("list details: %w", err)
 	}
 
-	var subtotal float64
+	var subtotalCents int64
 	for _, d := range details {
-		if d.Amount != nil {
-			amt, _ := strconv.ParseFloat(*d.Amount, 64)
-			subtotal += amt
-		}
+		subtotalCents += parseCentsPtr(d.Amount)
 	}
 
 	inv, err := s.invoiceStore.GetByID(ctx, invoiceID)
@@ -221,18 +217,15 @@ func (s *InvoiceService) RecalcTotals(ctx context.Context, invoiceID int) error 
 		return fmt.Errorf("get invoice: %w", err)
 	}
 
-	subtotalStr := fmt.Sprintf("%.2f", subtotal)
+	subtotalStr := centsToStr(subtotalCents)
 	totalStr := subtotalStr // no tax for now
 	inv.Subtotal = &subtotalStr
 	inv.TotalAmount = &totalStr
 
 	// Recalculate balance
-	var paid float64
-	if inv.AmountPaid != nil {
-		paid, _ = strconv.ParseFloat(*inv.AmountPaid, 64)
-	}
-	balance := subtotal - paid
-	balanceStr := fmt.Sprintf("%.2f", balance)
+	paidCents := parseCentsPtr(inv.AmountPaid)
+	balanceCents := subtotalCents - paidCents
+	balanceStr := centsToStr(balanceCents)
 	inv.Balance = &balanceStr
 
 	return s.invoiceStore.Update(ctx, inv)

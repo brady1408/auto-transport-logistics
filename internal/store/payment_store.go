@@ -100,6 +100,9 @@ func (s *PaymentStore) List(ctx context.Context, f models.PaymentFilter) (*model
 		}
 		items = append(items, *p)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list payments rows: %w", err)
+	}
 
 	return &models.PaymentListResult{
 		Items:      items,
@@ -241,6 +244,9 @@ func (s *PaymentStore) PaymentReport(ctx context.Context, dateFrom, dateTo strin
 			return nil, fmt.Errorf("scan payment report row: %w", err)
 		}
 		items = append(items, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("payment report rows: %w", err)
 	}
 	return items, nil
 }

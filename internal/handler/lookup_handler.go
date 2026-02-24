@@ -33,7 +33,7 @@ func (h *LookupHandler) Register(mux *http.ServeMux) {
 func (h *LookupHandler) list(w http.ResponseWriter, r *http.Request) {
 	items, err := h.store.List(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *LookupHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	item, err := h.store.Create(r.Context(), code, desc)
 	if err != nil {
-		http.Error(w, "Failed to create: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (h *LookupHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *LookupHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -87,7 +87,7 @@ func (h *LookupHandler) update(w http.ResponseWriter, r *http.Request) {
 	desc := r.FormValue("description")
 
 	if err := h.store.Update(r.Context(), id, code, desc); err != nil {
-		http.Error(w, "Failed to update: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -104,7 +104,7 @@ func (h *LookupHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *LookupHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -115,7 +115,7 @@ func (h *LookupHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

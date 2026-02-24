@@ -109,6 +109,9 @@ func (s *CustomerStore) List(ctx context.Context, f models.CustomerFilter) (*mod
 		}
 		items = append(items, *c)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list customers rows: %w", err)
+	}
 
 	return &models.CustomerListResult{
 		Items:      items,

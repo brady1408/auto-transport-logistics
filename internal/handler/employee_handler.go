@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -38,7 +39,7 @@ func (h *EmployeeHandler) list(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.store.List(r.Context(), filter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -65,8 +66,9 @@ func (h *EmployeeHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Create(r.Context(), e); err != nil {
+		log.Printf("create employee: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, employees.FormPage(pg, e, true, "Failed to create employee: "+err.Error()))
+		h.deps.renderTempl(w, r, employees.FormPage(pg, e, true, "Failed to create employee"))
 		return
 	}
 
@@ -83,7 +85,7 @@ func (h *EmployeeHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *EmployeeHandler) editForm(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	e, err := h.store.GetByID(r.Context(), id)
@@ -98,7 +100,7 @@ func (h *EmployeeHandler) editForm(w http.ResponseWriter, r *http.Request) {
 func (h *EmployeeHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	old, err := h.store.GetByID(r.Context(), id)
@@ -117,8 +119,9 @@ func (h *EmployeeHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Update(r.Context(), e); err != nil {
+		log.Printf("update employee: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, employees.FormPage(pg, e, false, "Failed to update: "+err.Error()))
+		h.deps.renderTempl(w, r, employees.FormPage(pg, e, false, "Failed to update employee"))
 		return
 	}
 
@@ -135,7 +138,7 @@ func (h *EmployeeHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *EmployeeHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 	old, err := h.store.GetByID(r.Context(), id)
@@ -144,7 +147,7 @@ func (h *EmployeeHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 	h.deps.Audit.Log(r.Context(), "employees", id, "DELETE", old, nil)

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -54,7 +55,7 @@ func (h *PaymentHandler) list(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.store.List(r.Context(), filter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -86,8 +87,9 @@ func (h *PaymentHandler) create(w http.ResponseWriter, r *http.Request) {
 	p.UnappliedAmount = p.Amount
 
 	if err := h.store.Create(r.Context(), p); err != nil {
+		log.Printf("create payment: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, payments.FormPage(pg, p, true, "Failed to create payment: "+err.Error()))
+		h.deps.renderTempl(w, r, payments.FormPage(pg, p, true, "Failed to create payment"))
 		return
 	}
 
@@ -105,7 +107,7 @@ func (h *PaymentHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *PaymentHandler) show(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -117,7 +119,7 @@ func (h *PaymentHandler) show(w http.ResponseWriter, r *http.Request) {
 
 	details, err := h.detailStore.ListByPayment(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -143,7 +145,7 @@ func (h *PaymentHandler) show(w http.ResponseWriter, r *http.Request) {
 func (h *PaymentHandler) editForm(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -160,7 +162,7 @@ func (h *PaymentHandler) editForm(w http.ResponseWriter, r *http.Request) {
 func (h *PaymentHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -177,8 +179,9 @@ func (h *PaymentHandler) update(w http.ResponseWriter, r *http.Request) {
 	p.UnappliedAmount = old.UnappliedAmount
 
 	if err := h.store.Update(r.Context(), p); err != nil {
+		log.Printf("update payment: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, payments.FormPage(pg, p, false, "Failed to update payment: "+err.Error()))
+		h.deps.renderTempl(w, r, payments.FormPage(pg, p, false, "Failed to update payment"))
 		return
 	}
 
@@ -196,7 +199,7 @@ func (h *PaymentHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *PaymentHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -207,7 +210,7 @@ func (h *PaymentHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete payment: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -225,7 +228,7 @@ func (h *PaymentHandler) delete(w http.ResponseWriter, r *http.Request) {
 func (h *PaymentHandler) apply(w http.ResponseWriter, r *http.Request) {
 	paymentID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -244,7 +247,7 @@ func (h *PaymentHandler) apply(w http.ResponseWriter, r *http.Request) {
 	discount := r.FormValue("discount_amount")
 
 	if err := h.paymentSvc.ApplyPayment(r.Context(), paymentID, *invoiceIDPtr, amount, discount); err != nil {
-		http.Error(w, "Failed to apply payment: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -261,7 +264,7 @@ func (h *PaymentHandler) apply(w http.ResponseWriter, r *http.Request) {
 func (h *PaymentHandler) unapply(w http.ResponseWriter, r *http.Request) {
 	detailID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -274,7 +277,7 @@ func (h *PaymentHandler) unapply(w http.ResponseWriter, r *http.Request) {
 	paymentID := pd.PaymentID
 
 	if err := h.paymentSvc.UnapplyPayment(r.Context(), detailID); err != nil {
-		http.Error(w, "Failed to unapply payment: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

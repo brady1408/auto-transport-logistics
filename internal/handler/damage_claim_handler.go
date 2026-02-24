@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -38,7 +39,7 @@ func (h *DamageClaimHandler) list(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.store.List(r.Context(), filter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -69,7 +70,8 @@ func (h *DamageClaimHandler) create(w http.ResponseWriter, r *http.Request) {
 		num, err := h.store.NextClaimNumber(r.Context())
 		if err != nil {
 			pg := h.deps.pageContext(w, r)
-			h.deps.renderTempl(w, r, damageclaims.FormPage(pg, dc, true, "Failed to generate claim number: "+err.Error()))
+			log.Printf("generate claim number: %v", err)
+			h.deps.renderTempl(w, r, damageclaims.FormPage(pg, dc, true, "Failed to generate claim number"))
 			return
 		}
 		dc.ClaimNumber = num
@@ -77,7 +79,8 @@ func (h *DamageClaimHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.store.Create(r.Context(), dc); err != nil {
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, damageclaims.FormPage(pg, dc, true, "Failed to create damage claim: "+err.Error()))
+		log.Printf("create damage claim: %v", err)
+		h.deps.renderTempl(w, r, damageclaims.FormPage(pg, dc, true, "Failed to create damage claim"))
 		return
 	}
 
@@ -95,7 +98,7 @@ func (h *DamageClaimHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *DamageClaimHandler) show(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -112,7 +115,7 @@ func (h *DamageClaimHandler) show(w http.ResponseWriter, r *http.Request) {
 func (h *DamageClaimHandler) editForm(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -129,7 +132,7 @@ func (h *DamageClaimHandler) editForm(w http.ResponseWriter, r *http.Request) {
 func (h *DamageClaimHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -145,7 +148,8 @@ func (h *DamageClaimHandler) update(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.store.Update(r.Context(), dc); err != nil {
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, damageclaims.FormPage(pg, dc, false, "Failed to update damage claim: "+err.Error()))
+		log.Printf("update damage claim: %v", err)
+		h.deps.renderTempl(w, r, damageclaims.FormPage(pg, dc, false, "Failed to update damage claim"))
 		return
 	}
 
@@ -163,7 +167,7 @@ func (h *DamageClaimHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *DamageClaimHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -174,7 +178,7 @@ func (h *DamageClaimHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete damage claim: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

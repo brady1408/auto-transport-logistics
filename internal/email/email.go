@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"html"
 	"net/http"
 )
 
@@ -21,7 +22,7 @@ func (s *Service) Enabled() bool {
 }
 
 func (s *Service) SendPasswordReset(to, username, resetURL string) error {
-	html := fmt.Sprintf(`<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+	body := fmt.Sprintf(`<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
   <h2>Password Reset</h2>
   <p>Hi <strong>%s</strong>,</p>
   <p>We received a request to reset your password. Click the button below to choose a new password:</p>
@@ -30,13 +31,13 @@ func (s *Service) SendPasswordReset(to, username, resetURL string) error {
   </p>
   <p style="font-size: 13px; color: #666;">This link expires in 1 hour.</p>
   <p style="font-size: 13px; color: #666;">If you didn't request this, you can safely ignore this email.</p>
-</div>`, username, resetURL)
+</div>`, html.EscapeString(username), html.EscapeString(resetURL))
 
-	return s.send(to, "ATLinks - Password Reset", html)
+	return s.send(to, "ATLinks - Password Reset", body)
 }
 
 func (s *Service) SendVerification(to, companyName, verifyURL string) error {
-	html := fmt.Sprintf(`<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+	body := fmt.Sprintf(`<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
   <h2>Verify Your Email</h2>
   <p>Thanks for registering <strong>%s</strong> on ATLinks.</p>
   <p>Click the button below to verify your email and activate your company account:</p>
@@ -45,9 +46,9 @@ func (s *Service) SendVerification(to, companyName, verifyURL string) error {
   </p>
   <p style="font-size: 13px; color: #666;">This link expires in 24 hours.</p>
   <p style="font-size: 13px; color: #666;">If you didn't register, you can safely ignore this email.</p>
-</div>`, companyName, verifyURL)
+</div>`, html.EscapeString(companyName), html.EscapeString(verifyURL))
 
-	return s.send(to, "ATLinks - Verify Your Email", html)
+	return s.send(to, "ATLinks - Verify Your Email", body)
 }
 
 func (s *Service) send(to, subject, html string) error {

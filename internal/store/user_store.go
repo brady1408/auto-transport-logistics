@@ -42,7 +42,7 @@ func (s *UserStore) GetByID(ctx context.Context, id int) (*models.User, error) {
 
 func (s *UserStore) ListByCompany(ctx context.Context, companyID int) ([]models.User, error) {
 	rows, err := s.pool.Query(ctx,
-		`SELECT id, username, email, password_hash, role, active, company_id, created_at, updated_at
+		`SELECT id, username, email, role, active, company_id, created_at, updated_at
 		 FROM users WHERE company_id = $1 ORDER BY username`, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list users by company: %w", err)
@@ -52,10 +52,13 @@ func (s *UserStore) ListByCompany(ctx context.Context, companyID int) ([]models.
 	var users []models.User
 	for rows.Next() {
 		var u models.User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.Role, &u.Active, &u.CompanyID, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.Role, &u.Active, &u.CompanyID, &u.CreatedAt, &u.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("scan user: %w", err)
 		}
 		users = append(users, u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list users by company rows: %w", err)
 	}
 	return users, nil
 }

@@ -50,7 +50,7 @@ func (h *APIHandler) customerSearch(w http.ResponseWriter, r *http.Request) {
 	// Use customer store list with search filter, limit to 10
 	result, err := h.custStore.List(r.Context(), models.CustomerFilter{Search: q, PageSize: 10, Page: 1})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -93,7 +93,7 @@ func (h *APIHandler) vehicleSearch(w http.ResponseWriter, r *http.Request) {
 
 	vehicles, err := h.vehStore.SearchUnassigned(r.Context(), q, 10)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

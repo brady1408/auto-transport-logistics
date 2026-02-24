@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -57,7 +58,7 @@ func (h *InvoiceHandler) list(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.store.List(r.Context(), filter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -94,16 +95,18 @@ func (h *InvoiceHandler) create(w http.ResponseWriter, r *http.Request) {
 	if inv.InvoiceNumber == "" {
 		num, err := h.store.NextInvoiceNumber(r.Context())
 		if err != nil {
+			log.Printf("generate invoice number: %v", err)
 			pg := h.deps.pageContext(w, r)
-			h.deps.renderTempl(w, r, invoices.FormPage(pg, inv, true, "Failed to generate invoice number: "+err.Error()))
+			h.deps.renderTempl(w, r, invoices.FormPage(pg, inv, true, "Failed to generate invoice number"))
 			return
 		}
 		inv.InvoiceNumber = num
 	}
 
 	if err := h.store.Create(r.Context(), inv); err != nil {
+		log.Printf("create invoice: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, invoices.FormPage(pg, inv, true, "Failed to create invoice: "+err.Error()))
+		h.deps.renderTempl(w, r, invoices.FormPage(pg, inv, true, "Failed to create invoice"))
 		return
 	}
 
@@ -121,7 +124,7 @@ func (h *InvoiceHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *InvoiceHandler) show(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -133,13 +136,13 @@ func (h *InvoiceHandler) show(w http.ResponseWriter, r *http.Request) {
 
 	details, err := h.detailStore.ListByInvoice(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
 	payments, err := h.payDetStore.ListByInvoice(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -150,7 +153,7 @@ func (h *InvoiceHandler) show(w http.ResponseWriter, r *http.Request) {
 func (h *InvoiceHandler) editForm(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -167,7 +170,7 @@ func (h *InvoiceHandler) editForm(w http.ResponseWriter, r *http.Request) {
 func (h *InvoiceHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -182,8 +185,9 @@ func (h *InvoiceHandler) update(w http.ResponseWriter, r *http.Request) {
 	inv.InvoiceNumber = old.InvoiceNumber
 
 	if err := h.store.Update(r.Context(), inv); err != nil {
+		log.Printf("update invoice: %v", err)
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, invoices.FormPage(pg, inv, false, "Failed to update invoice: "+err.Error()))
+		h.deps.renderTempl(w, r, invoices.FormPage(pg, inv, false, "Failed to update invoice"))
 		return
 	}
 
@@ -201,7 +205,7 @@ func (h *InvoiceHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *InvoiceHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -218,7 +222,7 @@ func (h *InvoiceHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete invoice: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -236,12 +240,12 @@ func (h *InvoiceHandler) delete(w http.ResponseWriter, r *http.Request) {
 func (h *InvoiceHandler) void(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.invoiceSvc.VoidInvoice(r.Context(), id); err != nil {
-		http.Error(w, "Failed to void invoice: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -258,7 +262,7 @@ func (h *InvoiceHandler) void(w http.ResponseWriter, r *http.Request) {
 func (h *InvoiceHandler) printView(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -270,7 +274,7 @@ func (h *InvoiceHandler) printView(w http.ResponseWriter, r *http.Request) {
 
 	details, err := h.detailStore.ListByInvoice(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -281,13 +285,13 @@ func (h *InvoiceHandler) printView(w http.ResponseWriter, r *http.Request) {
 func (h *InvoiceHandler) listDetails(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	details, err := h.detailStore.ListByInvoice(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -297,7 +301,7 @@ func (h *InvoiceHandler) listDetails(w http.ResponseWriter, r *http.Request) {
 func (h *InvoiceHandler) addDetail(w http.ResponseWriter, r *http.Request) {
 	invoiceID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -316,7 +320,7 @@ func (h *InvoiceHandler) addDetail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.detailStore.Create(r.Context(), d); err != nil {
-		http.Error(w, "Failed to add line item: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -333,7 +337,7 @@ func (h *InvoiceHandler) addDetail(w http.ResponseWriter, r *http.Request) {
 func (h *InvoiceHandler) removeDetail(w http.ResponseWriter, r *http.Request) {
 	detailID, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -346,7 +350,7 @@ func (h *InvoiceHandler) removeDetail(w http.ResponseWriter, r *http.Request) {
 	invoiceID := detail.InvoiceID
 
 	if err := h.detailStore.Delete(r.Context(), detailID); err != nil {
-		http.Error(w, "Failed to remove line item: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 

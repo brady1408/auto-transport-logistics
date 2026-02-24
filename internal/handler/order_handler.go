@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -48,7 +49,7 @@ func (h *OrderHandler) list(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.store.List(r.Context(), filter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -78,7 +79,8 @@ func (h *OrderHandler) create(w http.ResponseWriter, r *http.Request) {
 		num, err := h.store.NextOrderNumber(r.Context())
 		if err != nil {
 			pg := h.deps.pageContext(w, r)
-			h.deps.renderTempl(w, r, orders.FormPage(pg, o, true, "Failed to generate order number: "+err.Error()))
+			log.Printf("generate order number: %v", err)
+			h.deps.renderTempl(w, r, orders.FormPage(pg, o, true, "Failed to generate order number"))
 			return
 		}
 		o.OrderNumber = num
@@ -86,7 +88,8 @@ func (h *OrderHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.store.Create(r.Context(), o); err != nil {
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, orders.FormPage(pg, o, true, "Failed to create order: "+err.Error()))
+		log.Printf("create order: %v", err)
+		h.deps.renderTempl(w, r, orders.FormPage(pg, o, true, "Failed to create order"))
 		return
 	}
 
@@ -104,7 +107,7 @@ func (h *OrderHandler) create(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) show(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -121,7 +124,7 @@ func (h *OrderHandler) show(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) editForm(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -138,7 +141,7 @@ func (h *OrderHandler) editForm(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -154,7 +157,8 @@ func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.store.Update(r.Context(), o); err != nil {
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, orders.FormPage(pg, o, false, "Failed to update order: "+err.Error()))
+		log.Printf("update order: %v", err)
+		h.deps.renderTempl(w, r, orders.FormPage(pg, o, false, "Failed to update order"))
 		return
 	}
 
@@ -172,7 +176,7 @@ func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
@@ -183,7 +187,7 @@ func (h *OrderHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Failed to delete order: "+err.Error(), http.StatusInternalServerError)
+		serverError(w, err)
 		return
 	}
 
@@ -201,13 +205,14 @@ func (h *OrderHandler) delete(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) generateInvoice(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	inv, err := h.invoiceSvc.GenerateFromOrder(r.Context(), id)
 	if err != nil {
-		setFlash(w, "Failed to generate invoice: "+err.Error())
+		log.Printf("generate invoice from order %d: %v", id, err)
+		setFlash(w, "Failed to generate invoice")
 		if isHTMX(r) {
 			w.Header().Set("HX-Redirect", fmt.Sprintf("/dispatch/orders/%d", id))
 			w.WriteHeader(http.StatusOK)
