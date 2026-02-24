@@ -29,7 +29,7 @@
                            hx-trigger="blur changed, keydown[key=='Enter']"
                            hx-target="#load-manifest"
                            hx-swap="innerHTML"
-                           style="width:50px;padding:2px 4px;text-align:center">
+                           style="width:50px;padding:2px 4px;text-align:center;border:1px solid #ddd;background:transparent;font:inherit;color:inherit"
                 </td>
                 <td>{{if .OrderID}}<a href="/dispatch/orders/{{derefInt .OrderID}}">{{.OrderNumber}}</a>{{end}}</td>
                 <td>{{deref .VIN}}</td>
