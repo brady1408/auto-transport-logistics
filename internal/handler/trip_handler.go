@@ -316,23 +316,24 @@ func (h *TripHandler) availableVehicles(w http.ResponseWriter, r *http.Request) 
 	}
 
 	search := r.URL.Query().Get("search")
-
-	// Don't query when search is empty — require a search term
-	if search == "" {
-		h.deps.renderPartial(w, "available_vehicles_table", map[string]any{
-			"Vehicles":   nil,
-			"TripID":     tripID,
-			"Search":     "",
-			"TotalCount": 0,
-			"NoSearch":   true,
-		})
-		return
+	page := intParam(r, "page", 1)
+	pageSize := intParam(r, "per_page", 15)
+	if pageSize < 5 {
+		pageSize = 5
+	} else if pageSize > 50 {
+		pageSize = 50
 	}
+	offset := (page - 1) * pageSize
 
-	vehicles, totalCount, err := h.vehStore.ListUnassigned(r.Context(), search, 25)
+	vehicles, totalCount, err := h.vehStore.ListUnassigned(r.Context(), search, pageSize, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	totalPages := (totalCount + pageSize - 1) / pageSize
+	if totalPages < 1 {
+		totalPages = 1
 	}
 
 	h.deps.renderPartial(w, "available_vehicles_table", map[string]any{
@@ -340,6 +341,9 @@ func (h *TripHandler) availableVehicles(w http.ResponseWriter, r *http.Request) 
 		"TripID":     tripID,
 		"Search":     search,
 		"TotalCount": totalCount,
+		"Page":       page,
+		"TotalPages": totalPages,
+		"PageSize":   pageSize,
 	})
 }
 

@@ -275,8 +275,8 @@ type UnassignedVehicleRow struct {
 }
 
 // ListUnassigned returns active vehicles in Waiting status with no trip assignment.
-// Returns the matching rows (up to limit) and the total count of matching rows.
-func (s *VehicleStore) ListUnassigned(ctx context.Context, search string, limit int) ([]UnassignedVehicleRow, int, error) {
+// Returns the matching rows (up to limit at the given offset) and the total count of matching rows.
+func (s *VehicleStore) ListUnassigned(ctx context.Context, search string, limit, offset int) ([]UnassignedVehicleRow, int, error) {
 	baseWhere := `ov.active = true AND ov.status = 'Waiting' AND ov.trip_id IS NULL`
 
 	args := []any{}
@@ -294,15 +294,15 @@ func (s *VehicleStore) ListUnassigned(ctx context.Context, search string, limit 
 		return nil, 0, fmt.Errorf("count unassigned vehicles: %w", err)
 	}
 
-	// Fetch rows up to limit
+	// Fetch rows up to limit at offset
 	query := `SELECT
 		ov.id, COALESCE(ov.order_id, 0), COALESCE(o.order_number, ''), COALESCE(o.bill_customer_name, ''),
 		COALESCE(ov.vin, ''), COALESCE(ov.year, ''), COALESCE(ov.make, ''), COALESCE(ov.model, ''), COALESCE(ov.color, '')
 	FROM order_vehicles ov
 	LEFT JOIN orders o ON o.id = ov.order_id
 	WHERE ` + baseWhere
-	query += fmt.Sprintf(` ORDER BY o.order_number, ov.id LIMIT $%d`, argN)
-	fetchArgs := append(args, limit)
+	query += fmt.Sprintf(` ORDER BY o.order_number, ov.id LIMIT $%d OFFSET $%d`, argN, argN+1)
+	fetchArgs := append(args, limit, offset)
 
 	rows, err := s.pool.Query(ctx, query, fetchArgs...)
 	if err != nil {

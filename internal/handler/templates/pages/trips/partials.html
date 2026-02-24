@@ -55,15 +55,27 @@
                placeholder="Search by VIN, Order #, or Customer..."
                value="{{.Search}}"
                hx-get="/dispatch/trips/{{.TripID}}/available-vehicles"
+               hx-include="[name='per_page']"
                hx-trigger="input changed delay:300ms, search"
                hx-target="#modal-vehicle-list"
                hx-swap="innerHTML">
     </div>
+    <div class="form-group" style="margin-bottom:0">
+        <select name="per_page" class="form-control"
+                hx-get="/dispatch/trips/{{.TripID}}/available-vehicles"
+                hx-include="[name='search']"
+                hx-trigger="change"
+                hx-target="#modal-vehicle-list"
+                hx-swap="innerHTML"
+                style="width:auto">
+            <option value="15"{{if eq .PageSize 15}} selected{{end}}>15</option>
+            <option value="25"{{if eq .PageSize 25}} selected{{end}}>25</option>
+            <option value="50"{{if eq .PageSize 50}} selected{{end}}>50</option>
+        </select>
+    </div>
 </div>
-{{if .NoSearch}}
-<div class="search-prompt">Search to find available vehicles</div>
-{{else if .Vehicles}}
-<div class="result-count">Showing {{len .Vehicles}} of {{.TotalCount}} results{{if gt .TotalCount (len .Vehicles)}} &mdash; refine your search{{end}}</div>
+{{if .Vehicles}}
+<div class="result-count">Showing {{len .Vehicles}} of {{.TotalCount}} vehicles</div>
 <div class="table-container">
     <table>
         <thead>
@@ -106,8 +118,27 @@
         </tbody>
     </table>
 </div>
+{{if gt .TotalPages 1}}
+<div class="pagination" style="margin-top:12px">
+    <span class="text-muted">Page {{.Page}} of {{.TotalPages}}</span>
+    <div class="pagination-links">
+        {{if gt .Page 1}}
+        <button class="btn btn-sm"
+                hx-get="/dispatch/trips/{{.TripID}}/available-vehicles?search={{.Search}}&page={{sub .Page 1}}&per_page={{.PageSize}}"
+                hx-target="#modal-vehicle-list"
+                hx-swap="innerHTML">Prev</button>
+        {{end}}
+        {{if lt .Page .TotalPages}}
+        <button class="btn btn-sm"
+                hx-get="/dispatch/trips/{{.TripID}}/available-vehicles?search={{.Search}}&page={{add .Page 1}}&per_page={{.PageSize}}"
+                hx-target="#modal-vehicle-list"
+                hx-swap="innerHTML">Next</button>
+        {{end}}
+    </div>
+</div>
+{{end}}
 {{else}}
-<div class="search-prompt">No waiting vehicles match your search</div>
+<div class="search-prompt">{{if .Search}}No waiting vehicles match your search{{else}}No waiting vehicles available{{end}}</div>
 {{end}}
 {{end}}
 
