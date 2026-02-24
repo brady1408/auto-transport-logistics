@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	apcomp "github.com/brady1408/atlinks/internal/handler/components/ap"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -43,39 +44,30 @@ func (h *AccountsPayableHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Result": result,
-		"Filter": filter,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "ap_table", data)
+		h.deps.renderTempl(w, r, apcomp.Table(*result))
 		return
 	}
-	h.deps.render(w, r, "ap_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, apcomp.ListPage(pg, *result, filter))
 }
 
 func (h *AccountsPayableHandler) newForm(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	status := "Open"
-	h.deps.render(w, r, "ap_form.html", map[string]any{
-		"AP": &models.AccountsPayable{
-			PayableDate: &now,
-			Status:      &status,
-		},
-		"IsNew": true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, apcomp.FormPage(pg, &models.AccountsPayable{
+		PayableDate: &now,
+		Status:      &status,
+	}, true, ""))
 }
 
 func (h *AccountsPayableHandler) create(w http.ResponseWriter, r *http.Request) {
 	ap := bindAPForm(r)
 
 	if err := h.store.Create(r.Context(), ap); err != nil {
-		h.deps.render(w, r, "ap_form.html", map[string]any{
-			"AP":    ap,
-			"IsNew": true,
-			"Error": "Failed to create AP record: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, apcomp.FormPage(pg, ap, true, "Failed to create AP record: "+err.Error()))
 		return
 	}
 
@@ -103,9 +95,8 @@ func (h *AccountsPayableHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "ap_show.html", map[string]any{
-		"AP": ap,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, apcomp.ShowPage(pg, ap))
 }
 
 func (h *AccountsPayableHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -121,10 +112,8 @@ func (h *AccountsPayableHandler) editForm(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	h.deps.render(w, r, "ap_form.html", map[string]any{
-		"AP":    ap,
-		"IsNew": false,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, apcomp.FormPage(pg, ap, false, ""))
 }
 
 func (h *AccountsPayableHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -144,11 +133,8 @@ func (h *AccountsPayableHandler) update(w http.ResponseWriter, r *http.Request) 
 	ap.ID = id
 
 	if err := h.store.Update(r.Context(), ap); err != nil {
-		h.deps.render(w, r, "ap_form.html", map[string]any{
-			"AP":    ap,
-			"IsNew": false,
-			"Error": "Failed to update AP record: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, apcomp.FormPage(pg, ap, false, "Failed to update AP record: "+err.Error()))
 		return
 	}
 

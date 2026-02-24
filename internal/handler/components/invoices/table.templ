@@ -1,0 +1,82 @@
+package invoices
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Table(result models.InvoiceListResult) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Invoice #</th>
+					<th>Customer</th>
+					<th>Order #</th>
+					<th>Date</th>
+					<th class="text-right">Total</th>
+					<th class="text-right">Paid</th>
+					<th class="text-right">Balance</th>
+					<th>Status</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, inv := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d", inv.ID)) }>{ inv.InvoiceNumber }</a></td>
+							<td>{ components.Deref(inv.CustomerName) }</td>
+							<td>
+								if inv.OrderID != nil {
+									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", components.DerefInt(inv.OrderID))) }>{ components.Deref(inv.OrderNumber) }</a>
+								}
+							</td>
+							<td>
+								if inv.InvoiceDate != nil {
+									{ inv.InvoiceDate.Format("01/02/2006") }
+								}
+							</td>
+							<td class="text-right">{ components.Deref(inv.TotalAmount) }</td>
+							<td class="text-right">{ components.Deref(inv.AmountPaid) }</td>
+							<td class="text-right">{ components.Deref(inv.Balance) }</td>
+							<td>
+								@invoiceStatusBadge(inv.Status)
+							</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d", inv.ID)) } class="btn btn-sm">View</a>
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d/edit", inv.ID)) } class="btn btn-sm">Edit</a>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="9" class="text-center text-muted">No invoices found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/accounting/invoices", "#invoice-table",
+		))
+	}
+}
+
+templ invoiceStatusBadge(status *string) {
+	if status != nil {
+		if components.Deref(status) == "Open" {
+			<span class="badge badge-open">Open</span>
+		} else if components.Deref(status) == "Paid" {
+			<span class="badge badge-paid">Paid</span>
+		} else if components.Deref(status) == "Void" {
+			<span class="badge badge-void">Void</span>
+		} else {
+			<span class="badge">{ components.Deref(status) }</span>
+		}
+	}
+}

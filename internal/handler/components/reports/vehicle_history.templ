@@ -1,0 +1,88 @@
+package reports
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ VehicleHistoryPage(pg components.PageContext, rows []store.VehicleHistoryRow, vin string) {
+	@components.Layout(pg, "Vehicle History - ATLinks") {
+		<div class="page-header">
+			<h1>Vehicle History</h1>
+			<div class="btn-group no-print">
+				if vin != "" {
+					<a href={ templ.SafeURL(fmt.Sprintf("/reports/vehicle-history/csv?vin=%s", vin)) } class="btn">Export CSV</a>
+				}
+				<button onclick="window.print()" class="btn">Print</button>
+				<a href="/reports" class="btn">Back to Reports</a>
+			</div>
+		</div>
+		<form class="filter-bar no-print" method="GET" action="/reports/vehicle-history">
+			<div class="form-group">
+				<label>VIN</label>
+				<input type="text" name="vin" value={ vin } class="form-control search-input" placeholder="Enter VIN or partial VIN..." required/>
+			</div>
+			<button type="submit" class="btn btn-primary">Search</button>
+		</form>
+		if len(rows) > 0 {
+			<div class="table-container">
+				<table class="report-table">
+					<thead>
+						<tr>
+							<th>VIN</th>
+							<th>Year/Make/Model</th>
+							<th>Status</th>
+							<th>Order #</th>
+							<th>Customer</th>
+							<th>Load #</th>
+							<th>Invoice #</th>
+							<th>Scheduled</th>
+							<th>Loaded</th>
+							<th>Delivered</th>
+							<th>Confirmed</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, row := range rows {
+							<tr>
+								<td><strong>{ row.VIN }</strong></td>
+								<td>{ row.Year } { row.Make } { row.Model }</td>
+								<td>{ row.Status }</td>
+								<td><a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", row.OrderID)) }>{ row.OrderNumber }</a></td>
+								<td>{ row.CustomerName }</td>
+								<td>{ row.LoadNumber }</td>
+								<td>{ row.InvoiceNumber }</td>
+								<td>
+									if row.ScheduledDate != nil {
+										{ components.Deref(row.ScheduledDate) }
+									}
+								</td>
+								<td>
+									if row.LoadedDate != nil {
+										{ components.Deref(row.LoadedDate) }
+									}
+								</td>
+								<td>
+									if row.DeliveredDate != nil {
+										{ components.Deref(row.DeliveredDate) }
+									}
+								</td>
+								<td>
+									if row.ConfirmedDate != nil {
+										{ components.Deref(row.ConfirmedDate) }
+									}
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		} else if vin != "" {
+			<p class="text-muted">No records found for VIN "{ vin }".</p>
+		} else {
+			<p class="text-muted">Enter a VIN to view its complete transport history.</p>
+		}
+	}
+}

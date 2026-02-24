@@ -1,0 +1,78 @@
+package damageclaims
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Table(result models.DamageClaimListResult) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Claim #</th>
+					<th>VIN</th>
+					<th>Date</th>
+					<th class="text-right">Claim Amt</th>
+					<th class="text-right">Paid Amt</th>
+					<th>Status</th>
+					<th>Description</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, dc := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/accounting/damage-claims/%d", dc.ID)) }>{ dc.ClaimNumber }</a></td>
+							<td>{ components.Deref(dc.VIN) }</td>
+							<td>
+								if dc.ClaimDate != nil {
+									{ dc.ClaimDate.Format("01/02/2006") }
+								}
+							</td>
+							<td class="text-right">{ components.Deref(dc.ClaimAmount) }</td>
+							<td class="text-right">{ components.Deref(dc.PaidAmount) }</td>
+							<td>
+								@claimStatusBadge(dc.Status)
+							</td>
+							<td>{ components.Deref(dc.Description) }</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/damage-claims/%d", dc.ID)) } class="btn btn-sm">View</a>
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/damage-claims/%d/edit", dc.ID)) } class="btn btn-sm">Edit</a>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="8" class="text-center text-muted">No damage claims found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/accounting/damage-claims", "#damage-claim-table",
+		))
+	}
+}
+
+templ claimStatusBadge(status *string) {
+	if status != nil {
+		if components.Deref(status) == "Open" {
+			<span class="badge badge-open">Open</span>
+		} else if components.Deref(status) == "Approved" {
+			<span class="badge badge-scheduled">Approved</span>
+		} else if components.Deref(status) == "Denied" {
+			<span class="badge badge-void">Denied</span>
+		} else if components.Deref(status) == "Paid" {
+			<span class="badge badge-paid">Paid</span>
+		} else {
+			<span class="badge">{ components.Deref(status) }</span>
+		}
+	}
+}

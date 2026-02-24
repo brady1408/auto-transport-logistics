@@ -1,0 +1,259 @@
+package authpages
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+)
+
+func tabData(activeTab string) templ.Attributes {
+	tab := activeTab
+	if tab == "" {
+		tab = "signin"
+	}
+	return templ.Attributes{
+		"x-data": fmt.Sprintf("{ tab: '%s' }", tab),
+	}
+}
+
+func signinTabClick() templ.Attributes {
+	return templ.Attributes{
+		"@click": "tab = 'signin'",
+	}
+}
+
+func registerTabClick() templ.Attributes {
+	return templ.Attributes{
+		"@click": "tab = 'register'",
+	}
+}
+
+func registerFormData(registerForm map[string]string) templ.Attributes {
+	cn := ""
+	slug := ""
+	if registerForm != nil {
+		cn = registerForm["company_name"]
+		slug = registerForm["slug"]
+	}
+	return templ.Attributes{
+		"x-data": fmt.Sprintf(`{ cn: '%s', slug: '%s', slugEdited: %v }`, cn, slug, slug != ""),
+	}
+}
+
+func slugAutoGenAttr() templ.Attributes {
+	return templ.Attributes{
+		"@input": "if (!slugEdited) slug = cn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 30)",
+	}
+}
+
+func slugEditedAttr() templ.Attributes {
+	return templ.Attributes{
+		"@input": "slugEdited = true",
+	}
+}
+
+func fieldErrorClass(errs map[string]string, field string) string {
+	if errs != nil && errs[field] != "" {
+		return " input-error"
+	}
+	return ""
+}
+
+func formVal(form map[string]string, key string) string {
+	if form == nil {
+		return ""
+	}
+	return form[key]
+}
+
+templ LoginPage(companyName string, loginAction string, activeTab string, username string, errMsg string, flash string, registerSuccess string, registerError string, registerForm map[string]string, registerFieldErrors map[string]string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			if companyName != "" {
+				<title>{ companyName } - Sign In</title>
+			} else {
+				<title>ATLinks - Vehicle Transport Management</title>
+			}
+			<link rel="stylesheet" href={ components.AssetVersion("/static/css/app.css") }/>
+			<script src={ components.AssetVersion("/static/js/alpine.min.js") } defer></script>
+		</head>
+		<body class="login-body">
+			if loginAction != "" {
+				<!-- Company-specific login - simple single form -->
+				<div class="login-container">
+					<div class="login-card">
+						<h1 class="login-title">{ companyName }</h1>
+						<p class="login-subtitle">Vehicle Transport Management</p>
+						if flash != "" {
+							<div class="alert alert-success">{ flash }</div>
+						}
+						if errMsg != "" {
+							<div class="alert alert-danger">{ errMsg }</div>
+						}
+						<form method="POST" action={ templ.SafeURL(loginAction) }>
+							<div class="form-group">
+								<label for="username">Username</label>
+								<input type="text" id="username" name="username" class="form-control" value={ username } required autofocus/>
+							</div>
+							<div class="form-group">
+								<label for="password">Password</label>
+								<input type="password" id="password" name="password" class="form-control" required/>
+							</div>
+							<button type="submit" class="btn btn-primary btn-block">Sign In</button>
+						</form>
+						<p style="text-align: center; margin-top: 0.75rem;">
+							<a href="/forgot-password" style="font-size: 0.9rem;">Forgot Password?</a>
+						</p>
+					</div>
+				</div>
+			} else {
+				<!-- Landing page with tabs -->
+				<div class="landing-container" { tabData(activeTab)... }>
+					<div class="login-card">
+						<h1 class="login-title">ATLinks</h1>
+						<p class="login-subtitle">Vehicle Transport Management</p>
+						<div class="login-tabs">
+							<button class="login-tab" :class="{ active: tab === 'signin' }" { signinTabClick()... } type="button">Sign In</button>
+							<button class="login-tab" :class="{ active: tab === 'register' }" { registerTabClick()... } type="button">Register</button>
+						</div>
+						<!-- Sign In Tab -->
+						<div x-show="tab === 'signin'" x-cloak>
+							if flash != "" {
+								<div class="alert alert-success">{ flash }</div>
+							}
+							if errMsg != "" {
+								<div class="alert alert-danger">{ errMsg }</div>
+							}
+							<form method="POST" action="/login">
+								<div class="form-group">
+									<label for="login-username">Username</label>
+									<input type="text" id="login-username" name="username" class="form-control" value={ username } required/>
+								</div>
+								<div class="form-group">
+									<label for="login-password">Password</label>
+									<input type="password" id="login-password" name="password" class="form-control" required/>
+								</div>
+								<button type="submit" class="btn btn-primary btn-block">Sign In</button>
+							</form>
+							<p style="text-align: center; margin-top: 0.75rem;">
+								<a href="/forgot-password" style="font-size: 0.9rem;">Forgot Password?</a>
+							</p>
+						</div>
+						<!-- Register Tab -->
+						<div x-show="tab === 'register'" x-cloak { registerFormData(registerForm)... }>
+							if registerSuccess != "" {
+								<div class="alert alert-success">{ registerSuccess }</div>
+							}
+							if registerError != "" {
+								<div class="alert alert-danger">{ registerError }</div>
+							}
+							<form method="POST" action="/register">
+								<div class="form-group">
+									<label for="invite_code">Invite Code *</label>
+									<input
+										type="text"
+										id="invite_code"
+										name="invite_code"
+										class={ "form-control" + fieldErrorClass(registerFieldErrors, "invite_code") }
+										value={ formVal(registerForm, "invite_code") }
+										required
+									/>
+									if registerFieldErrors != nil && registerFieldErrors["invite_code"] != "" {
+										<small class="field-error">{ registerFieldErrors["invite_code"] }</small>
+									}
+								</div>
+								<hr class="form-divider"/>
+								<div class="form-group">
+									<label for="company_name">Company Name *</label>
+									<input
+										type="text"
+										id="company_name"
+										name="company_name"
+										class={ "form-control" + fieldErrorClass(registerFieldErrors, "company_name") }
+										x-model="cn"
+										{ slugAutoGenAttr()... }
+										required
+										maxlength="40"
+									/>
+									if registerFieldErrors != nil && registerFieldErrors["company_name"] != "" {
+										<small class="field-error">{ registerFieldErrors["company_name"] }</small>
+									}
+								</div>
+								<div class="form-group">
+									<label for="slug">Login URL *</label>
+									<div class="slug-input-row">
+										<span class="slug-prefix">/c/</span>
+										<input
+											type="text"
+											id="slug"
+											name="slug"
+											class={ "form-control" + fieldErrorClass(registerFieldErrors, "slug") }
+											x-model="slug"
+											{ slugEditedAttr()... }
+											required
+											maxlength="30"
+											placeholder="my-company"
+										/>
+										<span class="slug-suffix">/login</span>
+									</div>
+									<small class="text-muted">Lowercase letters, numbers, and hyphens</small>
+									if registerFieldErrors != nil && registerFieldErrors["slug"] != "" {
+										<small class="field-error">{ registerFieldErrors["slug"] }</small>
+									}
+								</div>
+								<hr class="form-divider"/>
+								<div class="form-group">
+									<label for="reg-username">Admin Username *</label>
+									<input
+										type="text"
+										id="reg-username"
+										name="username"
+										class={ "form-control" + fieldErrorClass(registerFieldErrors, "username") }
+										value={ formVal(registerForm, "username") }
+										required
+										maxlength="50"
+									/>
+									if registerFieldErrors != nil && registerFieldErrors["username"] != "" {
+										<small class="field-error">{ registerFieldErrors["username"] }</small>
+									}
+								</div>
+								<div class="form-group">
+									<label for="reg-email">Email *</label>
+									<input
+										type="email"
+										id="reg-email"
+										name="email"
+										class={ "form-control" + fieldErrorClass(registerFieldErrors, "email") }
+										value={ formVal(registerForm, "email") }
+										required
+										maxlength="255"
+									/>
+									if registerFieldErrors != nil && registerFieldErrors["email"] != "" {
+										<small class="field-error">{ registerFieldErrors["email"] }</small>
+									}
+								</div>
+								<div class="form-group">
+									<label for="reg-password">Password *</label>
+									<input
+										type="password"
+										id="reg-password"
+										name="password"
+										class={ "form-control" + fieldErrorClass(registerFieldErrors, "password") }
+										required
+									/>
+									if registerFieldErrors != nil && registerFieldErrors["password"] != "" {
+										<small class="field-error">{ registerFieldErrors["password"] }</small>
+									}
+								</div>
+								<button type="submit" class="btn btn-primary btn-block">Register Company</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			}
+		</body>
+	</html>
+}

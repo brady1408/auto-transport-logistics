@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/brady1408/atlinks/internal/handler/components/zones"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -29,17 +30,17 @@ func (h *ZoneHandler) Register(mux *http.ServeMux) {
 }
 
 func (h *ZoneHandler) list(w http.ResponseWriter, r *http.Request) {
-	zones, err := h.store.List(r.Context())
+	zonesList, err := h.store.List(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]any{"Zones": zones}
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "zone_table", data)
+		h.deps.renderTempl(w, r, zones.Table(zonesList))
 		return
 	}
-	h.deps.render(w, r, "zone_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, zones.ListPage(pg, zonesList))
 }
 
 func (h *ZoneHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -130,12 +131,12 @@ func (h *ZoneHandler) pricingList(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]any{"Items": items}
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "zone_pricing_table", data)
+		h.deps.renderTempl(w, r, zones.PricingTable(items))
 		return
 	}
-	h.deps.render(w, r, "zone_pricing_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, zones.PricingListPage(pg, items))
 }
 
 func (h *ZoneHandler) pricingCreate(w http.ResponseWriter, r *http.Request) {

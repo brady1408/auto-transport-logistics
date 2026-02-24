@@ -1,0 +1,58 @@
+package reports
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ RevenuePage(pg components.PageContext, rows []store.RevenueByCustomerRow, dateFrom string, dateTo string) {
+	@components.Layout(pg, "Revenue by Customer - ATLinks") {
+		<div class="page-header">
+			<h1>Revenue by Customer</h1>
+			<div class="btn-group no-print">
+				<a href={ templ.SafeURL(fmt.Sprintf("/reports/revenue-by-customer/csv?date_from=%s&date_to=%s", dateFrom, dateTo)) } class="btn">Export CSV</a>
+				<button onclick="window.print()" class="btn">Print</button>
+				<a href="/reports" class="btn">Back to Reports</a>
+			</div>
+		</div>
+		<form class="filter-bar no-print" method="GET" action="/reports/revenue-by-customer">
+			<div class="form-group">
+				<label>From</label>
+				<input type="date" name="date_from" value={ dateFrom } class="form-control"/>
+			</div>
+			<div class="form-group">
+				<label>To</label>
+				<input type="date" name="date_to" value={ dateTo } class="form-control"/>
+			</div>
+			<button type="submit" class="btn btn-primary">Filter</button>
+		</form>
+		<div class="table-container">
+			<table class="report-table">
+				<thead>
+					<tr>
+						<th>Customer #</th>
+						<th>Customer Name</th>
+						<th class="text-right">Invoice Count</th>
+						<th class="text-right">Total Revenue</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(rows) > 0 {
+						for _, row := range rows {
+							<tr>
+								<td>{ row.CustomerNumber }</td>
+								<td>{ row.CustomerName }</td>
+								<td class="text-right">{ fmt.Sprintf("%d", row.InvoiceCount) }</td>
+								<td class="text-right">${ row.TotalRevenue }</td>
+							</tr>
+						}
+					} else {
+						<tr><td colspan="4" class="text-center text-muted">No revenue data found.</td></tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}

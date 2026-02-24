@@ -1,0 +1,60 @@
+package admin
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ CompaniesPage(pg components.PageContext, companies []models.Company) {
+	@components.Layout(pg, "Companies - Admin") {
+		<div class="page-header">
+			<h2>Companies</h2>
+			<a href="/admin/companies/new" class="btn btn-primary">New Company</a>
+		</div>
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Slug</th>
+					<th>Active</th>
+					<th>City</th>
+					<th>State</th>
+					<th>Phone</th>
+					<th>Login URL</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(companies) > 0 {
+					for _, c := range companies {
+						<tr>
+							<td>{ fmt.Sprintf("%d", c.ID) }</td>
+							<td>{ c.CompanyName }</td>
+							<td>{ c.Slug }</td>
+							<td>
+								if c.Active {
+									Yes
+								} else {
+									No
+								}
+							</td>
+							<td>{ components.Deref(c.City) }</td>
+							<td>{ components.Deref(c.State) }</td>
+							<td>{ components.Deref(c.Phone) }</td>
+							<td><code>/c/{ c.Slug }/login</code></td>
+							<td>
+								<a href={ templ.SafeURL(fmt.Sprintf("/admin/companies/%d/users", c.ID)) } class="btn btn-sm">Users</a>
+								<a href={ templ.SafeURL(fmt.Sprintf("/admin/companies/%d/edit", c.ID)) } class="btn btn-sm">Edit</a>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="9" class="text-center">No companies found</td></tr>
+				}
+			</tbody>
+		</table>
+	}
+}

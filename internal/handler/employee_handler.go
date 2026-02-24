@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/brady1408/atlinks/internal/handler/components/employees"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -41,39 +42,31 @@ func (h *EmployeeHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Result": result,
-		"Filter": filter,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "employee_table", data)
+		h.deps.renderTempl(w, r, employees.Table(*result, filter))
 		return
 	}
-	h.deps.render(w, r, "employee_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, employees.ListPage(pg, *result, filter))
 }
 
 func (h *EmployeeHandler) newForm(w http.ResponseWriter, r *http.Request) {
-	h.deps.render(w, r, "employee_form.html", map[string]any{
-		"Employee": &models.Employee{Active: true},
-		"IsNew":    true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, employees.FormPage(pg, &models.Employee{Active: true}, true, ""))
 }
 
 func (h *EmployeeHandler) create(w http.ResponseWriter, r *http.Request) {
 	e := bindEmployeeForm(r)
 
 	if e.Name == "" {
-		h.deps.render(w, r, "employee_form.html", map[string]any{
-			"Employee": e, "IsNew": true, "Error": "Name is required",
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, employees.FormPage(pg, e, true, "Name is required"))
 		return
 	}
 
 	if err := h.store.Create(r.Context(), e); err != nil {
-		h.deps.render(w, r, "employee_form.html", map[string]any{
-			"Employee": e, "IsNew": true, "Error": "Failed to create employee: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, employees.FormPage(pg, e, true, "Failed to create employee: "+err.Error()))
 		return
 	}
 
@@ -98,9 +91,8 @@ func (h *EmployeeHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Employee not found", http.StatusNotFound)
 		return
 	}
-	h.deps.render(w, r, "employee_form.html", map[string]any{
-		"Employee": e, "IsNew": false,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, employees.FormPage(pg, e, false, ""))
 }
 
 func (h *EmployeeHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -119,16 +111,14 @@ func (h *EmployeeHandler) update(w http.ResponseWriter, r *http.Request) {
 	e.ID = id
 
 	if e.Name == "" {
-		h.deps.render(w, r, "employee_form.html", map[string]any{
-			"Employee": e, "IsNew": false, "Error": "Name is required",
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, employees.FormPage(pg, e, false, "Name is required"))
 		return
 	}
 
 	if err := h.store.Update(r.Context(), e); err != nil {
-		h.deps.render(w, r, "employee_form.html", map[string]any{
-			"Employee": e, "IsNew": false, "Error": "Failed to update: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, employees.FormPage(pg, e, false, "Failed to update: "+err.Error()))
 		return
 	}
 

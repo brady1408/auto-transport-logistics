@@ -1,0 +1,192 @@
+package orders
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ VehicleFormPage(pg components.PageContext, vehicle *models.OrderVehicle, order *models.Order, isNew bool, errMsg string) {
+	@components.Layout(pg, vehicleFormTitle(isNew) + " - ATLinks") {
+		<div class="page-header">
+			<h1>
+				if isNew {
+					Add Vehicle to Order { order.OrderNumber }
+				} else {
+					Edit Vehicle
+				}
+			</h1>
+			<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", order.ID)) } class="btn">Back to Order</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			if isNew {
+				action={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/vehicles", order.ID)) }
+				hx-post={ fmt.Sprintf("/dispatch/orders/%d/vehicles", order.ID) }
+			} else {
+				action={ templ.SafeURL(fmt.Sprintf("/dispatch/vehicles/%d/edit", vehicle.ID)) }
+				hx-put={ fmt.Sprintf("/dispatch/vehicles/%d", vehicle.ID) }
+			}
+		>
+			<fieldset x-data="{ decoding: false, decoded: false, decodeError: '' }">
+				<legend>Vehicle Information</legend>
+				<div class="form-row">
+					<div class="form-group" style="grid-column: span 2;">
+						<label for="vin">VIN</label>
+						<div style="display:flex;gap:8px;align-items:center">
+							<input type="text" id="vin" name="vin" class="form-control" value={ components.Deref(vehicle.VIN) } maxlength="17" style="text-transform:uppercase"
+								{ vinDecodeAttrs()... }
+							/>
+							<span x-show="decoding" class="text-muted" style="font-size:12px;white-space:nowrap">Decoding...</span>
+							<span x-show="decoded" style="color:var(--success);font-size:12px;white-space:nowrap" x-cloak>Decoded</span>
+							<span x-show="decodeError" style="color:var(--danger);font-size:12px;white-space:nowrap" x-text="decodeError" x-cloak></span>
+						</div>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="year">Year</label>
+						<input type="text" id="year" name="year" class="form-control" value={ components.Deref(vehicle.Year) } maxlength="4"/>
+					</div>
+					<div class="form-group">
+						<label for="make">Make</label>
+						<input type="text" id="make" name="make" class="form-control" value={ components.Deref(vehicle.Make) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="model">Model</label>
+						<input type="text" id="model" name="model" class="form-control" value={ components.Deref(vehicle.Model) } maxlength="30"/>
+					</div>
+					<div class="form-group">
+						<label for="color">Color</label>
+						<input type="text" id="color" name="color" class="form-control" value={ components.Deref(vehicle.Color) } maxlength="20"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="weight">Weight</label>
+						<input type="number" id="weight" name="weight" class="form-control" value={ fmt.Sprintf("%d", components.DerefInt(vehicle.Weight)) }/>
+					</div>
+					<div class="form-group">
+						<label for="category">Category</label>
+						<input type="text" id="category" name="category" class="form-control" value={ components.Deref(vehicle.Category) } maxlength="2"/>
+					</div>
+					<div class="form-group">
+						<label for="body_style">Body Style</label>
+						<input type="text" id="body_style" name="body_style" class="form-control" value={ components.Deref(vehicle.BodyStyle) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="lot">Lot</label>
+						<input type="text" id="lot" name="lot" class="form-control" value={ components.Deref(vehicle.Lot) } maxlength="10"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-check">
+						<input type="checkbox" id="run_drive" name="run_drive" checked?={ vehicle.RunDrive }/>
+						<label for="run_drive">Run/Drive</label>
+					</div>
+					<div class="form-check">
+						<input type="checkbox" id="inoperable" name="inoperable" checked?={ !vehicle.Operable }/>
+						<label for="inoperable">Inoperable</label>
+					</div>
+					<div class="form-check">
+						<input type="checkbox" id="inactive" name="inactive" checked?={ !vehicle.Active }/>
+						<label for="inactive">Inactive</label>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Pricing</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="transport_amt">Transport Amount</label>
+						<input type="text" id="transport_amt" name="transport_amt" class="form-control" value={ components.Deref(vehicle.TransportAmt) }/>
+					</div>
+					<div class="form-group">
+						<label for="transport_calc_type">Calc Type</label>
+						<input type="text" id="transport_calc_type" name="transport_calc_type" class="form-control" value={ components.Deref(vehicle.TransportCalcType) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="fuel_surcharge">Fuel Surcharge</label>
+						<input type="text" id="fuel_surcharge" name="fuel_surcharge" class="form-control" value={ components.Deref(vehicle.FuelSurcharge) }/>
+					</div>
+					<div class="form-group">
+						<label for="total_charge">Total Charge</label>
+						<input type="text" id="total_charge" name="total_charge" class="form-control" value={ components.Deref(vehicle.TotalCharge) }/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Dimensions</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="dim_length">Length</label>
+						<input type="text" id="dim_length" name="dim_length" class="form-control" value={ components.Deref(vehicle.DimLength) }/>
+					</div>
+					<div class="form-group">
+						<label for="dim_width">Width</label>
+						<input type="text" id="dim_width" name="dim_width" class="form-control" value={ components.Deref(vehicle.DimWidth) }/>
+					</div>
+					<div class="form-group">
+						<label for="dim_height">Height</label>
+						<input type="text" id="dim_height" name="dim_height" class="form-control" value={ components.Deref(vehicle.DimHeight) }/>
+					</div>
+					<div class="form-group">
+						<label for="rate_class">Rate Class</label>
+						<input type="text" id="rate_class" name="rate_class" class="form-control" value={ components.Deref(vehicle.RateClass) } maxlength="10"/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Comments</legend>
+				<div class="form-group">
+					<textarea id="comments" name="comments" class="form-control">{ components.Deref(vehicle.Comments) }</textarea>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Add Vehicle
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", order.ID)) } class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}
+
+// vinDecodeAttrs returns the Alpine.js @blur attribute for VIN auto-decode.
+func vinDecodeAttrs() templ.Attributes {
+	return templ.Attributes{
+		"@blur": `
+let v = $el.value.trim();
+if (v.length === 17) {
+    decoding = true; decoded = false; decodeError = '';
+    fetch('/api/vin/decode?vin=' + encodeURIComponent(v))
+        .then(r => r.json())
+        .then(d => {
+            decoding = false;
+            if (d.error) { decodeError = d.error; return; }
+            decoded = true;
+            if (d.year) document.getElementById('year').value = d.year;
+            if (d.make) document.getElementById('make').value = d.make;
+            if (d.model) document.getElementById('model').value = d.model;
+            if (d.body_style) document.getElementById('body_style').value = d.body_style;
+            if (d.weight) document.getElementById('weight').value = d.weight;
+        })
+        .catch(() => { decoding = false; decodeError = 'Decode failed'; });
+}`,
+	}
+}
+
+func vehicleFormTitle(isNew bool) string {
+	if isNew {
+		return "Add Vehicle"
+	}
+	return "Edit Vehicle"
+}

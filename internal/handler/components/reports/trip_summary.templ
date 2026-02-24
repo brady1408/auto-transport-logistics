@@ -1,0 +1,74 @@
+package reports
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ TripSummaryPage(pg components.PageContext, rows []store.TripSummaryRow, dateFrom string, dateTo string) {
+	@components.Layout(pg, "Trip Summary - ATLinks") {
+		<div class="page-header">
+			<h1>Trip Summary</h1>
+			<div class="btn-group no-print">
+				<a href={ templ.SafeURL(fmt.Sprintf("/reports/trip-summary/csv?date_from=%s&date_to=%s", dateFrom, dateTo)) } class="btn">Export CSV</a>
+				<button onclick="window.print()" class="btn">Print</button>
+				<a href="/reports" class="btn">Back to Reports</a>
+			</div>
+		</div>
+		<form class="filter-bar no-print" method="GET" action="/reports/trip-summary">
+			<div class="form-group">
+				<label>From</label>
+				<input type="date" name="date_from" value={ dateFrom } class="form-control"/>
+			</div>
+			<div class="form-group">
+				<label>To</label>
+				<input type="date" name="date_to" value={ dateTo } class="form-control"/>
+			</div>
+			<button type="submit" class="btn btn-primary">Filter</button>
+		</form>
+		<div class="table-container">
+			<table class="report-table">
+				<thead>
+					<tr>
+						<th>Load #</th>
+						<th>Trip Date</th>
+						<th>Driver</th>
+						<th>Truck #</th>
+						<th class="text-right">Vehicles</th>
+						<th class="text-right">Miles</th>
+						<th>Status</th>
+						<th>Deliver Date</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(rows) > 0 {
+						for _, row := range rows {
+							<tr>
+								<td><a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d", row.ID)) }>{ row.LoadNumber }</a></td>
+								<td>
+									if row.TripDate != nil {
+										{ components.Deref(row.TripDate) }
+									}
+								</td>
+								<td>{ row.Driver }</td>
+								<td>{ row.TruckNumber }</td>
+								<td class="text-right">{ fmt.Sprintf("%d", row.VehicleCount) }</td>
+								<td class="text-right">{ row.TotalMileage }</td>
+								<td>{ row.Status }</td>
+								<td>
+									if row.DeliverDate != nil {
+										{ components.Deref(row.DeliverDate) }
+									}
+								</td>
+							</tr>
+						}
+					} else {
+						<tr><td colspan="8" class="text-center text-muted">No trips found.</td></tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}

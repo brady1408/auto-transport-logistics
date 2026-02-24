@@ -19,6 +19,7 @@ import (
 	"github.com/brady1408/atlinks/internal/database"
 	"github.com/brady1408/atlinks/internal/email"
 	"github.com/brady1408/atlinks/internal/handler"
+	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/middleware"
 	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/store"
@@ -72,12 +73,7 @@ func main() {
 	} else {
 		handler.BuildVersion = strconv.FormatInt(time.Now().Unix(), 10)
 	}
-
-	// Parse templates
-	tmpl, err := handler.ParseTemplates()
-	if err != nil {
-		log.Fatalf("parse templates: %v", err)
-	}
+	components.SetBuildVersion(handler.BuildVersion)
 
 	// Stores
 	userStore := store.NewUserStore(pool)
@@ -91,7 +87,6 @@ func main() {
 	deps := &handler.Deps{
 		JWT:          jwtSvc,
 		Audit:        auditSvc,
-		Tmpl:         tmpl,
 		CompanyStore: companyStore,
 	}
 

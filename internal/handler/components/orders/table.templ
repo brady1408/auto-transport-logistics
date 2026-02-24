@@ -1,0 +1,91 @@
+package orders
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Table(result models.OrderListResult) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Order #</th>
+					<th>Bill Customer</th>
+					<th>Load Customer</th>
+					<th>Drop Customer</th>
+					<th>Zone</th>
+					<th class="text-center">Vehicles</th>
+					<th>Status</th>
+					<th>Create Date</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, o := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", o.ID)) }>{ o.OrderNumber }</a></td>
+							<td>{ components.Deref(o.BillCustomerName) }</td>
+							<td>{ components.Deref(o.LoadCustomerName) }</td>
+							<td>{ components.Deref(o.DropCustomerName) }</td>
+							<td>{ components.Deref(o.Zone) }</td>
+							<td class="text-center">
+								if o.VehicleCount > 0 {
+									<span class="badge badge-active">{ fmt.Sprintf("%d", o.VehicleCount) }</span>
+								} else {
+									0
+								}
+							</td>
+							<td>
+								@orderStatusBadge(o)
+							</td>
+							<td>
+								if o.CreateDate != nil {
+									{ o.CreateDate.Format("01/02/2006") }
+								}
+							</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", o.ID)) } class="btn btn-sm">View</a>
+									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/edit", o.ID)) } class="btn btn-sm">Edit</a>
+									<button
+										class="btn btn-sm btn-danger"
+										hx-delete={ fmt.Sprintf("/dispatch/orders/%d", o.ID) }
+										hx-confirm={ fmt.Sprintf("Delete order %s?", o.OrderNumber) }
+									>Delete</button>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="9" class="text-center text-muted">No orders found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/dispatch/orders", "#order-table",
+		))
+	}
+}
+
+templ orderStatusBadge(o models.Order) {
+	if !o.Active {
+		<span class="badge badge-inactive">Inactive</span>
+	} else if o.ConfirmedCount > 0 {
+		<span class="badge badge-confirmed">{ fmt.Sprintf("%dC", o.ConfirmedCount) }</span>
+	} else if o.DeliveredCount > 0 {
+		<span class="badge badge-delivered">{ fmt.Sprintf("%dD", o.DeliveredCount) }</span>
+	} else if o.LoadedCount > 0 {
+		<span class="badge badge-loaded">{ fmt.Sprintf("%dL", o.LoadedCount) }</span>
+	} else if o.ScheduledCount > 0 {
+		<span class="badge badge-scheduled">{ fmt.Sprintf("%dS", o.ScheduledCount) }</span>
+	} else {
+		<span class="badge badge-waiting">{ fmt.Sprintf("%dW", o.WaitingCount) }</span>
+	}
+}

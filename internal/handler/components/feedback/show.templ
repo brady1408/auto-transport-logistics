@@ -1,0 +1,154 @@
+package feedback
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ShowPage(pg components.PageContext, fb *models.Feedback, comments []models.FeedbackComment, isSuperAdmin bool) {
+	@components.Layout(pg, fmt.Sprintf("Feedback #%d - ATLinks", fb.ID)) {
+		<div class="page-header">
+			<h1>Feedback #{ fmt.Sprintf("%d", fb.ID) }</h1>
+			<div class="btn-group">
+				if isSuperAdmin {
+					<button
+						class="btn btn-danger"
+						hx-delete={ fmt.Sprintf("/feedback/%d", fb.ID) }
+						hx-confirm="Delete this feedback?"
+					>Delete</button>
+				}
+				<a href="/feedback" class="btn">Back to List</a>
+			</div>
+		</div>
+		<div class="order-detail-grid">
+			<div class="card">
+				<div class="card-header">Feedback Details</div>
+				<div class="card-body">
+					<div class="detail-row">
+						<span class="detail-label">Status:</span>
+						<span>
+							if fb.Status == "open" {
+								<span class="badge badge-open">Open</span>
+							} else if fb.Status == "reviewed" {
+								<span class="badge badge-pending">Reviewed</span>
+							} else if fb.Status == "resolved" {
+								<span class="badge badge-paid">Resolved</span>
+							} else if fb.Status == "closed" {
+								<span class="badge badge-inactive">Closed</span>
+							} else {
+								<span class="badge">{ fb.Status }</span>
+							}
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Category:</span>
+						<span>
+							if fb.Category == "bug" {
+								<span class="badge badge-denied">Bug</span>
+							} else if fb.Category == "feature" {
+								<span class="badge badge-scheduled">Feature</span>
+							} else {
+								<span class="badge badge-pending">Question</span>
+							}
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Submitted by:</span>
+						<span>{ fb.Username }</span>
+					</div>
+					if isSuperAdmin {
+						<div class="detail-row">
+							<span class="detail-label">Company:</span>
+							<span>{ fb.CompanyName }</span>
+						</div>
+					}
+					<div class="detail-row">
+						<span class="detail-label">Page:</span>
+						<span><code>{ fb.PageURL }</code></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Date:</span>
+						<span>{ fb.CreatedAt.Format("01/02/2006 3:04 PM") }</span>
+					</div>
+				</div>
+			</div>
+			if isSuperAdmin {
+				<div class="card">
+					<div class="card-header">Update Status</div>
+					<div class="card-body">
+						<form hx-put={ fmt.Sprintf("/feedback/%d", fb.ID) }>
+							<div class="form-group">
+								<label for="status">Status</label>
+								<select id="status" name="status" class="form-control">
+									<option value="open" selected?={ fb.Status == "open" }>Open</option>
+									<option value="reviewed" selected?={ fb.Status == "reviewed" }>Reviewed</option>
+									<option value="resolved" selected?={ fb.Status == "resolved" }>Resolved</option>
+									<option value="closed" selected?={ fb.Status == "closed" }>Closed</option>
+								</select>
+							</div>
+							<button type="submit" class="btn btn-primary">Save Status</button>
+						</form>
+					</div>
+				</div>
+			}
+		</div>
+		<h2 class="section-title">Message</h2>
+		<div class="card">
+			<div class="card-body" style="white-space: pre-wrap;">{ fb.Message }</div>
+		</div>
+		<h2 class="section-title">Comments</h2>
+		<div id="comment-thread">
+			@CommentThread(comments, fb, isSuperAdmin)
+		</div>
+		<div class="card" style="margin-top: 16px;">
+			<div class="card-header">Add Comment</div>
+			<div class="card-body">
+				<form
+					hx-post={ fmt.Sprintf("/feedback/%d/comments", fb.ID) }
+					hx-target="#comment-thread"
+					hx-swap="innerHTML"
+					hx-on::after-request="if(event.detail.successful) this.reset()"
+				>
+					<div class="form-group">
+						<textarea name="message" class="form-control" rows="3" placeholder="Write a comment..." required></textarea>
+					</div>
+					if isSuperAdmin {
+						<div class="form-check">
+							<input type="checkbox" id="internal" name="internal" value="true"/>
+							<label for="internal">Internal note (only visible to admins)</label>
+						</div>
+					}
+					<button type="submit" class="btn btn-primary" style="margin-top: 8px;">Post Comment</button>
+				</form>
+			</div>
+		</div>
+	}
+}
+
+templ CommentThread(comments []models.FeedbackComment, fb *models.Feedback, isSuperAdmin bool) {
+	if len(comments) > 0 {
+		for _, c := range comments {
+			<div class={ "comment-card", templ.KV("comment-internal", c.Internal) }>
+				<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+					<strong>{ c.Username }</strong>
+					if c.UserRole == "super_admin" {
+						<span class="badge badge-scheduled">Admin</span>
+					} else if c.UserRole == "company_admin" {
+						<span class="badge badge-active">Company Admin</span>
+					} else {
+						<span class="badge">User</span>
+					}
+					if c.Internal {
+						<span class="badge badge-open">Internal</span>
+					}
+					<span class="text-muted" style="font-size: 12px; margin-left: auto;">{ c.CreatedAt.Format("01/02/2006 3:04 PM") }</span>
+				</div>
+				<div style="white-space: pre-wrap;">{ c.Message }</div>
+			</div>
+		}
+	} else {
+		<p class="text-muted">No comments yet.</p>
+	}
+}

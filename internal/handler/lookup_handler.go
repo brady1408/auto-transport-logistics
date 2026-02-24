@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/brady1408/atlinks/internal/handler/components/lookup"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
@@ -36,17 +37,12 @@ func (h *LookupHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Items":    items,
-		"Title":    h.title,
-		"BasePath": h.basePath,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "lookup_table", data)
+		h.deps.renderTempl(w, r, lookup.Table(items, h.basePath))
 		return
 	}
-	h.deps.render(w, r, "lookup_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, lookup.ListPage(pg, items, h.title, h.basePath))
 }
 
 func (h *LookupHandler) create(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,187 @@
+package invoices
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ShowPage(pg components.PageContext, invoice *models.Invoice, details []models.InvoiceDetail, payments []models.PaymentDetail) {
+	@components.Layout(pg, "Invoice " + invoice.InvoiceNumber + " - ATLinks") {
+		<div class="page-header">
+			<h1>Invoice { invoice.InvoiceNumber }</h1>
+			<div class="btn-group">
+				<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d/edit", invoice.ID)) } class="btn">Edit</a>
+				<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d/print", invoice.ID)) } class="btn" target="_blank">Print</a>
+				if invoice.Status != nil && components.Deref(invoice.Status) == "Open" {
+					<button
+						class="btn btn-danger"
+						hx-post={ fmt.Sprintf("/accounting/invoices/%d/void", invoice.ID) }
+						hx-confirm={ fmt.Sprintf("Void invoice %s? This will clear vehicle invoice references.", invoice.InvoiceNumber) }
+					>Void</button>
+				}
+				<a href="/accounting/invoices" class="btn">Back to List</a>
+			</div>
+		</div>
+		<div class="order-detail-grid">
+			<div class="card">
+				<div class="card-header">Invoice Info</div>
+				<div class="card-body">
+					<div class="detail-row">
+						<span class="detail-label">Status:</span>
+						<span>
+							@invoiceStatusBadge(invoice.Status)
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Invoice Date:</span>
+						<span>
+							if invoice.InvoiceDate != nil {
+								{ invoice.InvoiceDate.Format("01/02/2006") }
+							}
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Due Date:</span>
+						<span>
+							if invoice.DueDate != nil {
+								{ invoice.DueDate.Format("01/02/2006") }
+							}
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Terms:</span>
+						<span>{ components.Deref(invoice.Terms) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Order:</span>
+						<span>
+							if invoice.OrderID != nil {
+								<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", components.DerefInt(invoice.OrderID))) }>{ components.Deref(invoice.OrderNumber) }</a>
+							}
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Totals</div>
+				<div class="card-body">
+					<div class="detail-row">
+						<span class="detail-label">Subtotal:</span>
+						<span>${ components.Deref(invoice.Subtotal) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Tax:</span>
+						<span>${ components.Deref(invoice.Tax) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Total:</span>
+						<span><strong>${ components.Deref(invoice.TotalAmount) }</strong></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Amount Paid:</span>
+						<span>${ components.Deref(invoice.AmountPaid) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Balance:</span>
+						<span><strong>${ components.Deref(invoice.Balance) }</strong></span>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Bill To</div>
+				<div class="card-body">
+					<strong>{ components.Deref(invoice.CustomerName) }</strong>
+					if invoice.CustomerNumber != nil {
+						<br/>
+						#{ components.Deref(invoice.CustomerNumber) }
+					}
+					if invoice.BillToAddress != nil {
+						<br/>
+						{ components.Deref(invoice.BillToAddress) }
+					}
+					if invoice.BillToAddress2 != nil {
+						<br/>
+						{ components.Deref(invoice.BillToAddress2) }
+					}
+					if invoice.BillToCity != nil {
+						<br/>
+						{ components.Deref(invoice.BillToCity) }, { components.Deref(invoice.BillToState) } { components.Deref(invoice.BillToZip) }
+					}
+				</div>
+			</div>
+		</div>
+		<h2 class="section-title">Line Items</h2>
+		<div id="invoice-detail-table">
+			@DetailTable(details, invoice.ID)
+		</div>
+		if invoice.Status != nil && components.Deref(invoice.Status) == "Open" {
+			<div class="card mt-2">
+				<div class="card-header">Add Line Item</div>
+				<div class="card-body">
+					<form
+						hx-post={ fmt.Sprintf("/accounting/invoices/%d/details", invoice.ID) }
+						hx-target="#invoice-detail-table"
+						hx-swap="innerHTML"
+					>
+						<div class="form-row">
+							<div class="form-group">
+								<label for="description">Description</label>
+								<input type="text" name="description" class="form-control" maxlength="40"/>
+							</div>
+							<div class="form-group">
+								<label for="qty">Qty</label>
+								<input type="number" name="qty" class="form-control" value="1" min="1"/>
+							</div>
+							<div class="form-group">
+								<label for="rate">Rate</label>
+								<input type="text" name="rate" class="form-control"/>
+							</div>
+							<div class="form-group">
+								<label for="amount">Amount</label>
+								<input type="text" name="amount" class="form-control"/>
+							</div>
+							<div class="form-group" style="padding-top: 20px;">
+								<button type="submit" class="btn btn-primary btn-sm">Add</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		}
+		<h2 class="section-title">Payment History</h2>
+		if len(payments) > 0 {
+			<div class="table-container">
+				<table>
+					<thead>
+						<tr>
+							<th>Payment ID</th>
+							<th>Amount</th>
+							<th>Discount</th>
+							<th>Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, pd := range payments {
+							<tr>
+								<td><a href={ templ.SafeURL(fmt.Sprintf("/accounting/payments/%d", pd.PaymentID)) }>Payment #{ fmt.Sprintf("%d", pd.PaymentID) }</a></td>
+								<td>{ components.Deref(pd.Amount) }</td>
+								<td>{ components.Deref(pd.DiscountAmount) }</td>
+								<td>{ pd.CreatedAt.Format("01/02/2006") }</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		} else {
+			<p class="text-muted">No payments applied to this invoice.</p>
+		}
+		if invoice.Comments != nil {
+			<h2 class="section-title">Comments</h2>
+			<div class="card">
+				<div class="card-body">{ components.Deref(invoice.Comments) }</div>
+			</div>
+		}
+	}
+}

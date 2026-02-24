@@ -1,0 +1,68 @@
+package reports
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ OrderStatusPage(pg components.PageContext, rows []store.OrderStatusRow, dateFrom string, dateTo string) {
+	@components.Layout(pg, "Order Status Summary - ATLinks") {
+		<div class="page-header">
+			<h1>Order Status Summary</h1>
+			<div class="btn-group no-print">
+				<a href={ templ.SafeURL(fmt.Sprintf("/reports/order-status/csv?date_from=%s&date_to=%s", dateFrom, dateTo)) } class="btn">Export CSV</a>
+				<button onclick="window.print()" class="btn">Print</button>
+				<a href="/reports" class="btn">Back to Reports</a>
+			</div>
+		</div>
+		<form class="filter-bar no-print" method="GET" action="/reports/order-status">
+			<div class="form-group">
+				<label>From</label>
+				<input type="date" name="date_from" value={ dateFrom } class="form-control"/>
+			</div>
+			<div class="form-group">
+				<label>To</label>
+				<input type="date" name="date_to" value={ dateTo } class="form-control"/>
+			</div>
+			<button type="submit" class="btn btn-primary">Filter</button>
+		</form>
+		<div class="table-container">
+			<table class="report-table">
+				<thead>
+					<tr>
+						<th>Dispatch Code</th>
+						<th>Zone</th>
+						<th class="text-right">Order Count</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(rows) > 0 {
+						for _, row := range rows {
+							<tr>
+								<td>
+									if row.DispatchCode != "" {
+										{ row.DispatchCode }
+									} else {
+										<span class="text-muted">(none)</span>
+									}
+								</td>
+								<td>
+									if row.Zone != "" {
+										{ row.Zone }
+									} else {
+										<span class="text-muted">(none)</span>
+									}
+								</td>
+								<td class="text-right">{ fmt.Sprintf("%d", row.Count) }</td>
+							</tr>
+						}
+					} else {
+						<tr><td colspan="3" class="text-center text-muted">No orders found.</td></tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}

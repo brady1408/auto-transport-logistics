@@ -1,0 +1,206 @@
+package trucks
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+func formTitle(isNew bool) string {
+	if isNew {
+		return "New Truck"
+	}
+	return "Edit Truck"
+}
+
+templ FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMsg string) {
+	@components.Layout(pg, formTitle(isNew) + " - ATLinks") {
+		<div class="page-header">
+			<h1>
+				if isNew {
+					New Truck
+				} else {
+					Edit Truck: { truck.TruckNumber }
+				}
+			</h1>
+			<a href="/global/trucks" class="btn">Back to List</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			if isNew {
+				action="/global/trucks"
+				hx-post="/global/trucks"
+			} else {
+				action={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/edit", truck.ID)) }
+				hx-put={ fmt.Sprintf("/global/trucks/%d", truck.ID) }
+			}
+		>
+			<fieldset>
+				<legend>Truck Information</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="truck_number">Truck # *</label>
+						<input type="text" id="truck_number" name="truck_number" class="form-control" value={ truck.TruckNumber } required maxlength="10" style="text-transform:uppercase"/>
+					</div>
+					<div class="form-group">
+						<label for="truck_make">Make</label>
+						<input type="text" id="truck_make" name="truck_make" class="form-control" value={ components.Deref(truck.TruckMake) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="truck_model">Model</label>
+						<input type="text" id="truck_model" name="truck_model" class="form-control" value={ components.Deref(truck.TruckModel) } maxlength="15"/>
+					</div>
+					<div class="form-group">
+						<label for="truck_year">Year</label>
+						<input type="text" id="truck_year" name="truck_year" class="form-control" value={ components.Deref(truck.TruckYear) } maxlength="4"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="truck_serial_number">Serial #</label>
+						<input type="text" id="truck_serial_number" name="truck_serial_number" class="form-control" value={ components.Deref(truck.TruckSerialNumber) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="truck_license">License</label>
+						<input type="text" id="truck_license" name="truck_license" class="form-control" value={ components.Deref(truck.TruckLicense) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="truck_license_exp">License Exp</label>
+						<input type="date" id="truck_license_exp" name="truck_license_exp" class="form-control" value={ components.FormatDate(truck.TruckLicenseExp) }/>
+					</div>
+					<div class="form-group">
+						<label for="truck_safety_inspection">Safety Inspection</label>
+						<input type="date" id="truck_safety_inspection" name="truck_safety_inspection" class="form-control" value={ components.FormatDate(truck.TruckSafetyInspection) }/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="fleet_number">Fleet #</label>
+						<input type="text" id="fleet_number" name="fleet_number" class="form-control" value={ components.Deref(truck.FleetNumber) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="class">Class</label>
+						<input type="text" id="class" name="class" class="form-control" value={ components.Deref(truck.Class) } maxlength="2"/>
+					</div>
+					<div class="form-group">
+						<label for="tare_weight">Tare Weight</label>
+						<input type="number" id="tare_weight" name="tare_weight" class="form-control" value={ fmt.Sprintf("%d", components.DerefInt(truck.TareWeight)) }/>
+					</div>
+					<div class="form-group">
+						<label for="driver1">Default Driver 1</label>
+						<input type="text" id="driver1" name="driver1" class="form-control" value={ components.Deref(truck.Driver1) } maxlength="30"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="driver2">Default Driver 2</label>
+						<input type="text" id="driver2" name="driver2" class="form-control" value={ components.Deref(truck.Driver2) } maxlength="30"/>
+					</div>
+					<div class="form-check" style="padding-top:20px">
+						<input type="checkbox" id="active" name="active" checked?={ truck.Active }/>
+						<label for="active">Active</label>
+					</div>
+					<div class="form-check" style="padding-top:20px">
+						<input type="checkbox" id="leased_truck" name="leased_truck" checked?={ truck.LeasedTruck }/>
+						<label for="leased_truck">Leased</label>
+					</div>
+					<div class="form-check" style="padding-top:20px">
+						<input type="checkbox" id="straps" name="straps" checked?={ truck.Straps }/>
+						<label for="straps">Straps</label>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Trailer Information</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="trailer_number">Trailer #</label>
+						<input type="text" id="trailer_number" name="trailer_number" class="form-control" value={ components.Deref(truck.TrailerNumber) } maxlength="4"/>
+					</div>
+					<div class="form-group">
+						<label for="trailer_make">Make</label>
+						<input type="text" id="trailer_make" name="trailer_make" class="form-control" value={ components.Deref(truck.TrailerMake) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="trailer_model">Model</label>
+						<input type="text" id="trailer_model" name="trailer_model" class="form-control" value={ components.Deref(truck.TrailerModel) } maxlength="15"/>
+					</div>
+					<div class="form-group">
+						<label for="trailer_year">Year</label>
+						<input type="text" id="trailer_year" name="trailer_year" class="form-control" value={ components.Deref(truck.TrailerYear) } maxlength="4"/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Rates &amp; Finance</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="truck_rate">Truck Rate</label>
+						<input type="text" id="truck_rate" name="truck_rate" class="form-control" value={ components.Deref(truck.TruckRate) }/>
+					</div>
+					<div class="form-group">
+						<label for="truck_calc_type">Calc Type</label>
+						<input type="text" id="truck_calc_type" name="truck_calc_type" class="form-control" value={ components.Deref(truck.TruckCalcType) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="owned_by">Owned By</label>
+						<input type="text" id="owned_by" name="owned_by" class="form-control" value={ components.Deref(truck.OwnedBy) } maxlength="30"/>
+					</div>
+					<div class="form-group">
+						<label for="financed_by">Financed By</label>
+						<input type="text" id="financed_by" name="financed_by" class="form-control" value={ components.Deref(truck.FinancedBy) } maxlength="30"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="insurance_coverage_amt">Insurance Coverage</label>
+						<input type="text" id="insurance_coverage_amt" name="insurance_coverage_amt" class="form-control" value={ components.Deref(truck.InsuranceCoverageAmt) }/>
+					</div>
+					<div class="form-group">
+						<label for="insurance_exp_date">Insurance Exp</label>
+						<input type="date" id="insurance_exp_date" name="insurance_exp_date" class="form-control" value={ components.FormatDate(truck.InsuranceExpDate) }/>
+					</div>
+					<div class="form-group">
+						<label for="cargo_coverage_amt">Cargo Coverage</label>
+						<input type="text" id="cargo_coverage_amt" name="cargo_coverage_amt" class="form-control" value={ components.Deref(truck.CargoCoverageAmt) }/>
+					</div>
+					<div class="form-check" style="padding-top:20px">
+						<input type="checkbox" id="exclude_fuel" name="exclude_fuel" checked?={ truck.ExcludeFuel }/>
+						<label for="exclude_fuel">Exclude Fuel</label>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Compliance Dates</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="w9_date">W-9 Date</label>
+						<input type="date" id="w9_date" name="w9_date" class="form-control" value={ components.FormatDate(truck.W9Date) }/>
+					</div>
+					<div class="form-group">
+						<label for="workers_comp_date">Workers Comp Date</label>
+						<input type="date" id="workers_comp_date" name="workers_comp_date" class="form-control" value={ components.FormatDate(truck.WorkersCompDate) }/>
+					</div>
+					<div class="form-group">
+						<label for="carrier_agreement_date">Carrier Agreement</label>
+						<input type="date" id="carrier_agreement_date" name="carrier_agreement_date" class="form-control" value={ components.FormatDate(truck.CarrierAgreementDate) }/>
+					</div>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create Truck
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href="/global/trucks" class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}

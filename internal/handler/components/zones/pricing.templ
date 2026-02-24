@@ -1,0 +1,74 @@
+package zones
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ PricingListPage(pg components.PageContext, items []models.ZonePricing) {
+	@components.Layout(pg, "Zone Pricing - ATLinks") {
+		<div class="page-header">
+			<h1>Zone Pricing</h1>
+		</div>
+		<div class="card">
+			<div class="card-header">Add Zone Price</div>
+			<div class="card-body">
+				<form class="inline-form" method="POST" action="/global/zone-pricing" hx-post="/global/zone-pricing">
+					<input type="text" name="zone_a" class="form-control" placeholder="Zone A" maxlength="20" required style="width:120px"/>
+					<input type="text" name="zone_b" class="form-control" placeholder="Zone B" maxlength="20" required style="width:120px"/>
+					<input type="text" name="amount" class="form-control" placeholder="Amount" style="width:100px"/>
+					<input type="number" name="miles" class="form-control" placeholder="Miles" style="width:90px"/>
+					<input type="number" name="transport_days" class="form-control" placeholder="Days" style="width:80px"/>
+					<input type="text" name="description" class="form-control" placeholder="Description" style="width:200px"/>
+					<button type="submit" class="btn btn-primary btn-sm">Add</button>
+				</form>
+			</div>
+		</div>
+		<div id="zone-pricing-table">
+			@PricingTable(items)
+		</div>
+	}
+}
+
+templ PricingTable(items []models.ZonePricing) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Zone A</th>
+					<th>Zone B</th>
+					<th>Amount</th>
+					<th>Miles</th>
+					<th>Days</th>
+					<th>Description</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(items) > 0 {
+					for _, p := range items {
+						<tr>
+							<td>{ p.ZoneA }</td>
+							<td>{ p.ZoneB }</td>
+							<td>{ components.Deref(p.Amount) }</td>
+							<td>{ fmt.Sprintf("%d", components.DerefInt(p.Miles)) }</td>
+							<td>{ fmt.Sprintf("%d", components.DerefInt(p.TransportDays)) }</td>
+							<td>{ components.Deref(p.Description) }</td>
+							<td class="text-right">
+								<button
+									class="btn btn-sm btn-danger"
+									hx-delete={ fmt.Sprintf("/global/zone-pricing/%d", p.ID) }
+									hx-confirm={ fmt.Sprintf("Delete pricing %s → %s?", p.ZoneA, p.ZoneB) }
+								>Delete</button>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="7" class="text-center text-muted">No zone pricing found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

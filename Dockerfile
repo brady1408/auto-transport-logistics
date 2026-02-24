@@ -4,7 +4,9 @@ FROM golang:1.25-bookworm AS builder
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
+RUN go install github.com/a-h/templ/cmd/templ@latest
 COPY . .
+RUN templ generate
 RUN VERSION=$(git rev-parse --short HEAD 2>/dev/null || echo "docker") && \
     CGO_ENABLED=0 GOOS=linux go build -ldflags "-X main.buildVersion=$VERSION" -o /server ./cmd/server
 

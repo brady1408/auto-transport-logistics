@@ -1,0 +1,126 @@
+package ap
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ FormPage(pg components.PageContext, apRecord *models.AccountsPayable, isNew bool, errMsg string) {
+	@components.Layout(pg, apFormTitle(isNew, apRecord) + " - ATLinks") {
+		<div class="page-header">
+			<h1>
+				if isNew {
+					New Accounts Payable
+				} else {
+					Edit AP #{ fmt.Sprintf("%d", apRecord.ID) }
+				}
+			</h1>
+			<a href="/accounting/ap" class="btn">Back to List</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			if isNew {
+				action="/accounting/ap"
+				hx-post="/accounting/ap"
+			} else {
+				action={ templ.SafeURL(fmt.Sprintf("/accounting/ap/%d/edit", apRecord.ID)) }
+				hx-put={ fmt.Sprintf("/accounting/ap/%d", apRecord.ID) }
+			}
+		>
+			<fieldset>
+				<legend>AP Information</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="vendor_name">Vendor Name</label>
+						<input type="text" id="vendor_name" name="vendor_name" class="form-control" value={ components.Deref(apRecord.VendorName) } maxlength="30"/>
+					</div>
+					<div class="form-group">
+						<label for="payable_date">Date</label>
+						<input type="date" id="payable_date" name="payable_date" class="form-control" value={ components.FormatDate(apRecord.PayableDate) }/>
+					</div>
+					<div class="form-group">
+						<label for="status">Status</label>
+						<select id="status" name="status" class="form-control">
+							<option value="Open" selected?={ components.Deref(apRecord.Status) == "Open" }>Open</option>
+							<option value="Pending" selected?={ components.Deref(apRecord.Status) == "Pending" }>Pending</option>
+							<option value="Paid" selected?={ components.Deref(apRecord.Status) == "Paid" }>Paid</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="amount">Amount</label>
+						<input type="text" id="amount" name="amount" class="form-control" value={ components.Deref(apRecord.Amount) }/>
+					</div>
+					<div class="form-group">
+						<label for="paid_amount">Paid Amount</label>
+						<input type="text" id="paid_amount" name="paid_amount" class="form-control" value={ components.Deref(apRecord.PaidAmount) }/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>References</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="trip_id">Trip ID</label>
+						<input type="number" id="trip_id" name="trip_id" class="form-control" value={ fmt.Sprintf("%d", components.DerefInt(apRecord.TripID)) }/>
+					</div>
+					<div class="form-group">
+						<label for="employee_id">Employee ID</label>
+						<input type="number" id="employee_id" name="employee_id" class="form-control" value={ fmt.Sprintf("%d", components.DerefInt(apRecord.EmployeeID)) }/>
+					</div>
+					<div class="form-group">
+						<label for="truck_id">Truck ID</label>
+						<input type="number" id="truck_id" name="truck_id" class="form-control" value={ fmt.Sprintf("%d", components.DerefInt(apRecord.TruckID)) }/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Check Info</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="check_number">Check #</label>
+						<input type="text" id="check_number" name="check_number" class="form-control" value={ components.Deref(apRecord.CheckNumber) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="check_date">Check Date</label>
+						<input type="date" id="check_date" name="check_date" class="form-control" value={ components.FormatDate(apRecord.CheckDate) }/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Details</legend>
+				<div class="form-group">
+					<label for="description">Description</label>
+					<input type="text" id="description" name="description" class="form-control" value={ components.Deref(apRecord.Description) } maxlength="200"/>
+				</div>
+				<div class="form-group">
+					<label for="comments">Comments</label>
+					<textarea id="comments" name="comments" class="form-control">{ components.Deref(apRecord.Comments) }</textarea>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create AP Record
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href="/accounting/ap" class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}
+
+func apFormTitle(isNew bool, apRecord *models.AccountsPayable) string {
+	if isNew {
+		return "New AP Record"
+	}
+	return fmt.Sprintf("Edit AP #%d", apRecord.ID)
+}

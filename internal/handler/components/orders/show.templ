@@ -1,0 +1,166 @@
+package orders
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ShowPage(pg components.PageContext, order *models.Order) {
+	@components.Layout(pg, "Order " + order.OrderNumber + " - ATLinks") {
+		<div class="page-header">
+			<h1>Order { order.OrderNumber }</h1>
+			<div class="btn-group">
+				<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/edit", order.ID)) } class="btn">Edit Order</a>
+				<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/vehicles/new", order.ID)) } class="btn btn-primary">Add Vehicle</a>
+				if order.DeliveredCount > 0 || order.ConfirmedCount > 0 {
+					<button
+						class="btn btn-success"
+						hx-post={ fmt.Sprintf("/dispatch/orders/%d/invoice", order.ID) }
+						hx-confirm="Generate invoice for this order?"
+					>Generate Invoice</button>
+				}
+				<a href="/dispatch/orders" class="btn">Back to List</a>
+			</div>
+		</div>
+		<div class="order-detail-grid">
+			<div class="card">
+				<div class="card-header">Order Info</div>
+				<div class="card-body">
+					<div class="detail-row">
+						<span class="detail-label">Status:</span>
+						<span>
+							if order.Active {
+								<span class="badge badge-active">Active</span>
+							} else {
+								<span class="badge badge-inactive">Inactive</span>
+							}
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Zone:</span>
+						<span>{ components.Deref(order.Zone) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Dispatch Code:</span>
+						<span>{ components.Deref(order.DispatchCode) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Create Date:</span>
+						<span>
+							if order.CreateDate != nil {
+								{ order.CreateDate.Format("01/02/2006") }
+							}
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Est. Pickup:</span>
+						<span>
+							if order.EstPickupDate != nil {
+								{ order.EstPickupDate.Format("01/02/2006") }
+							}
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Est. Deliver:</span>
+						<span>
+							if order.EstDeliverDate != nil {
+								{ order.EstDeliverDate.Format("01/02/2006") }
+							}
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Vehicle Counts</div>
+				<div class="card-body">
+					<div class="count-grid">
+						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.VehicleCount) }</span><span class="count-label">Total</span></div>
+						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.WaitingCount) }</span><span class="count-label">Waiting</span></div>
+						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.ScheduledCount) }</span><span class="count-label">Scheduled</span></div>
+						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.LoadedCount) }</span><span class="count-label">Loaded</span></div>
+						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.DeliveredCount) }</span><span class="count-label">Delivered</span></div>
+						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.ConfirmedCount) }</span><span class="count-label">Confirmed</span></div>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Bill-To</div>
+				<div class="card-body">
+					<strong>{ components.Deref(order.BillCustomerName) }</strong>
+					if order.BillToAddress != nil {
+						<br/>
+						{ components.Deref(order.BillToAddress) }
+					}
+					if order.BillToCity != nil {
+						<br/>
+						{ components.Deref(order.BillToCity) }, { components.Deref(order.BillToState) } { components.Deref(order.BillToZip) }
+					}
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Load/Pickup</div>
+				<div class="card-body">
+					<strong>{ components.Deref(order.LoadCustomerName) }</strong>
+					if order.LoadAddress != nil {
+						<br/>
+						{ components.Deref(order.LoadAddress) }
+					}
+					if order.LoadCity != nil {
+						<br/>
+						{ components.Deref(order.LoadCity) }, { components.Deref(order.LoadState) } { components.Deref(order.LoadZip) }
+					}
+					if order.LoadContact != nil {
+						<br/>
+						Contact: { components.Deref(order.LoadContact) }
+					}
+					if order.LoadPhone != nil {
+						<br/>
+						Phone: { components.Deref(order.LoadPhone) }
+					}
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Drop/Delivery</div>
+				<div class="card-body">
+					<strong>{ components.Deref(order.DropCustomerName) }</strong>
+					if order.DropAddress != nil {
+						<br/>
+						{ components.Deref(order.DropAddress) }
+					}
+					if order.DropCity != nil {
+						<br/>
+						{ components.Deref(order.DropCity) }, { components.Deref(order.DropState) } { components.Deref(order.DropZip) }
+					}
+					if order.DropContact != nil {
+						<br/>
+						Contact: { components.Deref(order.DropContact) }
+					}
+					if order.DropPhone != nil {
+						<br/>
+						Phone: { components.Deref(order.DropPhone) }
+					}
+				</div>
+			</div>
+		</div>
+		<h2 class="section-title">Vehicles</h2>
+		<div
+			id="vehicle-table"
+			hx-get={ fmt.Sprintf("/dispatch/orders/%d/vehicles", order.ID) }
+			hx-trigger="load"
+			hx-swap="innerHTML"
+		>
+			<p class="text-muted">Loading vehicles...</p>
+		</div>
+		<h2 class="section-title">Charges</h2>
+		<div
+			id="charge-table"
+			hx-get={ fmt.Sprintf("/dispatch/orders/%d/charges", order.ID) }
+			hx-trigger="load"
+			hx-swap="innerHTML"
+		>
+			<p class="text-muted">Loading charges...</p>
+		</div>
+	}
+}

@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/brady1408/atlinks/internal/handler/components/orders"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -36,10 +37,7 @@ func (h *ChargeHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderPartial(w, "charge_table", map[string]any{
-		"Charges": charges,
-		"OrderID": orderID,
-	})
+	h.deps.renderTempl(w, r, orders.ChargeTable(charges, orderID))
 }
 
 func (h *ChargeHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -88,10 +86,7 @@ func (h *ChargeHandler) update(w http.ResponseWriter, r *http.Request) {
 	// Re-render the charge table for the order
 	if old.OrderID != nil {
 		charges, _ := h.store.ListByOrder(r.Context(), *old.OrderID)
-		h.deps.renderPartial(w, "charge_table", map[string]any{
-			"Charges": charges,
-			"OrderID": *old.OrderID,
-		})
+		h.deps.renderTempl(w, r, orders.ChargeTable(charges, *old.OrderID))
 	}
 }
 
@@ -117,10 +112,7 @@ func (h *ChargeHandler) delete(w http.ResponseWriter, r *http.Request) {
 
 	if old.OrderID != nil {
 		charges, _ := h.store.ListByOrder(r.Context(), *old.OrderID)
-		h.deps.renderPartial(w, "charge_table", map[string]any{
-			"Charges": charges,
-			"OrderID": *old.OrderID,
-		})
+		h.deps.renderTempl(w, r, orders.ChargeTable(charges, *old.OrderID))
 	}
 }
 

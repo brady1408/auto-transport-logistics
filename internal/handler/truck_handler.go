@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/brady1408/atlinks/internal/handler/components/trucks"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -42,39 +43,31 @@ func (h *TruckHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Result": result,
-		"Filter": filter,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "truck_table", data)
+		h.deps.renderTempl(w, r, trucks.Table(*result, filter))
 		return
 	}
-	h.deps.render(w, r, "truck_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, trucks.ListPage(pg, *result, filter))
 }
 
 func (h *TruckHandler) newForm(w http.ResponseWriter, r *http.Request) {
-	h.deps.render(w, r, "truck_form.html", map[string]any{
-		"Truck": &models.Truck{Active: true},
-		"IsNew": true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, trucks.FormPage(pg, &models.Truck{Active: true}, true, ""))
 }
 
 func (h *TruckHandler) create(w http.ResponseWriter, r *http.Request) {
 	t := bindTruckForm(r)
 
 	if t.TruckNumber == "" {
-		h.deps.render(w, r, "truck_form.html", map[string]any{
-			"Truck": t, "IsNew": true, "Error": "Truck Number is required",
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, trucks.FormPage(pg, t, true, "Truck Number is required"))
 		return
 	}
 
 	if err := h.store.Create(r.Context(), t); err != nil {
-		h.deps.render(w, r, "truck_form.html", map[string]any{
-			"Truck": t, "IsNew": true, "Error": "Failed to create truck: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, trucks.FormPage(pg, t, true, "Failed to create truck: "+err.Error()))
 		return
 	}
 
@@ -99,9 +92,8 @@ func (h *TruckHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Truck not found", http.StatusNotFound)
 		return
 	}
-	h.deps.render(w, r, "truck_form.html", map[string]any{
-		"Truck": t, "IsNew": false,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, trucks.FormPage(pg, t, false, ""))
 }
 
 func (h *TruckHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -120,16 +112,14 @@ func (h *TruckHandler) update(w http.ResponseWriter, r *http.Request) {
 	t.ID = id
 
 	if t.TruckNumber == "" {
-		h.deps.render(w, r, "truck_form.html", map[string]any{
-			"Truck": t, "IsNew": false, "Error": "Truck Number is required",
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, trucks.FormPage(pg, t, false, "Truck Number is required"))
 		return
 	}
 
 	if err := h.store.Update(r.Context(), t); err != nil {
-		h.deps.render(w, r, "truck_form.html", map[string]any{
-			"Truck": t, "IsNew": false, "Error": "Failed to update: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, trucks.FormPage(pg, t, false, "Failed to update: "+err.Error()))
 		return
 	}
 

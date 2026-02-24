@@ -1,0 +1,62 @@
+package payments
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Table(result models.PaymentListResult) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Customer</th>
+					<th>Date</th>
+					<th>Check #</th>
+					<th>Method</th>
+					<th class="text-right">Amount</th>
+					<th class="text-right">Applied</th>
+					<th class="text-right">Unapplied</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, p := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/accounting/payments/%d", p.ID)) }>{ fmt.Sprintf("%d", p.ID) }</a></td>
+							<td>{ components.Deref(p.CustomerName) }</td>
+							<td>
+								if p.PaymentDate != nil {
+									{ p.PaymentDate.Format("01/02/2006") }
+								}
+							</td>
+							<td>{ components.Deref(p.CheckNumber) }</td>
+							<td>{ components.Deref(p.PaymentMethod) }</td>
+							<td class="text-right">{ components.Deref(p.Amount) }</td>
+							<td class="text-right">{ components.Deref(p.AppliedAmount) }</td>
+							<td class="text-right">{ components.Deref(p.UnappliedAmount) }</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/payments/%d", p.ID)) } class="btn btn-sm">View</a>
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/payments/%d/edit", p.ID)) } class="btn btn-sm">Edit</a>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="9" class="text-center text-muted">No payments found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/accounting/payments", "#payment-table",
+		))
+	}
+}

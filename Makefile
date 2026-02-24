@@ -1,6 +1,9 @@
-.PHONY: build run dev migrate-up migrate-down test
+.PHONY: build run dev migrate-up migrate-down test generate
 
-build:
+generate:
+	templ generate
+
+build: generate
 	go build -ldflags "-X main.buildVersion=$$(git rev-parse --short HEAD)" -o bin/server ./cmd/server
 
 run:

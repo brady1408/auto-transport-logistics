@@ -1,0 +1,68 @@
+package reports
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ DamageReportPage(pg components.PageContext, rows []store.DamageReportRow, dateFrom string, dateTo string) {
+	@components.Layout(pg, "Damage Report - ATLinks") {
+		<div class="page-header">
+			<h1>Damage Report</h1>
+			<div class="btn-group no-print">
+				<a href={ templ.SafeURL(fmt.Sprintf("/reports/damages/csv?date_from=%s&date_to=%s", dateFrom, dateTo)) } class="btn">Export CSV</a>
+				<button onclick="window.print()" class="btn">Print</button>
+				<a href="/reports" class="btn">Back to Reports</a>
+			</div>
+		</div>
+		<form class="filter-bar no-print" method="GET" action="/reports/damages">
+			<div class="form-group">
+				<label>From</label>
+				<input type="date" name="date_from" value={ dateFrom } class="form-control"/>
+			</div>
+			<div class="form-group">
+				<label>To</label>
+				<input type="date" name="date_to" value={ dateTo } class="form-control"/>
+			</div>
+			<button type="submit" class="btn btn-primary">Filter</button>
+		</form>
+		<div class="table-container">
+			<table class="report-table">
+				<thead>
+					<tr>
+						<th>Claim #</th>
+						<th>Date</th>
+						<th>VIN</th>
+						<th>Status</th>
+						<th>Description</th>
+						<th class="text-right">Claim Amount</th>
+						<th class="text-right">Paid Amount</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(rows) > 0 {
+						for _, row := range rows {
+							<tr>
+								<td><a href={ templ.SafeURL(fmt.Sprintf("/accounting/damage-claims/%d", row.ID)) }>{ row.ClaimNumber }</a></td>
+								<td>
+									if row.ClaimDate != nil {
+										{ components.Deref(row.ClaimDate) }
+									}
+								</td>
+								<td>{ row.VIN }</td>
+								<td>{ row.Status }</td>
+								<td>{ row.Description }</td>
+								<td class="text-right">${ row.ClaimAmount }</td>
+								<td class="text-right">${ row.PaidAmount }</td>
+							</tr>
+						}
+					} else {
+						<tr><td colspan="7" class="text-center text-muted">No damage claims found.</td></tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}

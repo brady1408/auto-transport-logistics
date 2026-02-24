@@ -1,0 +1,63 @@
+package employees
+
+import (
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ListPage(pg components.PageContext, result models.EmployeeListResult, filter models.EmployeeFilter) {
+	@components.Layout(pg, "Employees - ATLinks") {
+		<div class="page-header">
+			<h1>Employees</h1>
+			<a href="/global/employees/new" class="btn btn-primary">New Employee</a>
+		</div>
+		<div class="filter-bar">
+			<div class="form-group">
+				<label for="search">Search</label>
+				<input
+					type="text" id="search" name="search" class="form-control search-input"
+					placeholder="Name or ID..."
+					value={ filter.Search }
+					hx-get="/global/employees"
+					hx-trigger="keyup changed delay:300ms"
+					hx-target="#employee-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				/>
+			</div>
+			<div class="form-group">
+				<label for="active">Status</label>
+				<select
+					id="active" name="active" class="form-control"
+					hx-get="/global/employees"
+					hx-trigger="change"
+					hx-target="#employee-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				>
+					<option value="">All</option>
+					<option value="active" selected?={ filter.Active == "active" }>Active</option>
+					<option value="inactive" selected?={ filter.Active == "inactive" }>Inactive</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="is_driver">Driver</label>
+				<select
+					id="is_driver" name="is_driver" class="form-control"
+					hx-get="/global/employees"
+					hx-trigger="change"
+					hx-target="#employee-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				>
+					<option value="">All</option>
+					<option value="yes" selected?={ filter.IsDriver == "yes" }>Drivers</option>
+					<option value="no" selected?={ filter.IsDriver == "no" }>Non-Drivers</option>
+				</select>
+			</div>
+		</div>
+		<div id="employee-table">
+			@Table(result, filter)
+		</div>
+	}
+}

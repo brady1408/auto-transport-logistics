@@ -1,0 +1,121 @@
+package trips
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ AvailableVehicles(vehicles []store.UnassignedVehicleRow, tripID int, search string, totalCount int, page int, totalPages int, pageSize int) {
+	<div class="filter-bar">
+		<div class="form-group" style="margin-bottom:0;flex:1">
+			<input
+				type="search"
+				name="search"
+				class="form-control search-input"
+				placeholder="Search by VIN, Order #, or Customer..."
+				value={ search }
+				hx-get={ fmt.Sprintf("/dispatch/trips/%d/available-vehicles", tripID) }
+				hx-include="[name='per_page']"
+				hx-trigger="input changed delay:300ms, search"
+				hx-target="#modal-vehicle-list"
+				hx-swap="innerHTML"
+			/>
+		</div>
+		<div class="form-group" style="margin-bottom:0">
+			<select
+				name="per_page" class="form-control"
+				hx-get={ fmt.Sprintf("/dispatch/trips/%d/available-vehicles", tripID) }
+				hx-include="[name='search']"
+				hx-trigger="change"
+				hx-target="#modal-vehicle-list"
+				hx-swap="innerHTML"
+				style="width:auto"
+			>
+				<option value="15" selected?={ pageSize == 15 }>15</option>
+				<option value="25" selected?={ pageSize == 25 }>25</option>
+				<option value="50" selected?={ pageSize == 50 }>50</option>
+			</select>
+		</div>
+	</div>
+	if len(vehicles) > 0 {
+		<div class="result-count">Showing { fmt.Sprintf("%d", len(vehicles)) } of { fmt.Sprintf("%d", totalCount) } vehicles</div>
+		<div class="table-container">
+			<table>
+				<thead>
+					<tr>
+						<th>Order #</th>
+						<th>Customer</th>
+						<th>VIN</th>
+						<th>Year</th>
+						<th>Make</th>
+						<th>Model</th>
+						<th>Color</th>
+						<th class="text-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, v := range vehicles {
+						<tr class="available-vehicle-row">
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", v.OrderID)) }>{ v.OrderNumber }</a></td>
+							<td>{ v.CustomerName }</td>
+							<td>{ v.VIN }</td>
+							<td>{ v.Year }</td>
+							<td>{ v.Make }</td>
+							<td>{ v.Model }</td>
+							<td>{ v.Color }</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<button
+										class="btn btn-sm btn-primary"
+										hx-post={ fmt.Sprintf("/dispatch/trips/%d/assign", tripID) }
+										hx-vals={ fmt.Sprintf(`{"vehicle_id": "%d"}`, v.ID) }
+										hx-swap="none"
+									>Add</button>
+									<button
+										class="btn btn-sm btn-success"
+										hx-post={ fmt.Sprintf("/dispatch/trips/%d/assign-order", tripID) }
+										hx-vals={ fmt.Sprintf(`{"order_id": "%d"}`, v.OrderID) }
+										hx-swap="none"
+										hx-confirm={ fmt.Sprintf("Assign all waiting vehicles from order %s?", v.OrderNumber) }
+									>Add All</button>
+								</div>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		if totalPages > 1 {
+			<div class="pagination" style="margin-top:12px">
+				<span class="text-muted">Page { fmt.Sprintf("%d", page) } of { fmt.Sprintf("%d", totalPages) }</span>
+				<div class="pagination-links">
+					if page > 1 {
+						<button
+							class="btn btn-sm"
+							hx-get={ fmt.Sprintf("/dispatch/trips/%d/available-vehicles?search=%s&page=%d&per_page=%d", tripID, search, page-1, pageSize) }
+							hx-target="#modal-vehicle-list"
+							hx-swap="innerHTML"
+						>Prev</button>
+					}
+					if page < totalPages {
+						<button
+							class="btn btn-sm"
+							hx-get={ fmt.Sprintf("/dispatch/trips/%d/available-vehicles?search=%s&page=%d&per_page=%d", tripID, search, page+1, pageSize) }
+							hx-target="#modal-vehicle-list"
+							hx-swap="innerHTML"
+						>Next</button>
+					}
+				</div>
+			</div>
+		}
+	} else {
+		<div class="search-prompt">
+			if search != "" {
+				No waiting vehicles match your search
+			} else {
+				No waiting vehicles available
+			}
+		</div>
+	}
+}

@@ -1,0 +1,76 @@
+package ap
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Table(result models.APListResult) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Vendor</th>
+					<th>Date</th>
+					<th class="text-right">Amount</th>
+					<th class="text-right">Paid</th>
+					<th>Status</th>
+					<th>Description</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, a := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/accounting/ap/%d", a.ID)) }>{ fmt.Sprintf("%d", a.ID) }</a></td>
+							<td>{ components.Deref(a.VendorName) }</td>
+							<td>
+								if a.PayableDate != nil {
+									{ a.PayableDate.Format("01/02/2006") }
+								}
+							</td>
+							<td class="text-right">{ components.Deref(a.Amount) }</td>
+							<td class="text-right">{ components.Deref(a.PaidAmount) }</td>
+							<td>
+								@apStatusBadge(a.Status)
+							</td>
+							<td>{ components.Deref(a.Description) }</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/ap/%d", a.ID)) } class="btn btn-sm">View</a>
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/ap/%d/edit", a.ID)) } class="btn btn-sm">Edit</a>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="8" class="text-center text-muted">No AP records found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/accounting/ap", "#ap-table",
+		))
+	}
+}
+
+templ apStatusBadge(status *string) {
+	if status != nil {
+		if components.Deref(status) == "Open" {
+			<span class="badge badge-open">Open</span>
+		} else if components.Deref(status) == "Pending" {
+			<span class="badge badge-scheduled">Pending</span>
+		} else if components.Deref(status) == "Paid" {
+			<span class="badge badge-paid">Paid</span>
+		} else {
+			<span class="badge">{ components.Deref(status) }</span>
+		}
+	}
+}

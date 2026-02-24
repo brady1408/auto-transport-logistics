@@ -1,0 +1,72 @@
+package trucks
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Table(result models.TruckListResult, filter models.TruckFilter) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Truck #</th>
+					<th>Make</th>
+					<th>Year</th>
+					<th>Driver 1</th>
+					<th>Fleet #</th>
+					<th>Leased</th>
+					<th>Status</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, t := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/edit", t.ID)) }>{ t.TruckNumber }</a></td>
+							<td>{ components.Deref(t.TruckMake) }</td>
+							<td>{ components.Deref(t.TruckYear) }</td>
+							<td>{ components.Deref(t.Driver1) }</td>
+							<td>{ components.Deref(t.FleetNumber) }</td>
+							<td>
+								if t.LeasedTruck {
+									Yes
+								} else {
+									No
+								}
+							</td>
+							<td>
+								if t.Active {
+									<span class="badge badge-active">Active</span>
+								} else {
+									<span class="badge badge-inactive">Inactive</span>
+								}
+							</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/edit", t.ID)) } class="btn btn-sm">Edit</a>
+									<button
+										class="btn btn-sm btn-danger"
+										hx-delete={ fmt.Sprintf("/global/trucks/%d", t.ID) }
+										hx-confirm={ fmt.Sprintf("Delete truck %s?", t.TruckNumber) }
+									>Delete</button>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="8" class="text-center text-muted">No trucks found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/global/trucks", "#truck-table",
+		))
+	}
+}

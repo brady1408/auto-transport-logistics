@@ -1,0 +1,65 @@
+package lookup
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ TermsListPage(pg components.PageContext, items []store.TermItem) {
+	@components.Layout(pg, "Terms - ATLinks") {
+		<div class="page-header">
+			<h1>Terms</h1>
+		</div>
+		<div class="card">
+			<div class="card-header">Add Term</div>
+			<div class="card-body">
+				<form class="inline-form" method="POST" action="/global/terms" hx-post="/global/terms">
+					<input type="text" name="term" class="form-control" placeholder="Term" required style="width:150px"/>
+					<input type="text" name="description" class="form-control" placeholder="Description" style="width:250px"/>
+					<input type="number" name="days" class="form-control" placeholder="Days" style="width:80px"/>
+					<button type="submit" class="btn btn-primary btn-sm">Add</button>
+				</form>
+			</div>
+		</div>
+		<div id="terms-table">
+			@TermsTable(items)
+		</div>
+	}
+}
+
+templ TermsTable(items []store.TermItem) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Term</th>
+					<th>Description</th>
+					<th>Days</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(items) > 0 {
+					for _, t := range items {
+						<tr>
+							<td>{ t.Term }</td>
+							<td>{ t.Description }</td>
+							<td>{ fmt.Sprintf("%d", components.DerefInt(t.Days)) }</td>
+							<td class="text-right">
+								<button
+									class="btn btn-sm btn-danger"
+									hx-delete={ fmt.Sprintf("/global/terms/%d", t.ID) }
+									hx-confirm={ fmt.Sprintf("Delete %s?", t.Term) }
+								>Delete</button>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="4" class="text-center text-muted">No terms found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

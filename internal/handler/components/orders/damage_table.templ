@@ -1,0 +1,48 @@
+package orders
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ DamageTable(damages []models.VehicleDamage, vehicleID int) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Area</th>
+					<th>Type</th>
+					<th>Severity</th>
+					<th>Description</th>
+					<th>Inspected By</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(damages) > 0 {
+					for _, d := range damages {
+						<tr>
+							<td>{ components.Deref(d.DamageArea) }</td>
+							<td>{ components.Deref(d.DamageType) }</td>
+							<td>{ components.Deref(d.DamageSeverity) }</td>
+							<td>{ components.Deref(d.Description) }</td>
+							<td>{ components.Deref(d.InspectedBy) }</td>
+							<td class="text-right">
+								<button
+									class="btn btn-sm btn-danger"
+									hx-delete={ fmt.Sprintf("/dispatch/damage/%d", d.ID) }
+									hx-target="#damage-table"
+									hx-confirm="Delete this damage record?"
+								>Delete</button>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="6" class="text-center text-muted">No damage records</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

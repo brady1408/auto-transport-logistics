@@ -1,0 +1,158 @@
+package settings
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+func fieldError(errs map[string]string, key string) string {
+	if errs == nil {
+		return ""
+	}
+	return errs[key]
+}
+
+func formVal(form map[string]string, key string) string {
+	if form == nil {
+		return ""
+	}
+	return form[key]
+}
+
+func userFieldValue(editUser *models.User, form map[string]string, field string) string {
+	if editUser != nil {
+		switch field {
+		case "username":
+			return editUser.Username
+		case "email":
+			return editUser.Email
+		case "role":
+			return editUser.Role
+		}
+	}
+	if form != nil {
+		return form[field]
+	}
+	return ""
+}
+
+templ UserFormPage(pg components.PageContext, isNew bool, form map[string]string, editUser *models.User, fieldErrors map[string]string, errMsg string) {
+	@components.Layout(pg, func() string {
+		if isNew {
+			return "New User - Settings"
+		}
+		return "Edit User - Settings"
+	}()) {
+		<div class="page-header">
+			<h2>
+				if isNew {
+					New User
+				} else {
+					Edit User
+				}
+			</h2>
+			<a href="/settings/users" class="btn">Back to Users</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			action={
+				templ.SafeURL(func() string {
+					if isNew {
+						return "/settings/users"
+					}
+					return fmt.Sprintf("/settings/users/%d", editUser.ID)
+				}())
+			}
+			class="form-card"
+		>
+			<div class="form-row">
+				<div class="form-group">
+					<label for="username">Username *</label>
+					<input
+						type="text" id="username" name="username"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "username") != "") }
+						value={ userFieldValue(editUser, form, "username") }
+						required
+						maxlength="50"
+					/>
+					if fe := fieldError(fieldErrors, "username"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+				<div class="form-group">
+					<label for="email">Email</label>
+					<input
+						type="email" id="email" name="email"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "email") != "") }
+						value={ userFieldValue(editUser, form, "email") }
+						maxlength="255"
+					/>
+					if fe := fieldError(fieldErrors, "email"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label for="password">
+						Password
+						if !isNew {
+							(leave blank to keep current)
+						}
+					</label>
+					<input
+						type="password" id="password" name="password"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "password") != "") }
+						if isNew {
+							required
+						}
+					/>
+					if fe := fieldError(fieldErrors, "password"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+				<div class="form-group">
+					<label for="role">Role</label>
+					<select
+						id="role" name="role"
+						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "role") != "") }
+					>
+						<option value="user" selected?={ userFieldValue(editUser, form, "role") == "user" }>User</option>
+						<option value="company_admin" selected?={ userFieldValue(editUser, form, "role") == "company_admin" }>Company Admin</option>
+						if pg.User != nil && pg.User.Role == "super_admin" {
+							<option value="super_admin" selected?={ userFieldValue(editUser, form, "role") == "super_admin" }>Super Admin</option>
+						}
+					</select>
+					if fe := fieldError(fieldErrors, "role"); fe != "" {
+						<small class="field-error">{ fe }</small>
+					}
+				</div>
+			</div>
+			if editUser != nil {
+				<div class="form-row">
+					<div class="form-group">
+						<label>
+							<input type="checkbox" name="active" value="on" checked?={ editUser.Active }/>
+							Active
+						</label>
+					</div>
+				</div>
+			}
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create User
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href="/settings/users" class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}

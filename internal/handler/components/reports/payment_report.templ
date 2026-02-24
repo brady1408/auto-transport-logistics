@@ -1,0 +1,68 @@
+package reports
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ PaymentReportPage(pg components.PageContext, rows []store.PaymentReportRow, dateFrom string, dateTo string) {
+	@components.Layout(pg, "Payment Report - ATLinks") {
+		<div class="page-header">
+			<h1>Payment Report</h1>
+			<div class="btn-group no-print">
+				<a href={ templ.SafeURL(fmt.Sprintf("/reports/payments/csv?date_from=%s&date_to=%s", dateFrom, dateTo)) } class="btn">Export CSV</a>
+				<button onclick="window.print()" class="btn">Print</button>
+				<a href="/reports" class="btn">Back to Reports</a>
+			</div>
+		</div>
+		<form class="filter-bar no-print" method="GET" action="/reports/payments">
+			<div class="form-group">
+				<label>From</label>
+				<input type="date" name="date_from" value={ dateFrom } class="form-control"/>
+			</div>
+			<div class="form-group">
+				<label>To</label>
+				<input type="date" name="date_to" value={ dateTo } class="form-control"/>
+			</div>
+			<button type="submit" class="btn btn-primary">Filter</button>
+		</form>
+		<div class="table-container">
+			<table class="report-table">
+				<thead>
+					<tr>
+						<th>Date</th>
+						<th>Customer</th>
+						<th>Check #</th>
+						<th class="text-right">Amount</th>
+						<th class="text-right">Applied</th>
+						<th>Method</th>
+						<th>Applied to Invoices</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(rows) > 0 {
+						for _, row := range rows {
+							<tr>
+								<td>
+									if row.PaymentDate != nil {
+										{ components.Deref(row.PaymentDate) }
+									}
+								</td>
+								<td>{ row.CustomerName }</td>
+								<td>{ row.CheckNumber }</td>
+								<td class="text-right">${ row.Amount }</td>
+								<td class="text-right">${ row.AppliedAmount }</td>
+								<td>{ row.PaymentMethod }</td>
+								<td>{ row.InvoiceNumbers }</td>
+							</tr>
+						}
+					} else {
+						<tr><td colspan="7" class="text-center text-muted">No payments found.</td></tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}

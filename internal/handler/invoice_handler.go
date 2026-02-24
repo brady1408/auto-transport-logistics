@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/brady1408/atlinks/internal/handler/components/invoices"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/store"
@@ -60,16 +61,12 @@ func (h *InvoiceHandler) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Result": result,
-		"Filter": filter,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "invoice_table", data)
+		h.deps.renderTempl(w, r, invoices.Table(*result))
 		return
 	}
-	h.deps.render(w, r, "invoice_list.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, invoices.ListPage(pg, *result, filter))
 }
 
 func (h *InvoiceHandler) newForm(w http.ResponseWriter, r *http.Request) {
@@ -77,20 +74,18 @@ func (h *InvoiceHandler) newForm(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	status := "Open"
 	zero := "0.00"
-	h.deps.render(w, r, "invoice_form.html", map[string]any{
-		"Invoice": &models.Invoice{
-			InvoiceNumber: invNum,
-			Active:        true,
-			InvoiceDate:   &now,
-			Status:        &status,
-			Subtotal:      &zero,
-			Tax:           &zero,
-			TotalAmount:   &zero,
-			AmountPaid:    &zero,
-			Balance:       &zero,
-		},
-		"IsNew": true,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, invoices.FormPage(pg, &models.Invoice{
+		InvoiceNumber: invNum,
+		Active:        true,
+		InvoiceDate:   &now,
+		Status:        &status,
+		Subtotal:      &zero,
+		Tax:           &zero,
+		TotalAmount:   &zero,
+		AmountPaid:    &zero,
+		Balance:       &zero,
+	}, true, ""))
 }
 
 func (h *InvoiceHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -99,22 +94,16 @@ func (h *InvoiceHandler) create(w http.ResponseWriter, r *http.Request) {
 	if inv.InvoiceNumber == "" {
 		num, err := h.store.NextInvoiceNumber(r.Context())
 		if err != nil {
-			h.deps.render(w, r, "invoice_form.html", map[string]any{
-				"Invoice": inv,
-				"IsNew":   true,
-				"Error":   "Failed to generate invoice number: " + err.Error(),
-			})
+			pg := h.deps.pageContext(w, r)
+			h.deps.renderTempl(w, r, invoices.FormPage(pg, inv, true, "Failed to generate invoice number: "+err.Error()))
 			return
 		}
 		inv.InvoiceNumber = num
 	}
 
 	if err := h.store.Create(r.Context(), inv); err != nil {
-		h.deps.render(w, r, "invoice_form.html", map[string]any{
-			"Invoice": inv,
-			"IsNew":   true,
-			"Error":   "Failed to create invoice: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, invoices.FormPage(pg, inv, true, "Failed to create invoice: "+err.Error()))
 		return
 	}
 
@@ -154,11 +143,8 @@ func (h *InvoiceHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "invoice_show.html", map[string]any{
-		"Invoice":  inv,
-		"Details":  details,
-		"Payments": payments,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, invoices.ShowPage(pg, inv, details, payments))
 }
 
 func (h *InvoiceHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -174,10 +160,8 @@ func (h *InvoiceHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.render(w, r, "invoice_form.html", map[string]any{
-		"Invoice": inv,
-		"IsNew":   false,
-	})
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, invoices.FormPage(pg, inv, false, ""))
 }
 
 func (h *InvoiceHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -198,11 +182,8 @@ func (h *InvoiceHandler) update(w http.ResponseWriter, r *http.Request) {
 	inv.InvoiceNumber = old.InvoiceNumber
 
 	if err := h.store.Update(r.Context(), inv); err != nil {
-		h.deps.render(w, r, "invoice_form.html", map[string]any{
-			"Invoice": inv,
-			"IsNew":   false,
-			"Error":   "Failed to update invoice: " + err.Error(),
-		})
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, invoices.FormPage(pg, inv, false, "Failed to update invoice: "+err.Error()))
 		return
 	}
 
@@ -293,10 +274,7 @@ func (h *InvoiceHandler) printView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderPartial(w, "invoice_print", map[string]any{
-		"Invoice": inv,
-		"Details": details,
-	})
+	h.deps.renderTempl(w, r, invoices.PrintPage(inv, details))
 }
 
 // Invoice detail inline CRUD
@@ -313,10 +291,7 @@ func (h *InvoiceHandler) listDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderPartial(w, "invoice_detail_table", map[string]any{
-		"Details":   details,
-		"InvoiceID": id,
-	})
+	h.deps.renderTempl(w, r, invoices.DetailTable(details, id))
 }
 
 func (h *InvoiceHandler) addDetail(w http.ResponseWriter, r *http.Request) {
@@ -352,10 +327,7 @@ func (h *InvoiceHandler) addDetail(w http.ResponseWriter, r *http.Request) {
 
 	// Re-render detail table
 	details, _ := h.detailStore.ListByInvoice(r.Context(), invoiceID)
-	h.deps.renderPartial(w, "invoice_detail_table", map[string]any{
-		"Details":   details,
-		"InvoiceID": invoiceID,
-	})
+	h.deps.renderTempl(w, r, invoices.DetailTable(details, invoiceID))
 }
 
 func (h *InvoiceHandler) removeDetail(w http.ResponseWriter, r *http.Request) {
@@ -385,10 +357,7 @@ func (h *InvoiceHandler) removeDetail(w http.ResponseWriter, r *http.Request) {
 
 	// Re-render detail table
 	details, _ := h.detailStore.ListByInvoice(r.Context(), invoiceID)
-	h.deps.renderPartial(w, "invoice_detail_table", map[string]any{
-		"Details":   details,
-		"InvoiceID": invoiceID,
-	})
+	h.deps.renderTempl(w, r, invoices.DetailTable(details, invoiceID))
 }
 
 func bindInvoiceForm(r *http.Request) *models.Invoice {

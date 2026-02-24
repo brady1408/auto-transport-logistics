@@ -1,0 +1,61 @@
+package trips
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ExpenseTable(expenses []models.TripExpense, tripID int) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Description</th>
+					<th>Amount</th>
+					<th>Date</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(expenses) > 0 {
+					for _, e := range expenses {
+						<tr>
+							<td>{ components.Deref(e.Description) }</td>
+							<td>{ components.Deref(e.Amount) }</td>
+							<td>
+								if e.ExpenseDate != nil {
+									{ e.ExpenseDate.Format("01/02/2006") }
+								}
+							</td>
+							<td class="text-right">
+								<button
+									class="btn btn-sm btn-danger"
+									hx-delete={ fmt.Sprintf("/dispatch/expenses/%d", e.ID) }
+									hx-target="#expense-table"
+									hx-confirm="Delete this expense?"
+								>Delete</button>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="4" class="text-center text-muted">No expenses</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if tripID > 0 {
+		<form
+			class="inline-form mt-2"
+			hx-post={ fmt.Sprintf("/dispatch/trips/%d/expenses", tripID) }
+			hx-target="#expense-table"
+			hx-swap="innerHTML"
+		>
+			<input type="text" name="description" class="form-control" placeholder="Description" style="min-width:200px"/>
+			<input type="text" name="amount" class="form-control" placeholder="Amount" style="width:100px"/>
+			<input type="date" name="expense_date" class="form-control" style="width:150px"/>
+			<button type="submit" class="btn btn-sm btn-primary">Add</button>
+		</form>
+	}
+}

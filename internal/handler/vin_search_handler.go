@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/brady1408/atlinks/internal/handler/components/pages"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
@@ -34,16 +35,12 @@ func (h *VinSearchHandler) page(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := map[string]any{
-		"Query":   query,
-		"Results": results,
-	}
-
 	if isHTMX(r) {
-		h.deps.renderPartial(w, "vin_search_results", data)
+		h.deps.renderTempl(w, r, pages.VinSearchResults(query, results))
 		return
 	}
-	h.deps.render(w, r, "vin_search.html", data)
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, pages.VinSearchPage(pg, query, results))
 }
 
 func (h *VinSearchHandler) searchAPI(w http.ResponseWriter, r *http.Request) {

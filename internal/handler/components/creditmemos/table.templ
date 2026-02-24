@@ -1,0 +1,80 @@
+package creditmemos
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Table(result models.CreditMemoListResult) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Credit #</th>
+					<th>Customer</th>
+					<th>Invoice #</th>
+					<th>Date</th>
+					<th class="text-right">Amount</th>
+					<th>Status</th>
+					<th>Reason</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, cm := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/accounting/credit-memos/%d", cm.ID)) }>{ cm.CreditNumber }</a></td>
+							<td>{ components.Deref(cm.CustomerName) }</td>
+							<td>
+								if cm.InvoiceID != nil {
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d", components.DerefInt(cm.InvoiceID))) }>{ components.Deref(cm.InvoiceNumber) }</a>
+								}
+							</td>
+							<td>
+								if cm.CreditDate != nil {
+									{ cm.CreditDate.Format("01/02/2006") }
+								}
+							</td>
+							<td class="text-right">{ components.Deref(cm.Amount) }</td>
+							<td>
+								@creditMemoStatusBadge(cm.Status)
+							</td>
+							<td>{ components.Deref(cm.Reason) }</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/credit-memos/%d", cm.ID)) } class="btn btn-sm">View</a>
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/credit-memos/%d/edit", cm.ID)) } class="btn btn-sm">Edit</a>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="8" class="text-center text-muted">No credit memos found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/accounting/credit-memos", "#credit-memo-table",
+		))
+	}
+}
+
+templ creditMemoStatusBadge(status *string) {
+	if status != nil {
+		if components.Deref(status) == "Pending" {
+			<span class="badge badge-open">Pending</span>
+		} else if components.Deref(status) == "Applied" {
+			<span class="badge badge-paid">Applied</span>
+		} else if components.Deref(status) == "Void" {
+			<span class="badge badge-void">Void</span>
+		} else {
+			<span class="badge">{ components.Deref(status) }</span>
+		}
+	}
+}

@@ -1,0 +1,51 @@
+package settings
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ UsersPage(pg components.PageContext, users []models.User) {
+	@components.Layout(pg, "Users - Settings") {
+		<div class="page-header">
+			<h2>Users</h2>
+			<a href="/settings/users/new" class="btn btn-primary">New User</a>
+		</div>
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Username</th>
+					<th>Email</th>
+					<th>Role</th>
+					<th>Active</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(users) > 0 {
+					for _, u := range users {
+						<tr>
+							<td>{ fmt.Sprintf("%d", u.ID) }</td>
+							<td>{ u.Username }</td>
+							<td>{ u.Email }</td>
+							<td>{ u.Role }</td>
+							<td>
+								if u.Active {
+									Yes
+								} else {
+									No
+								}
+							</td>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/settings/users/%d/edit", u.ID)) } class="btn btn-sm">Edit</a></td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="6" class="text-center">No users found</td></tr>
+				}
+			</tbody>
+		</table>
+	}
+}
