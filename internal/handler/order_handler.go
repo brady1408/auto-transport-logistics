@@ -51,6 +51,7 @@ func (h *OrderHandler) list(w http.ResponseWriter, r *http.Request) {
 		Zone:         r.URL.Query().Get("zone"),
 		DispatchCode: r.URL.Query().Get("dispatch_code"),
 		Active:       r.URL.Query().Get("active"),
+		Status:       r.URL.Query().Get("status"),
 		DateFrom:     r.URL.Query().Get("date_from"),
 		DateTo:       r.URL.Query().Get("date_to"),
 		Page:         intParam(r, "page", 1),

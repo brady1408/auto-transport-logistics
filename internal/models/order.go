@@ -90,6 +90,7 @@ type OrderFilter struct {
 	Zone         string
 	DispatchCode string
 	Active       string // "active", "inactive", ""
+	Status       string // "uninvoiced_delivered", ""
 	DateFrom     string
 	DateTo       string
 	Page         int

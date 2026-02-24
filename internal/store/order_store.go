@@ -99,6 +99,9 @@ func (s *OrderStore) List(ctx context.Context, f models.OrderFilter) (*models.Or
 	case "inactive":
 		qb.AddRaw("active = false")
 	}
+	if f.Status == "uninvoiced_delivered" {
+		qb.AddRaw("(delivered_count + confirmed_count) > 0 AND invoiced_count = 0")
+	}
 
 	// Count
 	var total int
