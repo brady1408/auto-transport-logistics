@@ -1,0 +1,77 @@
+{{define "feedback_table"}}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>User</th>
+                <th>Category</th>
+                <th>Page</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Result.Items}}
+            {{range .Result.Items}}
+            <tr>
+                <td>{{.CreatedAt.Format "01/02/2006 3:04 PM"}}</td>
+                <td>{{.Username}}</td>
+                <td>
+                    {{if eq .Category "bug"}}<span class="badge badge-denied">Bug</span>
+                    {{else if eq .Category "feature"}}<span class="badge badge-scheduled">Feature</span>
+                    {{else}}<span class="badge badge-pending">Question</span>
+                    {{end}}
+                </td>
+                <td><code>{{.PageURL}}</code></td>
+                <td>{{if gt (len .Message) 80}}{{slice .Message 0 80}}...{{else}}{{.Message}}{{end}}</td>
+                <td>
+                    {{if eq .Status "open"}}<span class="badge badge-open">Open</span>
+                    {{else if eq .Status "reviewed"}}<span class="badge badge-pending">Reviewed</span>
+                    {{else if eq .Status "resolved"}}<span class="badge badge-paid">Resolved</span>
+                    {{else}}<span class="badge">{{.Status}}</span>
+                    {{end}}
+                </td>
+                <td class="text-right">
+                    <a href="/admin/feedback/{{.ID}}" class="btn btn-sm">View</a>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr><td colspan="7" class="text-center text-muted">No feedback found</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{if .Result.Items}}
+<div class="pagination">
+    <span>Showing {{add (mul (sub .Result.Page 1) .Result.PageSize) 1}}-{{with $end := mul .Result.Page .Result.PageSize}}{{if gt $end $.Result.TotalCount}}{{$.Result.TotalCount}}{{else}}{{$end}}{{end}}{{end}} of {{.Result.TotalCount}}</span>
+    <div class="pagination-links">
+        {{$pages := totalPages .Result.TotalCount .Result.PageSize}}
+        {{if gt .Result.Page 1}}
+        <button class="btn btn-sm"
+                hx-get="/admin/feedback?page={{sub .Result.Page 1}}"
+                hx-target="#feedback-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">Prev</button>
+        {{end}}
+        {{range $p := seq 1 $pages}}
+        <button class="btn btn-sm {{if eq $p $.Result.Page}}active{{end}}"
+                hx-get="/admin/feedback?page={{$p}}"
+                hx-target="#feedback-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">{{$p}}</button>
+        {{end}}
+        {{if lt .Result.Page $pages}}
+        <button class="btn btn-sm"
+                hx-get="/admin/feedback?page={{add .Result.Page 1}}"
+                hx-target="#feedback-table"
+                hx-include=".filter-bar [name]"
+                hx-push-url="true">Next</button>
+        {{end}}
+    </div>
+</div>
+{{end}}
+{{end}}

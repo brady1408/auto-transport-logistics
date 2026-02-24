@@ -1,0 +1,80 @@
+{{define "feedback_show.html"}}
+{{template "base" .}}
+{{define "title"}}Feedback #{{.Feedback.ID}} - ATLinks{{end}}
+{{define "content"}}
+<div class="page-header">
+    <h1>Feedback #{{.Feedback.ID}}</h1>
+    <div class="btn-group">
+        <button class="btn btn-danger"
+                hx-delete="/admin/feedback/{{.Feedback.ID}}"
+                hx-confirm="Delete this feedback?">Delete</button>
+        <a href="/admin/feedback" class="btn">Back to List</a>
+    </div>
+</div>
+
+<div class="order-detail-grid">
+    <div class="card">
+        <div class="card-header">Feedback Details</div>
+        <div class="card-body">
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span>
+                    {{if eq .Feedback.Status "open"}}<span class="badge badge-open">Open</span>
+                    {{else if eq .Feedback.Status "reviewed"}}<span class="badge badge-pending">Reviewed</span>
+                    {{else if eq .Feedback.Status "resolved"}}<span class="badge badge-paid">Resolved</span>
+                    {{else}}<span class="badge">{{.Feedback.Status}}</span>
+                    {{end}}
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Category:</span>
+                <span>
+                    {{if eq .Feedback.Category "bug"}}<span class="badge badge-denied">Bug</span>
+                    {{else if eq .Feedback.Category "feature"}}<span class="badge badge-scheduled">Feature</span>
+                    {{else}}<span class="badge badge-pending">Question</span>
+                    {{end}}
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Submitted by:</span>
+                <span>{{.Feedback.Username}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Page:</span>
+                <span><code>{{.Feedback.PageURL}}</code></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span>{{.Feedback.CreatedAt.Format "01/02/2006 3:04 PM"}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Update</div>
+        <div class="card-body">
+            <form hx-put="/admin/feedback/{{.Feedback.ID}}">
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status" class="form-control">
+                        <option value="open" {{selected .Feedback.Status "open"}}>Open</option>
+                        <option value="reviewed" {{selected .Feedback.Status "reviewed"}}>Reviewed</option>
+                        <option value="resolved" {{selected .Feedback.Status "resolved"}}>Resolved</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="admin_notes">Admin Notes</label>
+                    <textarea id="admin_notes" name="admin_notes" class="form-control" rows="4">{{deref .Feedback.AdminNotes}}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<h2 class="section-title">Message</h2>
+<div class="card">
+    <div class="card-body" style="white-space: pre-wrap;">{{.Feedback.Message}}</div>
+</div>
+{{end}}
+{{end}}
