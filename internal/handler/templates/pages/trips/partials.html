@@ -1,9 +1,14 @@
 {{define "load_table"}}
-<div id="load-manifest" class="table-container">
+{{template "load_table_inner" .}}
+{{end}}
+
+{{define "load_table_inner"}}
+<div class="table-container">
     <table>
         <thead>
             <tr>
                 <th>Bay</th>
+                <th>Order</th>
                 <th>VIN</th>
                 <th>Year</th>
                 <th>Make</th>
@@ -18,6 +23,7 @@
             {{range .Loads}}
             <tr>
                 <td>{{deref .BayNumber}}</td>
+                <td>{{if .OrderID}}<a href="/dispatch/orders/{{derefInt .OrderID}}">{{.OrderNumber}}</a>{{end}}</td>
                 <td>{{deref .VIN}}</td>
                 <td>{{deref .Year}}</td>
                 <td>{{deref .Make}}</td>
@@ -27,16 +33,82 @@
                 <td class="text-right">
                     <button class="btn btn-sm btn-danger"
                             hx-delete="/dispatch/trips/{{.TripID}}/loads/{{.ID}}"
+                            hx-swap="none"
                             hx-confirm="Remove this vehicle from the trip?">Remove</button>
                 </td>
             </tr>
             {{end}}
             {{else}}
-            <tr><td colspan="8" class="text-center text-muted">No vehicles assigned to this trip</td></tr>
+            <tr><td colspan="9" class="text-center text-muted">No vehicles assigned to this trip</td></tr>
             {{end}}
         </tbody>
     </table>
 </div>
+{{end}}
+
+{{define "available_vehicles_table"}}
+<div class="filter-bar">
+    <div class="form-group" style="margin-bottom:0;flex:1">
+        <input type="search"
+               name="search"
+               class="form-control search-input"
+               placeholder="Search by VIN, Order #, or Customer..."
+               value="{{.Search}}"
+               hx-get="/dispatch/trips/{{.TripID}}/available-vehicles"
+               hx-trigger="input changed delay:300ms, search"
+               hx-target="#modal-vehicle-list"
+               hx-swap="innerHTML">
+    </div>
+</div>
+{{if .NoSearch}}
+<div class="search-prompt">Search to find available vehicles</div>
+{{else if .Vehicles}}
+<div class="result-count">Showing {{len .Vehicles}} of {{.TotalCount}} results{{if gt .TotalCount (len .Vehicles)}} &mdash; refine your search{{end}}</div>
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>VIN</th>
+                <th>Year</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Color</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Vehicles}}
+            <tr class="available-vehicle-row">
+                <td><a href="/dispatch/orders/{{.OrderID}}">{{.OrderNumber}}</a></td>
+                <td>{{.CustomerName}}</td>
+                <td>{{.VIN}}</td>
+                <td>{{.Year}}</td>
+                <td>{{.Make}}</td>
+                <td>{{.Model}}</td>
+                <td>{{.Color}}</td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-primary"
+                                hx-post="/dispatch/trips/{{$.TripID}}/assign"
+                                hx-vals='{"vehicle_id": "{{.ID}}"}'
+                                hx-swap="none">Add</button>
+                        <button class="btn btn-sm btn-success"
+                                hx-post="/dispatch/trips/{{$.TripID}}/assign-order"
+                                hx-vals='{"order_id": "{{.OrderID}}"}'
+                                hx-swap="none"
+                                hx-confirm="Assign all waiting vehicles from order {{.OrderNumber}}?">Add All</button>
+                    </div>
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{else}}
+<div class="search-prompt">No waiting vehicles match your search</div>
+{{end}}
 {{end}}
 
 {{define "fuel_table"}}
