@@ -69,9 +69,9 @@ func (h *LoadboardHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /loadboard/my-claims/{id}/cancel", h.cancelClaim)
 	mux.HandleFunc("POST /loadboard/claims/{id}/accept", h.acceptClaim)
 	mux.HandleFunc("POST /loadboard/claims/{id}/reject", h.rejectClaim)
-	// These must be last to avoid matching the above
+	mux.HandleFunc("POST /loadboard/claim/{id}", h.claim)
+	// This must be last — {id} wildcard would match other paths
 	mux.HandleFunc("GET /loadboard/{id}", h.show)
-	mux.HandleFunc("POST /loadboard/{id}/claim", h.claim)
 }
 
 func (h *LoadboardHandler) browse(w http.ResponseWriter, r *http.Request) {
