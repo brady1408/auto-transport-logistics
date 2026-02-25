@@ -224,9 +224,16 @@ func (s *LoadboardStore) ListMyClaims(ctx context.Context, companyID int, f mode
 		return nil, fmt.Errorf("count my claims: %w", err)
 	}
 
-	query := fmt.Sprintf(`SELECT %s, l.listing_number, l.title, l.status
+	query := fmt.Sprintf(`SELECT %s, l.listing_number, l.title, l.status,
+			COALESCE(uc.cnt, 0) AS unread_count
 		FROM loadboard_claims c
 		JOIN loadboard_listings l ON l.id = c.listing_id
+		LEFT JOIN LATERAL (
+			SELECT COUNT(*) AS cnt FROM loadboard_messages m
+			WHERE m.claim_id = c.id
+			  AND m.sender_company_id = l.poster_company_id
+			  AND (c.carrier_last_read_at IS NULL OR m.created_at > c.carrier_last_read_at)
+		) uc ON true
 		%s ORDER BY c.created_at DESC %s`,
 		claimColumnsAliased(), qb.Where(), qb.Paginate(f.PageSize, f.Page))
 
@@ -244,6 +251,7 @@ func (s *LoadboardStore) ListMyClaims(ctx context.Context, companyID int, f mode
 			&c.AcceptedAt, &c.RejectedAt, &c.CancelledAt, &c.CompletedAt,
 			&c.CreatedAt, &c.UpdatedAt,
 			&c.ListingNumber, &c.ListingTitle, &c.ListingStatus,
+			&c.UnreadCount,
 		); err != nil {
 			return models.LoadboardClaim{}, err
 		}
@@ -261,11 +269,19 @@ func (s *LoadboardStore) ListMyClaims(ctx context.Context, companyID int, f mode
 	}, nil
 }
 
-// ListClaimsOnListing returns all claims on a specific listing, including message counts.
+// ListClaimsOnListing returns all claims on a specific listing, including message and unread counts.
 func (s *LoadboardStore) ListClaimsOnListing(ctx context.Context, listingID int) ([]models.LoadboardClaim, error) {
-	query := fmt.Sprintf(`SELECT %s, COALESCE(mc.cnt, 0) AS message_count
+	query := fmt.Sprintf(`SELECT %s,
+			COALESCE(mc.cnt, 0) AS message_count,
+			COALESCE(uc.cnt, 0) AS unread_count
 		FROM loadboard_claims c
 		LEFT JOIN (SELECT claim_id, COUNT(*) AS cnt FROM loadboard_messages GROUP BY claim_id) mc ON mc.claim_id = c.id
+		LEFT JOIN LATERAL (
+			SELECT COUNT(*) AS cnt FROM loadboard_messages m
+			WHERE m.claim_id = c.id
+			  AND m.sender_company_id = c.carrier_company_id
+			  AND (c.poster_last_read_at IS NULL OR m.created_at > c.poster_last_read_at)
+		) uc ON true
 		WHERE c.listing_id = $1 ORDER BY c.created_at DESC`,
 		claimColumnsAliased())
 	rows, err := s.pool.Query(ctx, query, listingID)
@@ -281,7 +297,7 @@ func (s *LoadboardStore) ListClaimsOnListing(ctx context.Context, listingID int)
 			&c.CarrierNotes, &c.PosterNotes,
 			&c.AcceptedAt, &c.RejectedAt, &c.CancelledAt, &c.CompletedAt,
 			&c.CreatedAt, &c.UpdatedAt,
-			&c.MessageCount,
+			&c.MessageCount, &c.UnreadCount,
 		); err != nil {
 			return models.LoadboardClaim{}, err
 		}

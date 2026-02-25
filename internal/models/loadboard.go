@@ -80,6 +80,7 @@ type LoadboardClaim struct {
 	ListingTitle  string `json:"listing_title,omitempty"`
 	ListingStatus string `json:"listing_status,omitempty"`
 	MessageCount  int    `json:"message_count,omitempty"`
+	UnreadCount   int    `json:"unread_count,omitempty"`
 }
 
 type LoadboardMessage struct {
