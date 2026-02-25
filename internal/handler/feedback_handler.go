@@ -200,7 +200,11 @@ func (h *FeedbackHandler) show(w http.ResponseWriter, r *http.Request) {
 
 	var atts []models.Attachment
 	if h.attStore != nil {
-		atts, _ = h.attStore.ListByEntity(r.Context(), "feedback", id)
+		var err error
+		atts, err = h.attStore.ListByEntity(r.Context(), "feedback", id)
+		if err != nil {
+			log.Printf("list feedback attachments for %d: %v", id, err)
+		}
 	}
 
 	pg := h.deps.pageContext(w, r)

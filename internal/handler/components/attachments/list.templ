@@ -3,19 +3,9 @@ package attachments
 import (
 	"fmt"
 
+	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/models"
 )
-
-func formatSize(b int64) string {
-	switch {
-	case b >= 1<<20:
-		return fmt.Sprintf("%.1f MB", float64(b)/float64(1<<20))
-	case b >= 1<<10:
-		return fmt.Sprintf("%.0f KB", float64(b)/float64(1<<10))
-	default:
-		return fmt.Sprintf("%d B", b)
-	}
-}
 
 func isImage(contentType string) bool {
 	return contentType == "image/jpeg" || contentType == "image/png" ||
@@ -38,7 +28,7 @@ templ AttachmentList(atts []models.Attachment, category string, entityID int) {
 					}
 					<div class="attachment-info">
 						<a href={ templ.SafeURL(fmt.Sprintf("/attachments/%d", a.ID)) } target="_blank">{ a.Filename }</a>
-						<span class="text-muted" style="font-size: 12px;">{ formatSize(a.SizeBytes) }</span>
+						<span class="text-muted" style="font-size: 12px;">{ components.FormatBytes(a.SizeBytes) }</span>
 					</div>
 					<button
 						class="btn btn-sm btn-danger"

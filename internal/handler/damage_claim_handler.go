@@ -122,7 +122,11 @@ func (h *DamageClaimHandler) show(w http.ResponseWriter, r *http.Request) {
 
 	var atts []models.Attachment
 	if h.attStore != nil {
-		atts, _ = h.attStore.ListByEntity(r.Context(), "damage_claim", id)
+		var err error
+		atts, err = h.attStore.ListByEntity(r.Context(), "damage_claim", id)
+		if err != nil {
+			log.Printf("list damage claim attachments for %d: %v", id, err)
+		}
 	}
 
 	pg := h.deps.pageContext(w, r)

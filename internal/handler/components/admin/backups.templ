@@ -7,19 +7,6 @@ import (
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-func formatBytes(b int64) string {
-	switch {
-	case b >= 1<<30:
-		return fmt.Sprintf("%.2f GB", float64(b)/float64(1<<30))
-	case b >= 1<<20:
-		return fmt.Sprintf("%.1f MB", float64(b)/float64(1<<20))
-	case b >= 1<<10:
-		return fmt.Sprintf("%.0f KB", float64(b)/float64(1<<10))
-	default:
-		return fmt.Sprintf("%d B", b)
-	}
-}
-
 templ BackupsPage(pg components.PageContext, backups []models.Attachment) {
 	@components.Layout(pg, "Backups - Admin") {
 		<div class="page-header">
@@ -58,7 +45,7 @@ templ BackupsPage(pg components.PageContext, backups []models.Attachment) {
 							<td>
 								<a href={ templ.SafeURL(fmt.Sprintf("/attachments/%d", b.ID)) }>{ b.Filename }</a>
 							</td>
-							<td>{ formatBytes(b.SizeBytes) }</td>
+							<td>{ components.FormatBytes(b.SizeBytes) }</td>
 							<td>{ b.CreatedAt.Format("01/02/2006 3:04 PM") }</td>
 							<td>
 								<button

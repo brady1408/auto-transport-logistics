@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -90,10 +91,18 @@ func (h *UploadHandler) serve(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 
-	w.Header().Set("Content-Type", att.ContentType)
-	w.Header().Set("Content-Disposition", fmt.Sprintf(`inline; filename=%q`, att.Filename))
+	// Force download (not inline) for backups to prevent stored XSS
+	if att.Category == "backup" {
+		w.Header().Set("Content-Type", "application/octet-stream")
+		w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename=%q`, att.Filename))
+	} else {
+		w.Header().Set("Content-Type", att.ContentType)
+		w.Header().Set("Content-Disposition", fmt.Sprintf(`inline; filename=%q`, att.Filename))
+	}
 	w.Header().Set("Cache-Control", "private, max-age=86400")
-	io.Copy(w, f)
+	if _, err := io.Copy(w, f); err != nil {
+		log.Printf("serve attachment %d: write error: %v", id, err)
+	}
 }
 
 func (h *UploadHandler) uploadFeedback(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +135,8 @@ func (h *UploadHandler) handleImageUpload(w http.ResponseWriter, r *http.Request
 
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		if err.Error() == "http: request body too large" {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
 			http.Error(w, "File too large (max 25MB)", http.StatusRequestEntityTooLarge)
 			return
 		}
@@ -234,8 +244,7 @@ func (h *UploadHandler) deleteAttachment(w http.ResponseWriter, r *http.Request)
 	// Return updated list
 	atts, err := h.store.ListByEntity(r.Context(), att.Category, att.EntityID)
 	if err != nil {
-		w.WriteHeader(http.StatusOK)
-		return
+		log.Printf("list attachments after delete: %v", err)
 	}
 
 	h.deps.renderTempl(w, r, attachments.AttachmentList(atts, att.Category, att.EntityID))
@@ -304,7 +313,8 @@ func (h *UploadHandler) uploadBackup(w http.ResponseWriter, r *http.Request) {
 		storageKey, written, err := h.storage.Save(0, "backup", 0, ext, part)
 		part.Close()
 		if err != nil {
-			if strings.Contains(err.Error(), "http: request body too large") {
+			var maxBytesErr *http.MaxBytesError
+			if errors.As(err, &maxBytesErr) {
 				http.Error(w, "File too large (max 2GB)", http.StatusRequestEntityTooLarge)
 				return
 			}
