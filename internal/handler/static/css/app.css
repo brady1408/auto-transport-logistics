@@ -367,6 +367,47 @@ legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-70
 .btn-icon-danger:hover { background: var(--danger); color: white; }
 .btn-icon:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
 
+/* Attachments */
+.attachment-list { margin: 8px 0; }
+.attachment-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 12px; margin-bottom: 6px;
+    background: white; border: 1px solid var(--gray-200); border-radius: var(--radius);
+}
+.attachment-thumb {
+    width: 48px; height: 48px; object-fit: cover;
+    border-radius: var(--radius); border: 1px solid var(--gray-200);
+}
+.attachment-info { flex: 1; min-width: 0; }
+.attachment-info a { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Attachment gallery (damage claim photos) */
+.attachment-gallery {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px; margin: 8px 0;
+}
+.gallery-item {
+    background: white; border: 1px solid var(--gray-200); border-radius: var(--radius);
+    overflow: hidden;
+}
+.gallery-img {
+    width: 100%; height: 140px; object-fit: cover; display: block;
+}
+.gallery-caption {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 8px; font-size: 12px; gap: 4px;
+}
+.gallery-filename {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
+}
+
+/* Upload zone */
+.upload-zone {
+    border: 2px dashed var(--gray-300); border-radius: var(--radius);
+    padding: 16px; text-align: center; background: var(--gray-50);
+}
+.upload-zone input[type="file"] { margin: 0 auto; }
+
 /* HTMX loading indicator */
 .htmx-indicator { display: none; }
 .htmx-request .htmx-indicator { display: inline-block; }

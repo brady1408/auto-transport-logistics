@@ -8,6 +8,7 @@ import (
 
 	"github.com/brady1408/atlinks/internal/handler/components/damageclaims"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/storage"
 )
 
 type damageClaimStore interface {
@@ -19,13 +20,20 @@ type damageClaimStore interface {
 	NextClaimNumber(ctx context.Context) (string, error)
 }
 
-type DamageClaimHandler struct {
-	store damageClaimStore
-	deps  *Deps
+type dcAttachmentStore interface {
+	ListByEntity(ctx context.Context, category string, entityID int) ([]models.Attachment, error)
+	DeleteByEntity(ctx context.Context, category string, entityID int) ([]string, error)
 }
 
-func NewDamageClaimHandler(s damageClaimStore, deps *Deps) *DamageClaimHandler {
-	return &DamageClaimHandler{store: s, deps: deps}
+type DamageClaimHandler struct {
+	store      damageClaimStore
+	attStore   dcAttachmentStore
+	storageSvc *storage.Service
+	deps       *Deps
+}
+
+func NewDamageClaimHandler(s damageClaimStore, attStore dcAttachmentStore, storageSvc *storage.Service, deps *Deps) *DamageClaimHandler {
+	return &DamageClaimHandler{store: s, attStore: attStore, storageSvc: storageSvc, deps: deps}
 }
 
 func (h *DamageClaimHandler) Register(mux *http.ServeMux) {
@@ -112,8 +120,13 @@ func (h *DamageClaimHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var atts []models.Attachment
+	if h.attStore != nil {
+		atts, _ = h.attStore.ListByEntity(r.Context(), "damage_claim", id)
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, damageclaims.ShowPage(pg, dc))
+	h.deps.renderTempl(w, r, damageclaims.ShowPage(pg, dc, atts))
 }
 
 func (h *DamageClaimHandler) editForm(w http.ResponseWriter, r *http.Request) {
@@ -174,6 +187,19 @@ func (h *DamageClaimHandler) delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Damage claim not found", http.StatusNotFound)
 		return
+	}
+
+	// Clean up attachments from disk + DB
+	if h.attStore != nil && h.storageSvc != nil {
+		keys, err := h.attStore.DeleteByEntity(r.Context(), "damage_claim", id)
+		if err != nil {
+			log.Printf("delete damage claim attachments: %v", err)
+		}
+		for _, key := range keys {
+			if err := h.storageSvc.Delete(key); err != nil {
+				log.Printf("delete damage claim attachment file %s: %v", key, err)
+			}
+		}
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {

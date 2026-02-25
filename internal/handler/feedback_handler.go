@@ -2,11 +2,17 @@ package handler
 
 import (
 	"context"
+	"io"
+	"log"
+	"mime"
+	"mime/multipart"
 	"net/http"
+	"path/filepath"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/handler/components/feedback"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/storage"
 )
 
 type feedbackStore interface {
@@ -19,13 +25,21 @@ type feedbackStore interface {
 	CreateComment(ctx context.Context, c *models.FeedbackComment) error
 }
 
-type FeedbackHandler struct {
-	store feedbackStore
-	deps  *Deps
+type feedbackAttachmentStore interface {
+	Create(ctx context.Context, att *models.Attachment) error
+	ListByEntity(ctx context.Context, category string, entityID int) ([]models.Attachment, error)
+	DeleteByEntity(ctx context.Context, category string, entityID int) ([]string, error)
 }
 
-func NewFeedbackHandler(s feedbackStore, deps *Deps) *FeedbackHandler {
-	return &FeedbackHandler{store: s, deps: deps}
+type FeedbackHandler struct {
+	store      feedbackStore
+	attStore   feedbackAttachmentStore
+	storageSvc *storage.Service
+	deps       *Deps
+}
+
+func NewFeedbackHandler(s feedbackStore, attStore feedbackAttachmentStore, storageSvc *storage.Service, deps *Deps) *FeedbackHandler {
+	return &FeedbackHandler{store: s, attStore: attStore, storageSvc: storageSvc, deps: deps}
 }
 
 func (h *FeedbackHandler) Register(mux *http.ServeMux) {
@@ -49,7 +63,10 @@ func (h *FeedbackHandler) submit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseForm()
+	// 25MB limit for multipart with file
+	r.Body = http.MaxBytesReader(w, r.Body, 25<<20)
+
+	r.ParseMultipartForm(25 << 20)
 	category := r.FormValue("category")
 	if category == "" {
 		category = "bug"
@@ -75,9 +92,62 @@ func (h *FeedbackHandler) submit(w http.ResponseWriter, r *http.Request) {
 
 	h.deps.Audit.Log(r.Context(), "feedback", fb.ID, "INSERT", nil, fb)
 
+	// Handle optional file attachment
+	if h.attStore != nil && h.storageSvc != nil {
+		file, header, err := r.FormFile("file")
+		if err == nil {
+			defer file.Close()
+			h.saveSubmitAttachment(r, user, fb.ID, file, header)
+		}
+	}
+
 	w.Header().Set("HX-Trigger", "feedbackSubmitted")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`<div class="alert alert-success" style="margin:0;">Feedback submitted — thank you!</div>`))
+}
+
+func (h *FeedbackHandler) saveSubmitAttachment(r *http.Request, user auth.ContextUser, feedbackID int, file io.ReadSeeker, header *multipart.FileHeader) {
+	buf := make([]byte, 512)
+	n, _ := file.Read(buf)
+	contentType := http.DetectContentType(buf[:n])
+	file.Seek(0, io.SeekStart)
+
+	if !allowedImageTypes[contentType] {
+		return
+	}
+
+	ext := filepath.Ext(header.Filename)
+	if ext == "" {
+		exts, _ := mime.ExtensionsByType(contentType)
+		if len(exts) > 0 {
+			ext = exts[0]
+		}
+	}
+
+	storageKey, written, err := h.storageSvc.Save(user.CompanyID, "feedback", feedbackID, ext, file)
+	if err != nil {
+		log.Printf("save feedback attachment: %v", err)
+		return
+	}
+
+	att := &models.Attachment{
+		CompanyID:   user.CompanyID,
+		Category:    "feedback",
+		EntityID:    feedbackID,
+		Filename:    header.Filename,
+		StorageKey:  storageKey,
+		ContentType: contentType,
+		SizeBytes:   written,
+		UploadedBy:  &user.ID,
+	}
+
+	if err := h.attStore.Create(r.Context(), att); err != nil {
+		h.storageSvc.Delete(storageKey)
+		log.Printf("create feedback attachment record: %v", err)
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "attachments", att.ID, "INSERT", nil, att)
 }
 
 func (h *FeedbackHandler) list(w http.ResponseWriter, r *http.Request) {
@@ -128,8 +198,13 @@ func (h *FeedbackHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var atts []models.Attachment
+	if h.attStore != nil {
+		atts, _ = h.attStore.ListByEntity(r.Context(), "feedback", id)
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, feedback.ShowPage(pg, fb, comments, superAdmin))
+	h.deps.renderTempl(w, r, feedback.ShowPage(pg, fb, comments, atts, superAdmin))
 }
 
 func (h *FeedbackHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -186,6 +261,19 @@ func (h *FeedbackHandler) delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Feedback not found", http.StatusNotFound)
 		return
+	}
+
+	// Clean up attachments from disk + DB
+	if h.attStore != nil && h.storageSvc != nil {
+		keys, err := h.attStore.DeleteByEntity(r.Context(), "feedback", id)
+		if err != nil {
+			log.Printf("delete feedback attachments: %v", err)
+		}
+		for _, key := range keys {
+			if err := h.storageSvc.Delete(key); err != nil {
+				log.Printf("delete feedback attachment file %s: %v", key, err)
+			}
+		}
 	}
 
 	if err := h.store.Delete(r.Context(), id); err != nil {

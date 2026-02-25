@@ -1,0 +1,56 @@
+package attachments
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+func formatSize(b int64) string {
+	switch {
+	case b >= 1<<20:
+		return fmt.Sprintf("%.1f MB", float64(b)/float64(1<<20))
+	case b >= 1<<10:
+		return fmt.Sprintf("%.0f KB", float64(b)/float64(1<<10))
+	default:
+		return fmt.Sprintf("%d B", b)
+	}
+}
+
+func isImage(contentType string) bool {
+	return contentType == "image/jpeg" || contentType == "image/png" ||
+		contentType == "image/gif" || contentType == "image/webp"
+}
+
+templ AttachmentList(atts []models.Attachment, category string, entityID int) {
+	<div id="attachment-list" class="attachment-list">
+		if len(atts) > 0 {
+			for _, a := range atts {
+				<div class="attachment-item">
+					if isImage(a.ContentType) {
+						<a href={ templ.SafeURL(fmt.Sprintf("/attachments/%d", a.ID)) } target="_blank">
+							<img
+								src={ fmt.Sprintf("/attachments/%d", a.ID) }
+								alt={ a.Filename }
+								class="attachment-thumb"
+							/>
+						</a>
+					}
+					<div class="attachment-info">
+						<a href={ templ.SafeURL(fmt.Sprintf("/attachments/%d", a.ID)) } target="_blank">{ a.Filename }</a>
+						<span class="text-muted" style="font-size: 12px;">{ formatSize(a.SizeBytes) }</span>
+					</div>
+					<button
+						class="btn btn-sm btn-danger"
+						hx-delete={ fmt.Sprintf("/attachments/%d", a.ID) }
+						hx-target="#attachment-list"
+						hx-swap="outerHTML"
+						hx-confirm="Delete this attachment?"
+					>Delete</button>
+				</div>
+			}
+		} else {
+			<p class="text-muted">No attachments.</p>
+		}
+	</div>
+}

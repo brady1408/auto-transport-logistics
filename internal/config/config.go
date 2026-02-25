@@ -14,6 +14,7 @@ type Config struct {
 	AppBaseURL    string
 	FromEmail     string
 	APIKey        string
+	UploadDir     string
 }
 
 func Load() (*Config, error) {
@@ -26,6 +27,7 @@ func Load() (*Config, error) {
 		AppBaseURL:   getEnv("APP_BASE_URL", "http://localhost:8080"),
 		FromEmail:    getEnv("FROM_EMAIL", "noreply@atlinks.app"),
 		APIKey:       getEnv("API_KEY", ""),
+		UploadDir:    getEnv("UPLOAD_DIR", "./data/uploads"),
 	}
 
 	if cfg.JWTSecret == "dev-secret-change-in-production" {

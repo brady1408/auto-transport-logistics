@@ -95,6 +95,7 @@ templ Nav(user auth.ContextUser, companyName string) {
 					<button class="nav-link">Admin</button>
 					<div class="dropdown-menu" x-show="open === 'admin'" x-cloak>
 						<a href="/admin/companies" class="dropdown-item">Companies</a>
+						<a href="/admin/backups" class="dropdown-item">Backups</a>
 					</div>
 				</div>
 			}
