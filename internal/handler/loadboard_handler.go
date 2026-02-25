@@ -21,6 +21,8 @@ type loadboardStoreInterface interface {
 	ListMyClaims(ctx context.Context, companyID int, f models.LoadboardFilter) (*models.LoadboardClaimListResult, error)
 	ListClaimsOnListing(ctx context.Context, listingID int) ([]models.LoadboardClaim, error)
 	GetClaimByID(ctx context.Context, id int) (*models.LoadboardClaim, error)
+	ListMessagesByClaim(ctx context.Context, claimID int) ([]models.LoadboardMessage, error)
+	CreateMessage(ctx context.Context, m *models.LoadboardMessage) error
 }
 
 type loadboardOrderStore interface {
@@ -69,6 +71,8 @@ func (h *LoadboardHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /loadboard/my-claims/{id}/cancel", h.cancelClaim)
 	mux.HandleFunc("POST /loadboard/claims/{id}/accept", h.acceptClaim)
 	mux.HandleFunc("POST /loadboard/claims/{id}/reject", h.rejectClaim)
+	mux.HandleFunc("GET /loadboard/claims/{id}/messages", h.claimMessages)
+	mux.HandleFunc("POST /loadboard/claims/{id}/messages", h.sendMessage)
 	mux.HandleFunc("POST /loadboard/claim/{id}", h.claim)
 	// This must be last — {id} wildcard would match other paths
 	mux.HandleFunc("GET /loadboard/{id}", h.show)
@@ -386,8 +390,14 @@ func (h *LoadboardHandler) myClaimShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	messages, err := h.store.ListMessagesByClaim(r.Context(), claim.ID)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, loadboard.MyClaimShowPage(pg, claim, listing, vehicles))
+	h.deps.renderTempl(w, r, loadboard.MyClaimShowPage(pg, claim, listing, vehicles, messages))
 }
 
 func (h *LoadboardHandler) completeClaim(w http.ResponseWriter, r *http.Request) {
@@ -474,6 +484,111 @@ func (h *LoadboardHandler) rejectClaim(w http.ResponseWriter, r *http.Request) {
 	} else {
 		redirect(w, r, "/loadboard/my-listings")
 	}
+}
+
+// claimMessages returns the messages partial for a claim (HTMX).
+// Accessible by both poster and carrier.
+func (h *LoadboardHandler) claimMessages(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	user, ok := auth.GetUserFromRequest(r)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	claim, err := h.store.GetClaimByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Claim not found", http.StatusNotFound)
+		return
+	}
+
+	listing, err := h.store.GetByID(r.Context(), claim.ListingID)
+	if err != nil {
+		http.Error(w, "Listing not found", http.StatusNotFound)
+		return
+	}
+
+	// Authorization: must be poster or carrier
+	if claim.CarrierCompanyID != user.CompanyID && listing.PosterCompanyID != user.CompanyID {
+		http.Error(w, "Not authorized", http.StatusForbidden)
+		return
+	}
+
+	messages, err := h.store.ListMessagesByClaim(r.Context(), id)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
+	h.deps.renderTempl(w, r, loadboard.MessageList(claim.ID, messages, user.CompanyID))
+}
+
+// sendMessage creates a new message on a claim.
+// Accessible by both poster and carrier.
+func (h *LoadboardHandler) sendMessage(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	user, ok := auth.GetUserFromRequest(r)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	claim, err := h.store.GetClaimByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Claim not found", http.StatusNotFound)
+		return
+	}
+
+	listing, err := h.store.GetByID(r.Context(), claim.ListingID)
+	if err != nil {
+		http.Error(w, "Listing not found", http.StatusNotFound)
+		return
+	}
+
+	// Authorization: must be poster or carrier
+	if claim.CarrierCompanyID != user.CompanyID && listing.PosterCompanyID != user.CompanyID {
+		http.Error(w, "Not authorized", http.StatusForbidden)
+		return
+	}
+
+	body := r.FormValue("body")
+	if body == "" {
+		http.Error(w, "Message body required", http.StatusBadRequest)
+		return
+	}
+
+	msg := &models.LoadboardMessage{
+		ClaimID:         id,
+		SenderCompanyID: user.CompanyID,
+		SenderUserID:    user.ID,
+		SenderName:      user.Username,
+		Body:            body,
+	}
+
+	if err := h.store.CreateMessage(r.Context(), msg); err != nil {
+		log.Printf("create message: %v", err)
+		serverError(w, err)
+		return
+	}
+
+	// Return updated messages list
+	messages, err := h.store.ListMessagesByClaim(r.Context(), id)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
+	h.deps.renderTempl(w, r, loadboard.MessageList(claim.ID, messages, user.CompanyID))
 }
 
 // formDateTime parses a datetime-local input value.

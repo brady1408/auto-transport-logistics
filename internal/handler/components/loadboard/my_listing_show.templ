@@ -87,59 +87,81 @@ templ MyListingShowPage(pg components.PageContext, listing *models.LoadboardList
 		<h2 class="section-title">Vehicles</h2>
 		@vehicleTable(vehicles)
 		<h2 class="section-title">Claims ({ fmt.Sprintf("%d", len(claims)) })</h2>
-		<div class="table-container">
-			<table>
-				<thead>
-					<tr>
-						<th>Carrier</th>
-						<th>SCAC</th>
-						<th>MC#</th>
-						<th>DOT#</th>
-						<th class="text-right">Agreed Pay</th>
-						<th>Status</th>
-						<th>Submitted</th>
-						<th>Notes</th>
-						<th class="text-right">Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					if len(claims) > 0 {
-						for _, c := range claims {
-							<tr>
-								<td>{ components.Deref(c.CarrierCompanyName) }</td>
-								<td>{ components.Deref(c.CarrierSCAC) }</td>
-								<td>{ components.Deref(c.CarrierMCNumber) }</td>
-								<td>{ components.Deref(c.CarrierDOTNumber) }</td>
-								<td class="text-right">${ c.AgreedPay }</td>
-								<td>@statusBadge(c.Status)</td>
-								<td>{ c.CreatedAt.Format("01/02/2006") }</td>
-								<td>{ components.Deref(c.CarrierNotes) }</td>
-								<td class="text-right">
-									if c.Status == "Pending" {
-										<div class="btn-group">
-											<button
-												class="btn btn-sm btn-primary"
-												hx-post={ fmt.Sprintf("/loadboard/claims/%d/accept", c.ID) }
-												hx-confirm="Accept this claim? An order will be imported to the carrier's system."
-											>Accept</button>
-											<button
-												class="btn btn-sm btn-danger"
-												hx-post={ fmt.Sprintf("/loadboard/claims/%d/reject", c.ID) }
-												hx-confirm="Reject this claim?"
-											>Reject</button>
-										</div>
-									}
-									if c.CarrierOrderID != nil {
-										<span class="text-muted">Order imported</span>
-									}
-								</td>
-							</tr>
-						}
-					} else {
-						<tr><td colspan="9" class="text-center text-muted">No claims yet</td></tr>
-					}
-				</tbody>
-			</table>
-		</div>
+		if len(claims) > 0 {
+			for _, c := range claims {
+				<div class="card" style="margin-bottom:1rem;">
+					<div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+						<span>
+							<strong>{ components.Deref(c.CarrierCompanyName) }</strong>
+							if c.CarrierSCAC != nil {
+								<span class="text-muted"> · SCAC: { components.Deref(c.CarrierSCAC) }</span>
+							}
+							if c.CarrierMCNumber != nil {
+								<span class="text-muted"> · MC#: { components.Deref(c.CarrierMCNumber) }</span>
+							}
+						</span>
+						<span>
+							@statusBadge(c.Status)
+						</span>
+					</div>
+					<div class="card-body">
+						<div style="display:flex; gap:2rem; flex-wrap:wrap; margin-bottom:0.75rem;">
+							<div>
+								<span class="detail-label">Agreed Pay:</span> <strong>${ c.AgreedPay }</strong>
+							</div>
+							<div>
+								<span class="detail-label">Submitted:</span> { c.CreatedAt.Format("01/02/2006 3:04 PM") }
+							</div>
+							if c.CarrierDOTNumber != nil {
+								<div>
+									<span class="detail-label">DOT#:</span> { components.Deref(c.CarrierDOTNumber) }
+								</div>
+							}
+							if c.CarrierNotes != nil {
+								<div>
+									<span class="detail-label">Carrier Notes:</span> { components.Deref(c.CarrierNotes) }
+								</div>
+							}
+						</div>
+						<div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:1rem;">
+							if c.Status == "Pending" {
+								<button
+									class="btn btn-sm btn-primary"
+									hx-post={ fmt.Sprintf("/loadboard/claims/%d/accept", c.ID) }
+									hx-confirm="Accept this claim? An order will be imported to the carrier's system."
+								>Accept</button>
+								<button
+									class="btn btn-sm btn-danger"
+									hx-post={ fmt.Sprintf("/loadboard/claims/%d/reject", c.ID) }
+									hx-confirm="Reject this claim?"
+								>Reject</button>
+							}
+							if c.CarrierOrderID != nil {
+								<span class="text-muted">Order imported</span>
+							}
+						</div>
+						<!-- Messages section, lazy-loaded via HTMX -->
+						<div
+							id={ fmt.Sprintf("claim-messages-%d", c.ID) }
+							hx-get={ fmt.Sprintf("/loadboard/claims/%d/messages", c.ID) }
+							hx-trigger="revealed"
+							hx-swap="innerHTML"
+						>
+							<p class="text-muted">
+								if c.MessageCount > 0 {
+									Loading { fmt.Sprintf("%d", c.MessageCount) } messages...
+								} else {
+									No messages yet.
+								}
+							</p>
+						</div>
+					</div>
+				</div>
+			}
+		} else {
+			<div class="card">
+				<div class="card-body text-center text-muted">No claims yet</div>
+			</div>
+		}
 	}
 }

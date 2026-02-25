@@ -15,7 +15,7 @@ import (
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-func MyClaimShowPage(pg components.PageContext, claim *models.LoadboardClaim, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle) templ.Component {
+func MyClaimShowPage(pg components.PageContext, claim *models.LoadboardClaim, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle, messages []models.LoadboardMessage) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -465,6 +465,14 @@ func MyClaimShowPage(pg components.PageContext, claim *models.LoadboardClaim, li
 				return templ_7745c5c3_Err
 			}
 			templ_7745c5c3_Err = vehicleTable(vehicles).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = MessageSection(claim.ID, messages, pg.User.CompanyID).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
