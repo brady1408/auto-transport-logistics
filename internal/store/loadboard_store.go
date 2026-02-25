@@ -545,6 +545,41 @@ func (s *LoadboardStore) CreateMessage(ctx context.Context, m *models.LoadboardM
 	return nil
 }
 
+// UpdateClaimLastRead sets the poster_last_read_at or carrier_last_read_at to NOW().
+func (s *LoadboardStore) UpdateClaimLastRead(ctx context.Context, claimID int, isPoster bool) error {
+	col := "carrier_last_read_at"
+	if isPoster {
+		col = "poster_last_read_at"
+	}
+	query := fmt.Sprintf("UPDATE loadboard_claims SET %s = NOW() WHERE id = $1", col)
+	_, err := s.pool.Exec(ctx, query, claimID)
+	if err != nil {
+		return fmt.Errorf("update claim last read: %w", err)
+	}
+	return nil
+}
+
+// CountUnreadMessages returns the number of unread loadboard messages for a company.
+// A message is "unread" if it was sent by the other party and created after my last_read_at.
+func (s *LoadboardStore) CountUnreadMessages(ctx context.Context, companyID int) (int, error) {
+	query := `
+		SELECT COUNT(*)
+		FROM loadboard_messages m
+		JOIN loadboard_claims c ON c.id = m.claim_id
+		JOIN loadboard_listings l ON l.id = c.listing_id
+		WHERE m.sender_company_id != $1
+		  AND (
+		    (l.poster_company_id = $1 AND (c.poster_last_read_at IS NULL OR m.created_at > c.poster_last_read_at))
+		    OR
+		    (c.carrier_company_id = $1 AND (c.carrier_last_read_at IS NULL OR m.created_at > c.carrier_last_read_at))
+		  )`
+	var count int
+	if err := s.pool.QueryRow(ctx, query, companyID).Scan(&count); err != nil {
+		return 0, fmt.Errorf("count unread messages: %w", err)
+	}
+	return count, nil
+}
+
 // claimColumnsAliased returns claim column names with c. prefix for JOIN queries.
 func claimColumnsAliased() string {
 	return `c.id, c.listing_id, c.carrier_company_id, c.carrier_user_id,

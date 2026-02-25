@@ -23,6 +23,8 @@ type loadboardStoreInterface interface {
 	GetClaimByID(ctx context.Context, id int) (*models.LoadboardClaim, error)
 	ListMessagesByClaim(ctx context.Context, claimID int) ([]models.LoadboardMessage, error)
 	CreateMessage(ctx context.Context, m *models.LoadboardMessage) error
+	UpdateClaimLastRead(ctx context.Context, claimID int, isPoster bool) error
+	CountUnreadMessages(ctx context.Context, companyID int) (int, error)
 }
 
 type loadboardOrderStore interface {
@@ -73,6 +75,7 @@ func (h *LoadboardHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /loadboard/claims/{id}/reject", h.rejectClaim)
 	mux.HandleFunc("GET /loadboard/claims/{id}/messages", h.claimMessages)
 	mux.HandleFunc("POST /loadboard/claims/{id}/messages", h.sendMessage)
+	mux.HandleFunc("GET /loadboard/unread-count", h.unreadCount)
 	mux.HandleFunc("POST /loadboard/claim/{id}", h.claim)
 	// This must be last — {id} wildcard would match other paths
 	mux.HandleFunc("GET /loadboard/{id}", h.show)
@@ -396,6 +399,11 @@ func (h *LoadboardHandler) myClaimShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Mark messages as read (carrier viewing their claim)
+	if err := h.store.UpdateClaimLastRead(r.Context(), claim.ID, false); err != nil {
+		log.Printf("mark claim %d as read: %v", claim.ID, err)
+	}
+
 	pg := h.deps.pageContext(w, r)
 	h.deps.renderTempl(w, r, loadboard.MyClaimShowPage(pg, claim, listing, vehicles, messages))
 }
@@ -487,43 +495,43 @@ func (h *LoadboardHandler) rejectClaim(w http.ResponseWriter, r *http.Request) {
 }
 
 // authorizeClaimParty verifies the caller is either the poster or carrier on a claim.
-// Returns the claim and user on success, or writes an HTTP error and returns nil.
-func (h *LoadboardHandler) authorizeClaimParty(w http.ResponseWriter, r *http.Request) (*models.LoadboardClaim, *auth.ContextUser) {
+// Returns the claim, listing, and user on success, or writes an HTTP error and returns nils.
+func (h *LoadboardHandler) authorizeClaimParty(w http.ResponseWriter, r *http.Request) (*models.LoadboardClaim, *models.LoadboardListing, *auth.ContextUser) {
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	user, ok := auth.GetUserFromRequest(r)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	claim, err := h.store.GetClaimByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, "Claim not found", http.StatusNotFound)
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	listing, err := h.store.GetByID(r.Context(), claim.ListingID)
 	if err != nil {
 		http.Error(w, "Listing not found", http.StatusNotFound)
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	if claim.CarrierCompanyID != user.CompanyID && listing.PosterCompanyID != user.CompanyID {
 		http.Error(w, "Not authorized", http.StatusForbidden)
-		return nil, nil
+		return nil, nil, nil
 	}
 
-	return claim, &user
+	return claim, listing, &user
 }
 
 // claimMessages returns the messages partial for a claim (HTMX).
 func (h *LoadboardHandler) claimMessages(w http.ResponseWriter, r *http.Request) {
-	claim, user := h.authorizeClaimParty(w, r)
+	claim, listing, user := h.authorizeClaimParty(w, r)
 	if claim == nil {
 		return
 	}
@@ -534,12 +542,18 @@ func (h *LoadboardHandler) claimMessages(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// Mark messages as read for this party
+	isPoster := listing.PosterCompanyID == user.CompanyID
+	if err := h.store.UpdateClaimLastRead(r.Context(), claim.ID, isPoster); err != nil {
+		log.Printf("mark claim %d as read: %v", claim.ID, err)
+	}
+
 	h.deps.renderTempl(w, r, loadboard.MessageList(claim.ID, messages, user.CompanyID))
 }
 
 // sendMessage creates a new message on a claim.
 func (h *LoadboardHandler) sendMessage(w http.ResponseWriter, r *http.Request) {
-	claim, user := h.authorizeClaimParty(w, r)
+	claim, listing, user := h.authorizeClaimParty(w, r)
 	if claim == nil {
 		return
 	}
@@ -568,6 +582,12 @@ func (h *LoadboardHandler) sendMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Sender has seen all messages — mark as read
+	isPoster := listing.PosterCompanyID == user.CompanyID
+	if err := h.store.UpdateClaimLastRead(r.Context(), claim.ID, isPoster); err != nil {
+		log.Printf("mark claim %d as read: %v", claim.ID, err)
+	}
+
 	messages, err := h.store.ListMessagesByClaim(r.Context(), claim.ID)
 	if err != nil {
 		serverError(w, err)
@@ -575,6 +595,26 @@ func (h *LoadboardHandler) sendMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.renderTempl(w, r, loadboard.MessageList(claim.ID, messages, user.CompanyID))
+}
+
+// unreadCount returns a badge HTML partial with the unread message count (or empty).
+func (h *LoadboardHandler) unreadCount(w http.ResponseWriter, r *http.Request) {
+	user, ok := auth.GetUserFromRequest(r)
+	if !ok {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	count, err := h.store.CountUnreadMessages(r.Context(), user.CompanyID)
+	if err != nil {
+		log.Printf("unread count: %v", err)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	if count > 0 {
+		fmt.Fprintf(w, `<span class="nav-badge">%d</span>`, count)
+	}
 }
 
 // formDateTime parses a datetime-local input value.

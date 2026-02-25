@@ -18,7 +18,10 @@ templ Nav(user auth.ContextUser, companyName string) {
 			<a href="/search/vin" class="nav-link" style="text-decoration:none;">VIN Search</a>
 			<!-- Loadboard -->
 			<div class="nav-dropdown" @mouseenter="open = 'loadboard'" @mouseleave="open = ''">
-				<button class="nav-link">Loadboard</button>
+				<button class="nav-link">
+					Loadboard
+					<span hx-get="/loadboard/unread-count" hx-trigger="load, every 30s" hx-swap="innerHTML"></span>
+				</button>
 				<div class="dropdown-menu" x-show="open === 'loadboard'" x-cloak>
 					<a href="/loadboard" class="dropdown-item">Browse Loads</a>
 					<a href="/loadboard/my-listings" class="dropdown-item">My Listings</a>
