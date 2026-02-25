@@ -194,7 +194,7 @@ func (s *EmployeeStore) Update(ctx context.Context, e *models.Employee) error {
 			sales_rate1=$41, sales_rate1_type=$42, sales_rate1_duration=$43,
 			sales_rate2=$44, sales_rate2_type=$45, sales_rate2_duration=$46,
 			emp_id_number=$47, username=$48, birth_date=$49
-		WHERE id=$50 AND company_id=$51`,
+		WHERE id=$50 AND company_id=$51 AND deleted_at IS NULL`,
 		e.Name, e.Address, e.Address2, e.City, e.State, e.Zip, e.Phone,
 		e.Rate, e.Reserve, e.EmploymentDate, e.TerminationDate,
 		e.EmergencyContact, e.EmergencyPhone, e.ComDataNumber,

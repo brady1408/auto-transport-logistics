@@ -242,7 +242,7 @@ func (s *TruckStore) Update(ctx context.Context, t *models.Truck) error {
 			trailer_tire_model=$64, trailer_tire_size=$65,
 			active=$66, class=$67, straps=$68, exclude_fuel=$69, cargo_coverage_amt=$70,
 			w9_date=$71, workers_comp_date=$72, carrier_agreement_date=$73
-		WHERE id=$74 AND company_id=$75`,
+		WHERE id=$74 AND company_id=$75 AND deleted_at IS NULL`,
 		t.TruckNumber, t.TruckMake, t.TruckModel, t.TruckYear,
 		t.TruckSerialNumber, t.TruckManufactureDate, t.TruckLicense, t.TruckLicenseExp,
 		t.TruckSafetyInspection,

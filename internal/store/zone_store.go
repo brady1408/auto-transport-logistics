@@ -80,7 +80,7 @@ func (s *ZoneStore) Update(ctx context.Context, z *models.Zone) error {
 		return err
 	}
 	result, err := s.pool.Exec(ctx,
-		`UPDATE zones SET zone=$1, description=$2, region=$3 WHERE id=$4 AND company_id=$5`,
+		`UPDATE zones SET zone=$1, description=$2, region=$3 WHERE id=$4 AND company_id=$5 AND deleted_at IS NULL`,
 		z.Zone, z.Description, z.Region, z.ID, companyID,
 	)
 	if err != nil {
@@ -183,7 +183,7 @@ func (s *ZonePricingStore) Update(ctx context.Context, zp *models.ZonePricing) e
 	}
 	result, err := s.pool.Exec(ctx,
 		`UPDATE zone_pricing SET zone_a=$1, zone_b=$2, description=$3, amount=$4, miles=$5, transport_days=$6, ship_to=$7
-		 WHERE id=$8 AND company_id=$9`,
+		 WHERE id=$8 AND company_id=$9 AND deleted_at IS NULL`,
 		zp.ZoneA, zp.ZoneB, zp.Description, zp.Amount, zp.Miles, zp.TransportDays, zp.ShipTo, zp.ID, companyID,
 	)
 	if err != nil {
