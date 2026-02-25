@@ -288,7 +288,7 @@ func (s *LoadboardStore) ListClaimsOnListing(ctx context.Context, listingID int)
 			  AND m.sender_company_id = c.carrier_company_id
 			  AND (c.poster_last_read_at IS NULL OR m.created_at > c.poster_last_read_at)
 		) uc ON true
-		WHERE c.listing_id = $1 AND c.deleted_at IS NULL ORDER BY c.created_at DESC`,
+		WHERE c.listing_id = $1 AND c.deleted_at IS NULL AND EXISTS (SELECT 1 FROM loadboard_listings WHERE id = $1 AND deleted_at IS NULL) ORDER BY c.created_at DESC`,
 		claimColumnsAliased())
 	rows, err := s.pool.Query(ctx, query, listingID)
 	if err != nil {
@@ -589,8 +589,8 @@ func (s *LoadboardStore) CountUnreadMessages(ctx context.Context, companyID int)
 	query := `
 		SELECT COUNT(*)
 		FROM loadboard_messages m
-		JOIN loadboard_claims c ON c.id = m.claim_id
-		JOIN loadboard_listings l ON l.id = c.listing_id
+		JOIN loadboard_claims c ON c.id = m.claim_id AND c.deleted_at IS NULL
+		JOIN loadboard_listings l ON l.id = c.listing_id AND l.deleted_at IS NULL
 		WHERE m.sender_company_id != $1
 		  AND (
 		    (l.poster_company_id = $1 AND (c.poster_last_read_at IS NULL OR m.created_at > c.poster_last_read_at))
