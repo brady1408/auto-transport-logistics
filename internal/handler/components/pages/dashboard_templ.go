@@ -100,14 +100,14 @@ func DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardCo
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div class=\"kpi-label\">Active Trips</div><a href=\"/dispatch/trips?active=active\" class=\"kpi-link\">View Trips</a></div></div><div class=\"dashboard-grid\"><div class=\"card\"><div class=\"card-header\">AR Aging Summary</div><div class=\"card-body\"><table><thead><tr><th>Current (0-30)</th><th>31-60 Days</th><th>61-90 Days</th><th>90+ Days</th><th>Total</th></tr></thead> <tbody><tr><td>$")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div class=\"kpi-label\">Active Trips</div><a href=\"/dispatch/trips?active=active\" class=\"kpi-link\">View Trips</a></div></div><div class=\"dashboard-grid\"><div class=\"card\"><div class=\"card-header\">AR Aging Summary</div><div class=\"card-body\"><div class=\"table-container\"><table><thead><tr><th>Current (0-30)</th><th>31-60 Days</th><th>61-90 Days</th><th>90+ Days</th><th>Total</th></tr></thead> <tbody><tr><td>$")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(aging.Current)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/dashboard.templ`, Line: 53, Col: 28}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/dashboard.templ`, Line: 54, Col: 28}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -120,7 +120,7 @@ func DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardCo
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(aging.Days31)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/dashboard.templ`, Line: 54, Col: 27}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/dashboard.templ`, Line: 55, Col: 27}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -133,7 +133,7 @@ func DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardCo
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(aging.Days61)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/dashboard.templ`, Line: 55, Col: 27}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/dashboard.templ`, Line: 56, Col: 27}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -146,7 +146,7 @@ func DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardCo
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(aging.Days90)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/dashboard.templ`, Line: 56, Col: 27}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/dashboard.templ`, Line: 57, Col: 27}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -159,13 +159,13 @@ func DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardCo
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(aging.Total)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/dashboard.templ`, Line: 57, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/dashboard.templ`, Line: 58, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</strong></td></tr></tbody></table><div style=\"margin-top: 8px; text-align: right;\"><a href=\"/reports/ar-aging\" class=\"btn btn-sm\">Full AR Aging Report</a></div></div></div><div class=\"card\"><div class=\"card-header\">Quick Links</div><div class=\"card-body\"><ul class=\"quick-links\"><li><a href=\"/dispatch/orders/new\">New Order</a></li><li><a href=\"/search/vin\">VIN Search</a></li><li><a href=\"/reports\">Reports</a></li><li><a href=\"/global/customers\">Manage Customers</a></li><li><a href=\"/utilities/company\">Company Settings</a></li></ul></div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</strong></td></tr></tbody></table></div><div style=\"margin-top: 8px; text-align: right;\"><a href=\"/reports/ar-aging\" class=\"btn btn-sm\">Full AR Aging Report</a></div></div></div><div class=\"card\"><div class=\"card-header\">Quick Links</div><div class=\"card-body\"><ul class=\"quick-links\"><li><a href=\"/dispatch/orders/new\">New Order</a></li><li><a href=\"/search/vin\">VIN Search</a></li><li><a href=\"/reports\">Reports</a></li><li><a href=\"/global/customers\">Manage Customers</a></li><li><a href=\"/utilities/company\">Company Settings</a></li></ul></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

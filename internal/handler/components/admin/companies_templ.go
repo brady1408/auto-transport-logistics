@@ -48,7 +48,7 @@ func CompaniesPage(pg components.PageContext, companies []models.Company) templ.
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h2>Companies</h2><a href=\"/admin/companies/new\" class=\"btn btn-primary\">New Company</a></div><table class=\"data-table\"><thead><tr><th>ID</th><th>Name</th><th>Slug</th><th>Active</th><th>City</th><th>State</th><th>Phone</th><th>Login URL</th><th></th></tr></thead> <tbody>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h2>Companies</h2><a href=\"/admin/companies/new\" class=\"btn btn-primary\">New Company</a></div><div class=\"table-container\"><table class=\"data-table\"><thead><tr><th>ID</th><th>Name</th><th>Slug</th><th>Active</th><th>City</th><th>State</th><th>Phone</th><th>Login URL</th><th></th></tr></thead> <tbody>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -61,7 +61,7 @@ func CompaniesPage(pg components.PageContext, companies []models.Company) templ.
 					var templ_7745c5c3_Var3 string
 					templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", c.ID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 34, Col: 36}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 35, Col: 36}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 					if templ_7745c5c3_Err != nil {
@@ -74,7 +74,7 @@ func CompaniesPage(pg components.PageContext, companies []models.Company) templ.
 					var templ_7745c5c3_Var4 string
 					templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(c.CompanyName)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 35, Col: 26}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 36, Col: 26}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 					if templ_7745c5c3_Err != nil {
@@ -87,7 +87,7 @@ func CompaniesPage(pg components.PageContext, companies []models.Company) templ.
 					var templ_7745c5c3_Var5 string
 					templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(c.Slug)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 36, Col: 19}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 37, Col: 19}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 					if templ_7745c5c3_Err != nil {
@@ -115,7 +115,7 @@ func CompaniesPage(pg components.PageContext, companies []models.Company) templ.
 					var templ_7745c5c3_Var6 string
 					templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(c.City))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 44, Col: 37}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 45, Col: 37}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 					if templ_7745c5c3_Err != nil {
@@ -128,7 +128,7 @@ func CompaniesPage(pg components.PageContext, companies []models.Company) templ.
 					var templ_7745c5c3_Var7 string
 					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(c.State))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 45, Col: 38}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 46, Col: 38}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 					if templ_7745c5c3_Err != nil {
@@ -141,7 +141,7 @@ func CompaniesPage(pg components.PageContext, companies []models.Company) templ.
 					var templ_7745c5c3_Var8 string
 					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(c.Phone))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 46, Col: 38}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 47, Col: 38}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
@@ -154,7 +154,7 @@ func CompaniesPage(pg components.PageContext, companies []models.Company) templ.
 					var templ_7745c5c3_Var9 string
 					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(c.Slug)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 47, Col: 28}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 48, Col: 28}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
@@ -167,7 +167,7 @@ func CompaniesPage(pg components.PageContext, companies []models.Company) templ.
 					var templ_7745c5c3_Var10 templ.SafeURL
 					templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/admin/companies/%d/users", c.ID)))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 49, Col: 79}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 50, Col: 79}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 					if templ_7745c5c3_Err != nil {
@@ -180,7 +180,7 @@ func CompaniesPage(pg components.PageContext, companies []models.Company) templ.
 					var templ_7745c5c3_Var11 templ.SafeURL
 					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/admin/companies/%d/edit", c.ID)))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 50, Col: 78}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/companies.templ`, Line: 51, Col: 78}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 					if templ_7745c5c3_Err != nil {
@@ -197,7 +197,7 @@ func CompaniesPage(pg components.PageContext, companies []models.Company) templ.
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</tbody></table>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</tbody></table></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -38,6 +38,7 @@ templ DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardC
 			<div class="card">
 				<div class="card-header">AR Aging Summary</div>
 				<div class="card-body">
+					<div class="table-container">
 					<table>
 						<thead>
 							<tr>
@@ -58,6 +59,7 @@ templ DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardC
 							</tr>
 						</tbody>
 					</table>
+					</div>
 					<div style="margin-top: 8px; text-align: right;">
 						<a href="/reports/ar-aging" class="btn btn-sm">Full AR Aging Report</a>
 					</div>
