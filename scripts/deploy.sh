@@ -20,8 +20,8 @@ set -euo pipefail
 SYNOLOGY_HOST="192.168.23.44"
 SSH_PORT="2222"
 DEPLOY_PATH="/volume1/docker/atlinks"
-IMAGE_NAME="atlinks:latest"
-ARCHIVE="/tmp/atlinks-image.tar"
+REGISTRY="192.168.23.44:5050"
+IMAGE_NAME="$REGISTRY/atlinks:latest"
 DOCKER="sudo /usr/local/bin/docker"
 
 SSH_CMD="ssh -p $SSH_PORT brady@$SYNOLOGY_HOST"
@@ -77,29 +77,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
 if [ "$SKIP_BUILD" = false ]; then
-    echo "==> Building Docker image..."
-    docker build -t "$IMAGE_NAME" "$PROJECT_DIR"
+    BUILD_VERSION=$(git -C "$PROJECT_DIR" rev-parse --short HEAD 2>/dev/null || date +%s)
+    echo "==> Building Docker image (version: $BUILD_VERSION)..."
+    docker build --build-arg "BUILD_VERSION=$BUILD_VERSION" -t "$IMAGE_NAME" "$PROJECT_DIR"
 
-    echo "==> Saving image to archive..."
-    docker save "$IMAGE_NAME" -o "$ARCHIVE"
-    echo "    Image size: $(du -h "$ARCHIVE" | cut -f1)"
-
-    echo "==> Uploading image to NAS..."
-    remote "mkdir -p $DEPLOY_PATH"
-    $SCP_CMD "$ARCHIVE" "brady@$SYNOLOGY_HOST:$DEPLOY_PATH/atlinks-image.tar"
-
-    echo "==> Loading image on NAS..."
-    remote "$DOCKER load -i $DEPLOY_PATH/atlinks-image.tar"
-    remote "rm -f $DEPLOY_PATH/atlinks-image.tar"
-
-    echo "==> Cleaning up local archive..."
-    rm -f "$ARCHIVE"
+    echo "==> Pushing image to registry..."
+    docker push "$IMAGE_NAME"
 else
     echo "==> Skipping build (--skip-build)"
 fi
 
 echo "==> Uploading compose file..."
 $SCP_CMD "$PROJECT_DIR/docker-compose.prod.yml" "brady@$SYNOLOGY_HOST:$DEPLOY_PATH/docker-compose.yml"
+
+echo "==> Pulling latest image on NAS..."
+remote "$DOCKER pull $IMAGE_NAME"
 
 echo "==> Restarting services..."
 remote_compose "down"

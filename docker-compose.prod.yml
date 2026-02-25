@@ -1,6 +1,6 @@
 services:
   atlinks:
-    image: atlinks:latest
+    image: 192.168.23.44:5050/atlinks:latest
     container_name: atlinks
     restart: unless-stopped
     env_file: .env.prod
