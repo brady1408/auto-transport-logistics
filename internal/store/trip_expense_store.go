@@ -35,7 +35,7 @@ func (s *TripExpenseStore) ListByTrip(ctx context.Context, tripID int) ([]models
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM trip_expenses WHERE trip_id = $1 AND company_id = $2 ORDER BY id", expenseColumns)
+	query := fmt.Sprintf("SELECT %s FROM trip_expenses WHERE trip_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY id", expenseColumns)
 	rows, err := s.pool.Query(ctx, query, tripID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list expenses for trip %d: %w", tripID, err)
@@ -58,7 +58,7 @@ func (s *TripExpenseStore) GetByID(ctx context.Context, id int) (*models.TripExp
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM trip_expenses WHERE id = $1 AND company_id = $2", expenseColumns)
+	query := fmt.Sprintf("SELECT %s FROM trip_expenses WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", expenseColumns)
 	e, err := scanExpense(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get expense %d: %w", id, err)
@@ -90,7 +90,7 @@ func (s *TripExpenseStore) Update(ctx context.Context, e *models.TripExpense) er
 		return err
 	}
 	result, err := s.pool.Exec(ctx,
-		`UPDATE trip_expenses SET description=$1, amount=$2, expense_date=$3 WHERE id=$4 AND company_id=$5`,
+		`UPDATE trip_expenses SET description=$1, amount=$2, expense_date=$3 WHERE id=$4 AND company_id=$5 AND deleted_at IS NULL`,
 		e.Description, e.Amount, e.ExpenseDate, e.ID, companyID,
 	)
 	if err != nil {
@@ -107,7 +107,7 @@ func (s *TripExpenseStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM trip_expenses WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE trip_expenses SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete expense %d: %w", id, err)
 	}

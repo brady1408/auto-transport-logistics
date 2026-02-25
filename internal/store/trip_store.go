@@ -57,6 +57,7 @@ func (s *TripStore) List(ctx context.Context, f models.TripFilter) (*models.Trip
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.AddRaw("deleted_at IS NULL")
 
 	if f.Search != "" {
 		search := "%" + f.Search + "%"
@@ -112,7 +113,7 @@ func (s *TripStore) GetByID(ctx context.Context, id int) (*models.Trip, error) {
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM trips WHERE id = $1 AND company_id = $2", tripColumns)
+	query := fmt.Sprintf("SELECT %s FROM trips WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", tripColumns)
 	t, err := scanTrip(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get trip %d: %w", id, err)
@@ -125,7 +126,7 @@ func (s *TripStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*models.T
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM trips WHERE id = $1 AND company_id = $2", tripColumns)
+	query := fmt.Sprintf("SELECT %s FROM trips WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", tripColumns)
 	t, err := scanTrip(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get trip %d: %w", id, err)
@@ -180,7 +181,7 @@ func (s *TripStore) Update(ctx context.Context, t *models.Trip) error {
 			driver_rate=$19, driver_calc_type=$20, driver_add_rate=$21, driver_add_calc_type=$22,
 			truck_rate=$23, truck_calc_type=$24,
 			comments=$25, status=$26, equipment_type=$27, zone=$28
-		WHERE id=$29 AND company_id=$30`,
+		WHERE id=$29 AND company_id=$30 AND deleted_at IS NULL`,
 		t.Active, t.TruckNumber, t.TruckID, t.TrailerNumber,
 		t.Driver, t.Driver1ID, t.Driver2, t.Driver2ID,
 		t.TripDate, t.EstDeliverDate, t.DeliverDate, t.ArrivalDate, t.ReturnDate,
@@ -204,7 +205,7 @@ func (s *TripStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM trips WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE trips SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete trip %d: %w", id, err)
 	}
@@ -229,8 +230,8 @@ func (s *TripStore) DashboardCounts(ctx context.Context) (TripDashboardCounts, e
 	err = s.pool.QueryRow(ctx,
 		`SELECT
 			COUNT(*) FILTER (WHERE active = true),
-			(SELECT COUNT(*) FROM order_vehicles WHERE status = 'Loaded' AND trip_id IS NOT NULL AND company_id = $1)
-		FROM trips WHERE company_id = $1`, companyID,
+			(SELECT COUNT(*) FROM order_vehicles WHERE status = 'Loaded' AND trip_id IS NOT NULL AND company_id = $1 AND deleted_at IS NULL)
+		FROM trips WHERE company_id = $1 AND deleted_at IS NULL`, companyID,
 	).Scan(&c.Active, &c.InTransit)
 	if err != nil {
 		return c, fmt.Errorf("dashboard trip counts: %w", err)
@@ -259,6 +260,7 @@ func (s *TripStore) TripSummaryReport(ctx context.Context, dateFrom, dateTo stri
 
 	qb := newQueryBuilder()
 	qb.Add("t.company_id = ?", companyID)
+	qb.AddRaw("t.deleted_at IS NULL")
 
 	if dateFrom != "" {
 		qb.Add("t.trip_date >= ?", dateFrom)
@@ -319,6 +321,7 @@ func (s *TripStore) DriverSettlement(ctx context.Context, employeeID int, dateFr
 	qb := newQueryBuilder()
 	qb.Add("t.company_id = ?", companyID)
 	qb.Add("t.driver1_id = ?", employeeID)
+	qb.AddRaw("t.deleted_at IS NULL")
 
 	if dateFrom != "" {
 		qb.Add("t.trip_date >= ?", dateFrom)

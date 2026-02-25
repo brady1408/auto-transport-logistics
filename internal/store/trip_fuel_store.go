@@ -35,7 +35,7 @@ func (s *TripFuelStore) ListByTrip(ctx context.Context, tripID int) ([]models.Tr
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM trip_fuel WHERE trip_id = $1 AND company_id = $2 ORDER BY id", fuelColumns)
+	query := fmt.Sprintf("SELECT %s FROM trip_fuel WHERE trip_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY id", fuelColumns)
 	rows, err := s.pool.Query(ctx, query, tripID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list fuel for trip %d: %w", tripID, err)
@@ -58,7 +58,7 @@ func (s *TripFuelStore) GetByID(ctx context.Context, id int) (*models.TripFuel, 
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM trip_fuel WHERE id = $1 AND company_id = $2", fuelColumns)
+	query := fmt.Sprintf("SELECT %s FROM trip_fuel WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", fuelColumns)
 	f, err := scanFuel(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get fuel %d: %w", id, err)
@@ -92,7 +92,7 @@ func (s *TripFuelStore) Update(ctx context.Context, f *models.TripFuel) error {
 	result, err := s.pool.Exec(ctx,
 		`UPDATE trip_fuel SET
 			loaded_miles=$1, truck_number=$2, state=$3, mileage=$4, gallons=$5
-		WHERE id=$6 AND company_id=$7`,
+		WHERE id=$6 AND company_id=$7 AND deleted_at IS NULL`,
 		f.LoadedMiles, f.TruckNumber, f.State, f.Mileage, f.Gallons,
 		f.ID, companyID,
 	)
@@ -110,7 +110,7 @@ func (s *TripFuelStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM trip_fuel WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE trip_fuel SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete fuel %d: %w", id, err)
 	}

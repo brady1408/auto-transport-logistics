@@ -37,7 +37,7 @@ func (s *LoadDetailStore) ListByTrip(ctx context.Context, tripID int) ([]models.
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM load_details WHERE trip_id = $1 AND company_id = $2 ORDER BY id", loadDetailColumns)
+	query := fmt.Sprintf("SELECT %s FROM load_details WHERE trip_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY id", loadDetailColumns)
 	rows, err := s.pool.Query(ctx, query, tripID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list load details for trip %d: %w", tripID, err)
@@ -75,7 +75,7 @@ func (s *LoadDetailStore) ListByTripWithOrder(ctx context.Context, tripID int) (
 			COALESCE(o.order_number, '')
 		FROM load_details
 		LEFT JOIN orders o ON o.id = load_details.order_id
-		WHERE load_details.trip_id = $1 AND load_details.company_id = $2 ORDER BY load_details.id`
+		WHERE load_details.trip_id = $1 AND load_details.company_id = $2 AND load_details.deleted_at IS NULL ORDER BY load_details.id`
 	rows, err := s.pool.Query(ctx, query, tripID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list load details with order for trip %d: %w", tripID, err)
@@ -104,7 +104,7 @@ func (s *LoadDetailStore) GetByID(ctx context.Context, id int) (*models.LoadDeta
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM load_details WHERE id = $1 AND company_id = $2", loadDetailColumns)
+	query := fmt.Sprintf("SELECT %s FROM load_details WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", loadDetailColumns)
 	ld, err := scanLoadDetail(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get load detail %d: %w", id, err)
@@ -139,7 +139,7 @@ func (s *LoadDetailStore) DeleteTx(ctx context.Context, tx pgx.Tx, id int) error
 	if err != nil {
 		return err
 	}
-	result, err := tx.Exec(ctx, "DELETE FROM load_details WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := tx.Exec(ctx, "UPDATE load_details SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete load detail %d: %w", id, err)
 	}
@@ -158,7 +158,7 @@ func (s *LoadDetailStore) NextBayNumber(ctx context.Context, tripID int) (string
 	var next int
 	err = s.pool.QueryRow(ctx,
 		`SELECT COALESCE(MAX(CASE WHEN bay_number ~ '^\d+$' THEN bay_number::int ELSE 0 END), 0) + 1
-		FROM load_details WHERE trip_id = $1 AND company_id = $2`, tripID, companyID).Scan(&next)
+		FROM load_details WHERE trip_id = $1 AND company_id = $2 AND deleted_at IS NULL`, tripID, companyID).Scan(&next)
 	if err != nil {
 		return "1", nil // default to 1 on error
 	}
@@ -171,7 +171,7 @@ func (s *LoadDetailStore) UpdateBayNumber(ctx context.Context, id int, bayNumber
 		return err
 	}
 	result, err := s.pool.Exec(ctx,
-		`UPDATE load_details SET bay_number = $1 WHERE id = $2 AND company_id = $3`,
+		`UPDATE load_details SET bay_number = $1 WHERE id = $2 AND company_id = $3 AND deleted_at IS NULL`,
 		bayNumber, id, companyID,
 	)
 	if err != nil {
@@ -188,7 +188,7 @@ func (s *LoadDetailStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM load_details WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE load_details SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete load detail %d: %w", id, err)
 	}
