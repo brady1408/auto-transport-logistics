@@ -47,6 +47,7 @@ func (s *PaymentStore) List(ctx context.Context, f models.PaymentFilter) (*model
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.AddRaw("deleted_at IS NULL")
 
 	if f.Search != "" {
 		search := "%" + f.Search + "%"
@@ -98,7 +99,7 @@ func (s *PaymentStore) GetByID(ctx context.Context, id int) (*models.Payment, er
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM payments WHERE id = $1 AND company_id = $2", paymentColumns)
+	query := fmt.Sprintf("SELECT %s FROM payments WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", paymentColumns)
 	p, err := scanPayment(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get payment %d: %w", id, err)
@@ -111,7 +112,7 @@ func (s *PaymentStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*model
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM payments WHERE id = $1 AND company_id = $2", paymentColumns)
+	query := fmt.Sprintf("SELECT %s FROM payments WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", paymentColumns)
 	p, err := scanPayment(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get payment %d: %w", id, err)
@@ -153,7 +154,7 @@ func (s *PaymentStore) Update(ctx context.Context, p *models.Payment) error {
 			customer_id=$1, customer_number=$2, customer_name=$3,
 			payment_date=$4, check_number=$5, amount=$6, applied_amount=$7, unapplied_amount=$8,
 			payment_method=$9, comments=$10
-		WHERE id=$11 AND company_id=$12`,
+		WHERE id=$11 AND company_id=$12 AND deleted_at IS NULL`,
 		p.CustomerID, p.CustomerNumber, p.CustomerName,
 		p.PaymentDate, p.CheckNumber, p.Amount, p.AppliedAmount, p.UnappliedAmount,
 		p.PaymentMethod, p.Comments,
@@ -173,7 +174,7 @@ func (s *PaymentStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM payments WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE payments SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete payment %d: %w", id, err)
 	}
@@ -203,6 +204,7 @@ func (s *PaymentStore) PaymentReport(ctx context.Context, dateFrom, dateTo strin
 
 	qb := newQueryBuilder()
 	qb.Add("p.company_id = ?", companyID)
+	qb.AddRaw("p.deleted_at IS NULL")
 
 	if dateFrom != "" {
 		qb.Add("p.payment_date >= ?", dateFrom)
@@ -250,7 +252,7 @@ func (s *PaymentStore) UpdateAmountsTx(ctx context.Context, tx pgx.Tx, id int, a
 		return err
 	}
 	result, err := tx.Exec(ctx,
-		`UPDATE payments SET applied_amount=$1, unapplied_amount=$2 WHERE id=$3 AND company_id=$4`,
+		`UPDATE payments SET applied_amount=$1, unapplied_amount=$2 WHERE id=$3 AND company_id=$4 AND deleted_at IS NULL`,
 		applied, unapplied, id, companyID,
 	)
 	if err != nil {

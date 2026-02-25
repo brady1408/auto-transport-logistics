@@ -35,7 +35,7 @@ func (s *PaymentDetailStore) ListByPayment(ctx context.Context, paymentID int) (
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE payment_id = $1 AND company_id = $2 ORDER BY id", paymentDetailColumns)
+	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE payment_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY id", paymentDetailColumns)
 	rows, err := s.pool.Query(ctx, query, paymentID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list payment details for payment %d: %w", paymentID, err)
@@ -58,7 +58,7 @@ func (s *PaymentDetailStore) ListByInvoice(ctx context.Context, invoiceID int) (
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE invoice_id = $1 AND company_id = $2 ORDER BY id", paymentDetailColumns)
+	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE invoice_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY id", paymentDetailColumns)
 	rows, err := s.pool.Query(ctx, query, invoiceID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list payment details for invoice %d: %w", invoiceID, err)
@@ -81,7 +81,7 @@ func (s *PaymentDetailStore) GetByID(ctx context.Context, id int) (*models.Payme
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE id = $1 AND company_id = $2", paymentDetailColumns)
+	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", paymentDetailColumns)
 	pd, err := scanPaymentDetail(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get payment detail %d: %w", id, err)
@@ -94,7 +94,7 @@ func (s *PaymentDetailStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE id = $1 AND company_id = $2", paymentDetailColumns)
+	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", paymentDetailColumns)
 	pd, err := scanPaymentDetail(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get payment detail %d: %w", id, err)
@@ -127,7 +127,7 @@ func (s *PaymentDetailStore) DeleteTx(ctx context.Context, tx pgx.Tx, id int) er
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(ctx, "DELETE FROM payment_details WHERE id = $1 AND company_id = $2", id, companyID)
+	_, err = tx.Exec(ctx, "UPDATE payment_details SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete payment detail %d: %w", id, err)
 	}

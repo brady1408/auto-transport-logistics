@@ -51,6 +51,7 @@ func (s *InvoiceStore) List(ctx context.Context, f models.InvoiceFilter) (*model
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.AddRaw("deleted_at IS NULL")
 
 	if f.Search != "" {
 		search := "%" + f.Search + "%"
@@ -106,7 +107,7 @@ func (s *InvoiceStore) GetByID(ctx context.Context, id int) (*models.Invoice, er
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM invoices WHERE id = $1 AND company_id = $2", invoiceColumns)
+	query := fmt.Sprintf("SELECT %s FROM invoices WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", invoiceColumns)
 	inv, err := scanInvoice(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get invoice %d: %w", id, err)
@@ -119,7 +120,7 @@ func (s *InvoiceStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*model
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM invoices WHERE id = $1 AND company_id = $2", invoiceColumns)
+	query := fmt.Sprintf("SELECT %s FROM invoices WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", invoiceColumns)
 	inv, err := scanInvoice(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get invoice %d: %w", id, err)
@@ -196,7 +197,7 @@ func (s *InvoiceStore) Update(ctx context.Context, inv *models.Invoice) error {
 			order_id=$5, order_number=$6, invoice_date=$7, due_date=$8, terms=$9, tax_code=$10,
 			subtotal=$11, tax=$12, total_amount=$13, amount_paid=$14, balance=$15, status=$16,
 			comments=$17, bill_to_address=$18, bill_to_address2=$19, bill_to_city=$20, bill_to_state=$21, bill_to_zip=$22
-		WHERE id=$23 AND company_id=$24`,
+		WHERE id=$23 AND company_id=$24 AND deleted_at IS NULL`,
 		inv.Active, inv.CustomerID, inv.CustomerNumber, inv.CustomerName,
 		inv.OrderID, inv.OrderNumber, inv.InvoiceDate, inv.DueDate, inv.Terms, inv.TaxCode,
 		inv.Subtotal, inv.Tax, inv.TotalAmount, inv.AmountPaid, inv.Balance, inv.Status,
@@ -217,7 +218,7 @@ func (s *InvoiceStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM invoices WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE invoices SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete invoice %d: %w", id, err)
 	}
@@ -300,7 +301,7 @@ func (s *InvoiceStore) DashboardAging(ctx context.Context) (AgingBucket, error) 
 			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '90 days'), 0)::text,
 			COALESCE(SUM(balance::numeric), 0)::text,
 			COUNT(*)
-		FROM invoices WHERE status = 'Open' AND company_id = $1`, companyID,
+		FROM invoices WHERE status = 'Open' AND company_id = $1 AND deleted_at IS NULL`, companyID,
 	).Scan(&a.Current, &a.Days31, &a.Days61, &a.Days90, &a.Total, &a.Count)
 	if err != nil {
 		return a, fmt.Errorf("dashboard aging: %w", err)
@@ -335,7 +336,7 @@ func (s *InvoiceStore) GetArAgingReport(ctx context.Context) ([]ArAgingRow, erro
 			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '60 days' AND invoice_date >= CURRENT_DATE - INTERVAL '90 days'), 0)::text,
 			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '90 days'), 0)::text,
 			COALESCE(SUM(balance::numeric), 0)::text
-		FROM invoices WHERE status = 'Open' AND company_id = $1
+		FROM invoices WHERE status = 'Open' AND company_id = $1 AND deleted_at IS NULL
 		GROUP BY customer_id, customer_number, customer_name
 		ORDER BY SUM(balance::numeric) DESC`, companyID)
 	if err != nil {
@@ -373,6 +374,7 @@ func (s *InvoiceStore) RevenueByCustomer(ctx context.Context, dateFrom, dateTo s
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
 	qb.AddRaw("status != 'Void'")
+	qb.AddRaw("deleted_at IS NULL")
 
 	if dateFrom != "" {
 		qb.Add("invoice_date >= ?", dateFrom)
@@ -416,7 +418,7 @@ func (s *InvoiceStore) UpdateBalanceTx(ctx context.Context, tx pgx.Tx, id int, a
 		return err
 	}
 	result, err := tx.Exec(ctx,
-		`UPDATE invoices SET amount_paid=$1, balance=$2, status=$3 WHERE id=$4 AND company_id=$5`,
+		`UPDATE invoices SET amount_paid=$1, balance=$2, status=$3 WHERE id=$4 AND company_id=$5 AND deleted_at IS NULL`,
 		amountPaid, balance, status, id, companyID,
 	)
 	if err != nil {

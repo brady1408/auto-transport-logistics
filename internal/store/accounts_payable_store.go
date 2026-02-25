@@ -47,6 +47,7 @@ func (s *AccountsPayableStore) List(ctx context.Context, f models.APFilter) (*mo
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.AddRaw("deleted_at IS NULL")
 	if f.Search != "" {
 		search := "%" + f.Search + "%"
 		qb.Add("(vendor_name ILIKE ? OR description ILIKE ? OR check_number ILIKE ?)", search, search, search)
@@ -98,7 +99,7 @@ func (s *AccountsPayableStore) GetByID(ctx context.Context, id int) (*models.Acc
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM accounts_payable WHERE id = $1 AND company_id = $2", apColumns)
+	query := fmt.Sprintf("SELECT %s FROM accounts_payable WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", apColumns)
 	ap, err := scanAP(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get accounts payable %d: %w", id, err)
@@ -140,7 +141,7 @@ func (s *AccountsPayableStore) Update(ctx context.Context, ap *models.AccountsPa
 			trip_id=$1, employee_id=$2, truck_id=$3, vendor_name=$4,
 			payable_date=$5, amount=$6, paid_amount=$7, status=$8, description=$9,
 			check_number=$10, check_date=$11, comments=$12
-		WHERE id=$13 AND company_id=$14`,
+		WHERE id=$13 AND company_id=$14 AND deleted_at IS NULL`,
 		ap.TripID, ap.EmployeeID, ap.TruckID, ap.VendorName,
 		ap.PayableDate, ap.Amount, ap.PaidAmount, ap.Status, ap.Description,
 		ap.CheckNumber, ap.CheckDate, ap.Comments,
@@ -160,7 +161,7 @@ func (s *AccountsPayableStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM accounts_payable WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE accounts_payable SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete accounts payable %d: %w", id, err)
 	}

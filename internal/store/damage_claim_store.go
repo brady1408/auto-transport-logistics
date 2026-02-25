@@ -49,6 +49,7 @@ func (s *DamageClaimStore) List(ctx context.Context, f models.DamageClaimFilter)
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.AddRaw("deleted_at IS NULL")
 	if f.Search != "" {
 		search := "%" + f.Search + "%"
 		qb.Add("(claim_number ILIKE ? OR vin ILIKE ? OR description ILIKE ?)", search, search, search)
@@ -94,7 +95,7 @@ func (s *DamageClaimStore) GetByID(ctx context.Context, id int) (*models.DamageC
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM damage_claims WHERE id = $1 AND company_id = $2", damageClaimColumns)
+	query := fmt.Sprintf("SELECT %s FROM damage_claims WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", damageClaimColumns)
 	dc, err := scanDamageClaim(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get damage claim %d: %w", id, err)
@@ -136,7 +137,7 @@ func (s *DamageClaimStore) Update(ctx context.Context, dc *models.DamageClaim) e
 			order_id=$1, vehicle_id=$2, trip_id=$3, vin=$4,
 			claim_date=$5, claim_amount=$6, paid_amount=$7, status=$8, description=$9,
 			insurance_claim=$10, insurance_claim_number=$11, resolution=$12, resolved_date=$13
-		WHERE id=$14 AND company_id=$15`,
+		WHERE id=$14 AND company_id=$15 AND deleted_at IS NULL`,
 		dc.OrderID, dc.VehicleID, dc.TripID, dc.VIN,
 		dc.ClaimDate, dc.ClaimAmount, dc.PaidAmount, dc.Status, dc.Description,
 		dc.InsuranceClaim, dc.InsuranceClaimNumber, dc.Resolution, dc.ResolvedDate,
@@ -156,7 +157,7 @@ func (s *DamageClaimStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM damage_claims WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE damage_claims SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete damage claim %d: %w", id, err)
 	}
@@ -187,6 +188,7 @@ func (s *DamageClaimStore) DamageReport(ctx context.Context, dateFrom, dateTo st
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.AddRaw("deleted_at IS NULL")
 	if dateFrom != "" {
 		qb.Add("claim_date >= ?", dateFrom)
 	}
