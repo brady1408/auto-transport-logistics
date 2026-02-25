@@ -18,6 +18,32 @@ templ MapContainer() {
 					this.map = L.map("loadboard-map").setView([39.8283, -98.5795], 4);
 					L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "\u00a9 OpenStreetMap", maxZoom: 18 }).addTo(this.map);
 					var self = this;
+					var mapEl = document.getElementById("loadboard-map");
+					function sizeMap() {
+						var top = mapEl.getBoundingClientRect().top;
+						var h = Math.max(350, Math.min(850, window.innerHeight - top - 16));
+						mapEl.style.height = h + "px";
+						self.map.invalidateSize();
+					}
+					sizeMap();
+					window.addEventListener("resize", sizeMap);
+					this.highlightedMarker = null;
+					this.map.on("popupopen", function(e) {
+						var src = e.popup._source;
+						if (!src || !src.pinId) return;
+						var pair = self.markers.find(function(m) { return m.pinId === src.pinId && m.pinType !== src.pinType; });
+						if (!pair) return;
+						var c = pair.pinType === "origin" ? "#2563eb" : "#16a34a", lb = pair.pinType === "origin" ? "O" : "D";
+						pair.setIcon(L.divIcon({ className: "map-pin-highlight", html: "<div style=\"background:" + c + ";color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)\">" + lb + "</div>", iconSize: [32,32], iconAnchor: [16,16] }));
+						self.highlightedMarker = pair;
+					});
+					this.map.on("popupclose", function() {
+						if (!self.highlightedMarker) return;
+						var m = self.highlightedMarker;
+						var c = m.pinType === "origin" ? "#2563eb" : "#16a34a", lb = m.pinType === "origin" ? "O" : "D";
+						m.setIcon(L.divIcon({ className: "map-pin-" + m.pinType, html: "<div style=\"background:" + c + ";color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)\">" + lb + "</div>", iconSize: [24,24], iconAnchor: [12,12] }));
+						self.highlightedMarker = null;
+					});
 					document.body.addEventListener("htmx:afterRequest", function(e) { if (e.detail.pathInfo && e.detail.pathInfo.requestPath === "/loadboard" && self.map) self.fetchPins(); });
 					this.fetchPins();
 				},
@@ -44,7 +70,10 @@ templ MapContainer() {
 					var city = type === "origin" ? [pin.origin_city, pin.origin_state].filter(Boolean).join(", ") : [pin.dest_city, pin.dest_state].filter(Boolean).join(", ");
 					var esc = function(s) { return s ? s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : ""; };
 					var popup = "<div style=\"min-width:160px\"><strong><a href=\"/loadboard/" + pin.id + "\">" + esc(pin.listing_number) + "</a></strong><br><span style=\"color:#666\">" + esc(pin.title) + "</span><br>" + (city ? "<span>" + esc(city) + "</span><br>" : "") + "<span>" + pin.vehicle_count + " vehicle" + (pin.vehicle_count !== 1 ? "s" : "") + "</span> &middot; <strong>$" + esc(pin.carrier_pay) + "</strong></div>";
-					return L.marker([lat, lng], { icon: icon }).addTo(this.map).bindPopup(popup);
+					var m = L.marker([lat, lng], { icon: icon }).addTo(this.map).bindPopup(popup);
+					m.pinId = pin.id;
+					m.pinType = type;
+					return m;
 				},
 				setPinMode: function(mode) { this.pinMode = mode; if (this.map) this.renderPins(); }
 			};
@@ -71,7 +100,7 @@ templ ViewTabs(result models.LoadboardListResult) {
 				<span class="text-muted" style="margin-left:12px;" x-text="pinCount + ' pin' + (pinCount !== 1 ? 's' : '')"></span>
 				<span x-show="loading" class="text-muted" style="margin-left:8px;">Loading...</span>
 			</div>
-			<div id="loadboard-map" style="height:500px;border-radius:var(--radius);border:1px solid var(--gray-200);margin-top:8px;"></div>
+			<div id="loadboard-map" style="border-radius:var(--radius);border:1px solid var(--gray-200);margin-top:8px;height:500px;"></div>
 		</div>
 	</div>
 }
