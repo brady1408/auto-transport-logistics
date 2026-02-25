@@ -55,6 +55,7 @@ func (s *CustomerStore) List(ctx context.Context, f models.CustomerFilter) (*mod
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.Add("deleted_at IS NULL")
 
 	if f.Search != "" {
 		qb.Add("(name ILIKE ? OR number ILIKE ?)", "%"+f.Search+"%", "%"+f.Search+"%")
@@ -110,7 +111,7 @@ func (s *CustomerStore) GetByID(ctx context.Context, id int) (*models.Customer, 
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM customers WHERE id = $1 AND company_id = $2", customerColumns)
+	query := fmt.Sprintf("SELECT %s FROM customers WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", customerColumns)
 	c, err := scanCustomer(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get customer %d: %w", id, err)
@@ -186,7 +187,7 @@ func (s *CustomerStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM customers WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE customers SET deleted_at = NOW() WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete customer %d: %w", id, err)
 	}

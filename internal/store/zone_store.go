@@ -25,7 +25,7 @@ func (s *ZoneStore) List(ctx context.Context) ([]models.Zone, error) {
 	}
 	rows, err := s.pool.Query(ctx,
 		`SELECT id, company_id, legacy_id, zone, description, region, created_at, updated_at
-		 FROM zones WHERE company_id = $1 ORDER BY zone`, companyID)
+		 FROM zones WHERE company_id = $1 AND deleted_at IS NULL ORDER BY zone`, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list zones: %w", err)
 	}
@@ -50,7 +50,7 @@ func (s *ZoneStore) GetByID(ctx context.Context, id int) (*models.Zone, error) {
 	var z models.Zone
 	err = s.pool.QueryRow(ctx,
 		`SELECT id, company_id, legacy_id, zone, description, region, created_at, updated_at
-		 FROM zones WHERE id = $1 AND company_id = $2`, id, companyID,
+		 FROM zones WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL`, id, companyID,
 	).Scan(&z.ID, &z.CompanyID, &z.LegacyID, &z.Zone, &z.Description, &z.Region, &z.CreatedAt, &z.UpdatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("get zone %d: %w", id, err)
@@ -97,7 +97,7 @@ func (s *ZoneStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM zones WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE zones SET deleted_at = NOW() WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete zone %d: %w", id, err)
 	}
@@ -124,7 +124,7 @@ func (s *ZonePricingStore) List(ctx context.Context) ([]models.ZonePricing, erro
 	}
 	rows, err := s.pool.Query(ctx,
 		`SELECT id, company_id, legacy_id, zone_a, zone_b, description, amount, miles, transport_days, ship_to, created_at, updated_at
-		 FROM zone_pricing WHERE company_id = $1 ORDER BY zone_a, zone_b`, companyID)
+		 FROM zone_pricing WHERE company_id = $1 AND deleted_at IS NULL ORDER BY zone_a, zone_b`, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list zone pricing: %w", err)
 	}
@@ -150,7 +150,7 @@ func (s *ZonePricingStore) GetByID(ctx context.Context, id int) (*models.ZonePri
 	var zp models.ZonePricing
 	err = s.pool.QueryRow(ctx,
 		`SELECT id, company_id, legacy_id, zone_a, zone_b, description, amount, miles, transport_days, ship_to, created_at, updated_at
-		 FROM zone_pricing WHERE id = $1 AND company_id = $2`, id, companyID,
+		 FROM zone_pricing WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL`, id, companyID,
 	).Scan(&zp.ID, &zp.CompanyID, &zp.LegacyID, &zp.ZoneA, &zp.ZoneB, &zp.Description,
 		&zp.Amount, &zp.Miles, &zp.TransportDays, &zp.ShipTo, &zp.CreatedAt, &zp.UpdatedAt)
 	if err != nil {
@@ -200,7 +200,7 @@ func (s *ZonePricingStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM zone_pricing WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE zone_pricing SET deleted_at = NOW() WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete zone pricing %d: %w", id, err)
 	}

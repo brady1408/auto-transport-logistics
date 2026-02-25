@@ -85,6 +85,7 @@ func (s *TruckStore) List(ctx context.Context, f models.TruckFilter) (*models.Tr
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.Add("deleted_at IS NULL")
 
 	if f.Search != "" {
 		qb.Add("(truck_number ILIKE ? OR driver1 ILIKE ?)", "%"+f.Search+"%", "%"+f.Search+"%")
@@ -141,7 +142,7 @@ func (s *TruckStore) GetByID(ctx context.Context, id int) (*models.Truck, error)
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM trucks WHERE id = $1 AND company_id = $2", truckColumns)
+	query := fmt.Sprintf("SELECT %s FROM trucks WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", truckColumns)
 	t, err := scanTruck(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get truck %d: %w", id, err)
@@ -279,7 +280,7 @@ func (s *TruckStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM trucks WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE trucks SET deleted_at = NOW() WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete truck %d: %w", id, err)
 	}

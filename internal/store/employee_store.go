@@ -65,6 +65,7 @@ func (s *EmployeeStore) List(ctx context.Context, f models.EmployeeFilter) (*mod
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.Add("deleted_at IS NULL")
 
 	if f.Search != "" {
 		qb.Add("(name ILIKE ? OR emp_id_number ILIKE ?)", "%"+f.Search+"%", "%"+f.Search+"%")
@@ -118,7 +119,7 @@ func (s *EmployeeStore) GetByID(ctx context.Context, id int) (*models.Employee, 
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM employees WHERE id = $1 AND company_id = $2", employeeColumns)
+	query := fmt.Sprintf("SELECT %s FROM employees WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", employeeColumns)
 	e, err := scanEmployee(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get employee %d: %w", id, err)
@@ -223,7 +224,7 @@ func (s *EmployeeStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM employees WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE employees SET deleted_at = NOW() WHERE id = $1 AND company_id = $2", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete employee %d: %w", id, err)
 	}
