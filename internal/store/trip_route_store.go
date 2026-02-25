@@ -37,7 +37,7 @@ func (s *TripRouteStore) ListByTrip(ctx context.Context, tripID int) ([]models.T
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM trip_routes WHERE trip_id = $1 AND company_id = $2 ORDER BY sequence, id", routeColumns)
+	query := fmt.Sprintf("SELECT %s FROM trip_routes WHERE trip_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY sequence, id", routeColumns)
 	rows, err := s.pool.Query(ctx, query, tripID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list routes for trip %d: %w", tripID, err)
@@ -60,7 +60,7 @@ func (s *TripRouteStore) GetByID(ctx context.Context, id int) (*models.TripRoute
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM trip_routes WHERE id = $1 AND company_id = $2", routeColumns)
+	query := fmt.Sprintf("SELECT %s FROM trip_routes WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", routeColumns)
 	r, err := scanRoute(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get route %d: %w", id, err)
@@ -95,7 +95,7 @@ func (s *TripRouteStore) Update(ctx context.Context, r *models.TripRoute) error 
 		`UPDATE trip_routes SET
 			sequence=$1, customer_id=$2, customer_name=$3, city=$4, state=$5,
 			stop_type=$6, miles=$7, est_arrival=$8
-		WHERE id=$9 AND company_id=$10`,
+		WHERE id=$9 AND company_id=$10 AND deleted_at IS NULL`,
 		r.Sequence, r.CustomerID, r.CustomerName, r.City, r.State,
 		r.StopType, r.Miles, r.EstArrival,
 		r.ID, companyID,
@@ -114,7 +114,7 @@ func (s *TripRouteStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM trip_routes WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE trip_routes SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete route %d: %w", id, err)
 	}
