@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/handler/components/attachments"
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ ShowPage(pg components.PageContext, fb *models.Feedback, comments []models.FeedbackComment, isSuperAdmin bool) {
+templ ShowPage(pg components.PageContext, fb *models.Feedback, comments []models.FeedbackComment, atts []models.Attachment, isSuperAdmin bool) {
 	@components.Layout(pg, fmt.Sprintf("Feedback #%d - ATLinks", fb.ID)) {
 		<div class="page-header">
 			<h1>Feedback #{ fmt.Sprintf("%d", fb.ID) }</h1>
@@ -97,6 +98,24 @@ templ ShowPage(pg components.PageContext, fb *models.Feedback, comments []models
 		<h2 class="section-title">Message</h2>
 		<div class="card">
 			<div class="card-body" style="white-space: pre-wrap;">{ fb.Message }</div>
+		</div>
+		<h2 class="section-title">Attachments</h2>
+		@attachments.AttachmentList(atts, "feedback", fb.ID)
+		<div class="card" style="margin: 8px 0 16px;">
+			<div class="card-body">
+				<form
+					hx-post={ fmt.Sprintf("/feedback/%d/attachments", fb.ID) }
+					hx-target="#attachment-list"
+					hx-swap="outerHTML"
+					hx-encoding="multipart/form-data"
+					hx-on::after-request="if(event.detail.successful) this.reset()"
+				>
+					<div style="display: flex; align-items: center; gap: 12px;">
+						<input type="file" name="file" accept="image/*" required/>
+						<button type="submit" class="btn btn-sm btn-primary">Upload</button>
+					</div>
+				</form>
+			</div>
 		</div>
 		<h2 class="section-title">Comments</h2>
 		<div id="comment-thread">

@@ -15,7 +15,7 @@ templ FeedbackButton() {
 				</div>
 				<div id="feedback-form-area">
 					<div x-show="submitted" class="alert alert-success" style="margin:0;">Feedback submitted — thank you!</div>
-					<form x-show="!submitted" hx-post="/feedback/submit" hx-swap="none"
+					<form x-show="!submitted" hx-post="/feedback/submit" hx-swap="none" hx-encoding="multipart/form-data"
 						  @htmx:after-request="if(event.detail.successful) { $dispatch('feedback-submitted'); $el.reset(); }">
 						<input type="hidden" name="page_url" :value="window.location.pathname"/>
 						<div class="form-group">
@@ -30,6 +30,10 @@ templ FeedbackButton() {
 							<label for="fb-message">Message</label>
 							<textarea id="fb-message" name="message" class="form-control" rows="4"
 									  placeholder="Describe the issue or suggestion..." required></textarea>
+						</div>
+						<div class="form-group">
+							<label for="fb-file">Screenshot (optional)</label>
+							<input type="file" id="fb-file" name="file" accept="image/*"/>
 						</div>
 						<button type="submit" class="btn btn-primary" style="width:100%;">Submit Feedback</button>
 					</form>

@@ -1,0 +1,38 @@
+package attachments
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ AttachmentGallery(atts []models.Attachment, category string, entityID int) {
+	<div id="attachment-gallery" class="attachment-gallery">
+		if len(atts) > 0 {
+			for _, a := range atts {
+				<div class="gallery-item">
+					<a href={ templ.SafeURL(fmt.Sprintf("/attachments/%d", a.ID)) } target="_blank">
+						<img
+							src={ fmt.Sprintf("/attachments/%d", a.ID) }
+							alt={ a.Filename }
+							class="gallery-img"
+						/>
+					</a>
+					<div class="gallery-caption">
+						<span class="gallery-filename">{ a.Filename }</span>
+						<button
+							class="btn btn-sm btn-danger"
+							hx-delete={ fmt.Sprintf("/attachments/%d", a.ID) }
+							hx-target="#damage-photos-section"
+							hx-swap="outerHTML"
+							hx-confirm="Delete this photo?"
+							style="padding: 2px 8px; font-size: 11px;"
+						>Delete</button>
+					</div>
+				</div>
+			}
+		} else {
+			<p class="text-muted">No photos attached.</p>
+		}
+	</div>
+}

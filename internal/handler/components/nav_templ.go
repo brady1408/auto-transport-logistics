@@ -66,7 +66,7 @@ func Nav(user auth.ContextUser, companyName string) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if user.Role == "super_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<!-- Admin (super_admin only) --> <div class=\"nav-dropdown\" @mouseenter=\"open = 'admin'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Admin</button><div class=\"dropdown-menu\" x-show=\"open === 'admin'\" x-cloak><a href=\"/admin/companies\" class=\"dropdown-item\">Companies</a></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<!-- Admin (super_admin only) --> <div class=\"nav-dropdown\" @mouseenter=\"open = 'admin'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Admin</button><div class=\"dropdown-menu\" x-show=\"open === 'admin'\" x-cloak><a href=\"/admin/companies\" class=\"dropdown-item\">Companies</a> <a href=\"/admin/backups\" class=\"dropdown-item\">Backups</a></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -78,7 +78,7 @@ func Nav(user auth.ContextUser, companyName string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(user.Username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 103, Col: 24}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 104, Col: 24}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {

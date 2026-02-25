@@ -6,6 +6,9 @@ services:
     env_file: .env.prod
     environment:
       PORT: "8080"
+      UPLOAD_DIR: "/data/uploads"
+    volumes:
+      - /volume1/docker/atlinks/uploads:/data/uploads
     networks:
       - tunnel
     extra_hosts:

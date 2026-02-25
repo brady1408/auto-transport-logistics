@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/handler/components/attachments"
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ ShowPage(pg components.PageContext, claim *models.DamageClaim) {
+templ ShowPage(pg components.PageContext, claim *models.DamageClaim, atts []models.Attachment) {
 	@components.Layout(pg, "Damage Claim " + claim.ClaimNumber + " - ATLinks") {
 		<div class="page-header">
 			<h1>Damage Claim { claim.ClaimNumber }</h1>
@@ -107,5 +108,25 @@ templ ShowPage(pg components.PageContext, claim *models.DamageClaim) {
 				</div>
 			</div>
 		}
+		<div id="damage-photos-section">
+			<h2 class="section-title">Damage Photos</h2>
+			@attachments.AttachmentGallery(atts, "damage_claim", claim.ID)
+			<div class="card" style="margin-top: 8px;">
+				<div class="card-body">
+					<form
+						hx-post={ fmt.Sprintf("/accounting/damage-claims/%d/attachments", claim.ID) }
+						hx-target="#attachment-gallery"
+						hx-swap="outerHTML"
+						hx-encoding="multipart/form-data"
+						hx-on::after-request="if(event.detail.successful) this.reset()"
+					>
+						<div style="display: flex; align-items: center; gap: 12px;">
+							<input type="file" name="file" accept="image/*" required/>
+							<button type="submit" class="btn btn-sm btn-primary">Upload Photo</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
 	}
 }

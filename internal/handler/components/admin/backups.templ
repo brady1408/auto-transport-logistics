@@ -1,0 +1,78 @@
+package admin
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+func formatBytes(b int64) string {
+	switch {
+	case b >= 1<<30:
+		return fmt.Sprintf("%.2f GB", float64(b)/float64(1<<30))
+	case b >= 1<<20:
+		return fmt.Sprintf("%.1f MB", float64(b)/float64(1<<20))
+	case b >= 1<<10:
+		return fmt.Sprintf("%.0f KB", float64(b)/float64(1<<10))
+	default:
+		return fmt.Sprintf("%d B", b)
+	}
+}
+
+templ BackupsPage(pg components.PageContext, backups []models.Attachment) {
+	@components.Layout(pg, "Backups - Admin") {
+		<div class="page-header">
+			<h2>Database Backups</h2>
+		</div>
+		<div class="card" style="margin-bottom: 24px;">
+			<div class="card-header">Upload Backup</div>
+			<div class="card-body">
+				<form method="POST" action="/admin/backups/upload" enctype="multipart/form-data">
+					if pg.CSRFToken != "" {
+						@components.CSRFField(pg.CSRFToken)
+					}
+					<div class="upload-zone">
+						<input type="file" name="file" id="backup-file" required/>
+						<p class="text-muted" style="margin: 8px 0 0; font-size: 12px;">
+							Max 2GB. For files over 100MB, upload from LAN (not through Cloudflare tunnel).
+						</p>
+					</div>
+					<button type="submit" class="btn btn-primary" style="margin-top: 12px;">Upload</button>
+				</form>
+			</div>
+		</div>
+		if len(backups) > 0 {
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Filename</th>
+						<th>Size</th>
+						<th>Uploaded</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, b := range backups {
+						<tr>
+							<td>
+								<a href={ templ.SafeURL(fmt.Sprintf("/attachments/%d", b.ID)) }>{ b.Filename }</a>
+							</td>
+							<td>{ formatBytes(b.SizeBytes) }</td>
+							<td>{ b.CreatedAt.Format("01/02/2006 3:04 PM") }</td>
+							<td>
+								<button
+									class="btn btn-sm btn-danger"
+									hx-delete={ fmt.Sprintf("/admin/backups/%d", b.ID) }
+									hx-confirm={ fmt.Sprintf("Delete backup %s?", b.Filename) }
+								>Delete</button>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		} else {
+			<p class="text-muted">No backups uploaded yet.</p>
+		}
+	}
+}

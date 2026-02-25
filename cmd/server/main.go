@@ -23,6 +23,7 @@ import (
 	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/middleware"
 	"github.com/brady1408/atlinks/internal/service"
+	"github.com/brady1408/atlinks/internal/storage"
 	"github.com/brady1408/atlinks/internal/store"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -140,6 +141,13 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) *htt
 	damageClaimStore := store.NewDamageClaimStore(pool)
 	apStore := store.NewAccountsPayableStore(pool)
 	feedbackStore := store.NewFeedbackStore(pool)
+	attachmentStore := store.NewAttachmentStore(pool)
+
+	// Storage service
+	storageSvc, err := storage.NewService(cfg.UploadDir)
+	if err != nil {
+		log.Fatalf("storage service: %v", err)
+	}
 
 	// Services
 	auditSvc := deps.Audit
@@ -195,11 +203,11 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) *htt
 	handler.NewInvoiceHandler(invoiceStore, invoiceDetailStore, paymentDetailStore, invoiceSvc, deps).Register(protectedMux)
 	handler.NewPaymentHandler(paymentStore, paymentDetailStore, invoiceStore, paymentSvc, deps).Register(protectedMux)
 	handler.NewCreditMemoHandler(creditMemoStore, deps).Register(protectedMux)
-	handler.NewDamageClaimHandler(damageClaimStore, deps).Register(protectedMux)
+	handler.NewDamageClaimHandler(damageClaimStore, attachmentStore, storageSvc, deps).Register(protectedMux)
 	handler.NewAccountsPayableHandler(apStore, deps).Register(protectedMux)
 
 	// Feedback
-	handler.NewFeedbackHandler(feedbackStore, deps).Register(protectedMux)
+	handler.NewFeedbackHandler(feedbackStore, attachmentStore, storageSvc, deps).Register(protectedMux)
 
 	// Feedback API (API key auth, separate from JWT-protected routes)
 	feedbackAPIHandler := handler.NewFeedbackAPIHandler(feedbackStore, deps)
@@ -212,6 +220,11 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) *htt
 	// VIN Search + Reports
 	handler.NewVinSearchHandler(vehicleStore, deps).Register(protectedMux)
 	handler.NewReportHandler(orderStore, invoiceStore, tripStore, vehicleStore, paymentStore, damageClaimStore, deps).Register(protectedMux)
+
+	// Upload handler (serve + delete routes for attachments)
+	uploadHandler := handler.NewUploadHandler(attachmentStore, storageSvc, deps)
+	uploadHandler.Register(protectedMux)
+	uploadHandler.RegisterAdmin(protectedMux, middleware.RequireRole("super_admin"))
 
 	// Admin + User Management
 	adminHandler := handler.NewAdminHandler(companyStore, userStore, deps)
@@ -255,8 +268,8 @@ func runServer(cfg *config.Config, handler http.Handler, ctx context.Context) {
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
 		Handler:      handler,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  5 * time.Minute,
+		WriteTimeout: 5 * time.Minute,
 		IdleTimeout:  60 * time.Second,
 	}
 
