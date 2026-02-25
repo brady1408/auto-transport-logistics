@@ -15,7 +15,7 @@ templ ShowPage(pg components.PageContext, listing *models.LoadboardListing, vehi
 				if canClaim {
 					<button
 						class="btn btn-primary"
-						hx-post={ fmt.Sprintf("/loadboard/%d/claim", listing.ID) }
+						hx-post={ fmt.Sprintf("/loadboard/claim/%d", listing.ID) }
 						hx-confirm={ claimConfirmMsg(listing) }
 					>
 						if listing.AutoAccept {
