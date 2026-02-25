@@ -31,35 +31,30 @@ func (s *NotificationStore) getLastChecked(ctx context.Context, userID int) (tim
 	return lastChecked, nil
 }
 
-// CountUnchecked returns the number of notification items newer than the user's
-// notifications_last_checked_at timestamp.
+// CountUnchecked returns the total number of unread notification items.
+// Loadboard: claims with unread messages (per poster/carrier last_read_at).
+// Feedback: comments from others on the user's feedback.
 func (s *NotificationStore) CountUnchecked(ctx context.Context, userID, companyID int) (int, error) {
-	lastChecked, err := s.getLastChecked(ctx, userID)
-	if err != nil {
-		return 0, err
-	}
-
-	// Count unread loadboard messages (by claim) sent by others, created after last checked
+	// Count claims with unread loadboard messages sent by others
 	var lbCount int
-	err = s.pool.QueryRow(ctx, `
+	err := s.pool.QueryRow(ctx, `
 		SELECT COUNT(DISTINCT c.id)
 		FROM loadboard_messages m
 		JOIN loadboard_claims c ON c.id = m.claim_id
 		JOIN loadboard_listings l ON l.id = c.listing_id
 		WHERE m.sender_company_id != $1
-		  AND m.created_at > $2
 		  AND (
 		    (l.poster_company_id = $1 AND (c.poster_last_read_at IS NULL OR m.created_at > c.poster_last_read_at))
 		    OR
 		    (c.carrier_company_id = $1 AND (c.carrier_last_read_at IS NULL OR m.created_at > c.carrier_last_read_at))
 		  )`,
-		companyID, lastChecked,
+		companyID,
 	).Scan(&lbCount)
 	if err != nil {
 		return 0, fmt.Errorf("count loadboard notifications: %w", err)
 	}
 
-	// Count feedback comments from others on my feedback, created after last checked
+	// Count feedback comments from others on my feedback
 	var fbCount int
 	err = s.pool.QueryRow(ctx, `
 		SELECT COUNT(*)
@@ -67,9 +62,8 @@ func (s *NotificationStore) CountUnchecked(ctx context.Context, userID, companyI
 		JOIN feedback f ON f.id = fc.feedback_id
 		WHERE f.user_id = $1
 		  AND fc.user_id != $1
-		  AND fc.internal = false
-		  AND fc.created_at > $2`,
-		userID, lastChecked,
+		  AND fc.internal = false`,
+		userID,
 	).Scan(&fbCount)
 	if err != nil {
 		return 0, fmt.Errorf("count feedback notifications: %w", err)
