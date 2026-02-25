@@ -47,6 +47,7 @@ func (s *CreditMemoStore) List(ctx context.Context, f models.CreditMemoFilter) (
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.AddRaw("deleted_at IS NULL")
 	if f.Search != "" {
 		search := "%" + f.Search + "%"
 		qb.Add("(credit_number ILIKE ? OR customer_name ILIKE ? OR invoice_number ILIKE ?)", search, search, search)
@@ -95,7 +96,7 @@ func (s *CreditMemoStore) GetByID(ctx context.Context, id int) (*models.CreditMe
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM credit_memos WHERE id = $1 AND company_id = $2", creditMemoColumns)
+	query := fmt.Sprintf("SELECT %s FROM credit_memos WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", creditMemoColumns)
 	cm, err := scanCreditMemo(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get credit memo %d: %w", id, err)
@@ -137,7 +138,7 @@ func (s *CreditMemoStore) Update(ctx context.Context, cm *models.CreditMemo) err
 			customer_id=$1, customer_number=$2, customer_name=$3,
 			invoice_id=$4, invoice_number=$5, credit_date=$6, amount=$7, reason=$8, status=$9,
 			comments=$10
-		WHERE id=$11 AND company_id=$12`,
+		WHERE id=$11 AND company_id=$12 AND deleted_at IS NULL`,
 		cm.CustomerID, cm.CustomerNumber, cm.CustomerName,
 		cm.InvoiceID, cm.InvoiceNumber, cm.CreditDate, cm.Amount, cm.Reason, cm.Status,
 		cm.Comments,
@@ -157,7 +158,7 @@ func (s *CreditMemoStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM credit_memos WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE credit_memos SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete credit memo %d: %w", id, err)
 	}

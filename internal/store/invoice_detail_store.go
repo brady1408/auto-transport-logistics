@@ -35,7 +35,7 @@ func (s *InvoiceDetailStore) ListByInvoice(ctx context.Context, invoiceID int) (
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM invoice_details WHERE invoice_id = $1 AND company_id = $2 ORDER BY id", invoiceDetailColumns)
+	query := fmt.Sprintf("SELECT %s FROM invoice_details WHERE invoice_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY id", invoiceDetailColumns)
 	rows, err := s.pool.Query(ctx, query, invoiceID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list invoice details for invoice %d: %w", invoiceID, err)
@@ -58,7 +58,7 @@ func (s *InvoiceDetailStore) GetByID(ctx context.Context, id int) (*models.Invoi
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM invoice_details WHERE id = $1 AND company_id = $2", invoiceDetailColumns)
+	query := fmt.Sprintf("SELECT %s FROM invoice_details WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", invoiceDetailColumns)
 	d, err := scanInvoiceDetail(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get invoice detail %d: %w", id, err)
@@ -115,7 +115,7 @@ func (s *InvoiceDetailStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM invoice_details WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE invoice_details SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete invoice detail %d: %w", id, err)
 	}
