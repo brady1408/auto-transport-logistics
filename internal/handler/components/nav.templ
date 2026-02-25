@@ -110,7 +110,7 @@ templ Nav(user auth.ContextUser, companyName string) {
 			}
 		</div>
 		<!-- Hamburger (mobile/tablet) -->
-		<button class="nav-hamburger" @click="mobileOpen = !mobileOpen" type="button" :aria-expanded="mobileOpen">☰</button>
+		<button class="nav-hamburger" @click="mobileOpen = !mobileOpen" type="button" :aria-expanded="mobileOpen" aria-label="Toggle navigation menu" aria-controls="nav-mobile-menu">☰</button>
 		<div class="nav-user">
 			<!-- Notification bell -->
 			<div class="notification-bell" x-data="{ open: false }" @click.away="open = false">
@@ -132,7 +132,7 @@ templ Nav(user auth.ContextUser, companyName string) {
 			</form>
 		</div>
 		<!-- Mobile nav drawer -->
-		<div class="nav-mobile-menu" x-show="mobileOpen" x-cloak>
+		<div id="nav-mobile-menu" class="nav-mobile-menu" x-show="mobileOpen" x-cloak>
 			<a href="/search/vin">VIN Search</a>
 			<hr/>
 			<div class="mobile-section-label">Loadboard</div>
