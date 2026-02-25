@@ -1,0 +1,145 @@
+package loadboard
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ MyListingShowPage(pg components.PageContext, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle, claims []models.LoadboardClaim) {
+	@components.Layout(pg, listing.ListingNumber + " - My Listings - ATLinks") {
+		<div class="page-header">
+			<h1>{ listing.ListingNumber } — { listing.Title }</h1>
+			<div class="btn-group">
+				if listing.Status == "Posted" {
+					<button
+						class="btn btn-danger"
+						hx-post={ fmt.Sprintf("/loadboard/my-listings/%d/cancel", listing.ID) }
+						hx-confirm="Cancel this listing? Any pending claims will be rejected."
+					>Cancel Listing</button>
+				}
+				<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", listing.SourceOrderID)) } class="btn">View Source Order</a>
+				<a href="/loadboard/my-listings" class="btn">Back to My Listings</a>
+			</div>
+		</div>
+		<div class="order-detail-grid">
+			<div class="card">
+				<div class="card-header">Listing Details</div>
+				<div class="card-body">
+					<div class="detail-row">
+						<span class="detail-label">Status:</span>
+						<span>@statusBadge(listing.Status)</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Carrier Pay:</span>
+						<span><strong>${ listing.CarrierPay }</strong></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Vehicles:</span>
+						<span>{ fmt.Sprintf("%d", listing.VehicleCount) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Mode:</span>
+						<span>
+							if listing.AutoAccept {
+								<span class="badge badge-active">Instant Book</span>
+							} else {
+								<span class="badge badge-waiting">Requires Approval</span>
+							}
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Posted:</span>
+						<span>{ listing.CreatedAt.Format("01/02/2006 3:04 PM") }</span>
+					</div>
+					if listing.ExpiresAt != nil {
+						<div class="detail-row">
+							<span class="detail-label">Expires:</span>
+							<span>{ listing.ExpiresAt.Format("01/02/2006 3:04 PM") }</span>
+						</div>
+					}
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Route</div>
+				<div class="card-body">
+					<strong>Origin:</strong> { components.Deref(listing.OriginName) }
+					if listing.OriginCity != nil {
+						<br/>
+						{ components.Deref(listing.OriginCity) }, { components.Deref(listing.OriginState) } { components.Deref(listing.OriginZip) }
+					}
+					<hr class="dropdown-divider"/>
+					<strong>Destination:</strong> { components.Deref(listing.DestName) }
+					if listing.DestCity != nil {
+						<br/>
+						{ components.Deref(listing.DestCity) }, { components.Deref(listing.DestState) } { components.Deref(listing.DestZip) }
+					}
+				</div>
+			</div>
+		</div>
+		if listing.SpecialInstructions != nil && *listing.SpecialInstructions != "" {
+			<div class="card" style="margin-top:1rem;">
+				<div class="card-header">Special Instructions</div>
+				<div class="card-body">{ components.Deref(listing.SpecialInstructions) }</div>
+			</div>
+		}
+		<h2 class="section-title">Vehicles</h2>
+		@vehicleTable(vehicles)
+		<h2 class="section-title">Claims ({ fmt.Sprintf("%d", len(claims)) })</h2>
+		<div class="table-container">
+			<table>
+				<thead>
+					<tr>
+						<th>Carrier</th>
+						<th>SCAC</th>
+						<th>MC#</th>
+						<th>DOT#</th>
+						<th class="text-right">Agreed Pay</th>
+						<th>Status</th>
+						<th>Submitted</th>
+						<th>Notes</th>
+						<th class="text-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(claims) > 0 {
+						for _, c := range claims {
+							<tr>
+								<td>{ components.Deref(c.CarrierCompanyName) }</td>
+								<td>{ components.Deref(c.CarrierSCAC) }</td>
+								<td>{ components.Deref(c.CarrierMCNumber) }</td>
+								<td>{ components.Deref(c.CarrierDOTNumber) }</td>
+								<td class="text-right">${ c.AgreedPay }</td>
+								<td>@statusBadge(c.Status)</td>
+								<td>{ c.CreatedAt.Format("01/02/2006") }</td>
+								<td>{ components.Deref(c.CarrierNotes) }</td>
+								<td class="text-right">
+									if c.Status == "Pending" {
+										<div class="btn-group">
+											<button
+												class="btn btn-sm btn-primary"
+												hx-post={ fmt.Sprintf("/loadboard/claims/%d/accept", c.ID) }
+												hx-confirm="Accept this claim? An order will be imported to the carrier's system."
+											>Accept</button>
+											<button
+												class="btn btn-sm btn-danger"
+												hx-post={ fmt.Sprintf("/loadboard/claims/%d/reject", c.ID) }
+												hx-confirm="Reject this claim?"
+											>Reject</button>
+										</div>
+									}
+									if c.CarrierOrderID != nil {
+										<span class="text-muted">Order imported</span>
+									}
+								</td>
+							</tr>
+						}
+					} else {
+						<tr><td colspan="9" class="text-center text-muted">No claims yet</td></tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}

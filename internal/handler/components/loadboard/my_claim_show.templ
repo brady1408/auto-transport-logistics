@@ -1,0 +1,125 @@
+package loadboard
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ MyClaimShowPage(pg components.PageContext, claim *models.LoadboardClaim, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle) {
+	@components.Layout(pg, "Claim " + claim.ListingNumber + " - My Claims - ATLinks") {
+		<div class="page-header">
+			<h1>Claim on { claim.ListingNumber } — { claim.ListingTitle }</h1>
+			<div class="btn-group">
+				if claim.Status == "Pending" {
+					<button
+						class="btn btn-danger"
+						hx-post={ fmt.Sprintf("/loadboard/my-claims/%d/cancel", claim.ID) }
+						hx-confirm="Cancel this claim?"
+					>Cancel Claim</button>
+				}
+				if claim.Status == "Accepted" {
+					<button
+						class="btn btn-success"
+						hx-post={ fmt.Sprintf("/loadboard/my-claims/%d/complete", claim.ID) }
+						hx-confirm="Mark this claim as completed?"
+					>Mark Completed</button>
+				}
+				if claim.CarrierOrderID != nil {
+					<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", *claim.CarrierOrderID)) } class="btn btn-primary">View Imported Order</a>
+				}
+				<a href="/loadboard/my-claims" class="btn">Back to My Claims</a>
+			</div>
+		</div>
+		<div class="order-detail-grid">
+			<div class="card">
+				<div class="card-header">Claim Details</div>
+				<div class="card-body">
+					<div class="detail-row">
+						<span class="detail-label">Claim Status:</span>
+						<span>@statusBadge(claim.Status)</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Listing Status:</span>
+						<span>@statusBadge(claim.ListingStatus)</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Agreed Pay:</span>
+						<span><strong>${ claim.AgreedPay }</strong></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Vehicles:</span>
+						<span>{ fmt.Sprintf("%d", claim.VehicleCount) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Submitted:</span>
+						<span>{ claim.CreatedAt.Format("01/02/2006 3:04 PM") }</span>
+					</div>
+					if claim.AcceptedAt != nil {
+						<div class="detail-row">
+							<span class="detail-label">Accepted:</span>
+							<span>{ claim.AcceptedAt.Format("01/02/2006 3:04 PM") }</span>
+						</div>
+					}
+					if claim.RejectedAt != nil {
+						<div class="detail-row">
+							<span class="detail-label">Rejected:</span>
+							<span>{ claim.RejectedAt.Format("01/02/2006 3:04 PM") }</span>
+						</div>
+					}
+					if claim.CompletedAt != nil {
+						<div class="detail-row">
+							<span class="detail-label">Completed:</span>
+							<span>{ claim.CompletedAt.Format("01/02/2006 3:04 PM") }</span>
+						</div>
+					}
+					if claim.PosterNotes != nil {
+						<div class="detail-row">
+							<span class="detail-label">Poster Notes:</span>
+							<span>{ components.Deref(claim.PosterNotes) }</span>
+						</div>
+					}
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Route</div>
+				<div class="card-body">
+					<strong>Origin:</strong> { components.Deref(listing.OriginName) }
+					if listing.OriginCity != nil {
+						<br/>
+						{ components.Deref(listing.OriginCity) }, { components.Deref(listing.OriginState) } { components.Deref(listing.OriginZip) }
+					}
+					<hr class="dropdown-divider"/>
+					<strong>Destination:</strong> { components.Deref(listing.DestName) }
+					if listing.DestCity != nil {
+						<br/>
+						{ components.Deref(listing.DestCity) }, { components.Deref(listing.DestState) } { components.Deref(listing.DestZip) }
+					}
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Posted By</div>
+				<div class="card-body">
+					<strong>{ components.Deref(listing.PosterCompanyName) }</strong>
+					if listing.PosterSCAC != nil {
+						<br/>
+						SCAC: { components.Deref(listing.PosterSCAC) }
+					}
+					if listing.PosterMCNumber != nil {
+						<br/>
+						MC#: { components.Deref(listing.PosterMCNumber) }
+					}
+				</div>
+			</div>
+		</div>
+		if listing.SpecialInstructions != nil && *listing.SpecialInstructions != "" {
+			<div class="card" style="margin-top:1rem;">
+				<div class="card-header">Special Instructions</div>
+				<div class="card-body">{ components.Deref(listing.SpecialInstructions) }</div>
+			</div>
+		}
+		<h2 class="section-title">Vehicles</h2>
+		@vehicleTable(vehicles)
+	}
+}

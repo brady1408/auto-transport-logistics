@@ -1,0 +1,122 @@
+package loadboard
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ MyListingsPage(pg components.PageContext, result models.LoadboardListResult, filter models.LoadboardFilter) {
+	@components.Layout(pg, "My Listings - Loadboard - ATLinks") {
+		<div class="page-header">
+			<h1>My Listings</h1>
+			<div class="btn-group">
+				<a href="/loadboard" class="btn">Browse Loads</a>
+				<a href="/loadboard/my-claims" class="btn">My Claims</a>
+			</div>
+		</div>
+		<div class="filter-bar">
+			<div class="form-group">
+				<label for="search">Search</label>
+				<input
+					type="text" id="search" name="search" class="form-control search-input"
+					placeholder="Title, listing #..."
+					value={ filter.Search }
+					hx-get="/loadboard/my-listings"
+					hx-trigger="keyup changed delay:300ms"
+					hx-target="#my-listings-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				/>
+			</div>
+			<div class="form-group">
+				<label for="status">Status</label>
+				<select
+					id="status" name="status" class="form-control"
+					hx-get="/loadboard/my-listings"
+					hx-trigger="change"
+					hx-target="#my-listings-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				>
+					<option value="" selected?={ filter.Status == "" }>All</option>
+					<option value="Posted" selected?={ filter.Status == "Posted" }>Posted</option>
+					<option value="Claimed" selected?={ filter.Status == "Claimed" }>Claimed</option>
+					<option value="Completed" selected?={ filter.Status == "Completed" }>Completed</option>
+					<option value="Cancelled" selected?={ filter.Status == "Cancelled" }>Cancelled</option>
+					<option value="Expired" selected?={ filter.Status == "Expired" }>Expired</option>
+				</select>
+			</div>
+		</div>
+		<div id="my-listings-table">
+			@MyListingsTable(result)
+		</div>
+	}
+}
+
+templ MyListingsTable(result models.LoadboardListResult) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Listing #</th>
+					<th>Title</th>
+					<th>Origin</th>
+					<th>Destination</th>
+					<th class="text-center">Vehicles</th>
+					<th class="text-right">Carrier Pay</th>
+					<th>Status</th>
+					<th>Posted</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, l := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/loadboard/my-listings/%d", l.ID)) }>{ l.ListingNumber }</a></td>
+							<td>{ l.Title }</td>
+							<td>
+								{ components.Deref(l.OriginCity) }
+								if l.OriginState != nil {
+									, { components.Deref(l.OriginState) }
+								}
+							</td>
+							<td>
+								{ components.Deref(l.DestCity) }
+								if l.DestState != nil {
+									, { components.Deref(l.DestState) }
+								}
+							</td>
+							<td class="text-center">{ fmt.Sprintf("%d", l.VehicleCount) }</td>
+							<td class="text-right">${ l.CarrierPay }</td>
+							<td>@statusBadge(l.Status)</td>
+							<td>{ l.CreatedAt.Format("01/02/2006") }</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/loadboard/my-listings/%d", l.ID)) } class="btn btn-sm">View</a>
+									if l.Status == "Posted" {
+										<button
+											class="btn btn-sm btn-danger"
+											hx-post={ fmt.Sprintf("/loadboard/my-listings/%d/cancel", l.ID) }
+											hx-confirm="Cancel this listing? Any pending claims will be rejected."
+										>Cancel</button>
+									}
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="9" class="text-center text-muted">No listings found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/loadboard/my-listings", "#my-listings-table",
+		))
+	}
+}

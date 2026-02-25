@@ -16,6 +16,15 @@ templ Nav(user auth.ContextUser, companyName string) {
 		<div class="nav-menu">
 			<!-- VIN Search (top-level) -->
 			<a href="/search/vin" class="nav-link" style="text-decoration:none;">VIN Search</a>
+			<!-- Loadboard -->
+			<div class="nav-dropdown" @mouseenter="open = 'loadboard'" @mouseleave="open = ''">
+				<button class="nav-link">Loadboard</button>
+				<div class="dropdown-menu" x-show="open === 'loadboard'" x-cloak>
+					<a href="/loadboard" class="dropdown-item">Browse Loads</a>
+					<a href="/loadboard/my-listings" class="dropdown-item">My Listings</a>
+					<a href="/loadboard/my-claims" class="dropdown-item">My Claims</a>
+				</div>
+			</div>
 			<!-- Dispatch -->
 			<div class="nav-dropdown" @mouseenter="open = 'dispatch'" @mouseleave="open = ''">
 				<button class="nav-link">Dispatch</button>

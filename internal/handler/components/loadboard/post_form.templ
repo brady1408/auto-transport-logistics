@@ -1,0 +1,117 @@
+package loadboard
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ PostFormPage(pg components.PageContext, order *models.Order, waitingCount int, errMsg string) {
+	@components.Layout(pg, "Post to Loadboard - ATLinks") {
+		<div class="page-header">
+			<h1>Post Order { order.OrderNumber } to Loadboard</h1>
+			<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", order.ID)) } class="btn">Cancel</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<div class="card" style="margin-bottom:1rem;">
+			<div class="card-header">Order Summary</div>
+			<div class="card-body">
+				<div class="detail-row">
+					<span class="detail-label">Order:</span>
+					<span>{ order.OrderNumber }</span>
+				</div>
+				<div class="detail-row">
+					<span class="detail-label">Load (Origin):</span>
+					<span>
+						{ components.Deref(order.LoadCustomerName) }
+						if order.LoadCity != nil {
+							— { components.Deref(order.LoadCity) }, { components.Deref(order.LoadState) }
+						}
+					</span>
+				</div>
+				<div class="detail-row">
+					<span class="detail-label">Drop (Destination):</span>
+					<span>
+						{ components.Deref(order.DropCustomerName) }
+						if order.DropCity != nil {
+							— { components.Deref(order.DropCity) }, { components.Deref(order.DropState) }
+						}
+					</span>
+				</div>
+				<div class="detail-row">
+					<span class="detail-label">Waiting Vehicles:</span>
+					<span><strong>{ fmt.Sprintf("%d", waitingCount) }</strong></span>
+				</div>
+				if order.TotalCharge != nil {
+					<div class="detail-row">
+						<span class="detail-label">Order Total:</span>
+						<span>${ components.Deref(order.TotalCharge) }</span>
+					</div>
+				}
+			</div>
+		</div>
+		<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/loadboard/post/%d", order.ID)) } class="card">
+			@components.CSRFField(pg.CSRFToken)
+			<div class="card-header">Listing Details</div>
+			<div class="card-body">
+				<div class="form-row">
+					<div class="form-group" style="flex:2">
+						<label for="title">Title *</label>
+						<input type="text" id="title" name="title" class="form-control" required
+							value="Vehicle Transport"
+							placeholder="e.g. 3 cars CA to TX"/>
+					</div>
+					<div class="form-group" style="flex:1">
+						<label for="carrier_pay">Carrier Pay ($) *</label>
+						<input type="number" id="carrier_pay" name="carrier_pay" class="form-control" required
+							step="0.01" min="0" placeholder="0.00"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="pickup_date_from">Pickup From</label>
+						<input type="date" id="pickup_date_from" name="pickup_date_from" class="form-control"
+							value={ components.FormatDate(order.EstPickupDate) }/>
+					</div>
+					<div class="form-group">
+						<label for="pickup_date_to">Pickup To</label>
+						<input type="date" id="pickup_date_to" name="pickup_date_to" class="form-control"/>
+					</div>
+					<div class="form-group">
+						<label for="deliver_date_from">Deliver From</label>
+						<input type="date" id="deliver_date_from" name="deliver_date_from" class="form-control"
+							value={ components.FormatDate(order.EstDeliverDate) }/>
+					</div>
+					<div class="form-group">
+						<label for="deliver_date_to">Deliver To</label>
+						<input type="date" id="deliver_date_to" name="deliver_date_to" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group" style="flex:2">
+						<label for="special_instructions">Special Instructions</label>
+						<textarea id="special_instructions" name="special_instructions" class="form-control" rows="3"></textarea>
+					</div>
+					<div class="form-group" style="flex:1">
+						<label for="expires_at">Expires At</label>
+						<input type="datetime-local" id="expires_at" name="expires_at" class="form-control"/>
+						<small class="text-muted">Leave blank for no expiration</small>
+					</div>
+				</div>
+				<div class="form-group">
+					<label>
+						<input type="checkbox" name="auto_accept" value="on"/>
+						Auto-Accept Claims (instant book — carriers are immediately approved)
+					</label>
+				</div>
+			</div>
+			<div class="card-footer">
+				<button type="submit" class="btn btn-primary">Post to Loadboard</button>
+				<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", order.ID)) } class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}

@@ -1,0 +1,80 @@
+package loadboard
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Table(result models.LoadboardListResult) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Listing #</th>
+					<th>Title</th>
+					<th>Origin</th>
+					<th>Destination</th>
+					<th class="text-center">Vehicles</th>
+					<th class="text-right">Carrier Pay</th>
+					<th>Pickup</th>
+					<th>Posted By</th>
+					<th>Mode</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, l := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/loadboard/%d", l.ID)) }>{ l.ListingNumber }</a></td>
+							<td>{ l.Title }</td>
+							<td>
+								{ components.Deref(l.OriginCity) }
+								if l.OriginState != nil {
+									, { components.Deref(l.OriginState) }
+								}
+							</td>
+							<td>
+								{ components.Deref(l.DestCity) }
+								if l.DestState != nil {
+									, { components.Deref(l.DestState) }
+								}
+							</td>
+							<td class="text-center">{ fmt.Sprintf("%d", l.VehicleCount) }</td>
+							<td class="text-right">${ l.CarrierPay }</td>
+							<td>
+								if l.PickupDateFrom != nil {
+									{ l.PickupDateFrom.Format("01/02") }
+								}
+								if l.PickupDateTo != nil {
+									-{ l.PickupDateTo.Format("01/02") }
+								}
+							</td>
+							<td>{ components.Deref(l.PosterCompanyName) }</td>
+							<td>
+								if l.AutoAccept {
+									<span class="badge badge-active">Instant</span>
+								} else {
+									<span class="badge badge-waiting">Review</span>
+								}
+							</td>
+							<td class="text-right">
+								<a href={ templ.SafeURL(fmt.Sprintf("/loadboard/%d", l.ID)) } class="btn btn-sm btn-primary">View</a>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="10" class="text-center text-muted">No available listings</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/loadboard", "#loadboard-table",
+		))
+	}
+}

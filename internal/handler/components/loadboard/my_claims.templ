@@ -1,0 +1,123 @@
+package loadboard
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ MyClaimsPage(pg components.PageContext, result models.LoadboardClaimListResult, filter models.LoadboardFilter) {
+	@components.Layout(pg, "My Claims - Loadboard - ATLinks") {
+		<div class="page-header">
+			<h1>My Claims</h1>
+			<div class="btn-group">
+				<a href="/loadboard" class="btn">Browse Loads</a>
+				<a href="/loadboard/my-listings" class="btn">My Listings</a>
+			</div>
+		</div>
+		<div class="filter-bar">
+			<div class="form-group">
+				<label for="search">Search</label>
+				<input
+					type="text" id="search" name="search" class="form-control search-input"
+					placeholder="Listing #, title..."
+					value={ filter.Search }
+					hx-get="/loadboard/my-claims"
+					hx-trigger="keyup changed delay:300ms"
+					hx-target="#my-claims-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				/>
+			</div>
+			<div class="form-group">
+				<label for="status">Status</label>
+				<select
+					id="status" name="status" class="form-control"
+					hx-get="/loadboard/my-claims"
+					hx-trigger="change"
+					hx-target="#my-claims-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				>
+					<option value="" selected?={ filter.Status == "" }>All</option>
+					<option value="Pending" selected?={ filter.Status == "Pending" }>Pending</option>
+					<option value="Accepted" selected?={ filter.Status == "Accepted" }>Accepted</option>
+					<option value="Completed" selected?={ filter.Status == "Completed" }>Completed</option>
+					<option value="Rejected" selected?={ filter.Status == "Rejected" }>Rejected</option>
+					<option value="Cancelled" selected?={ filter.Status == "Cancelled" }>Cancelled</option>
+				</select>
+			</div>
+		</div>
+		<div id="my-claims-table">
+			@MyClaimsTable(result)
+		</div>
+	}
+}
+
+templ MyClaimsTable(result models.LoadboardClaimListResult) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Listing #</th>
+					<th>Title</th>
+					<th class="text-right">Agreed Pay</th>
+					<th class="text-center">Vehicles</th>
+					<th>Claim Status</th>
+					<th>Listing Status</th>
+					<th>Submitted</th>
+					<th>Order</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, c := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/loadboard/my-claims/%d", c.ID)) }>{ c.ListingNumber }</a></td>
+							<td>{ c.ListingTitle }</td>
+							<td class="text-right">${ c.AgreedPay }</td>
+							<td class="text-center">{ fmt.Sprintf("%d", c.VehicleCount) }</td>
+							<td>@statusBadge(c.Status)</td>
+							<td>@statusBadge(c.ListingStatus)</td>
+							<td>{ c.CreatedAt.Format("01/02/2006") }</td>
+							<td>
+								if c.CarrierOrderID != nil {
+									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", *c.CarrierOrderID)) }>View Order</a>
+								}
+							</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/loadboard/my-claims/%d", c.ID)) } class="btn btn-sm">View</a>
+									if c.Status == "Pending" {
+										<button
+											class="btn btn-sm btn-danger"
+											hx-post={ fmt.Sprintf("/loadboard/my-claims/%d/cancel", c.ID) }
+											hx-confirm="Cancel this claim?"
+										>Cancel</button>
+									}
+									if c.Status == "Accepted" {
+										<button
+											class="btn btn-sm btn-success"
+											hx-post={ fmt.Sprintf("/loadboard/my-claims/%d/complete", c.ID) }
+											hx-confirm="Mark this claim as completed?"
+										>Complete</button>
+									}
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="9" class="text-center text-muted">No claims found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/loadboard/my-claims", "#my-claims-table",
+		))
+	}
+}
