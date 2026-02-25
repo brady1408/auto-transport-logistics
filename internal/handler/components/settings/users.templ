@@ -13,8 +13,9 @@ templ UsersPage(pg components.PageContext, users []models.User) {
 			<h2>Users</h2>
 			<a href="/settings/users/new" class="btn btn-primary">New User</a>
 		</div>
-		<table class="data-table">
-			<thead>
+		<div class="table-container">
+			<table class="data-table">
+				<thead>
 				<tr>
 					<th>ID</th>
 					<th>Username</th>
@@ -45,7 +46,8 @@ templ UsersPage(pg components.PageContext, users []models.User) {
 				} else {
 					<tr><td colspan="6" class="text-center">No users found</td></tr>
 				}
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
 	}
 }

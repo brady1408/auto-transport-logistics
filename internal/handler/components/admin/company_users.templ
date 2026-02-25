@@ -16,8 +16,9 @@ templ CompanyUsersPage(pg components.PageContext, company *models.Company, users
 				<a href="/admin/companies" class="btn">Back to Companies</a>
 			</div>
 		</div>
-		<table class="data-table">
-			<thead>
+		<div class="table-container">
+			<table class="data-table">
+				<thead>
 				<tr>
 					<th>ID</th>
 					<th>Username</th>
@@ -48,7 +49,8 @@ templ CompanyUsersPage(pg components.PageContext, company *models.Company, users
 				} else {
 					<tr><td colspan="6" class="text-center">No users found</td></tr>
 				}
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
 	}
 }
