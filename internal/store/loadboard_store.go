@@ -56,6 +56,7 @@ func (s *LoadboardStore) ListAvailable(ctx context.Context, f models.LoadboardFi
 	qb.AddRaw("status = 'Posted'")
 	qb.Add("poster_company_id != ?", excludeCompanyID)
 	qb.AddRaw("(expires_at IS NULL OR expires_at > NOW())")
+	qb.AddRaw("deleted_at IS NULL")
 
 	if f.Search != "" {
 		search := "%" + f.Search + "%"
@@ -108,7 +109,7 @@ func (s *LoadboardStore) ListAvailable(ctx context.Context, f models.LoadboardFi
 
 // GetByID returns a single listing (cross-company, any authenticated user).
 func (s *LoadboardStore) GetByID(ctx context.Context, id int) (*models.LoadboardListing, error) {
-	query := fmt.Sprintf("SELECT %s FROM loadboard_listings WHERE id = $1", listingColumns)
+	query := fmt.Sprintf("SELECT %s FROM loadboard_listings WHERE id = $1 AND deleted_at IS NULL", listingColumns)
 	l, err := scanListing(s.pool.QueryRow(ctx, query, id))
 	if err != nil {
 		return nil, fmt.Errorf("get listing %d: %w", id, err)
@@ -118,7 +119,7 @@ func (s *LoadboardStore) GetByID(ctx context.Context, id int) (*models.Loadboard
 
 // GetByIDForUpdate returns a listing with a row lock for claim operations.
 func (s *LoadboardStore) GetByIDForUpdate(ctx context.Context, tx pgx.Tx, id int) (*models.LoadboardListing, error) {
-	query := fmt.Sprintf("SELECT %s FROM loadboard_listings WHERE id = $1 FOR UPDATE", listingColumns)
+	query := fmt.Sprintf("SELECT %s FROM loadboard_listings WHERE id = $1 AND deleted_at IS NULL FOR UPDATE", listingColumns)
 	l, err := scanListing(tx.QueryRow(ctx, query, id))
 	if err != nil {
 		return nil, fmt.Errorf("get listing for update %d: %w", id, err)
@@ -159,6 +160,7 @@ func (s *LoadboardStore) ListMyListings(ctx context.Context, companyID int, f mo
 
 	qb := newQueryBuilder()
 	qb.Add("poster_company_id = ?", companyID)
+	qb.AddRaw("deleted_at IS NULL")
 
 	if f.Search != "" {
 		search := "%" + f.Search + "%"
@@ -210,6 +212,8 @@ func (s *LoadboardStore) ListMyClaims(ctx context.Context, companyID int, f mode
 
 	qb := newQueryBuilder()
 	qb.Add("c.carrier_company_id = ?", companyID)
+	qb.AddRaw("c.deleted_at IS NULL")
+	qb.AddRaw("l.deleted_at IS NULL")
 
 	if f.Search != "" {
 		search := "%" + f.Search + "%"
@@ -284,7 +288,7 @@ func (s *LoadboardStore) ListClaimsOnListing(ctx context.Context, listingID int)
 			  AND m.sender_company_id = c.carrier_company_id
 			  AND (c.poster_last_read_at IS NULL OR m.created_at > c.poster_last_read_at)
 		) uc ON true
-		WHERE c.listing_id = $1 ORDER BY c.created_at DESC`,
+		WHERE c.listing_id = $1 AND c.deleted_at IS NULL ORDER BY c.created_at DESC`,
 		claimColumnsAliased())
 	rows, err := s.pool.Query(ctx, query, listingID)
 	if err != nil {
@@ -316,7 +320,7 @@ func (s *LoadboardStore) GetClaimByID(ctx context.Context, id int) (*models.Load
 	query := fmt.Sprintf(`SELECT %s, l.listing_number, l.title, l.status
 		FROM loadboard_claims c
 		JOIN loadboard_listings l ON l.id = c.listing_id
-		WHERE c.id = $1`,
+		WHERE c.id = $1 AND c.deleted_at IS NULL AND l.deleted_at IS NULL`,
 		claimColumnsAliased())
 	var c models.LoadboardClaim
 	err := s.pool.QueryRow(ctx, query, id).Scan(
@@ -404,7 +408,7 @@ func (s *LoadboardStore) CreateClaim(ctx context.Context, tx pgx.Tx, c *models.L
 // UpdateListingStatus updates a listing's status.
 func (s *LoadboardStore) UpdateListingStatus(ctx context.Context, id int, status string) error {
 	result, err := s.pool.Exec(ctx,
-		"UPDATE loadboard_listings SET status = $1, updated_at = NOW() WHERE id = $2", status, id)
+		"UPDATE loadboard_listings SET status = $1, updated_at = NOW() WHERE id = $2 AND deleted_at IS NULL", status, id)
 	if err != nil {
 		return fmt.Errorf("update listing status %d: %w", id, err)
 	}
@@ -417,7 +421,7 @@ func (s *LoadboardStore) UpdateListingStatus(ctx context.Context, id int, status
 // UpdateListingStatusTx updates a listing's status within a transaction.
 func (s *LoadboardStore) UpdateListingStatusTx(ctx context.Context, tx pgx.Tx, id int, status string) error {
 	result, err := tx.Exec(ctx,
-		"UPDATE loadboard_listings SET status = $1, updated_at = NOW() WHERE id = $2", status, id)
+		"UPDATE loadboard_listings SET status = $1, updated_at = NOW() WHERE id = $2 AND deleted_at IS NULL", status, id)
 	if err != nil {
 		return fmt.Errorf("update listing status %d: %w", id, err)
 	}
@@ -449,7 +453,7 @@ func (s *LoadboardStore) UpdateClaimStatus(ctx context.Context, id int, status s
 		return err
 	}
 	now := time.Now()
-	query := fmt.Sprintf("UPDATE loadboard_claims SET status = $1, %s = $2, updated_at = NOW() WHERE id = $3", dateCol)
+	query := fmt.Sprintf("UPDATE loadboard_claims SET status = $1, %s = $2, updated_at = NOW() WHERE id = $3 AND deleted_at IS NULL", dateCol)
 	result, err := s.pool.Exec(ctx, query, status, now, id)
 	if err != nil {
 		return fmt.Errorf("update claim status %d: %w", id, err)
@@ -467,7 +471,7 @@ func (s *LoadboardStore) UpdateClaimStatusTx(ctx context.Context, tx pgx.Tx, id 
 		return err
 	}
 	now := time.Now()
-	query := fmt.Sprintf("UPDATE loadboard_claims SET status = $1, %s = $2, updated_at = NOW() WHERE id = $3", dateCol)
+	query := fmt.Sprintf("UPDATE loadboard_claims SET status = $1, %s = $2, updated_at = NOW() WHERE id = $3 AND deleted_at IS NULL", dateCol)
 	result, err := tx.Exec(ctx, query, status, now, id)
 	if err != nil {
 		return fmt.Errorf("update claim status %d: %w", id, err)
@@ -481,7 +485,7 @@ func (s *LoadboardStore) UpdateClaimStatusTx(ctx context.Context, tx pgx.Tx, id 
 // UpdateClaimCarrierOrder sets the carrier_order_id on a claim within a transaction.
 func (s *LoadboardStore) UpdateClaimCarrierOrder(ctx context.Context, tx pgx.Tx, claimID int, orderID int) error {
 	_, err := tx.Exec(ctx,
-		"UPDATE loadboard_claims SET carrier_order_id = $1, updated_at = NOW() WHERE id = $2",
+		"UPDATE loadboard_claims SET carrier_order_id = $1, updated_at = NOW() WHERE id = $2 AND deleted_at IS NULL",
 		orderID, claimID)
 	if err != nil {
 		return fmt.Errorf("update claim carrier order: %w", err)
@@ -504,7 +508,7 @@ func (s *LoadboardStore) NextListingNumber(ctx context.Context) (string, error) 
 func (s *LoadboardStore) ExpireListings(ctx context.Context) (int, error) {
 	// Get IDs of expired listings
 	rows, err := s.pool.Query(ctx,
-		"SELECT id FROM loadboard_listings WHERE status = 'Posted' AND expires_at IS NOT NULL AND expires_at < NOW()")
+		"SELECT id FROM loadboard_listings WHERE status = 'Posted' AND expires_at IS NOT NULL AND expires_at < NOW() AND deleted_at IS NULL")
 	if err != nil {
 		return 0, fmt.Errorf("find expired listings: %w", err)
 	}
@@ -519,7 +523,7 @@ func (s *LoadboardStore) ExpireListings(ctx context.Context) (int, error) {
 	for _, id := range ids {
 		// Reject any pending claims
 		if _, err := s.pool.Exec(ctx,
-			"UPDATE loadboard_claims SET status = 'Rejected', rejected_at = NOW(), poster_notes = 'Listing expired', updated_at = NOW() WHERE listing_id = $1 AND status = 'Pending'",
+			"UPDATE loadboard_claims SET status = 'Rejected', rejected_at = NOW(), poster_notes = 'Listing expired', updated_at = NOW() WHERE listing_id = $1 AND status = 'Pending' AND deleted_at IS NULL",
 			id); err != nil {
 			return 0, fmt.Errorf("reject pending claims for expired listing %d: %w", id, err)
 		}
@@ -571,7 +575,7 @@ func (s *LoadboardStore) UpdateClaimLastRead(ctx context.Context, claimID int, i
 	if isPoster {
 		col = "poster_last_read_at"
 	}
-	query := fmt.Sprintf("UPDATE loadboard_claims SET %s = NOW() WHERE id = $1", col)
+	query := fmt.Sprintf("UPDATE loadboard_claims SET %s = NOW() WHERE id = $1 AND deleted_at IS NULL", col)
 	_, err := s.pool.Exec(ctx, query, claimID)
 	if err != nil {
 		return fmt.Errorf("update claim last read: %w", err)
@@ -606,6 +610,7 @@ func (s *LoadboardStore) ListAvailableMapPins(ctx context.Context, f models.Load
 	qb.AddRaw("status = 'Posted'")
 	qb.Add("poster_company_id != ?", excludeCompanyID)
 	qb.AddRaw("(expires_at IS NULL OR expires_at > NOW())")
+	qb.AddRaw("deleted_at IS NULL")
 	qb.AddRaw("(origin_lat IS NOT NULL OR dest_lat IS NOT NULL)")
 
 	if f.Search != "" {
@@ -652,8 +657,9 @@ func (s *LoadboardStore) ListAvailableMapPins(ctx context.Context, f models.Load
 // ListListingsNeedingGeocode returns listings with NULL origin or dest coordinates (for backfill).
 func (s *LoadboardStore) ListListingsNeedingGeocode(ctx context.Context) ([]models.LoadboardListing, error) {
 	query := fmt.Sprintf(`SELECT %s FROM loadboard_listings
-		WHERE (origin_lat IS NULL AND (origin_city IS NOT NULL OR origin_zip IS NOT NULL))
-		   OR (dest_lat IS NULL AND (dest_city IS NOT NULL OR dest_zip IS NOT NULL))
+		WHERE deleted_at IS NULL
+		  AND ((origin_lat IS NULL AND (origin_city IS NOT NULL OR origin_zip IS NOT NULL))
+		   OR (dest_lat IS NULL AND (dest_city IS NOT NULL OR dest_zip IS NOT NULL)))
 		ORDER BY id`, listingColumns)
 	rows, err := s.pool.Query(ctx, query)
 	if err != nil {
@@ -675,7 +681,7 @@ func (s *LoadboardStore) ListListingsNeedingGeocode(ctx context.Context) ([]mode
 // UpdateListingCoords updates the geocoded coordinates for a listing.
 func (s *LoadboardStore) UpdateListingCoords(ctx context.Context, id int, originLat, originLng, destLat, destLng *float64) error {
 	_, err := s.pool.Exec(ctx,
-		`UPDATE loadboard_listings SET origin_lat = $1, origin_lng = $2, dest_lat = $3, dest_lng = $4 WHERE id = $5`,
+		`UPDATE loadboard_listings SET origin_lat = $1, origin_lng = $2, dest_lat = $3, dest_lng = $4 WHERE id = $5 AND deleted_at IS NULL`,
 		originLat, originLng, destLat, destLng, id)
 	if err != nil {
 		return fmt.Errorf("update listing coords %d: %w", id, err)

@@ -36,7 +36,7 @@ func (s *AttachmentStore) GetByID(ctx context.Context, id int) (*models.Attachme
 	var att models.Attachment
 	err := s.pool.QueryRow(ctx,
 		`SELECT id, company_id, category, entity_id, filename, storage_key, content_type, size_bytes, uploaded_by, created_at
-		FROM attachments WHERE id = $1`, id,
+		FROM attachments WHERE id = $1 AND deleted_at IS NULL`, id,
 	).Scan(&att.ID, &att.CompanyID, &att.Category, &att.EntityID, &att.Filename,
 		&att.StorageKey, &att.ContentType, &att.SizeBytes, &att.UploadedBy, &att.CreatedAt)
 	if err != nil {
@@ -58,6 +58,7 @@ func (s *AttachmentStore) ListByEntity(ctx context.Context, category string, ent
 		qb.Add("company_id = ?", companyID)
 	}
 
+	qb.AddRaw("deleted_at IS NULL")
 	query := fmt.Sprintf(
 		`SELECT id, company_id, category, entity_id, filename, storage_key, content_type, size_bytes, uploaded_by, created_at
 		FROM attachments %s ORDER BY created_at ASC`, qb.Where(),
@@ -78,7 +79,7 @@ func (s *AttachmentStore) ListByEntity(ctx context.Context, category string, ent
 func (s *AttachmentStore) ListBackups(ctx context.Context) ([]models.Attachment, error) {
 	rows, err := s.pool.Query(ctx,
 		`SELECT id, company_id, category, entity_id, filename, storage_key, content_type, size_bytes, uploaded_by, created_at
-		FROM attachments WHERE category = 'backup' ORDER BY created_at DESC`)
+		FROM attachments WHERE category = 'backup' AND deleted_at IS NULL ORDER BY created_at DESC`)
 	if err != nil {
 		return nil, fmt.Errorf("list backups: %w", err)
 	}
@@ -100,7 +101,8 @@ func (s *AttachmentStore) Delete(ctx context.Context, id int) error {
 	if companyID != 0 {
 		qb.Add("company_id = ?", companyID)
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM attachments "+qb.Where(), qb.Args()...)
+	qb.AddRaw("deleted_at IS NULL")
+	result, err := s.pool.Exec(ctx, "UPDATE attachments SET deleted_at = NOW() "+qb.Where(), qb.Args()...)
 	if err != nil {
 		return fmt.Errorf("delete attachment %d: %w", id, err)
 	}
@@ -123,13 +125,11 @@ func (s *AttachmentStore) DeleteByEntity(ctx context.Context, category string, e
 		qb.Add("company_id = ?", companyID)
 	}
 
-	query := fmt.Sprintf("DELETE FROM attachments %s RETURNING storage_key", qb.Where())
-	rows, err := s.pool.Query(ctx, query, qb.Args()...)
+	qb.AddRaw("deleted_at IS NULL")
+	query := "UPDATE attachments SET deleted_at = NOW() " + qb.Where()
+	_, err = s.pool.Exec(ctx, query, qb.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("delete attachments: %w", err)
 	}
-	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (string, error) {
-		var key string
-		return key, row.Scan(&key)
-	})
+	return []string{}, nil
 }

@@ -66,7 +66,7 @@ func (s *LookupStore) List(ctx context.Context) ([]LookupItem, error) {
 		return nil, err
 	}
 	col := s.codeColumn()
-	query := fmt.Sprintf("SELECT id, %s, description FROM %s WHERE company_id = $1 ORDER BY %s", col, s.tableName, col)
+	query := fmt.Sprintf("SELECT id, %s, description FROM %s WHERE company_id = $1 AND deleted_at IS NULL ORDER BY %s", col, s.tableName, col)
 	rows, err := s.pool.Query(ctx, query, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list %s: %w", s.tableName, err)
@@ -90,7 +90,7 @@ func (s *LookupStore) GetByID(ctx context.Context, id int) (*LookupItem, error) 
 		return nil, err
 	}
 	col := s.codeColumn()
-	query := fmt.Sprintf("SELECT id, %s, description FROM %s WHERE id = $1 AND company_id = $2", col, s.tableName)
+	query := fmt.Sprintf("SELECT id, %s, description FROM %s WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", col, s.tableName)
 	var item LookupItem
 	if err := s.pool.QueryRow(ctx, query, id, companyID).Scan(&item.ID, &item.Code, &item.Description); err != nil {
 		return nil, fmt.Errorf("get %s %d: %w", s.tableName, id, err)
@@ -120,7 +120,7 @@ func (s *LookupStore) Update(ctx context.Context, id int, code, description stri
 		return err
 	}
 	col := s.codeColumn()
-	query := fmt.Sprintf("UPDATE %s SET %s = $1, description = $2 WHERE id = $3 AND company_id = $4", s.tableName, col)
+	query := fmt.Sprintf("UPDATE %s SET %s = $1, description = $2 WHERE id = $3 AND company_id = $4 AND deleted_at IS NULL", s.tableName, col)
 	_, err = s.pool.Exec(ctx, query, code, description, id, companyID)
 	if err != nil {
 		return fmt.Errorf("update %s %d: %w", s.tableName, id, err)
@@ -133,7 +133,7 @@ func (s *LookupStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	query := fmt.Sprintf("DELETE FROM %s WHERE id = $1 AND company_id = $2", s.tableName)
+	query := fmt.Sprintf("UPDATE %s SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", s.tableName)
 	_, err = s.pool.Exec(ctx, query, id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete %s %d: %w", s.tableName, id, err)
