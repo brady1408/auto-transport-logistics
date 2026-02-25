@@ -221,8 +221,8 @@ func (s *PaymentStore) PaymentReport(ctx context.Context, dateFrom, dateTo strin
 		COALESCE(p.payment_method, ''),
 		COALESCE(STRING_AGG(DISTINCT i.invoice_number, ', '), '')
 	FROM payments p
-	LEFT JOIN payment_details pd ON pd.payment_id = p.id
-	LEFT JOIN invoices i ON i.id = pd.invoice_id
+	LEFT JOIN payment_details pd ON pd.payment_id = p.id AND pd.deleted_at IS NULL
+	LEFT JOIN invoices i ON i.id = pd.invoice_id AND i.deleted_at IS NULL
 	%s
 	GROUP BY p.id, p.payment_date, p.customer_name, p.check_number, p.amount, p.applied_amount, p.payment_method
 	ORDER BY p.payment_date DESC NULLS LAST`, qb.Where())
