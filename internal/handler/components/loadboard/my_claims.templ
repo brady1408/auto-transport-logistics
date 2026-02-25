@@ -79,7 +79,12 @@ templ MyClaimsTable(result models.LoadboardClaimListResult) {
 							<td>{ c.ListingTitle }</td>
 							<td class="text-right">${ c.AgreedPay }</td>
 							<td class="text-center">{ fmt.Sprintf("%d", c.VehicleCount) }</td>
-							<td>@statusBadge(c.Status)</td>
+							<td>
+								@statusBadge(c.Status)
+								if c.UnreadCount > 0 {
+									<span class="nav-badge" >{ fmt.Sprintf("%d new", c.UnreadCount) }</span>
+								}
+							</td>
 							<td>@statusBadge(c.ListingStatus)</td>
 							<td>{ c.CreatedAt.Format("01/02/2006") }</td>
 							<td>

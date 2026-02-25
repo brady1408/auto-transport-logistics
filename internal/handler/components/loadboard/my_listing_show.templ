@@ -103,6 +103,9 @@ templ MyListingShowPage(pg components.PageContext, listing *models.LoadboardList
 						</span>
 						<span>
 							@statusBadge(c.Status)
+							if c.UnreadCount > 0 {
+								<span class="nav-badge">{ strconv.Itoa(c.UnreadCount) } new</span>
+							}
 						</span>
 					</div>
 					<div class="card-body">
@@ -151,6 +154,9 @@ templ MyListingShowPage(pg components.PageContext, listing *models.LoadboardList
 							<p class="text-muted">
 								if c.MessageCount > 0 {
 									Loading { strconv.Itoa(c.MessageCount) } messages...
+									if c.UnreadCount > 0 {
+										<span class="nav-badge">{ strconv.Itoa(c.UnreadCount) } new</span>
+									}
 								} else {
 									No messages yet.
 								}
