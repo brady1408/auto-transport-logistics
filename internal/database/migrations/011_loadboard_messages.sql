@@ -1,7 +1,7 @@
 -- +goose Up
 CREATE TABLE loadboard_messages (
     id              SERIAL PRIMARY KEY,
-    claim_id        INT NOT NULL REFERENCES loadboard_claims(id),
+    claim_id        INT NOT NULL REFERENCES loadboard_claims(id) ON DELETE CASCADE,
     sender_company_id INT NOT NULL REFERENCES companies(id),
     sender_user_id  INT NOT NULL REFERENCES users(id),
     sender_name     VARCHAR(60) NOT NULL,

@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/brady1408/atlinks/internal/models"
 )
@@ -43,7 +44,7 @@ func MessageSection(claimID int, messages []models.LoadboardMessage, currentComp
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("messages-%d", claimID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 11, Col: 84}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 12, Col: 84}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -54,9 +55,9 @@ func MessageSection(claimID int, messages []models.LoadboardMessage, currentComp
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", len(messages)))
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(len(messages)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 12, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 13, Col: 66}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -107,7 +108,7 @@ func MessageList(claimID int, messages []models.LoadboardMessage, currentCompany
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("message-list-%d", claimID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 21, Col: 50}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 22, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -146,14 +147,14 @@ func MessageList(claimID int, messages []models.LoadboardMessage, currentCompany
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\" style=\"margin-bottom:0.75rem;\"><div class=\"message-header\" style=\"font-size:0.8rem; color:var(--text-muted); margin-bottom:0.25rem;\"><strong>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\" style=\"margin-bottom:0.75rem;\"><div class=\"message-header\" style=\"font-size:0.8rem; margin-bottom:0.25rem;\"><strong>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(m.SenderName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 32, Col: 29}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 33, Col: 29}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
@@ -166,7 +167,7 @@ func MessageList(claimID int, messages []models.LoadboardMessage, currentCompany
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(m.CreatedAt.Format("01/02 3:04 PM"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 32, Col: 81}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 33, Col: 81}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -179,7 +180,7 @@ func MessageList(claimID int, messages []models.LoadboardMessage, currentCompany
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(m.Body)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 34, Col: 40}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 35, Col: 40}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -202,7 +203,7 @@ func MessageList(claimID int, messages []models.LoadboardMessage, currentCompany
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/loadboard/claims/%d/messages", claimID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 40, Col: 66}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 41, Col: 66}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -215,7 +216,7 @@ func MessageList(claimID int, messages []models.LoadboardMessage, currentCompany
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("#message-list-%d", claimID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 41, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/loadboard/messages.templ`, Line: 42, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {

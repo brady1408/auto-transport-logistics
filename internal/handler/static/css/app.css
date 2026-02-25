@@ -411,6 +411,7 @@ legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-70
 /* Loadboard messages */
 .message-thread { display: flex; flex-direction: column; }
 .message-bubble { padding: 0.5rem 0.75rem; border-radius: var(--radius); max-width: 80%; }
+.message-header { color: var(--text-muted); }
 .message-mine { background: var(--primary); color: #fff; align-self: flex-end; }
 .message-mine .message-header { color: rgba(255,255,255,0.7); }
 .message-theirs { background: var(--gray-100); align-self: flex-start; }

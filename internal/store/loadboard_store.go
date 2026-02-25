@@ -263,9 +263,10 @@ func (s *LoadboardStore) ListMyClaims(ctx context.Context, companyID int, f mode
 
 // ListClaimsOnListing returns all claims on a specific listing, including message counts.
 func (s *LoadboardStore) ListClaimsOnListing(ctx context.Context, listingID int) ([]models.LoadboardClaim, error) {
-	query := fmt.Sprintf(`SELECT %s,
-		COALESCE((SELECT COUNT(*) FROM loadboard_messages m WHERE m.claim_id = c.id), 0) AS message_count
-		FROM loadboard_claims c WHERE c.listing_id = $1 ORDER BY c.created_at DESC`,
+	query := fmt.Sprintf(`SELECT %s, COALESCE(mc.cnt, 0) AS message_count
+		FROM loadboard_claims c
+		LEFT JOIN (SELECT claim_id, COUNT(*) AS cnt FROM loadboard_messages GROUP BY claim_id) mc ON mc.claim_id = c.id
+		WHERE c.listing_id = $1 ORDER BY c.created_at DESC`,
 		claimColumnsAliased())
 	rows, err := s.pool.Query(ctx, query, listingID)
 	if err != nil {

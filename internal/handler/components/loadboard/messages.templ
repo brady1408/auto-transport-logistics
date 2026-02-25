@@ -2,6 +2,7 @@ package loadboard
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/brady1408/atlinks/internal/models"
 )
@@ -9,7 +10,7 @@ import (
 // MessageSection renders the full messages card with the message list and send form.
 templ MessageSection(claimID int, messages []models.LoadboardMessage, currentCompanyID int) {
 	<div class="card" style="margin-top:1rem;" id={ fmt.Sprintf("messages-%d", claimID) }>
-		<div class="card-header">Messages ({ fmt.Sprintf("%d", len(messages)) })</div>
+		<div class="card-header">Messages ({ strconv.Itoa(len(messages)) })</div>
 		<div class="card-body">
 			@MessageList(claimID, messages, currentCompanyID)
 		</div>
@@ -28,7 +29,7 @@ templ MessageList(claimID int, messages []models.LoadboardMessage, currentCompan
 						class={ "message-bubble", templ.KV("message-mine", m.SenderCompanyID == currentCompanyID), templ.KV("message-theirs", m.SenderCompanyID != currentCompanyID) }
 						style="margin-bottom:0.75rem;"
 					>
-						<div class="message-header" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.25rem;">
+						<div class="message-header" style="font-size:0.8rem; margin-bottom:0.25rem;">
 							<strong>{ m.SenderName }</strong> · { m.CreatedAt.Format("01/02 3:04 PM") }
 						</div>
 						<div class="message-body">{ m.Body }</div>

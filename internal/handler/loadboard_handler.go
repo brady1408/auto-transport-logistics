@@ -486,40 +486,49 @@ func (h *LoadboardHandler) rejectClaim(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// claimMessages returns the messages partial for a claim (HTMX).
-// Accessible by both poster and carrier.
-func (h *LoadboardHandler) claimMessages(w http.ResponseWriter, r *http.Request) {
+// authorizeClaimParty verifies the caller is either the poster or carrier on a claim.
+// Returns the claim and user on success, or writes an HTTP error and returns nil.
+func (h *LoadboardHandler) authorizeClaimParty(w http.ResponseWriter, r *http.Request) (*models.LoadboardClaim, *auth.ContextUser) {
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
+		return nil, nil
 	}
 
 	user, ok := auth.GetUserFromRequest(r)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
+		return nil, nil
 	}
 
 	claim, err := h.store.GetClaimByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, "Claim not found", http.StatusNotFound)
-		return
+		return nil, nil
 	}
 
 	listing, err := h.store.GetByID(r.Context(), claim.ListingID)
 	if err != nil {
 		http.Error(w, "Listing not found", http.StatusNotFound)
-		return
+		return nil, nil
 	}
 
-	// Authorization: must be poster or carrier
 	if claim.CarrierCompanyID != user.CompanyID && listing.PosterCompanyID != user.CompanyID {
 		http.Error(w, "Not authorized", http.StatusForbidden)
+		return nil, nil
+	}
+
+	return claim, &user
+}
+
+// claimMessages returns the messages partial for a claim (HTMX).
+func (h *LoadboardHandler) claimMessages(w http.ResponseWriter, r *http.Request) {
+	claim, user := h.authorizeClaimParty(w, r)
+	if claim == nil {
 		return
 	}
 
-	messages, err := h.store.ListMessagesByClaim(r.Context(), id)
+	messages, err := h.store.ListMessagesByClaim(r.Context(), claim.ID)
 	if err != nil {
 		serverError(w, err)
 		return
@@ -529,35 +538,9 @@ func (h *LoadboardHandler) claimMessages(w http.ResponseWriter, r *http.Request)
 }
 
 // sendMessage creates a new message on a claim.
-// Accessible by both poster and carrier.
 func (h *LoadboardHandler) sendMessage(w http.ResponseWriter, r *http.Request) {
-	id, err := parseID(r)
-	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	user, ok := auth.GetUserFromRequest(r)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	claim, err := h.store.GetClaimByID(r.Context(), id)
-	if err != nil {
-		http.Error(w, "Claim not found", http.StatusNotFound)
-		return
-	}
-
-	listing, err := h.store.GetByID(r.Context(), claim.ListingID)
-	if err != nil {
-		http.Error(w, "Listing not found", http.StatusNotFound)
-		return
-	}
-
-	// Authorization: must be poster or carrier
-	if claim.CarrierCompanyID != user.CompanyID && listing.PosterCompanyID != user.CompanyID {
-		http.Error(w, "Not authorized", http.StatusForbidden)
+	claim, user := h.authorizeClaimParty(w, r)
+	if claim == nil {
 		return
 	}
 
@@ -566,9 +549,13 @@ func (h *LoadboardHandler) sendMessage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Message body required", http.StatusBadRequest)
 		return
 	}
+	if len(body) > 5000 {
+		http.Error(w, "Message too long (max 5000 characters)", http.StatusBadRequest)
+		return
+	}
 
 	msg := &models.LoadboardMessage{
-		ClaimID:         id,
+		ClaimID:         claim.ID,
 		SenderCompanyID: user.CompanyID,
 		SenderUserID:    user.ID,
 		SenderName:      user.Username,
@@ -581,8 +568,7 @@ func (h *LoadboardHandler) sendMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return updated messages list
-	messages, err := h.store.ListMessagesByClaim(r.Context(), id)
+	messages, err := h.store.ListMessagesByClaim(r.Context(), claim.ID)
 	if err != nil {
 		serverError(w, err)
 		return

@@ -2,6 +2,7 @@ package loadboard
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/models"
@@ -37,7 +38,7 @@ templ MyListingShowPage(pg components.PageContext, listing *models.LoadboardList
 					</div>
 					<div class="detail-row">
 						<span class="detail-label">Vehicles:</span>
-						<span>{ fmt.Sprintf("%d", listing.VehicleCount) }</span>
+						<span>{ strconv.Itoa(listing.VehicleCount) }</span>
 					</div>
 					<div class="detail-row">
 						<span class="detail-label">Mode:</span>
@@ -86,7 +87,7 @@ templ MyListingShowPage(pg components.PageContext, listing *models.LoadboardList
 		}
 		<h2 class="section-title">Vehicles</h2>
 		@vehicleTable(vehicles)
-		<h2 class="section-title">Claims ({ fmt.Sprintf("%d", len(claims)) })</h2>
+		<h2 class="section-title">Claims ({ strconv.Itoa(len(claims)) })</h2>
 		if len(claims) > 0 {
 			for _, c := range claims {
 				<div class="card" style="margin-bottom:1rem;">
@@ -149,7 +150,7 @@ templ MyListingShowPage(pg components.PageContext, listing *models.LoadboardList
 						>
 							<p class="text-muted">
 								if c.MessageCount > 0 {
-									Loading { fmt.Sprintf("%d", c.MessageCount) } messages...
+									Loading { strconv.Itoa(c.MessageCount) } messages...
 								} else {
 									No messages yet.
 								}
