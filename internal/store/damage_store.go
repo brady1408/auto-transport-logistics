@@ -41,7 +41,7 @@ func (s *DamageStore) ListByVehicle(ctx context.Context, vehicleID int) ([]model
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM vehicle_damage WHERE vehicle_id = $1 AND company_id = $2 ORDER BY id", damageColumns)
+	query := fmt.Sprintf("SELECT %s FROM vehicle_damage WHERE vehicle_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY id", damageColumns)
 	rows, err := s.pool.Query(ctx, query, vehicleID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list damage for vehicle %d: %w", vehicleID, err)
@@ -64,7 +64,7 @@ func (s *DamageStore) GetByID(ctx context.Context, id int) (*models.VehicleDamag
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM vehicle_damage WHERE id = $1 AND company_id = $2", damageColumns)
+	query := fmt.Sprintf("SELECT %s FROM vehicle_damage WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", damageColumns)
 	d, err := scanDamage(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get damage %d: %w", id, err)
@@ -108,7 +108,7 @@ func (s *DamageStore) Update(ctx context.Context, d *models.VehicleDamage) error
 			damage_area=$1, damage_type=$2, damage_severity=$3, description=$4,
 			inspection_point=$5, inspected_by=$6, inspection_date=$7,
 			claim_amount=$8, claim_status=$9
-		WHERE id=$10 AND company_id=$11`,
+		WHERE id=$10 AND company_id=$11 AND deleted_at IS NULL`,
 		d.DamageArea, d.DamageType, d.DamageSeverity, d.Description,
 		d.InspectionPoint, d.InspectedBy, d.InspectionDate,
 		d.ClaimAmount, d.ClaimStatus,
@@ -128,7 +128,7 @@ func (s *DamageStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM vehicle_damage WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE vehicle_damage SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete damage %d: %w", id, err)
 	}
@@ -165,7 +165,7 @@ func (s *NoteStore) ListByVehicle(ctx context.Context, vehicleID int) ([]models.
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM vehicle_notes WHERE vehicle_id = $1 AND company_id = $2 ORDER BY note_date DESC, id DESC", noteColumns)
+	query := fmt.Sprintf("SELECT %s FROM vehicle_notes WHERE vehicle_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY note_date DESC, id DESC", noteColumns)
 	rows, err := s.pool.Query(ctx, query, vehicleID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list notes for vehicle %d: %w", vehicleID, err)
@@ -206,7 +206,7 @@ func (s *NoteStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM vehicle_notes WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE vehicle_notes SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete note %d: %w", id, err)
 	}

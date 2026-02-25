@@ -49,7 +49,7 @@ func (s *VehicleStore) ListByOrder(ctx context.Context, orderID int) ([]models.O
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM order_vehicles WHERE order_id = $1 AND company_id = $2 ORDER BY id", vehicleColumns)
+	query := fmt.Sprintf("SELECT %s FROM order_vehicles WHERE order_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY id", vehicleColumns)
 	rows, err := s.pool.Query(ctx, query, orderID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list vehicles for order %d: %w", orderID, err)
@@ -72,7 +72,7 @@ func (s *VehicleStore) GetByID(ctx context.Context, id int) (*models.OrderVehicl
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM order_vehicles WHERE id = $1 AND company_id = $2", vehicleColumns)
+	query := fmt.Sprintf("SELECT %s FROM order_vehicles WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", vehicleColumns)
 	v, err := scanVehicle(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get vehicle %d: %w", id, err)
@@ -85,7 +85,7 @@ func (s *VehicleStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*model
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM order_vehicles WHERE id = $1 AND company_id = $2", vehicleColumns)
+	query := fmt.Sprintf("SELECT %s FROM order_vehicles WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", vehicleColumns)
 	v, err := scanVehicle(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get vehicle %d: %w", id, err)
@@ -141,7 +141,7 @@ func (s *VehicleStore) Update(ctx context.Context, v *models.OrderVehicle) error
 			other_charge=$14, discount=$15, discount_calc_type=$16, tax_rate=$17, tax=$18, total_charge=$19,
 			lot=$20, damage_code=$21, pu_damage_code=$22, do_damage_code=$23, comments=$24, rate_class=$25,
 			dim_length=$26, dim_width=$27, dim_height=$28, run_drive=$29, operable=$30
-		WHERE id=$31 AND company_id=$32`,
+		WHERE id=$31 AND company_id=$32 AND deleted_at IS NULL`,
 		v.Active, v.VIN, v.Year, v.Make, v.Model, v.Color, v.Weight, v.Category, v.BodyStyle,
 		v.TransportAmt, v.TransportCalcType, v.FuelSurcharge, v.FuelCalcType,
 		v.OtherCharge, v.Discount, v.DiscountCalcType, v.TaxRate, v.Tax, v.TotalCharge,
@@ -163,7 +163,7 @@ func (s *VehicleStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM order_vehicles WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE order_vehicles SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete vehicle %d: %w", id, err)
 	}
@@ -178,7 +178,7 @@ func (s *VehicleStore) DeleteTx(ctx context.Context, tx pgx.Tx, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := tx.Exec(ctx, "DELETE FROM order_vehicles WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := tx.Exec(ctx, "UPDATE order_vehicles SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete vehicle %d: %w", id, err)
 	}
@@ -216,7 +216,7 @@ func (s *VehicleStore) CountByOrder(ctx context.Context, orderID int) (VehicleCo
 			COUNT(*) FILTER (WHERE status = 'Confirmed'),
 			COUNT(*) FILTER (WHERE invoice_id IS NOT NULL),
 			COUNT(*) FILTER (WHERE status = 'Staging')
-		FROM order_vehicles WHERE order_id = $1 AND active = true AND company_id = $2`, orderID, companyID,
+		FROM order_vehicles WHERE order_id = $1 AND active = true AND company_id = $2 AND deleted_at IS NULL`, orderID, companyID,
 	).Scan(&c.Total, &c.Waiting, &c.Scheduled, &c.Loaded, &c.Delivered, &c.Confirmed, &c.Invoiced, &c.Staging)
 	if err != nil {
 		return c, fmt.Errorf("count vehicles for order %d: %w", orderID, err)
@@ -240,7 +240,7 @@ func (s *VehicleStore) CountByOrderTx(ctx context.Context, tx pgx.Tx, orderID in
 			COUNT(*) FILTER (WHERE status = 'Confirmed'),
 			COUNT(*) FILTER (WHERE invoice_id IS NOT NULL),
 			COUNT(*) FILTER (WHERE status = 'Staging')
-		FROM order_vehicles WHERE order_id = $1 AND active = true AND company_id = $2`, orderID, companyID,
+		FROM order_vehicles WHERE order_id = $1 AND active = true AND company_id = $2 AND deleted_at IS NULL`, orderID, companyID,
 	).Scan(&c.Total, &c.Waiting, &c.Scheduled, &c.Loaded, &c.Delivered, &c.Confirmed, &c.Invoiced, &c.Staging)
 	if err != nil {
 		return c, fmt.Errorf("count vehicles for order %d: %w", orderID, err)
@@ -323,7 +323,7 @@ func (s *VehicleStore) SearchGlobal(ctx context.Context, query string, limit int
 		COALESCE(ov.load_number, ''), COALESCE(ov.invoice_number, '')
 	FROM order_vehicles ov
 	LEFT JOIN orders o ON o.id = ov.order_id
-	WHERE ov.company_id = $1 AND (ov.vin ILIKE $2 OR o.order_number ILIKE $2 OR o.bill_customer_name ILIKE $2)
+	WHERE ov.company_id = $1 AND ov.deleted_at IS NULL AND (ov.vin ILIKE $2 OR o.order_number ILIKE $2 OR o.bill_customer_name ILIKE $2)
 	ORDER BY ov.id DESC LIMIT $3`
 
 	rows, err := s.pool.Query(ctx, sql, companyID, "%"+query+"%", limit)
@@ -371,6 +371,7 @@ func (s *VehicleStore) ListUnassigned(ctx context.Context, search string, limit,
 	qb.AddRaw("ov.active = true")
 	qb.AddRaw("ov.status = 'Waiting'")
 	qb.AddRaw("ov.trip_id IS NULL")
+	qb.AddRaw("ov.deleted_at IS NULL")
 
 	if search != "" {
 		pat := "%" + search + "%"
@@ -419,7 +420,7 @@ func (s *VehicleStore) ListUnassignedByOrder(ctx context.Context, orderID int) (
 		return nil, err
 	}
 	query := fmt.Sprintf(`SELECT %s FROM order_vehicles
-		WHERE order_id = $1 AND active = true AND status = 'Waiting' AND trip_id IS NULL AND company_id = $2
+		WHERE order_id = $1 AND active = true AND status = 'Waiting' AND trip_id IS NULL AND company_id = $2 AND deleted_at IS NULL
 		ORDER BY id`, vehicleColumns)
 	rows, err := s.pool.Query(ctx, query, orderID, companyID)
 	if err != nil {
@@ -475,7 +476,7 @@ func (s *VehicleStore) VehicleHistory(ctx context.Context, vin string) ([]Vehicl
 			CASE WHEN ov.confirmed_date IS NOT NULL THEN to_char(ov.confirmed_date, 'MM/DD/YYYY') END
 		FROM order_vehicles ov
 		LEFT JOIN orders o ON o.id = ov.order_id
-		WHERE ov.company_id = $1 AND ov.vin ILIKE $2
+		WHERE ov.company_id = $1 AND ov.vin ILIKE $2 AND ov.deleted_at IS NULL
 		ORDER BY ov.id DESC`, companyID, "%"+vin+"%")
 	if err != nil {
 		return nil, fmt.Errorf("vehicle history: %w", err)
@@ -503,7 +504,7 @@ func (s *VehicleStore) SearchUnassigned(ctx context.Context, search string, limi
 		return nil, err
 	}
 	query := fmt.Sprintf(`SELECT %s FROM order_vehicles
-		WHERE company_id = $1 AND active = true AND status = 'Waiting' AND trip_id IS NULL
+		WHERE company_id = $1 AND active = true AND status = 'Waiting' AND trip_id IS NULL AND deleted_at IS NULL
 		AND (vin ILIKE $2 OR EXISTS (SELECT 1 FROM orders WHERE orders.id = order_vehicles.order_id AND orders.order_number ILIKE $2))
 		ORDER BY id LIMIT $3`, vehicleColumns)
 	rows, err := s.pool.Query(ctx, query, companyID, "%"+search+"%", limit)
