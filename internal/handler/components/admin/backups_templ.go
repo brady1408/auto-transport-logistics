@@ -15,19 +15,6 @@ import (
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-func formatBytes(b int64) string {
-	switch {
-	case b >= 1<<30:
-		return fmt.Sprintf("%.2f GB", float64(b)/float64(1<<30))
-	case b >= 1<<20:
-		return fmt.Sprintf("%.1f MB", float64(b)/float64(1<<20))
-	case b >= 1<<10:
-		return fmt.Sprintf("%.0f KB", float64(b)/float64(1<<10))
-	default:
-		return fmt.Sprintf("%d B", b)
-	}
-}
-
 func BackupsPage(pg components.PageContext, backups []models.Attachment) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -88,7 +75,7 @@ func BackupsPage(pg components.PageContext, backups []models.Attachment) templ.C
 					var templ_7745c5c3_Var3 templ.SafeURL
 					templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/attachments/%d", b.ID)))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 59, Col: 69}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 46, Col: 69}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 					if templ_7745c5c3_Err != nil {
@@ -101,7 +88,7 @@ func BackupsPage(pg components.PageContext, backups []models.Attachment) templ.C
 					var templ_7745c5c3_Var4 string
 					templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(b.Filename)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 59, Col: 84}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 46, Col: 84}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 					if templ_7745c5c3_Err != nil {
@@ -112,9 +99,9 @@ func BackupsPage(pg components.PageContext, backups []models.Attachment) templ.C
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var5 string
-					templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(formatBytes(b.SizeBytes))
+					templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatBytes(b.SizeBytes))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 61, Col: 37}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 48, Col: 48}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 					if templ_7745c5c3_Err != nil {
@@ -127,7 +114,7 @@ func BackupsPage(pg components.PageContext, backups []models.Attachment) templ.C
 					var templ_7745c5c3_Var6 string
 					templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(b.CreatedAt.Format("01/02/2006 3:04 PM"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 62, Col: 53}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 49, Col: 53}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 					if templ_7745c5c3_Err != nil {
@@ -140,7 +127,7 @@ func BackupsPage(pg components.PageContext, backups []models.Attachment) templ.C
 					var templ_7745c5c3_Var7 string
 					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/admin/backups/%d", b.ID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 66, Col: 59}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 53, Col: 59}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 					if templ_7745c5c3_Err != nil {
@@ -153,7 +140,7 @@ func BackupsPage(pg components.PageContext, backups []models.Attachment) templ.C
 					var templ_7745c5c3_Var8 string
 					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("Delete backup %s?", b.Filename))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 67, Col: 66}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/backups.templ`, Line: 54, Col: 66}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {

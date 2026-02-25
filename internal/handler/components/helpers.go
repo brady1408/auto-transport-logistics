@@ -136,3 +136,17 @@ func FormatDate(t *time.Time) string {
 	}
 	return t.Format("2006-01-02")
 }
+
+// FormatBytes formats a byte count as a human-readable string.
+func FormatBytes(b int64) string {
+	switch {
+	case b >= 1<<30:
+		return fmt.Sprintf("%.2f GB", float64(b)/float64(1<<30))
+	case b >= 1<<20:
+		return fmt.Sprintf("%.1f MB", float64(b)/float64(1<<20))
+	case b >= 1<<10:
+		return fmt.Sprintf("%.0f KB", float64(b)/float64(1<<10))
+	default:
+		return fmt.Sprintf("%d B", b)
+	}
+}

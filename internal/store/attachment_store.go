@@ -123,31 +123,13 @@ func (s *AttachmentStore) DeleteByEntity(ctx context.Context, category string, e
 		qb.Add("company_id = ?", companyID)
 	}
 
-	// First get the storage keys
-	query := fmt.Sprintf("SELECT storage_key FROM attachments %s", qb.Where())
+	query := fmt.Sprintf("DELETE FROM attachments %s RETURNING storage_key", qb.Where())
 	rows, err := s.pool.Query(ctx, query, qb.Args()...)
-	if err != nil {
-		return nil, fmt.Errorf("list attachment keys: %w", err)
-	}
-	keys, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (string, error) {
-		var key string
-		return key, row.Scan(&key)
-	})
-	if err != nil {
-		return nil, fmt.Errorf("scan attachment keys: %w", err)
-	}
-
-	// Then delete from DB
-	qb2 := newQueryBuilder()
-	qb2.Add("category = ?", category)
-	qb2.Add("entity_id = ?", entityID)
-	if companyID != 0 {
-		qb2.Add("company_id = ?", companyID)
-	}
-	_, err = s.pool.Exec(ctx, "DELETE FROM attachments "+qb2.Where(), qb2.Args()...)
 	if err != nil {
 		return nil, fmt.Errorf("delete attachments: %w", err)
 	}
-
-	return keys, nil
+	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (string, error) {
+		var key string
+		return key, row.Scan(&key)
+	})
 }
