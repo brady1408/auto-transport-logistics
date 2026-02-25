@@ -463,6 +463,31 @@ legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-70
 .notification-meta { font-size: 11px; color: var(--gray-400); margin-top: 3px; display: flex; gap: 8px; }
 .notification-time { margin-left: auto; }
 
+/* View tabs (List / Map toggle) */
+.view-tabs {
+    display: flex; gap: 0; border-bottom: 2px solid var(--gray-200); margin-bottom: 12px;
+}
+.view-tab {
+    padding: 8px 20px; background: none; border: none; cursor: pointer;
+    font-size: 14px; font-weight: 500; color: var(--gray-500);
+    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s;
+}
+.view-tab:hover { color: var(--gray-700); }
+.view-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* Map controls */
+.map-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+
+/* Map pin markers */
+.map-pin-origin, .map-pin-dest { background: transparent !important; border: none !important; }
+
+/* Leaflet popup overrides */
+.leaflet-popup-content { font-family: inherit; font-size: 13px; line-height: 1.5; }
+.leaflet-popup-content a { color: var(--primary); font-weight: 600; }
+
+/* Alpine x-cloak */
+[x-cloak] { display: none !important; }
+
 /* HTMX loading indicator */
 .htmx-indicator { display: none; }
 .htmx-request .htmx-indicator { display: inline-block; }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/brady1408/atlinks/internal/audit"
 	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/atlinks/internal/geocode"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -114,6 +115,19 @@ func (s *LoadboardService) PostToLoadboard(ctx context.Context, orderID int, opt
 		PosterSCAC:          company.SCAC,
 		PosterMCNumber:      company.MCNumber,
 	}
+
+	// Geocode origin and dest addresses (non-fatal, use city/state/zip only — name is a customer name)
+	oLat, oLng, err := geocode.Geocode(ctx, "", derefStr(listing.OriginCity), derefStr(listing.OriginState), derefStr(listing.OriginZip))
+	if err != nil {
+		log.Printf("geocode origin for listing %s: %v", listing.ListingNumber, err)
+	}
+	listing.OriginLat, listing.OriginLng = oLat, oLng
+
+	dLat, dLng, err := geocode.Geocode(ctx, "", derefStr(listing.DestCity), derefStr(listing.DestState), derefStr(listing.DestZip))
+	if err != nil {
+		log.Printf("geocode dest for listing %s: %v", listing.ListingNumber, err)
+	}
+	listing.DestLat, listing.DestLng = dLat, dLng
 
 	if err := s.loadboardStore.CreateListing(ctx, listing); err != nil {
 		return nil, fmt.Errorf("create listing: %w", err)
@@ -557,6 +571,13 @@ func (s *LoadboardService) importOrderForCarrier(ctx context.Context, listing *m
 	}
 
 	return order.ID, nil
+}
+
+func derefStr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 // PostOpts contains options for posting to the loadboard.

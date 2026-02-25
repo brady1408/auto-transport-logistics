@@ -15,6 +15,7 @@ import (
 
 type loadboardStoreInterface interface {
 	ListAvailable(ctx context.Context, f models.LoadboardFilter, excludeCompanyID int) (*models.LoadboardListResult, error)
+	ListAvailableMapPins(ctx context.Context, f models.LoadboardFilter, excludeCompanyID int) ([]models.LoadboardMapPin, error)
 	GetByID(ctx context.Context, id int) (*models.LoadboardListing, error)
 	GetListingVehicles(ctx context.Context, listingID int) ([]models.LoadboardListingVehicle, error)
 	ListMyListings(ctx context.Context, companyID int, f models.LoadboardFilter) (*models.LoadboardListResult, error)
@@ -75,6 +76,7 @@ func (h *LoadboardHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /loadboard/claims/{id}/reject", h.rejectClaim)
 	mux.HandleFunc("GET /loadboard/claims/{id}/messages", h.claimMessages)
 	mux.HandleFunc("POST /loadboard/claims/{id}/messages", h.sendMessage)
+	mux.HandleFunc("GET /loadboard/map-data", h.mapData)
 	mux.HandleFunc("GET /loadboard/unread-count", h.unreadCount)
 	mux.HandleFunc("POST /loadboard/claim/{id}", h.claim)
 	// This must be last — {id} wildcard would match other paths
@@ -110,6 +112,30 @@ func (h *LoadboardHandler) browse(w http.ResponseWriter, r *http.Request) {
 	}
 	pg := h.deps.pageContext(w, r)
 	h.deps.renderTempl(w, r, loadboard.BrowsePage(pg, *result, filter))
+}
+
+func (h *LoadboardHandler) mapData(w http.ResponseWriter, r *http.Request) {
+	user, ok := auth.GetUserFromRequest(r)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	filter := models.LoadboardFilter{
+		Search:      r.URL.Query().Get("search"),
+		OriginState: r.URL.Query().Get("origin_state"),
+		DestState:   r.URL.Query().Get("dest_state"),
+		MinPay:      r.URL.Query().Get("min_pay"),
+		MaxPay:      r.URL.Query().Get("max_pay"),
+	}
+
+	pins, err := h.store.ListAvailableMapPins(r.Context(), filter, user.CompanyID)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
+	writeJSON(w, pins)
 }
 
 func (h *LoadboardHandler) show(w http.ResponseWriter, r *http.Request) {

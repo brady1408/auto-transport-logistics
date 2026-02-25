@@ -19,6 +19,7 @@ import (
 	"github.com/brady1408/atlinks/internal/config"
 	"github.com/brady1408/atlinks/internal/database"
 	"github.com/brady1408/atlinks/internal/email"
+	"github.com/brady1408/atlinks/internal/geocode"
 	"github.com/brady1408/atlinks/internal/handler"
 	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/middleware"
@@ -67,10 +68,13 @@ func main() {
 	defer pool.Close()
 
 	deps := initDeps(pool, cfg)
-	mux, loadboardSvc := initRoutes(pool, cfg, deps)
+	mux, loadboardSvc, loadboardSt := initRoutes(pool, cfg, deps)
 
 	// Background: expire loadboard listings every 5 minutes
 	go runLoadboardExpiry(ctx, loadboardSvc)
+
+	// Background: backfill geocode coords for existing listings
+	go backfillGeocode(ctx, loadboardSt)
 
 	// Apply logging middleware to all routes
 	var httpHandler http.Handler = mux
@@ -102,7 +106,7 @@ func initDeps(pool *pgxpool.Pool, cfg *config.Config) *handler.Deps {
 	}
 }
 
-func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*http.ServeMux, *service.LoadboardService) {
+func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*http.ServeMux, *service.LoadboardService, *store.LoadboardStore) {
 	mux := http.NewServeMux()
 
 	// Static files
@@ -248,7 +252,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	csrfMiddleware := middleware.CSRF(deps.SecureCookies)
 	mux.Handle("/", authMiddleware(csrfMiddleware(protectedMux)))
 
-	return mux, loadboardSvc
+	return mux, loadboardSvc, loadboardStore
 }
 
 func registerLookups(mux *http.ServeMux, pool *pgxpool.Pool, deps *handler.Deps) {
@@ -321,4 +325,64 @@ func runLoadboardExpiry(ctx context.Context, svc *service.LoadboardService) {
 			}
 		}
 	}
+}
+
+func backfillGeocode(ctx context.Context, st *store.LoadboardStore) {
+	listings, err := st.ListListingsNeedingGeocode(ctx)
+	if err != nil {
+		log.Printf("geocode backfill: list error: %v", err)
+		return
+	}
+	if len(listings) == 0 {
+		return
+	}
+	log.Printf("geocode backfill: %d listings to process", len(listings))
+
+	for i, l := range listings {
+		select {
+		case <-ctx.Done():
+			log.Printf("geocode backfill: interrupted at %d/%d", i, len(listings))
+			return
+		default:
+		}
+
+		var oLat, oLng, dLat, dLng *float64
+
+		if l.OriginLat == nil {
+			oLat, oLng, err = geocode.Geocode(ctx, "", deref(l.OriginCity), deref(l.OriginState), deref(l.OriginZip))
+			if err != nil {
+				log.Printf("geocode backfill: origin for listing %d: %v", l.ID, err)
+			}
+			// Rate limit: 1 req/sec for Nominatim
+			time.Sleep(1100 * time.Millisecond)
+		} else {
+			oLat, oLng = l.OriginLat, l.OriginLng
+		}
+
+		if l.DestLat == nil {
+			dLat, dLng, err = geocode.Geocode(ctx, "", deref(l.DestCity), deref(l.DestState), deref(l.DestZip))
+			if err != nil {
+				log.Printf("geocode backfill: dest for listing %d: %v", l.ID, err)
+			}
+			time.Sleep(1100 * time.Millisecond)
+		} else {
+			dLat, dLng = l.DestLat, l.DestLng
+		}
+
+		if err := st.UpdateListingCoords(ctx, l.ID, oLat, oLng, dLat, dLng); err != nil {
+			log.Printf("geocode backfill: update listing %d: %v", l.ID, err)
+		}
+
+		if (i+1)%10 == 0 || i == len(listings)-1 {
+			log.Printf("geocode backfill: %d/%d done", i+1, len(listings))
+		}
+	}
+	log.Printf("geocode backfill: complete")
+}
+
+func deref(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }

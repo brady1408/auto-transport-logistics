@@ -24,6 +24,7 @@ const listingColumns = `id, poster_company_id, poster_user_id, source_order_id, 
 	carrier_pay, pickup_date_from, pickup_date_to, deliver_date_from, deliver_date_to,
 	vehicle_count, equipment_type, special_instructions, auto_accept, status, expires_at,
 	poster_company_name, poster_scac, poster_mc_number,
+	origin_lat, origin_lng, dest_lat, dest_lng,
 	created_at, updated_at`
 
 func scanListing(row interface{ Scan(dest ...any) error }) (*models.LoadboardListing, error) {
@@ -35,6 +36,7 @@ func scanListing(row interface{ Scan(dest ...any) error }) (*models.LoadboardLis
 		&l.CarrierPay, &l.PickupDateFrom, &l.PickupDateTo, &l.DeliverDateFrom, &l.DeliverDateTo,
 		&l.VehicleCount, &l.EquipmentType, &l.SpecialInstructions, &l.AutoAccept, &l.Status, &l.ExpiresAt,
 		&l.PosterCompanyName, &l.PosterSCAC, &l.PosterMCNumber,
+		&l.OriginLat, &l.OriginLng, &l.DestLat, &l.DestLng,
 		&l.CreatedAt, &l.UpdatedAt,
 	)
 	return &l, err
@@ -341,9 +343,10 @@ func (s *LoadboardStore) CreateListing(ctx context.Context, l *models.LoadboardL
 			dest_name, dest_city, dest_state, dest_zip,
 			carrier_pay, pickup_date_from, pickup_date_to, deliver_date_from, deliver_date_to,
 			vehicle_count, equipment_type, special_instructions, auto_accept, status, expires_at,
-			poster_company_name, poster_scac, poster_mc_number
+			poster_company_name, poster_scac, poster_mc_number,
+			origin_lat, origin_lng, dest_lat, dest_lng
 		) VALUES (
-			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27
+			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31
 		) RETURNING id, created_at, updated_at`,
 		l.PosterCompanyID, l.PosterUserID, l.SourceOrderID, l.ListingNumber, l.Title,
 		l.OriginName, l.OriginCity, l.OriginState, l.OriginZip,
@@ -351,6 +354,7 @@ func (s *LoadboardStore) CreateListing(ctx context.Context, l *models.LoadboardL
 		l.CarrierPay, l.PickupDateFrom, l.PickupDateTo, l.DeliverDateFrom, l.DeliverDateTo,
 		l.VehicleCount, l.EquipmentType, l.SpecialInstructions, l.AutoAccept, l.Status, l.ExpiresAt,
 		l.PosterCompanyName, l.PosterSCAC, l.PosterMCNumber,
+		l.OriginLat, l.OriginLng, l.DestLat, l.DestLng,
 	).Scan(&l.ID, &l.CreatedAt, &l.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("create listing: %w", err)
@@ -594,6 +598,89 @@ func (s *LoadboardStore) CountUnreadMessages(ctx context.Context, companyID int)
 		return 0, fmt.Errorf("count unread messages: %w", err)
 	}
 	return count, nil
+}
+
+// ListAvailableMapPins returns map pin data for available listings that have at least one geocoded coordinate.
+func (s *LoadboardStore) ListAvailableMapPins(ctx context.Context, f models.LoadboardFilter, excludeCompanyID int) ([]models.LoadboardMapPin, error) {
+	qb := newQueryBuilder()
+	qb.AddRaw("status = 'Posted'")
+	qb.Add("poster_company_id != ?", excludeCompanyID)
+	qb.AddRaw("(expires_at IS NULL OR expires_at > NOW())")
+	qb.AddRaw("(origin_lat IS NOT NULL OR dest_lat IS NOT NULL)")
+
+	if f.Search != "" {
+		search := "%" + f.Search + "%"
+		qb.Add("(title ILIKE ? OR listing_number ILIKE ? OR origin_city ILIKE ? OR dest_city ILIKE ? OR poster_company_name ILIKE ?)",
+			search, search, search, search, search)
+	}
+	if f.OriginState != "" {
+		qb.Add("origin_state = ?", f.OriginState)
+	}
+	if f.DestState != "" {
+		qb.Add("dest_state = ?", f.DestState)
+	}
+	if f.MinPay != "" {
+		qb.Add("carrier_pay >= ?::numeric", f.MinPay)
+	}
+	if f.MaxPay != "" {
+		qb.Add("carrier_pay <= ?::numeric", f.MaxPay)
+	}
+
+	query := fmt.Sprintf(`SELECT id, listing_number, title, origin_city, origin_state, dest_city, dest_state,
+		carrier_pay, vehicle_count, origin_lat, origin_lng, dest_lat, dest_lng
+		FROM loadboard_listings %s ORDER BY created_at DESC LIMIT 500`, qb.Where())
+
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
+	if err != nil {
+		return nil, fmt.Errorf("list map pins: %w", err)
+	}
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.LoadboardMapPin, error) {
+		var p models.LoadboardMapPin
+		if err := row.Scan(&p.ID, &p.ListingNumber, &p.Title, &p.OriginCity, &p.OriginState,
+			&p.DestCity, &p.DestState, &p.CarrierPay, &p.VehicleCount,
+			&p.OriginLat, &p.OriginLng, &p.DestLat, &p.DestLng); err != nil {
+			return models.LoadboardMapPin{}, err
+		}
+		return p, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan map pin: %w", err)
+	}
+	return items, nil
+}
+
+// ListListingsNeedingGeocode returns listings with NULL origin or dest coordinates (for backfill).
+func (s *LoadboardStore) ListListingsNeedingGeocode(ctx context.Context) ([]models.LoadboardListing, error) {
+	query := fmt.Sprintf(`SELECT %s FROM loadboard_listings
+		WHERE (origin_lat IS NULL AND (origin_city IS NOT NULL OR origin_zip IS NOT NULL))
+		   OR (dest_lat IS NULL AND (dest_city IS NOT NULL OR dest_zip IS NOT NULL))
+		ORDER BY id`, listingColumns)
+	rows, err := s.pool.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("list listings needing geocode: %w", err)
+	}
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.LoadboardListing, error) {
+		l, err := scanListing(row)
+		if err != nil {
+			return models.LoadboardListing{}, err
+		}
+		return *l, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan listing: %w", err)
+	}
+	return items, nil
+}
+
+// UpdateListingCoords updates the geocoded coordinates for a listing.
+func (s *LoadboardStore) UpdateListingCoords(ctx context.Context, id int, originLat, originLng, destLat, destLng *float64) error {
+	_, err := s.pool.Exec(ctx,
+		`UPDATE loadboard_listings SET origin_lat = $1, origin_lng = $2, dest_lat = $3, dest_lng = $4 WHERE id = $5`,
+		originLat, originLng, destLat, destLng, id)
+	if err != nil {
+		return fmt.Errorf("update listing coords %d: %w", id, err)
+	}
+	return nil
 }
 
 // claimColumnsAliased returns claim column names with c. prefix for JOIN queries.

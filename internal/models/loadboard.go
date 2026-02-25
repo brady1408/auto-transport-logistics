@@ -31,6 +31,10 @@ type LoadboardListing struct {
 	PosterCompanyName *string `json:"poster_company_name,omitempty"`
 	PosterSCAC      *string   `json:"poster_scac,omitempty"`
 	PosterMCNumber  *string   `json:"poster_mc_number,omitempty"`
+	OriginLat       *float64  `json:"origin_lat,omitempty"`
+	OriginLng       *float64  `json:"origin_lng,omitempty"`
+	DestLat         *float64  `json:"dest_lat,omitempty"`
+	DestLng         *float64  `json:"dest_lng,omitempty"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 }
@@ -109,6 +113,22 @@ type LoadboardListResult struct {
 	TotalCount int
 	Page       int
 	PageSize   int
+}
+
+type LoadboardMapPin struct {
+	ID            int      `json:"id"`
+	ListingNumber string   `json:"listing_number"`
+	Title         string   `json:"title"`
+	OriginCity    *string  `json:"origin_city,omitempty"`
+	OriginState   *string  `json:"origin_state,omitempty"`
+	DestCity      *string  `json:"dest_city,omitempty"`
+	DestState     *string  `json:"dest_state,omitempty"`
+	CarrierPay    string   `json:"carrier_pay"`
+	VehicleCount  int      `json:"vehicle_count"`
+	OriginLat     *float64 `json:"origin_lat,omitempty"`
+	OriginLng     *float64 `json:"origin_lng,omitempty"`
+	DestLat       *float64 `json:"dest_lat,omitempty"`
+	DestLng       *float64 `json:"dest_lng,omitempty"`
 }
 
 type LoadboardClaimListResult struct {
