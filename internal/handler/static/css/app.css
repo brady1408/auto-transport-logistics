@@ -479,7 +479,16 @@ legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-70
 .map-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 
 /* Map pin markers */
-.map-pin-origin, .map-pin-dest { background: transparent !important; border: none !important; }
+.map-pin-origin, .map-pin-dest, .map-pin-highlight { background: transparent !important; border: none !important; }
+
+@keyframes map-pin-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(37,99,235,.5); }
+    70% { box-shadow: 0 0 0 12px rgba(37,99,235,0); }
+    100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+}
+.map-pin-highlight div {
+    animation: map-pin-pulse 1.2s ease-out infinite;
+}
 
 /* Leaflet popup overrides */
 .leaflet-popup-content { font-family: inherit; font-size: 13px; line-height: 1.5; }
