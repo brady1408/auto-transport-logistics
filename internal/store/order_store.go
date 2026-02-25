@@ -75,6 +75,7 @@ func (s *OrderStore) List(ctx context.Context, f models.OrderFilter) (*models.Or
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.AddRaw("deleted_at IS NULL")
 
 	if f.Search != "" {
 		search := "%" + f.Search + "%"
@@ -141,7 +142,7 @@ func (s *OrderStore) GetByID(ctx context.Context, id int) (*models.Order, error)
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM orders WHERE id = $1 AND company_id = $2", orderColumns)
+	query := fmt.Sprintf("SELECT %s FROM orders WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", orderColumns)
 	o, err := scanOrder(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get order %d: %w", id, err)
@@ -219,7 +220,7 @@ func (s *OrderStore) Update(ctx context.Context, o *models.Order) error {
 			edit_date=$50, edit_by=$51,
 			est_pickup_date=$52, est_deliver_date=$53,
 			equipment_type=$54, tax_code=$55, dim_weight=$56
-		WHERE id=$57 AND company_id=$58`,
+		WHERE id=$57 AND company_id=$58 AND deleted_at IS NULL`,
 		o.Active, o.Zone, o.DispatchCode, o.BOLNumber,
 		o.BillCustomerID, o.BillCustomerNumber, o.BillCustomerName,
 		o.BillToAddress, o.BillToAddress2, o.BillToCity, o.BillToState, o.BillToZip,
@@ -250,7 +251,7 @@ func (s *OrderStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM orders WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE orders SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete order %d: %w", id, err)
 	}
@@ -334,7 +335,7 @@ func (s *OrderStore) DashboardCounts(ctx context.Context) (OrderDashboardCounts,
 		`SELECT
 			COUNT(*) FILTER (WHERE active = true),
 			COUNT(*) FILTER (WHERE active = true AND (delivered_count + confirmed_count) > 0 AND invoiced_count = 0)
-		FROM orders WHERE company_id = $1`, companyID,
+		FROM orders WHERE company_id = $1 AND deleted_at IS NULL`, companyID,
 	).Scan(&c.Active, &c.UninvoicedDelivered)
 	if err != nil {
 		return c, fmt.Errorf("dashboard order counts: %w", err)
@@ -357,6 +358,7 @@ func (s *OrderStore) StatusSummary(ctx context.Context, dateFrom, dateTo string)
 
 	qb := newQueryBuilder()
 	qb.Add("company_id = ?", companyID)
+	qb.AddRaw("deleted_at IS NULL")
 
 	if dateFrom != "" {
 		qb.Add("create_date >= ?", dateFrom)
@@ -393,7 +395,7 @@ func (s *OrderStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*models.
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM orders WHERE id = $1 AND company_id = $2", orderColumns)
+	query := fmt.Sprintf("SELECT %s FROM orders WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", orderColumns)
 	o, err := scanOrder(tx.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get order %d: %w", id, err)

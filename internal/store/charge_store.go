@@ -37,7 +37,7 @@ func (s *ChargeStore) ListByOrder(ctx context.Context, orderID int) ([]models.Or
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM order_charges WHERE order_id = $1 AND company_id = $2 ORDER BY id", chargeColumns)
+	query := fmt.Sprintf("SELECT %s FROM order_charges WHERE order_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY id", chargeColumns)
 	rows, err := s.pool.Query(ctx, query, orderID, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("list charges for order %d: %w", orderID, err)
@@ -60,7 +60,7 @@ func (s *ChargeStore) GetByID(ctx context.Context, id int) (*models.OrderCharge,
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT %s FROM order_charges WHERE id = $1 AND company_id = $2", chargeColumns)
+	query := fmt.Sprintf("SELECT %s FROM order_charges WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", chargeColumns)
 	c, err := scanCharge(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {
 		return nil, fmt.Errorf("get charge %d: %w", id, err)
@@ -99,7 +99,7 @@ func (s *ChargeStore) Update(ctx context.Context, c *models.OrderCharge) error {
 		`UPDATE order_charges SET
 			description=$1, amount=$2, item_code=$3, qty=$4, rate=$5,
 			calc_type=$6, taxable=$7, billable=$8, ap_payable=$9
-		WHERE id=$10 AND company_id=$11`,
+		WHERE id=$10 AND company_id=$11 AND deleted_at IS NULL`,
 		c.Description, c.Amount, c.ItemCode, c.Qty, c.Rate,
 		c.CalcType, c.Taxable, c.Billable, c.APPayable,
 		c.ID, companyID,
@@ -118,7 +118,7 @@ func (s *ChargeStore) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := s.pool.Exec(ctx, "DELETE FROM order_charges WHERE id = $1 AND company_id = $2", id, companyID)
+	result, err := s.pool.Exec(ctx, "UPDATE order_charges SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete charge %d: %w", id, err)
 	}
