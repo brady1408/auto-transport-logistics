@@ -3,7 +3,7 @@ package components
 import "github.com/brady1408/atlinks/internal/auth"
 
 templ Nav(user auth.ContextUser, companyName string) {
-	<nav class="main-nav" x-data="{ open: '' }">
+	<nav class="main-nav" x-data="{ open: '', mobileOpen: false }" @click.outside="mobileOpen = false" style="position:relative">
 		<div class="nav-brand">
 			<a href="/">
 				if companyName != "" {
@@ -109,6 +109,8 @@ templ Nav(user auth.ContextUser, companyName string) {
 				</div>
 			}
 		</div>
+		<!-- Hamburger (mobile/tablet) -->
+		<button class="nav-hamburger" @click="mobileOpen = !mobileOpen" type="button" :aria-expanded="mobileOpen">☰</button>
 		<div class="nav-user">
 			<!-- Notification bell -->
 			<div class="notification-bell" x-data="{ open: false }" @click.away="open = false">
@@ -127,6 +129,55 @@ templ Nav(user auth.ContextUser, companyName string) {
 			<span>{ user.Username }</span>
 			<form method="POST" action="/logout" style="display:inline">
 				<button type="submit" class="btn btn-sm">Logout</button>
+			</form>
+		</div>
+		<!-- Mobile nav drawer -->
+		<div class="nav-mobile-menu" x-show="mobileOpen" x-cloak>
+			<a href="/search/vin">VIN Search</a>
+			<hr/>
+			<div class="mobile-section-label">Loadboard</div>
+			<a href="/loadboard">Browse Loads</a>
+			<a href="/loadboard/my-listings">My Listings</a>
+			<a href="/loadboard/my-claims">My Claims</a>
+			<hr/>
+			<div class="mobile-section-label">Dispatch</div>
+			<a href="/dispatch/orders">Orders</a>
+			<a href="/dispatch/trips">Trips/Loads</a>
+			<hr/>
+			<div class="mobile-section-label">Accounting</div>
+			<a href="/accounting/invoices">Invoices</a>
+			<a href="/accounting/payments">Payments</a>
+			<a href="/accounting/credit-memos">Credit Memos</a>
+			<a href="/accounting/damage-claims">Damage Claims</a>
+			<a href="/accounting/ap">Accounts Payable</a>
+			<hr/>
+			<div class="mobile-section-label">Global</div>
+			<a href="/global/customers">Customers</a>
+			<a href="/global/employees">Employees</a>
+			<a href="/global/trucks">Trucks</a>
+			<a href="/global/zones">Zones</a>
+			<hr/>
+			<div class="mobile-section-label">Reports</div>
+			<a href="/reports">All Reports</a>
+			<a href="/reports/ar-aging">AR Aging</a>
+			<a href="/reports/trip-summary">Trip Summary</a>
+			<a href="/reports/driver-settlement">Driver Settlement</a>
+			<hr/>
+			<div class="mobile-section-label">Utilities</div>
+			<a href="/utilities/company">Company Settings</a>
+			if user.Role == "super_admin" || user.Role == "company_admin" {
+				<a href="/settings/users">Users</a>
+			}
+			<a href="/feedback">Feedback</a>
+			if user.Role == "super_admin" {
+				<hr/>
+				<div class="mobile-section-label">Admin</div>
+				<a href="/admin/companies">Companies</a>
+				<a href="/admin/backups">Backups</a>
+			}
+			<hr/>
+			<form method="POST" action="/logout">
+				<button type="submit">Logout</button>
 			</form>
 		</div>
 	</nav>
