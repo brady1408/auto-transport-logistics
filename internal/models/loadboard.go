@@ -79,6 +79,17 @@ type LoadboardClaim struct {
 	ListingNumber string `json:"listing_number,omitempty"`
 	ListingTitle  string `json:"listing_title,omitempty"`
 	ListingStatus string `json:"listing_status,omitempty"`
+	MessageCount  int    `json:"message_count,omitempty"`
+}
+
+type LoadboardMessage struct {
+	ID              int       `json:"id"`
+	ClaimID         int       `json:"claim_id"`
+	SenderCompanyID int       `json:"sender_company_id"`
+	SenderUserID    int       `json:"sender_user_id"`
+	SenderName      string    `json:"sender_name"`
+	Body            string    `json:"body"`
+	CreatedAt       time.Time `json:"created_at"`
 }
 
 type LoadboardFilter struct {

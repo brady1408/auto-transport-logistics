@@ -7,7 +7,7 @@ import (
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ MyClaimShowPage(pg components.PageContext, claim *models.LoadboardClaim, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle) {
+templ MyClaimShowPage(pg components.PageContext, claim *models.LoadboardClaim, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle, messages []models.LoadboardMessage) {
 	@components.Layout(pg, "Claim " + claim.ListingNumber + " - My Claims - ATLinks") {
 		<div class="page-header">
 			<h1>Claim on { claim.ListingNumber } — { claim.ListingTitle }</h1>
@@ -121,5 +121,6 @@ templ MyClaimShowPage(pg components.PageContext, claim *models.LoadboardClaim, l
 		}
 		<h2 class="section-title">Vehicles</h2>
 		@vehicleTable(vehicles)
+		@MessageSection(claim.ID, messages, pg.User.CompanyID)
 	}
 }

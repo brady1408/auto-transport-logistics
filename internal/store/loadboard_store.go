@@ -40,26 +40,6 @@ func scanListing(row interface{ Scan(dest ...any) error }) (*models.LoadboardLis
 	return &l, err
 }
 
-const claimColumns = `id, listing_id, carrier_company_id, carrier_user_id,
-	carrier_company_name, carrier_scac, carrier_mc_number, carrier_dot_number, carrier_insurance_exp,
-	carrier_order_id, agreed_pay, vehicle_count, status,
-	carrier_notes, poster_notes,
-	accepted_at, rejected_at, cancelled_at, completed_at,
-	created_at, updated_at`
-
-func scanClaim(row interface{ Scan(dest ...any) error }) (*models.LoadboardClaim, error) {
-	var c models.LoadboardClaim
-	err := row.Scan(
-		&c.ID, &c.ListingID, &c.CarrierCompanyID, &c.CarrierUserID,
-		&c.CarrierCompanyName, &c.CarrierSCAC, &c.CarrierMCNumber, &c.CarrierDOTNumber, &c.CarrierInsuranceExp,
-		&c.CarrierOrderID, &c.AgreedPay, &c.VehicleCount, &c.Status,
-		&c.CarrierNotes, &c.PosterNotes,
-		&c.AcceptedAt, &c.RejectedAt, &c.CancelledAt, &c.CompletedAt,
-		&c.CreatedAt, &c.UpdatedAt,
-	)
-	return &c, err
-}
-
 // ListAvailable returns posted listings visible to all companies, excluding the caller's own.
 // This is the only cross-company query in the system.
 func (s *LoadboardStore) ListAvailable(ctx context.Context, f models.LoadboardFilter, excludeCompanyID int) (*models.LoadboardListResult, error) {
@@ -281,19 +261,30 @@ func (s *LoadboardStore) ListMyClaims(ctx context.Context, companyID int, f mode
 	}, nil
 }
 
-// ListClaimsOnListing returns all claims on a specific listing.
+// ListClaimsOnListing returns all claims on a specific listing, including message counts.
 func (s *LoadboardStore) ListClaimsOnListing(ctx context.Context, listingID int) ([]models.LoadboardClaim, error) {
-	query := fmt.Sprintf("SELECT %s FROM loadboard_claims WHERE listing_id = $1 ORDER BY created_at DESC", claimColumns)
+	query := fmt.Sprintf(`SELECT %s,
+		COALESCE((SELECT COUNT(*) FROM loadboard_messages m WHERE m.claim_id = c.id), 0) AS message_count
+		FROM loadboard_claims c WHERE c.listing_id = $1 ORDER BY c.created_at DESC`,
+		claimColumnsAliased())
 	rows, err := s.pool.Query(ctx, query, listingID)
 	if err != nil {
 		return nil, fmt.Errorf("list claims on listing %d: %w", listingID, err)
 	}
 	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.LoadboardClaim, error) {
-		c, err := scanClaim(row)
-		if err != nil {
+		var c models.LoadboardClaim
+		if err := row.Scan(
+			&c.ID, &c.ListingID, &c.CarrierCompanyID, &c.CarrierUserID,
+			&c.CarrierCompanyName, &c.CarrierSCAC, &c.CarrierMCNumber, &c.CarrierDOTNumber, &c.CarrierInsuranceExp,
+			&c.CarrierOrderID, &c.AgreedPay, &c.VehicleCount, &c.Status,
+			&c.CarrierNotes, &c.PosterNotes,
+			&c.AcceptedAt, &c.RejectedAt, &c.CancelledAt, &c.CompletedAt,
+			&c.CreatedAt, &c.UpdatedAt,
+			&c.MessageCount,
+		); err != nil {
 			return models.LoadboardClaim{}, err
 		}
-		return *c, nil
+		return c, nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("scan claim: %w", err)
@@ -517,6 +508,40 @@ func (s *LoadboardStore) ExpireListings(ctx context.Context) (int, error) {
 	}
 
 	return len(ids), nil
+}
+
+// ListMessagesByClaim returns all messages for a claim, ordered chronologically.
+func (s *LoadboardStore) ListMessagesByClaim(ctx context.Context, claimID int) ([]models.LoadboardMessage, error) {
+	rows, err := s.pool.Query(ctx,
+		`SELECT id, claim_id, sender_company_id, sender_user_id, sender_name, body, created_at
+		FROM loadboard_messages WHERE claim_id = $1 ORDER BY created_at ASC`, claimID)
+	if err != nil {
+		return nil, fmt.Errorf("list messages for claim %d: %w", claimID, err)
+	}
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.LoadboardMessage, error) {
+		var m models.LoadboardMessage
+		if err := row.Scan(&m.ID, &m.ClaimID, &m.SenderCompanyID, &m.SenderUserID, &m.SenderName, &m.Body, &m.CreatedAt); err != nil {
+			return models.LoadboardMessage{}, err
+		}
+		return m, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan message: %w", err)
+	}
+	return items, nil
+}
+
+// CreateMessage inserts a new message on a claim.
+func (s *LoadboardStore) CreateMessage(ctx context.Context, m *models.LoadboardMessage) error {
+	err := s.pool.QueryRow(ctx,
+		`INSERT INTO loadboard_messages (claim_id, sender_company_id, sender_user_id, sender_name, body)
+		VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at`,
+		m.ClaimID, m.SenderCompanyID, m.SenderUserID, m.SenderName, m.Body,
+	).Scan(&m.ID, &m.CreatedAt)
+	if err != nil {
+		return fmt.Errorf("create message: %w", err)
+	}
+	return nil
 }
 
 // claimColumnsAliased returns claim column names with c. prefix for JOIN queries.

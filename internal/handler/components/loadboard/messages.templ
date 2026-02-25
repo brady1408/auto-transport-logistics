@@ -1,0 +1,56 @@
+package loadboard
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+// MessageSection renders the full messages card with the message list and send form.
+templ MessageSection(claimID int, messages []models.LoadboardMessage, currentCompanyID int) {
+	<div class="card" style="margin-top:1rem;" id={ fmt.Sprintf("messages-%d", claimID) }>
+		<div class="card-header">Messages ({ fmt.Sprintf("%d", len(messages)) })</div>
+		<div class="card-body">
+			@MessageList(claimID, messages, currentCompanyID)
+		</div>
+	</div>
+}
+
+// MessageList renders just the messages + form, swappable via HTMX.
+templ MessageList(claimID int, messages []models.LoadboardMessage, currentCompanyID int) {
+	<div id={ fmt.Sprintf("message-list-%d", claimID) }>
+		if len(messages) == 0 {
+			<p class="text-muted" style="margin-bottom:1rem;">No messages yet. Start the conversation below.</p>
+		} else {
+			<div class="message-thread" style="max-height:400px; overflow-y:auto; margin-bottom:1rem; padding-right:0.5rem;">
+				for _, m := range messages {
+					<div
+						class={ "message-bubble", templ.KV("message-mine", m.SenderCompanyID == currentCompanyID), templ.KV("message-theirs", m.SenderCompanyID != currentCompanyID) }
+						style="margin-bottom:0.75rem;"
+					>
+						<div class="message-header" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.25rem;">
+							<strong>{ m.SenderName }</strong> · { m.CreatedAt.Format("01/02 3:04 PM") }
+						</div>
+						<div class="message-body">{ m.Body }</div>
+					</div>
+				}
+			</div>
+		}
+		<form
+			hx-post={ fmt.Sprintf("/loadboard/claims/%d/messages", claimID) }
+			hx-target={ fmt.Sprintf("#message-list-%d", claimID) }
+			hx-swap="innerHTML"
+			style="display:flex; gap:0.5rem;"
+		>
+			<input
+				type="text"
+				name="body"
+				placeholder="Type a message..."
+				required
+				style="flex:1;"
+				autocomplete="off"
+			/>
+			<button type="submit" class="btn btn-primary">Send</button>
+		</form>
+	</div>
+}
