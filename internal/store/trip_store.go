@@ -278,7 +278,7 @@ func (s *TripStore) TripSummaryReport(ctx context.Context, dateFrom, dateTo stri
 		COALESCE(t.status, ''),
 		CASE WHEN t.deliver_date IS NOT NULL THEN to_char(t.deliver_date, 'MM/DD/YYYY') END
 	FROM trips t
-	LEFT JOIN order_vehicles ov ON ov.trip_id = t.id
+	LEFT JOIN order_vehicles ov ON ov.trip_id = t.id AND ov.deleted_at IS NULL
 	%s
 	GROUP BY t.id, t.load_number, t.trip_date, t.driver, t.truck_number, t.total_mileage, t.status, t.deliver_date
 	ORDER BY t.trip_date DESC NULLS LAST`, qb.Where())
@@ -342,7 +342,7 @@ func (s *TripStore) DriverSettlement(ctx context.Context, employeeID int, dateFr
 			ELSE COALESCE(t.driver_rate::numeric, 0)::text
 		END
 	FROM trips t
-	LEFT JOIN order_vehicles ov ON ov.trip_id = t.id
+	LEFT JOIN order_vehicles ov ON ov.trip_id = t.id AND ov.deleted_at IS NULL
 	%s
 	GROUP BY t.id, t.load_number, t.trip_date, t.total_mileage, t.driver_rate, t.driver_calc_type
 	ORDER BY t.trip_date DESC NULLS LAST`, qb.Where())
@@ -383,6 +383,7 @@ func (s *TripStore) NextLoadNumber(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("advisory lock for next load number: %w", err)
 	}
 
+	// Intentionally scans all trips including soft-deleted to prevent load number reuse.
 	var next int
 	err = tx.QueryRow(ctx,
 		`SELECT COALESCE(MAX(load_number::int), 0) + 1 FROM trips WHERE load_number ~ '^\d+$' AND company_id = $1`,
