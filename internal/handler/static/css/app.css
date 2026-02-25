@@ -561,6 +561,9 @@ legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-70
     .nav-menu { display: none; }
     .nav-hamburger { display: flex; }
 
+    /* Allow Alpine x-show to toggle the mobile drawer (CSS default is none for desktop) */
+    .nav-mobile-menu { display: block; }
+
     /* Notification panel — prevent overflow off right edge */
     .notification-panel { right: 0; width: 300px; }
 }
