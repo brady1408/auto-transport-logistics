@@ -164,7 +164,7 @@ func (s *CustomerStore) Update(ctx context.Context, c *models.Customer) error {
 			splc=$20, rate_class=$21, route_code=$22, comments=$23, do_instructions=$24, pu_instructions=$25,
 			fuel_calc_type=$26, sales_rep=$27, sales_date=$28, revenue_class=$29, terms=$30, tax_code=$31,
 			location_type=$32, discount=$33, discount_calc_type=$34
-		WHERE id=$35 AND company_id=$36`,
+		WHERE id=$35 AND company_id=$36 AND deleted_at IS NULL`,
 		c.Number, c.Name, c.Address, c.Address2, c.City, c.State, c.Zip,
 		c.Phone, c.Mobile, c.Fax, c.Contact, c.Zone, c.Type, c.COD, c.Inactive,
 		c.CreditLimit, c.CreditTerms, c.CombineInvDetLine, c.FuelSurcharge,
