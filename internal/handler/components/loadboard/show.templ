@@ -1,0 +1,204 @@
+package loadboard
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ShowPage(pg components.PageContext, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle, canClaim bool) {
+	@components.Layout(pg, listing.ListingNumber + " - Loadboard - ATLinks") {
+		<div class="page-header">
+			<h1>{ listing.ListingNumber } — { listing.Title }</h1>
+			<div class="btn-group">
+				if canClaim {
+					<button
+						class="btn btn-primary"
+						hx-post={ fmt.Sprintf("/loadboard/%d/claim", listing.ID) }
+						hx-confirm={ claimConfirmMsg(listing) }
+					>
+						if listing.AutoAccept {
+							Claim Load (Instant)
+						} else {
+							Request to Claim
+						}
+					</button>
+				}
+				<a href="/loadboard" class="btn">Back to Loadboard</a>
+			</div>
+		</div>
+		<div class="order-detail-grid">
+			<div class="card">
+				<div class="card-header">Listing Details</div>
+				<div class="card-body">
+					<div class="detail-row">
+						<span class="detail-label">Status:</span>
+						<span>@statusBadge(listing.Status)</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Carrier Pay:</span>
+						<span><strong>${ listing.CarrierPay }</strong></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Vehicles:</span>
+						<span>{ fmt.Sprintf("%d", listing.VehicleCount) }</span>
+					</div>
+					if listing.EquipmentType != nil {
+						<div class="detail-row">
+							<span class="detail-label">Equipment:</span>
+							<span>{ components.Deref(listing.EquipmentType) }</span>
+						</div>
+					}
+					<div class="detail-row">
+						<span class="detail-label">Mode:</span>
+						<span>
+							if listing.AutoAccept {
+								<span class="badge badge-active">Instant Book</span>
+							} else {
+								<span class="badge badge-waiting">Requires Approval</span>
+							}
+						</span>
+					</div>
+					if listing.ExpiresAt != nil {
+						<div class="detail-row">
+							<span class="detail-label">Expires:</span>
+							<span>{ listing.ExpiresAt.Format("01/02/2006 3:04 PM") }</span>
+						</div>
+					}
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Posted By</div>
+				<div class="card-body">
+					<strong>{ components.Deref(listing.PosterCompanyName) }</strong>
+					if listing.PosterSCAC != nil {
+						<br/>
+						SCAC: { components.Deref(listing.PosterSCAC) }
+					}
+					if listing.PosterMCNumber != nil {
+						<br/>
+						MC#: { components.Deref(listing.PosterMCNumber) }
+					}
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Origin (Pickup)</div>
+				<div class="card-body">
+					<strong>{ components.Deref(listing.OriginName) }</strong>
+					if listing.OriginCity != nil {
+						<br/>
+						{ components.Deref(listing.OriginCity) }, { components.Deref(listing.OriginState) } { components.Deref(listing.OriginZip) }
+					}
+					if listing.PickupDateFrom != nil {
+						<br/>
+						Pickup: { listing.PickupDateFrom.Format("01/02/2006") }
+						if listing.PickupDateTo != nil {
+							- { listing.PickupDateTo.Format("01/02/2006") }
+						}
+					}
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">Destination (Delivery)</div>
+				<div class="card-body">
+					<strong>{ components.Deref(listing.DestName) }</strong>
+					if listing.DestCity != nil {
+						<br/>
+						{ components.Deref(listing.DestCity) }, { components.Deref(listing.DestState) } { components.Deref(listing.DestZip) }
+					}
+					if listing.DeliverDateFrom != nil {
+						<br/>
+						Deliver: { listing.DeliverDateFrom.Format("01/02/2006") }
+						if listing.DeliverDateTo != nil {
+							- { listing.DeliverDateTo.Format("01/02/2006") }
+						}
+					}
+				</div>
+			</div>
+		</div>
+		if listing.SpecialInstructions != nil && *listing.SpecialInstructions != "" {
+			<div class="card" style="margin-top:1rem;">
+				<div class="card-header">Special Instructions</div>
+				<div class="card-body">{ components.Deref(listing.SpecialInstructions) }</div>
+			</div>
+		}
+		<h2 class="section-title">Vehicles</h2>
+		@vehicleTable(vehicles)
+	}
+}
+
+templ vehicleTable(vehicles []models.LoadboardListingVehicle) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>VIN</th>
+					<th>Year</th>
+					<th>Make</th>
+					<th>Model</th>
+					<th>Color</th>
+					<th>Type</th>
+					<th class="text-center">Operable</th>
+					<th class="text-center">Run/Drive</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, v := range vehicles {
+					<tr>
+						<td>{ components.Deref(v.VIN) }</td>
+						<td>{ components.Deref(v.Year) }</td>
+						<td>{ components.Deref(v.Make) }</td>
+						<td>{ components.Deref(v.Model) }</td>
+						<td>{ components.Deref(v.Color) }</td>
+						<td>{ components.Deref(v.BodyStyle) }</td>
+						<td class="text-center">
+							if v.Operable {
+								Yes
+							} else {
+								<span class="text-danger">No</span>
+							}
+						</td>
+						<td class="text-center">
+							if v.RunDrive {
+								Yes
+							} else {
+								<span class="text-danger">No</span>
+							}
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ statusBadge(status string) {
+	switch status {
+		case "Posted":
+			<span class="badge badge-active">Posted</span>
+		case "Claimed":
+			<span class="badge badge-loaded">Claimed</span>
+		case "Completed":
+			<span class="badge badge-confirmed">Completed</span>
+		case "Cancelled":
+			<span class="badge badge-inactive">Cancelled</span>
+		case "Expired":
+			<span class="badge badge-inactive">Expired</span>
+		case "Pending":
+			<span class="badge badge-waiting">Pending</span>
+		case "Accepted":
+			<span class="badge badge-active">Accepted</span>
+		case "Rejected":
+			<span class="badge badge-inactive">Rejected</span>
+		default:
+			<span class="badge">{ status }</span>
+	}
+}
+
+func claimConfirmMsg(l *models.LoadboardListing) string {
+	if l.AutoAccept {
+		return fmt.Sprintf("Claim %s for $%s? This will instantly book the load and import the order to your system.", l.ListingNumber, l.CarrierPay)
+	}
+	return fmt.Sprintf("Submit claim for %s ($%s)? The poster will review and approve your request.", l.ListingNumber, l.CarrierPay)
+}

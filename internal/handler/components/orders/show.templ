@@ -21,6 +21,9 @@ templ ShowPage(pg components.PageContext, order *models.Order) {
 						hx-confirm="Generate invoice for this order?"
 					>Generate Invoice</button>
 				}
+				if order.WaitingCount > 0 {
+					<a href={ templ.SafeURL(fmt.Sprintf("/loadboard/post/%d", order.ID)) } class="btn">Post to Loadboard</a>
+				}
 				<a href="/dispatch/orders" class="btn">Back to List</a>
 			</div>
 		</div>

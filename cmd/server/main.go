@@ -67,7 +67,10 @@ func main() {
 	defer pool.Close()
 
 	deps := initDeps(pool, cfg)
-	mux := initRoutes(pool, cfg, deps)
+	mux, loadboardSvc := initRoutes(pool, cfg, deps)
+
+	// Background: expire loadboard listings every 5 minutes
+	go runLoadboardExpiry(ctx, loadboardSvc)
 
 	// Apply logging middleware to all routes
 	var httpHandler http.Handler = mux
@@ -99,7 +102,7 @@ func initDeps(pool *pgxpool.Pool, cfg *config.Config) *handler.Deps {
 	}
 }
 
-func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) *http.ServeMux {
+func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*http.ServeMux, *service.LoadboardService) {
 	mux := http.NewServeMux()
 
 	// Static files
@@ -187,6 +190,11 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) *htt
 	handler.NewTaxCodeHandler(store.NewTaxCodeStore(pool), deps).Register(protectedMux)
 	handler.NewItemHandler(store.NewItemStore(pool), deps).Register(protectedMux)
 
+	// Loadboard
+	loadboardStore := store.NewLoadboardStore(pool)
+	loadboardSvc := service.NewLoadboardService(pool, loadboardStore, orderStore, vehicleStore, companyStore, orderSvc, auditSvc)
+	handler.NewLoadboardHandler(loadboardStore, orderStore, vehicleStore, loadboardSvc, deps).Register(protectedMux)
+
 	// Dispatch
 	handler.NewOrderHandler(orderStore, invoiceSvc, deps).Register(protectedMux)
 	handler.NewVehicleHandler(vehicleStore, orderStore, orderSvc, deps).Register(protectedMux)
@@ -236,7 +244,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) *htt
 	csrfMiddleware := middleware.CSRF(deps.SecureCookies)
 	mux.Handle("/", authMiddleware(csrfMiddleware(protectedMux)))
 
-	return mux
+	return mux, loadboardSvc
 }
 
 func registerLookups(mux *http.ServeMux, pool *pgxpool.Pool, deps *handler.Deps) {
@@ -291,4 +299,22 @@ func runServer(cfg *config.Config, handler http.Handler, ctx context.Context) {
 		log.Fatalf("server shutdown: %v", err)
 	}
 	log.Println("Server stopped.")
+}
+
+func runLoadboardExpiry(ctx context.Context, svc *service.LoadboardService) {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			n, err := svc.ExpireListings(ctx)
+			if err != nil {
+				log.Printf("loadboard expiry: %v", err)
+			} else if n > 0 {
+				log.Printf("loadboard: expired %d listings", n)
+			}
+		}
+	}
 }
