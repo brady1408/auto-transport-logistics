@@ -322,7 +322,7 @@ func (s *VehicleStore) SearchGlobal(ctx context.Context, query string, limit int
 		COALESCE(o.bill_customer_name, ''), ov.trip_id,
 		COALESCE(ov.load_number, ''), COALESCE(ov.invoice_number, '')
 	FROM order_vehicles ov
-	LEFT JOIN orders o ON o.id = ov.order_id
+	LEFT JOIN orders o ON o.id = ov.order_id AND o.deleted_at IS NULL
 	WHERE ov.company_id = $1 AND ov.deleted_at IS NULL AND (ov.vin ILIKE $2 OR o.order_number ILIKE $2 OR o.bill_customer_name ILIKE $2)
 	ORDER BY ov.id DESC LIMIT $3`
 
