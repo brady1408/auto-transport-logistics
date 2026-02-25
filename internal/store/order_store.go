@@ -280,6 +280,7 @@ func (s *OrderStore) NextOrderNumber(ctx context.Context) (string, error) {
 	}
 
 	var next int
+	// Intentionally includes soft-deleted orders — order numbers must never be reused.
 	err = tx.QueryRow(ctx,
 		`SELECT COALESCE(MAX(order_number::int), 0) + 1 FROM orders WHERE order_number ~ '^\d+$' AND company_id = $1`,
 		companyID,
