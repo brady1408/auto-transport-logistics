@@ -111,15 +111,19 @@ func BrowsePage(pg components.PageContext, result models.LoadboardListResult, fi
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" hx-get=\"/loadboard\" hx-trigger=\"change\" hx-target=\"#loadboard-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"></div></div><div id=\"loadboard-table\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" hx-get=\"/loadboard\" hx-trigger=\"change\" hx-target=\"#loadboard-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = Table(result).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = MapContainer().Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = ViewTabs(result).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

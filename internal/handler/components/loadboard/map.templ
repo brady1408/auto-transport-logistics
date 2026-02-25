@@ -1,0 +1,77 @@
+package loadboard
+
+import (
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ MapContainer() {
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script>
+		window.loadboardMap = function() {
+			return {
+				view: "list", map: null, markers: [], pins: [], pinMode: "both", pinCount: 0, loading: false, initialized: false,
+				showMap: function() { this.view = "map"; this.$nextTick(function() { this.initMap(); }.bind(this)); },
+				initMap: function() {
+					if (this.initialized) { this.map.invalidateSize(); return; }
+					this.initialized = true;
+					this.map = L.map("loadboard-map").setView([39.8283, -98.5795], 4);
+					L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "\u00a9 OpenStreetMap", maxZoom: 18 }).addTo(this.map);
+					var self = this;
+					document.body.addEventListener("htmx:afterRequest", function(e) { if (e.detail.pathInfo && e.detail.pathInfo.requestPath === "/loadboard" && self.map) self.fetchPins(); });
+					this.fetchPins();
+				},
+				fetchPins: function() {
+					this.loading = true;
+					var params = new URLSearchParams();
+					document.querySelectorAll(".filter-bar [name]").forEach(function(el) { if (el.value) params.set(el.name, el.value); });
+					var self = this;
+					fetch("/loadboard/map-data?" + params.toString()).then(function(r) { return r.json(); }).then(function(data) { self.pins = data || []; self.renderPins(); }).catch(function(err) { console.error("map fetch:", err); }).finally(function() { self.loading = false; });
+				},
+				renderPins: function() {
+					this.markers.forEach(function(m) { m.remove(); }); this.markers = [];
+					var bounds = [], self = this;
+					this.pins.forEach(function(pin) {
+						if ((self.pinMode === "origin" || self.pinMode === "both") && pin.origin_lat && pin.origin_lng) { self.markers.push(self.mkr(pin, pin.origin_lat, pin.origin_lng, "origin")); bounds.push([pin.origin_lat, pin.origin_lng]); }
+						if ((self.pinMode === "dest" || self.pinMode === "both") && pin.dest_lat && pin.dest_lng) { self.markers.push(self.mkr(pin, pin.dest_lat, pin.dest_lng, "dest")); bounds.push([pin.dest_lat, pin.dest_lng]); }
+					});
+					this.pinCount = this.markers.length;
+					if (bounds.length > 0) this.map.fitBounds(bounds, { padding: [30, 30], maxZoom: 12 });
+				},
+				mkr: function(pin, lat, lng, type) {
+					var c = type === "origin" ? "#2563eb" : "#16a34a", lb = type === "origin" ? "O" : "D";
+					var icon = L.divIcon({ className: "map-pin-" + type, html: "<div style=\"background:" + c + ";color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)\">" + lb + "</div>", iconSize: [24,24], iconAnchor: [12,12] });
+					var city = type === "origin" ? [pin.origin_city, pin.origin_state].filter(Boolean).join(", ") : [pin.dest_city, pin.dest_state].filter(Boolean).join(", ");
+					var esc = function(s) { return s ? s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : ""; };
+					var popup = "<div style=\"min-width:160px\"><strong><a href=\"/loadboard/" + pin.id + "\">" + esc(pin.listing_number) + "</a></strong><br><span style=\"color:#666\">" + esc(pin.title) + "</span><br>" + (city ? "<span>" + esc(city) + "</span><br>" : "") + "<span>" + pin.vehicle_count + " vehicle" + (pin.vehicle_count !== 1 ? "s" : "") + "</span> &middot; <strong>$" + esc(pin.carrier_pay) + "</strong></div>";
+					return L.marker([lat, lng], { icon: icon }).addTo(this.map).bindPopup(popup);
+				},
+				setPinMode: function(mode) { this.pinMode = mode; if (this.map) this.renderPins(); }
+			};
+		};
+	</script>
+}
+
+templ ViewTabs(result models.LoadboardListResult) {
+	<div x-data="loadboardMap()">
+		<div class="view-tabs">
+			<button class="view-tab" :class="view === 'list' && 'active'" @click="view = 'list'">List</button>
+			<button class="view-tab" :class="view === 'map' && 'active'" @click="showMap()">Map</button>
+		</div>
+		<div x-show="view === 'list'" id="loadboard-table">
+			@Table(result)
+		</div>
+		<div x-show="view === 'map'" x-cloak>
+			<div class="map-controls">
+				<div class="btn-group">
+					<button type="button" class="btn btn-sm" :class="pinMode === 'origin' ? 'btn-primary' : ''" @click="setPinMode('origin')">Origin</button>
+					<button type="button" class="btn btn-sm" :class="pinMode === 'dest' ? 'btn-primary' : ''" @click="setPinMode('dest')">Dest</button>
+					<button type="button" class="btn btn-sm" :class="pinMode === 'both' ? 'btn-primary' : ''" @click="setPinMode('both')">Both</button>
+				</div>
+				<span class="text-muted" style="margin-left:12px;" x-text="pinCount + ' pin' + (pinCount !== 1 ? 's' : '')"></span>
+				<span x-show="loading" class="text-muted" style="margin-left:8px;">Loading...</span>
+			</div>
+			<div id="loadboard-map" style="height:500px;border-radius:var(--radius);border:1px solid var(--gray-200);margin-top:8px;"></div>
+		</div>
+	</div>
+}

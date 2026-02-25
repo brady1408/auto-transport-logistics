@@ -87,8 +87,7 @@ templ BrowsePage(pg components.PageContext, result models.LoadboardListResult, f
 				/>
 			</div>
 		</div>
-		<div id="loadboard-table">
-			@Table(result)
-		</div>
+		@MapContainer()
+		@ViewTabs(result)
 	}
 }
