@@ -217,6 +217,10 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	// Feedback
 	handler.NewFeedbackHandler(feedbackStore, attachmentStore, storageSvc, deps).Register(protectedMux)
 
+	// Notifications
+	notificationStore := store.NewNotificationStore(pool)
+	handler.NewNotificationHandler(notificationStore, deps).Register(protectedMux)
+
 	// Feedback API (API key auth, separate from JWT-protected routes)
 	feedbackAPIHandler := handler.NewFeedbackAPIHandler(feedbackStore, deps)
 	apiMux := http.NewServeMux()

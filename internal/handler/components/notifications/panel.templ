@@ -1,0 +1,77 @@
+package notifications
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+func relativeTime(t time.Time) string {
+	d := time.Since(t)
+	switch {
+	case d < time.Minute:
+		return "just now"
+	case d < time.Hour:
+		m := int(d.Minutes())
+		if m == 1 {
+			return "1m ago"
+		}
+		return fmt.Sprintf("%dm ago", m)
+	case d < 24*time.Hour:
+		h := int(d.Hours())
+		if h == 1 {
+			return "1h ago"
+		}
+		return fmt.Sprintf("%dh ago", h)
+	default:
+		days := int(d.Hours() / 24)
+		if days == 1 {
+			return "1d ago"
+		}
+		if days < 30 {
+			return fmt.Sprintf("%dd ago", days)
+		}
+		return t.Format("01/02")
+	}
+}
+
+func notifIcon(typ string) string {
+	switch typ {
+	case "loadboard_message":
+		return "\u2709" // envelope
+	case "feedback_comment":
+		return "\u270D" // writing hand
+	default:
+		return "\u2022" // bullet
+	}
+}
+
+templ Badge(count int) {
+	<span class="nav-badge">{ fmt.Sprintf("%d", count) }</span>
+}
+
+templ Panel(items []models.NotificationItem) {
+	<div class="notification-list">
+		if len(items) == 0 {
+			<div class="notification-empty">No notifications</div>
+		} else {
+			for _, item := range items {
+				<a
+					href={ templ.SafeURL(item.URL) }
+					class={ "notification-item", templ.KV("unread", item.IsNew) }
+				>
+					<span class="notification-icon">{ notifIcon(item.Type) }</span>
+					<div class="notification-content">
+						<div class="notification-title">{ item.Title }</div>
+						<div class="notification-desc">{ item.Description }</div>
+						<div class="notification-meta">
+							<span>{ item.Author }</span>
+							<span class="notification-time">{ relativeTime(item.CreatedAt) }</span>
+						</div>
+					</div>
+				</a>
+			}
+		}
+	</div>
+}
