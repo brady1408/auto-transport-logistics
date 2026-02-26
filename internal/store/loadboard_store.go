@@ -255,6 +255,7 @@ func (s *LoadboardStore) ListMyClaims(ctx context.Context, companyID int, f mode
 			&c.CarrierOrderID, &c.AgreedPay, &c.VehicleCount, &c.Status,
 			&c.CarrierNotes, &c.PosterNotes,
 			&c.AcceptedAt, &c.RejectedAt, &c.CancelledAt, &c.CompletedAt,
+			&c.PickedUpAt, &c.DeliveredAt,
 			&c.CreatedAt, &c.UpdatedAt,
 			&c.ListingNumber, &c.ListingTitle, &c.ListingStatus,
 			&c.UnreadCount,
@@ -302,6 +303,7 @@ func (s *LoadboardStore) ListClaimsOnListing(ctx context.Context, listingID int)
 			&c.CarrierOrderID, &c.AgreedPay, &c.VehicleCount, &c.Status,
 			&c.CarrierNotes, &c.PosterNotes,
 			&c.AcceptedAt, &c.RejectedAt, &c.CancelledAt, &c.CompletedAt,
+			&c.PickedUpAt, &c.DeliveredAt,
 			&c.CreatedAt, &c.UpdatedAt,
 			&c.MessageCount, &c.UnreadCount,
 		); err != nil {
@@ -329,6 +331,7 @@ func (s *LoadboardStore) GetClaimByID(ctx context.Context, id int) (*models.Load
 		&c.CarrierOrderID, &c.AgreedPay, &c.VehicleCount, &c.Status,
 		&c.CarrierNotes, &c.PosterNotes,
 		&c.AcceptedAt, &c.RejectedAt, &c.CancelledAt, &c.CompletedAt,
+		&c.PickedUpAt, &c.DeliveredAt,
 		&c.CreatedAt, &c.UpdatedAt,
 		&c.ListingNumber, &c.ListingTitle, &c.ListingStatus,
 	)
@@ -440,8 +443,12 @@ func claimStatusDateCol(status string) (string, error) {
 		return "rejected_at", nil
 	case "Cancelled":
 		return "cancelled_at", nil
-	case "Completed":
-		return "completed_at", nil
+	case "NoShow":
+		return "cancelled_at", nil
+	case "PickedUp":
+		return "picked_up_at", nil
+	case "Delivered":
+		return "delivered_at", nil
 	default:
 		return "", fmt.Errorf("unrecognized claim status: %q", status)
 	}
@@ -696,5 +703,6 @@ func claimColumnsAliased() string {
 	c.carrier_order_id, c.agreed_pay, c.vehicle_count, c.status,
 	c.carrier_notes, c.poster_notes,
 	c.accepted_at, c.rejected_at, c.cancelled_at, c.completed_at,
+	c.picked_up_at, c.delivered_at,
 	c.created_at, c.updated_at`
 }
