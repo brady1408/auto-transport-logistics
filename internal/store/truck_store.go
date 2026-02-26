@@ -310,7 +310,7 @@ func (s *TruckStore) ExpiringWithin(ctx context.Context, days int) ([]ExpiringTr
 	cutoff := time.Now().AddDate(0, 0, days)
 	query := `
 		SELECT id, truck_number, expiry_type, exp_date,
-		       EXTRACT(DAY FROM exp_date - NOW())::int as days_until
+		       (exp_date::date - CURRENT_DATE)::int as days_until
 		FROM (
 			SELECT id, COALESCE(truck_number,'') as truck_number, 'Truck License' as expiry_type, truck_license_exp as exp_date
 			FROM trucks WHERE company_id=$1 AND deleted_at IS NULL AND truck_license_exp IS NOT NULL AND truck_license_exp <= $2
