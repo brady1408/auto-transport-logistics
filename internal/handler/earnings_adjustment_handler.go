@@ -98,10 +98,10 @@ func (h *EarningsAdjHandler) createDriver(w http.ResponseWriter, r *http.Request
 		h.deps.renderTempl(w, r, earnings.DriverFormPage(pg, a, emps, true, "Employee is required"))
 		return
 	}
-	if a.Amount == "" {
+	if amtErr := validateAmount(a.Amount); amtErr != "" {
 		emps, _ := h.empStore.ListAll(r.Context())
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, earnings.DriverFormPage(pg, a, emps, true, "Amount is required"))
+		h.deps.renderTempl(w, r, earnings.DriverFormPage(pg, a, emps, true, amtErr))
 		return
 	}
 
@@ -169,10 +169,10 @@ func (h *EarningsAdjHandler) updateDriver(w http.ResponseWriter, r *http.Request
 		h.deps.renderTempl(w, r, earnings.DriverFormPage(pg, a, emps, false, "Employee is required"))
 		return
 	}
-	if a.Amount == "" {
+	if amtErr := validateAmount(a.Amount); amtErr != "" {
 		emps, _ := h.empStore.ListAll(r.Context())
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, earnings.DriverFormPage(pg, a, emps, false, "Amount is required"))
+		h.deps.renderTempl(w, r, earnings.DriverFormPage(pg, a, emps, false, amtErr))
 		return
 	}
 
@@ -263,10 +263,10 @@ func (h *EarningsAdjHandler) createTruck(w http.ResponseWriter, r *http.Request)
 		h.deps.renderTempl(w, r, earnings.TruckFormPage(pg, a, trucks, true, "Truck is required"))
 		return
 	}
-	if a.Amount == "" {
+	if amtErr := validateAmount(a.Amount); amtErr != "" {
 		trucks, _ := h.truckStore.ListAll(r.Context())
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, earnings.TruckFormPage(pg, a, trucks, true, "Amount is required"))
+		h.deps.renderTempl(w, r, earnings.TruckFormPage(pg, a, trucks, true, amtErr))
 		return
 	}
 
@@ -334,10 +334,10 @@ func (h *EarningsAdjHandler) updateTruck(w http.ResponseWriter, r *http.Request)
 		h.deps.renderTempl(w, r, earnings.TruckFormPage(pg, a, trucks, false, "Truck is required"))
 		return
 	}
-	if a.Amount == "" {
+	if amtErr := validateAmount(a.Amount); amtErr != "" {
 		trucks, _ := h.truckStore.ListAll(r.Context())
 		pg := h.deps.pageContext(w, r)
-		h.deps.renderTempl(w, r, earnings.TruckFormPage(pg, a, trucks, false, "Amount is required"))
+		h.deps.renderTempl(w, r, earnings.TruckFormPage(pg, a, trucks, false, amtErr))
 		return
 	}
 
@@ -375,6 +375,18 @@ func (h *EarningsAdjHandler) deleteTruck(w http.ResponseWriter, r *http.Request)
 	h.deps.Audit.Log(r.Context(), "truck_earnings_adjustments", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Truck adjustment deleted")
 	redirect(w, r, "/accounting/truck-adjustments")
+}
+
+// validateAmount returns an error message if s is not a valid non-negative decimal.
+func validateAmount(s string) string {
+	if s == "" {
+		return "Amount is required"
+	}
+	v, err := strconv.ParseFloat(s, 64)
+	if err != nil || v < 0 {
+		return "Amount must be a valid non-negative number"
+	}
+	return ""
 }
 
 // ---------------------------------------------------------------------------
