@@ -76,6 +76,8 @@ type LoadboardClaim struct {
 	RejectedAt          *time.Time `json:"rejected_at,omitempty"`
 	CancelledAt         *time.Time `json:"cancelled_at,omitempty"`
 	CompletedAt         *time.Time `json:"completed_at,omitempty"`
+	PickedUpAt          *time.Time `json:"picked_up_at,omitempty"`
+	DeliveredAt         *time.Time `json:"delivered_at,omitempty"`
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
 
