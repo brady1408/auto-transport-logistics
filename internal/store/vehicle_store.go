@@ -255,6 +255,24 @@ var allowedDateColumns = map[string]bool{
 	"confirmed_date": true,
 }
 
+// UpdateStatusOnlyTx updates a vehicle's status without modifying any date column.
+// Used for transitions where no date tracking is needed (e.g. Inbound <-> Waiting).
+func (s *VehicleStore) UpdateStatusOnlyTx(ctx context.Context, tx pgx.Tx, id int, status string) error {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	result, err := tx.Exec(ctx,
+		`UPDATE order_vehicles SET status=$1 WHERE id=$2 AND company_id=$3`, status, id, companyID)
+	if err != nil {
+		return fmt.Errorf("update vehicle status %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("vehicle %d not found", id)
+	}
+	return nil
+}
+
 // UpdateStatusTx updates a vehicle's status and corresponding date within a transaction.
 func (s *VehicleStore) UpdateStatusTx(ctx context.Context, tx pgx.Tx, id int, status string, dateCol string, dateVal any) error {
 	if !allowedDateColumns[dateCol] {

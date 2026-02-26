@@ -29,10 +29,11 @@ func NewOrderService(pool *pgxpool.Pool, orderStore *store.OrderStore, vehicleSt
 
 // Valid status transitions: forward and revert
 var validTransitions = map[string][]string{
-	"Waiting":   {"Scheduled"},
+	"Inbound":   {"Waiting"},
+	"Waiting":   {"Scheduled", "Inbound"},
 	"Scheduled": {"Loaded", "Waiting"},
 	"Loaded":    {"Delivered", "Scheduled"},
-	"Delivered":  {"Confirmed", "Loaded"},
+	"Delivered": {"Confirmed", "Loaded"},
 	"Confirmed": {"Delivered"},
 }
 
@@ -72,24 +73,31 @@ func (s *OrderService) UpdateVehicleStatus(ctx context.Context, vehicleID int, n
 	}
 
 	// 3. Determine date column and value
-	dateCol, ok := statusDateColumn[newStatus]
-	if !ok {
+	dateCol, hasNewDate := statusDateColumn[newStatus]
+	if !hasNewDate {
 		// Reverting to a previous status — clear the date of the status we're leaving
 		dateCol = statusDateColumn[v.Status]
 	}
+	_, hasOldDate := statusDateColumn[v.Status]
 
-	var dateVal any
-	if isForwardTransition(v.Status, newStatus) {
-		now := time.Now()
-		dateVal = &now
+	// 4. Update vehicle status (and date if applicable)
+	if !hasNewDate && !hasOldDate {
+		// Neither end of the transition has a date column (e.g. Inbound <-> Waiting)
+		if err := s.vehicleStore.UpdateStatusOnlyTx(ctx, tx, vehicleID, newStatus); err != nil {
+			return err
+		}
 	} else {
-		// Revert: clear the date
-		dateVal = nil
-	}
-
-	// 4. Update vehicle status + date
-	if err := s.vehicleStore.UpdateStatusTx(ctx, tx, vehicleID, newStatus, dateCol, dateVal); err != nil {
-		return err
+		var dateVal any
+		if isForwardTransition(v.Status, newStatus) {
+			now := time.Now()
+			dateVal = &now
+		} else {
+			// Revert: clear the date
+			dateVal = nil
+		}
+		if err := s.vehicleStore.UpdateStatusTx(ctx, tx, vehicleID, newStatus, dateCol, dateVal); err != nil {
+			return err
+		}
 	}
 
 	// For Confirmed status, also set confirmed_by
@@ -149,11 +157,12 @@ func (s *OrderService) SyncOrderCounts(ctx context.Context, orderID int) error {
 // isForwardTransition returns true if this is a forward status progression.
 func isForwardTransition(from, to string) bool {
 	order := map[string]int{
-		"Waiting":   0,
-		"Scheduled": 1,
-		"Loaded":    2,
-		"Delivered": 3,
-		"Confirmed": 4,
+		"Inbound":   0,
+		"Waiting":   1,
+		"Scheduled": 2,
+		"Loaded":    3,
+		"Delivered": 4,
+		"Confirmed": 5,
 	}
 	return order[to] > order[from]
 }
@@ -167,6 +176,8 @@ func (s *OrderService) RevertVehicleStatus(ctx context.Context, vehicleID int) e
 
 	var prevStatus string
 	switch v.Status {
+	case "Waiting":
+		prevStatus = "Inbound"
 	case "Scheduled":
 		prevStatus = "Waiting"
 	case "Loaded":
