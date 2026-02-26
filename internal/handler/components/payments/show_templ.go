@@ -417,7 +417,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "\"></div><div class=\"form-group\"><label for=\"discount_amount\">Discount</label> <input type=\"text\" id=\"discount_amount\" name=\"discount_amount\" class=\"form-control\" value=\"0.00\"></div><div class=\"form-group\" style=\"padding-top: 20px;\"><button type=\"submit\" class=\"btn btn-primary btn-sm\">Apply</button></div></div></form></div></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "\"></div><div class=\"form-group\"><label for=\"discount_amount\">Discount</label> <input type=\"text\" id=\"discount_amount\" name=\"discount_amount\" class=\"form-control\" value=\"0.00\"></div><div class=\"form-group form-check-aligned\"><button type=\"submit\" class=\"btn btn-primary btn-sm\">Apply</button></div></div></form></div></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

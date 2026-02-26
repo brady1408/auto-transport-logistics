@@ -72,7 +72,7 @@ templ FormPage(pg components.PageContext, trip *models.Trip, isNew bool, errMsg 
 						<label for="equipment_type">Equipment Type</label>
 						<input type="text" id="equipment_type" name="equipment_type" class="form-control" value={ components.Deref(trip.EquipmentType) } maxlength="10"/>
 					</div>
-					<div class="form-check" style="padding-top: 20px;">
+					<div class="form-check form-check-aligned">
 						<input type="checkbox" id="inactive" name="inactive" checked?={ !trip.Active }/>
 						<label for="inactive">Inactive</label>
 					</div>

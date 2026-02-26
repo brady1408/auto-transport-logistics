@@ -245,7 +245,7 @@ func FormPage(pg components.PageContext, trip *models.Trip, isNew bool, errMsg s
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" maxlength=\"10\"></div><div class=\"form-check\" style=\"padding-top: 20px;\"><input type=\"checkbox\" id=\"inactive\" name=\"inactive\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" maxlength=\"10\"></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"inactive\" name=\"inactive\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

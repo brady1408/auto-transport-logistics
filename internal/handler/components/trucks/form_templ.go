@@ -320,7 +320,7 @@ func FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMsg
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" maxlength=\"30\"></div><div class=\"form-check\" style=\"padding-top:20px\"><input type=\"checkbox\" id=\"active\" name=\"active\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" maxlength=\"30\"></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"active\" name=\"active\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -330,7 +330,7 @@ func FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMsg
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "> <label for=\"active\">Active</label></div><div class=\"form-check\" style=\"padding-top:20px\"><input type=\"checkbox\" id=\"leased_truck\" name=\"leased_truck\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "> <label for=\"active\">Active</label></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"leased_truck\" name=\"leased_truck\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -340,7 +340,7 @@ func FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMsg
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "> <label for=\"leased_truck\">Leased</label></div><div class=\"form-check\" style=\"padding-top:20px\"><input type=\"checkbox\" id=\"straps\" name=\"straps\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "> <label for=\"leased_truck\">Leased</label></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"straps\" name=\"straps\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -493,7 +493,7 @@ func FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMsg
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\"></div><div class=\"form-check\" style=\"padding-top:20px\"><input type=\"checkbox\" id=\"exclude_fuel\" name=\"exclude_fuel\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\"></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"exclude_fuel\" name=\"exclude_fuel\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

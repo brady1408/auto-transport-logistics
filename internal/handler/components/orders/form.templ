@@ -73,7 +73,7 @@ templ FormPage(pg components.PageContext, order *models.Order, isNew bool, errMs
 						<label for="po_number">PO Number</label>
 						<input type="text" id="po_number" name="po_number" class="form-control" value={ components.Deref(order.PONumber) } maxlength="20"/>
 					</div>
-					<div class="form-check" style="padding-top: 20px;">
+					<div class="form-check form-check-aligned">
 						<input type="checkbox" id="inactive" name="inactive" checked?={ !order.Active }/>
 						<label for="inactive">Inactive</label>
 					</div>
@@ -182,7 +182,7 @@ templ customerFieldset(legend string, prefix string, customerID *int, customerNu
 	<fieldset>
 		<legend>{ legend }</legend>
 		<div class="form-row">
-			<div class="form-group" style="grid-column: span 2;">
+			<div class="form-group col-span-2">
 				<label for={ prefix + "_customer_search" }>Search Customer</label>
 				<input
 					type="text"
@@ -208,11 +208,11 @@ templ customerFieldset(legend string, prefix string, customerID *int, customerNu
 			</div>
 		</div>
 		<div class="form-row">
-			<div class="form-group" style="grid-column: span 2;">
+			<div class="form-group col-span-2">
 				<label for={ prefix + "_to_address" }>Address</label>
 				<input type="text" id={ prefix + "_to_address" } name={ prefix + "_to_address" } class="form-control" value={ components.Deref(address) } maxlength="30"/>
 			</div>
-			<div class="form-group" style="grid-column: span 2;">
+			<div class="form-group col-span-2">
 				<label for={ prefix + "_to_address2" }>Address 2</label>
 				<input type="text" id={ prefix + "_to_address2" } name={ prefix + "_to_address2" } class="form-control" value={ components.Deref(address2) } maxlength="30"/>
 			</div>
@@ -238,7 +238,7 @@ templ customerFieldsetLoadDrop(legend string, prefix string, customerID *int, cu
 	<fieldset>
 		<legend>{ legend }</legend>
 		<div class="form-row">
-			<div class="form-group" style="grid-column: span 2;">
+			<div class="form-group col-span-2">
 				<label for={ prefix + "_customer_search" }>Search Customer</label>
 				<input
 					type="text"
@@ -274,7 +274,7 @@ templ customerFieldsetLoadDrop(legend string, prefix string, customerID *int, cu
 			</div>
 		</div>
 		<div class="form-row">
-			<div class="form-group" style="grid-column: span 2;">
+			<div class="form-group col-span-2">
 				<label for={ prefix + "_address" }>Address</label>
 				<input type="text" id={ prefix + "_address" } name={ prefix + "_address" } class="form-control" value={ components.Deref(address) } maxlength="30"/>
 			</div>

@@ -36,7 +36,7 @@ templ VehicleFormPage(pg components.PageContext, vehicle *models.OrderVehicle, o
 			<fieldset x-data="{ decoding: false, decoded: false, decodeError: '' }">
 				<legend>Vehicle Information</legend>
 				<div class="form-row">
-					<div class="form-group" style="grid-column: span 2;">
+					<div class="form-group col-span-2">
 						<label for="vin">VIN</label>
 						<div style="display:flex;gap:8px;align-items:center">
 							<input type="text" id="vin" name="vin" class="form-control" value={ components.Deref(vehicle.VIN) } maxlength="17" style="text-transform:uppercase"

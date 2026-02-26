@@ -56,6 +56,7 @@ a:hover { text-decoration: underline; }
     padding: 12px 14px; font-size: 14px; font-family: inherit;
 }
 .nav-link:hover { color: white; background: var(--gray-700); }
+.nav-link:focus-visible { color: white; background: var(--gray-700); outline: 2px solid white; outline-offset: -2px; }
 .dropdown-menu {
     position: absolute; top: 100%; left: 0; background: white; border: 1px solid var(--gray-200);
     border-radius: var(--radius); box-shadow: var(--shadow); min-width: 200px; z-index: 200; padding: 4px 0;
@@ -64,6 +65,7 @@ a:hover { text-decoration: underline; }
     display: block; padding: 6px 16px; color: var(--gray-700); font-size: 13px; text-decoration: none;
 }
 .dropdown-item:hover { background: var(--gray-100); text-decoration: none; }
+.dropdown-item:focus-visible { background: var(--gray-100); outline: 2px solid var(--primary); outline-offset: -2px; text-decoration: none; }
 .dropdown-item.disabled { color: var(--gray-400); pointer-events: none; }
 .dropdown-divider { margin: 4px 0; border: none; border-top: 1px solid var(--gray-200); }
 .nav-user { display: flex; align-items: center; gap: 10px; color: var(--gray-300); font-size: 13px; }
@@ -141,6 +143,7 @@ a:hover { text-decoration: underline; }
     transition: background 0.15s;
 }
 .btn:hover { background: var(--gray-100); text-decoration: none; }
+.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
 .btn-primary:hover { background: var(--primary-dark); }
 .btn-danger { background: var(--danger); color: white; border-color: var(--danger); }
@@ -168,6 +171,9 @@ textarea.form-control { min-height: 80px; resize: vertical; }
 .form-check input[type="checkbox"] { margin: 0; }
 .form-check label { margin-bottom: 0; font-weight: 400; }
 .form-actions { display: flex; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--gray-200); }
+.col-span-2 { grid-column: span 2; }
+.form-check-aligned { padding-top: 20px; }
+.form-check-aligned-sm { padding-top: 8px; }
 
 /* Tables */
 .table-container { overflow-x: auto; }

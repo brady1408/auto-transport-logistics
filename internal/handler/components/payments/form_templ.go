@@ -233,7 +233,7 @@ func FormPage(pg components.PageContext, payment *models.Payment, isNew bool, er
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" maxlength=\"20\"></div></div></fieldset><fieldset><legend>Customer</legend><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column: span 2;\"><label for=\"pay_customer_search\">Search Customer</label> <input type=\"text\" id=\"pay_customer_search\" class=\"form-control\" placeholder=\"Type to search...\" hx-get=\"/api/customers/search\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#pay_customer_results\" hx-params=\"*\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" maxlength=\"20\"></div></div></fieldset><fieldset><legend>Customer</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"pay_customer_search\">Search Customer</label> <input type=\"text\" id=\"pay_customer_search\" class=\"form-control\" placeholder=\"Type to search...\" hx-get=\"/api/customers/search\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#pay_customer_results\" hx-params=\"*\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

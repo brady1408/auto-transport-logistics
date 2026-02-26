@@ -183,7 +183,7 @@ func VehicleFormPage(pg components.PageContext, vehicle *models.OrderVehicle, or
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<fieldset x-data=\"{ decoding: false, decoded: false, decodeError: '' }\"><legend>Vehicle Information</legend><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column: span 2;\"><label for=\"vin\">VIN</label><div style=\"display:flex;gap:8px;align-items:center\"><input type=\"text\" id=\"vin\" name=\"vin\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<fieldset x-data=\"{ decoding: false, decoded: false, decodeError: '' }\"><legend>Vehicle Information</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"vin\">VIN</label><div style=\"display:flex;gap:8px;align-items:center\"><input type=\"text\" id=\"vin\" name=\"vin\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

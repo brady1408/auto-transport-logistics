@@ -262,7 +262,7 @@ func FormPage(pg components.PageContext, invoice *models.Invoice, isNew bool, er
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "\" maxlength=\"10\"></div></div></fieldset><fieldset><legend>Customer</legend><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column: span 2;\"><label for=\"bill_customer_search\">Search Customer</label> <input type=\"text\" id=\"bill_customer_search\" class=\"form-control\" placeholder=\"Type to search...\" hx-get=\"/api/customers/search\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#inv_customer_results\" hx-params=\"*\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "\" maxlength=\"10\"></div></div></fieldset><fieldset><legend>Customer</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"bill_customer_search\">Search Customer</label> <input type=\"text\" id=\"bill_customer_search\" class=\"form-control\" placeholder=\"Type to search...\" hx-get=\"/api/customers/search\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#inv_customer_results\" hx-params=\"*\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -309,7 +309,7 @@ func FormPage(pg components.PageContext, invoice *models.Invoice, isNew bool, er
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column: span 2;\"><label for=\"bill_to_address\">Address</label> <input type=\"text\" id=\"bill_to_address\" name=\"bill_to_address\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"bill_to_address\">Address</label> <input type=\"text\" id=\"bill_to_address\" name=\"bill_to_address\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -322,7 +322,7 @@ func FormPage(pg components.PageContext, invoice *models.Invoice, isNew bool, er
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\" maxlength=\"30\"></div><div class=\"form-group\" style=\"grid-column: span 2;\"><label for=\"bill_to_address2\">Address 2</label> <input type=\"text\" id=\"bill_to_address2\" name=\"bill_to_address2\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\" maxlength=\"30\"></div><div class=\"form-group col-span-2\"><label for=\"bill_to_address2\">Address 2</label> <input type=\"text\" id=\"bill_to_address2\" name=\"bill_to_address2\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

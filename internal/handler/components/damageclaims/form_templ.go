@@ -298,7 +298,7 @@ func FormPage(pg components.PageContext, claim *models.DamageClaim, isNew bool, 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\"></div></div></fieldset><fieldset><legend>Insurance</legend><div class=\"form-row\"><div class=\"form-check\" style=\"padding-top: 8px;\"><input type=\"checkbox\" id=\"insurance_claim\" name=\"insurance_claim\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\"></div></div></fieldset><fieldset><legend>Insurance</legend><div class=\"form-row\"><div class=\"form-check form-check-aligned-sm\"><input type=\"checkbox\" id=\"insurance_claim\" name=\"insurance_claim\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

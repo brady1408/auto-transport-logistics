@@ -101,15 +101,15 @@ templ FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMs
 						<label for="driver2">Default Driver 2</label>
 						<input type="text" id="driver2" name="driver2" class="form-control" value={ components.Deref(truck.Driver2) } maxlength="30"/>
 					</div>
-					<div class="form-check" style="padding-top:20px">
+					<div class="form-check form-check-aligned">
 						<input type="checkbox" id="active" name="active" checked?={ truck.Active }/>
 						<label for="active">Active</label>
 					</div>
-					<div class="form-check" style="padding-top:20px">
+					<div class="form-check form-check-aligned">
 						<input type="checkbox" id="leased_truck" name="leased_truck" checked?={ truck.LeasedTruck }/>
 						<label for="leased_truck">Leased</label>
 					</div>
-					<div class="form-check" style="padding-top:20px">
+					<div class="form-check form-check-aligned">
 						<input type="checkbox" id="straps" name="straps" checked?={ truck.Straps }/>
 						<label for="straps">Straps</label>
 					</div>
@@ -169,7 +169,7 @@ templ FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMs
 						<label for="cargo_coverage_amt">Cargo Coverage</label>
 						<input type="text" id="cargo_coverage_amt" name="cargo_coverage_amt" class="form-control" value={ components.Deref(truck.CargoCoverageAmt) }/>
 					</div>
-					<div class="form-check" style="padding-top:20px">
+					<div class="form-check form-check-aligned">
 						<input type="checkbox" id="exclude_fuel" name="exclude_fuel" checked?={ truck.ExcludeFuel }/>
 						<label for="exclude_fuel">Exclude Fuel</label>
 					</div>

@@ -18,19 +18,19 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, errMsg
 			<fieldset>
 				<legend>Company Information</legend>
 				<div class="form-row">
-					<div class="form-group" style="grid-column:span 2">
+					<div class="form-group col-span-2">
 						<label for="company_name">Company Name *</label>
 						<input type="text" id="company_name" name="company_name" class="form-control" value={ company.CompanyName } required maxlength="40"/>
 					</div>
 				</div>
 				<div class="form-row">
-					<div class="form-group" style="grid-column:span 2">
+					<div class="form-group col-span-2">
 						<label for="address">Address</label>
 						<input type="text" id="address" name="address" class="form-control" value={ components.Deref(company.Address) } maxlength="30"/>
 					</div>
 				</div>
 				<div class="form-row">
-					<div class="form-group" style="grid-column:span 2">
+					<div class="form-group col-span-2">
 						<label for="address2">Address 2</label>
 						<input type="text" id="address2" name="address2" class="form-control" value={ components.Deref(company.Address2) } maxlength="30"/>
 					</div>

@@ -127,9 +127,7 @@ templ Nav(user auth.ContextUser, companyName string) {
 				</div>
 			</div>
 			<span>{ user.Username }</span>
-			<form method="POST" action="/logout" style="display:inline">
-				<button type="submit" class="btn btn-sm">Logout</button>
-			</form>
+			<button class="btn btn-sm" hx-post="/logout">Logout</button>
 		</div>
 		<!-- Mobile nav drawer -->
 		<div id="nav-mobile-menu" class="nav-mobile-menu" x-show="mobileOpen" x-cloak>
@@ -176,9 +174,7 @@ templ Nav(user auth.ContextUser, companyName string) {
 				<a href="/admin/backups">Backups</a>
 			}
 			<hr/>
-			<form method="POST" action="/logout">
-				<button type="submit">Logout</button>
-			</form>
+			<button hx-post="/logout">Logout</button>
 		</div>
 	</nav>
 }
