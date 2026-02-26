@@ -1,0 +1,150 @@
+package reports
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ StatementFormPage(pg components.PageContext) {
+	@components.Layout(pg, "Customer Statement - ATLinks") {
+		<div class="page-header">
+			<h1>Customer Statement</h1>
+			<a href="/reports" class="btn">Back to Reports</a>
+		</div>
+		<div class="card">
+			<div class="card-body">
+				<p class="text-muted">Enter a customer ID to generate their AR statement showing all open invoices and aging balances.</p>
+				<form class="filter-bar" method="GET" action="/reports/statement" onsubmit="this.action='/reports/statement/'+this.customer_id.value; return true;">
+					<div class="form-group">
+						<label>Customer ID</label>
+						<input type="number" name="customer_id" class="form-control" placeholder="Customer ID" min="1" required/>
+					</div>
+					<button type="submit" class="btn btn-primary">Generate Statement</button>
+				</form>
+			</div>
+		</div>
+	}
+}
+
+templ StatementPage(pg components.PageContext, stmt *store.StatementData) {
+	@components.Layout(pg, "Customer Statement - ATLinks") {
+		<div class="page-header">
+			<h1>Customer Statement</h1>
+			<div class="btn-group no-print">
+				<a href="/reports/statement" class="btn">New Statement</a>
+				<button onclick="window.print()" class="btn">Print</button>
+				<a href="/reports" class="btn">Back to Reports</a>
+			</div>
+		</div>
+		<div class="card">
+			<div class="card-body">
+				<div class="statement-header" style="margin-bottom:1.5rem;">
+					<div><strong>{ stmt.CustomerName }</strong> ({ stmt.CustomerNumber })</div>
+					if stmt.BillToAddress != nil {
+						<div>{ *stmt.BillToAddress }</div>
+					}
+					<div>
+						if stmt.BillToCity != nil {
+							{ *stmt.BillToCity }
+						}
+						if stmt.BillToState != nil {
+							{ ", " }{ *stmt.BillToState }
+						}
+						if stmt.BillToZip != nil {
+							{ " " }{ *stmt.BillToZip }
+						}
+					</div>
+					<div style="margin-top:0.5rem;">Statement Date: { stmt.StatementDate.Format("01/02/2006") }</div>
+				</div>
+				if len(stmt.Rows) == 0 {
+					<p class="text-muted">No open invoices found for this customer.</p>
+				} else {
+					<div class="table-container">
+						<table class="report-table">
+							<thead>
+								<tr>
+									<th>Invoice #</th>
+									<th>Invoice Date</th>
+									<th>Due Date</th>
+									<th>Order #</th>
+									<th class="text-right">Amount</th>
+									<th class="text-right">Paid</th>
+									<th class="text-right">Balance</th>
+									<th>Status</th>
+									<th class="text-right">Age (Days)</th>
+								</tr>
+							</thead>
+							<tbody>
+								for _, row := range stmt.Rows {
+									<tr>
+										<td>{ row.InvoiceNumber }</td>
+										<td>
+											if row.InvoiceDate != nil {
+												{ row.InvoiceDate.Format("01/02/2006") }
+											}
+										</td>
+										<td>
+											if row.DueDate != nil {
+												{ row.DueDate.Format("01/02/2006") }
+											}
+										</td>
+										<td>
+											if row.OrderNumber != nil {
+												{ *row.OrderNumber }
+											}
+										</td>
+										<td class="text-right">
+											if row.TotalAmount != nil {
+												${ *row.TotalAmount }
+											}
+										</td>
+										<td class="text-right">
+											if row.AmountPaid != nil {
+												${ *row.AmountPaid }
+											}
+										</td>
+										<td class="text-right">
+											if row.Balance != nil {
+												<strong>${ *row.Balance }</strong>
+											}
+										</td>
+										<td>
+											if row.Status != nil {
+												{ *row.Status }
+											}
+										</td>
+										<td class="text-right">{ fmt.Sprintf("%d", row.DaysOld) }</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+					<div class="table-container" style="margin-top:1.5rem;">
+						<table class="report-table">
+							<thead>
+								<tr>
+									<th class="text-right">Current (0-30)</th>
+									<th class="text-right">31-60 Days</th>
+									<th class="text-right">61-90 Days</th>
+									<th class="text-right">90+ Days</th>
+									<th class="text-right">Total Balance</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td class="text-right">${ stmt.Current }</td>
+									<td class="text-right">${ stmt.Days31 }</td>
+									<td class="text-right">${ stmt.Days61 }</td>
+									<td class="text-right">${ stmt.Days90 }</td>
+									<td class="text-right"><strong>${ stmt.TotalBalance }</strong></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				}
+			</div>
+		</div>
+	}
+}
