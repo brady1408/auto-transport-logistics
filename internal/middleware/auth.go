@@ -9,7 +9,7 @@ import (
 
 const CookieName = "atlinks_token"
 
-func RequireAuth(jwt *auth.JWTService) func(http.Handler) http.Handler {
+func RequireAuth(jwt *auth.JWTService, secure bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie(CookieName)
@@ -20,14 +20,14 @@ func RequireAuth(jwt *auth.JWTService) func(http.Handler) http.Handler {
 
 			claims, err := jwt.ValidateToken(cookie.Value)
 			if err != nil {
-				clearAuthCookie(w)
+				clearAuthCookie(w, secure)
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
 			}
 
 			// Require company assignment for non-super_admin users
 			if claims.CompanyID == 0 && claims.Role != "super_admin" {
-				clearAuthCookie(w)
+				clearAuthCookie(w, secure)
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
 			}
@@ -43,12 +43,14 @@ func RequireAuth(jwt *auth.JWTService) func(http.Handler) http.Handler {
 	}
 }
 
-func clearAuthCookie(w http.ResponseWriter) {
+func clearAuthCookie(w http.ResponseWriter, secure bool) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     CookieName,
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
+		Secure:   secure,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
 	})
 }

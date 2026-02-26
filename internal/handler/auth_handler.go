@@ -382,6 +382,8 @@ func (h *AuthHandler) handleLogout(w http.ResponseWriter, r *http.Request) {
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
+		Secure:   h.deps.SecureCookies,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
 	})
 	if r.Header.Get("HX-Request") == "true" {
