@@ -494,8 +494,15 @@ func (s *LoadboardService) MarkPickedUp(ctx context.Context, claimID int) error 
 	}
 	defer tx.Rollback(ctx)
 
-	if err := s.loadboardStore.UpdateClaimStatusTx(ctx, tx, claimID, "PickedUp"); err != nil {
+	result, err := tx.Exec(ctx,
+		`UPDATE loadboard_claims SET status = 'PickedUp', picked_up_at = NOW(), updated_at = NOW()
+		 WHERE id = $1 AND status = 'Accepted' AND deleted_at IS NULL`,
+		claimID)
+	if err != nil {
 		return fmt.Errorf("update claim status: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("claim %d is no longer in Accepted status", claimID)
 	}
 
 	// Carrier's order vehicles: Waiting → Loaded
@@ -557,8 +564,15 @@ func (s *LoadboardService) MarkDelivered(ctx context.Context, claimID int) error
 	}
 	defer tx.Rollback(ctx)
 
-	if err := s.loadboardStore.UpdateClaimStatusTx(ctx, tx, claimID, "Delivered"); err != nil {
+	result, err := tx.Exec(ctx,
+		`UPDATE loadboard_claims SET status = 'Delivered', delivered_at = NOW(), updated_at = NOW()
+		 WHERE id = $1 AND status = 'PickedUp' AND deleted_at IS NULL`,
+		claimID)
+	if err != nil {
 		return fmt.Errorf("update claim status: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("claim %d is no longer in PickedUp status", claimID)
 	}
 
 	if err := s.loadboardStore.UpdateListingStatusTx(ctx, tx, claim.ListingID, "Completed"); err != nil {
@@ -622,12 +636,16 @@ func (s *LoadboardService) ReportNoShow(ctx context.Context, claimID int) error 
 	defer tx.Rollback(ctx)
 
 	// Mark claim as NoShow with reason in poster_notes
-	if _, err := tx.Exec(ctx,
+	result, err := tx.Exec(ctx,
 		`UPDATE loadboard_claims SET status = 'NoShow', cancelled_at = NOW(),
 		 poster_notes = 'No-show reported by poster', updated_at = NOW()
-		 WHERE id = $1 AND deleted_at IS NULL`,
-		claimID); err != nil {
+		 WHERE id = $1 AND status = 'Accepted' AND deleted_at IS NULL`,
+		claimID)
+	if err != nil {
 		return fmt.Errorf("mark no-show: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("claim %d is no longer in Accepted status", claimID)
 	}
 
 	if err := s.loadboardStore.UpdateListingStatusTx(ctx, tx, claim.ListingID, "Posted"); err != nil {
