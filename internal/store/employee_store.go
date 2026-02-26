@@ -233,3 +233,24 @@ func (s *EmployeeStore) Delete(ctx context.Context, id int) error {
 	}
 	return nil
 }
+
+// ListAll returns all active employees for the company (for dropdown menus).
+func (s *EmployeeStore) ListAll(ctx context.Context) ([]models.Employee, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	query := fmt.Sprintf("SELECT %s FROM employees WHERE company_id = $1 AND deleted_at IS NULL ORDER BY name", employeeColumns)
+	rows, err := s.pool.Query(ctx, query, companyID)
+	if err != nil {
+		return nil, fmt.Errorf("list all employees: %w", err)
+	}
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Employee, error) {
+		e, err := scanEmployee(row)
+		if err != nil {
+			return models.Employee{}, err
+		}
+		return *e, nil
+	})
+	return items, err
+}

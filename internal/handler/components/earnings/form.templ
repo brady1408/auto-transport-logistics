@@ -1,0 +1,181 @@
+package earnings
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ DriverFormPage(pg components.PageContext, adj *models.DriverEarningsAdj, employees []models.Employee, isNew bool, errMsg string) {
+	@components.Layout(pg, driverFormTitle(isNew) + " - ATLinks") {
+		<div class="page-header">
+			<h1>
+				if isNew {
+					New Driver Pay Adjustment
+				} else {
+					Edit Driver Pay Adjustment
+				}
+			</h1>
+			<a href="/accounting/driver-adjustments" class="btn">Back to List</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			if isNew {
+				action="/accounting/driver-adjustments"
+				hx-post="/accounting/driver-adjustments"
+			} else {
+				action={ templ.SafeURL(fmt.Sprintf("/accounting/driver-adjustments/%d/edit", adj.ID)) }
+				hx-put={ fmt.Sprintf("/accounting/driver-adjustments/%d", adj.ID) }
+			}
+		>
+			@components.CSRFField(pg.CSRFToken)
+			<fieldset>
+				<legend>Adjustment Details</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="employee_id">Employee *</label>
+						<select id="employee_id" name="employee_id" class="form-control" required>
+							<option value="">-- Select Employee --</option>
+							for _, e := range employees {
+								<option value={ fmt.Sprintf("%d", e.ID) } selected?={ e.ID == adj.EmployeeID }>{ e.Name }</option>
+							}
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="adj_date">Date *</label>
+						<input type="date" id="adj_date" name="adj_date" class="form-control" value={ store.FormatAdjDate(adj.AdjDate) } required/>
+					</div>
+					<div class="form-group">
+						<label for="adj_type">Type *</label>
+						<select id="adj_type" name="adj_type" class="form-control" required>
+							<option value="Add" selected?={ adj.AdjType == "Add" }>Add</option>
+							<option value="Ded" selected?={ adj.AdjType == "Ded" }>Deduct</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group col-span-2">
+						<label for="description">Description *</label>
+						<input type="text" id="description" name="description" class="form-control" value={ adj.Description } maxlength="50" required/>
+					</div>
+					<div class="form-group">
+						<label for="amount">Amount *</label>
+						<input type="text" id="amount" name="amount" class="form-control" value={ adj.Amount } required/>
+					</div>
+					<div class="form-group">
+						<label for="reference">Reference</label>
+						<input type="text" id="reference" name="reference" class="form-control" value={ components.Deref(adj.Reference) } maxlength="20"/>
+					</div>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create Adjustment
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href="/accounting/driver-adjustments" class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}
+
+templ TruckFormPage(pg components.PageContext, adj *models.TruckEarningsAdj, trucks []models.Truck, isNew bool, errMsg string) {
+	@components.Layout(pg, truckFormTitle(isNew) + " - ATLinks") {
+		<div class="page-header">
+			<h1>
+				if isNew {
+					New Truck Pay Adjustment
+				} else {
+					Edit Truck Pay Adjustment
+				}
+			</h1>
+			<a href="/accounting/truck-adjustments" class="btn">Back to List</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			if isNew {
+				action="/accounting/truck-adjustments"
+				hx-post="/accounting/truck-adjustments"
+			} else {
+				action={ templ.SafeURL(fmt.Sprintf("/accounting/truck-adjustments/%d/edit", adj.ID)) }
+				hx-put={ fmt.Sprintf("/accounting/truck-adjustments/%d", adj.ID) }
+			}
+		>
+			@components.CSRFField(pg.CSRFToken)
+			<fieldset>
+				<legend>Adjustment Details</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="truck_id">Truck *</label>
+						<select id="truck_id" name="truck_id" class="form-control" required>
+							<option value="">-- Select Truck --</option>
+							for _, t := range trucks {
+								<option value={ fmt.Sprintf("%d", t.ID) } selected?={ t.ID == adj.TruckID }>{ t.TruckNumber }</option>
+							}
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="adj_date">Date *</label>
+						<input type="date" id="adj_date" name="adj_date" class="form-control" value={ store.FormatAdjDate(adj.AdjDate) } required/>
+					</div>
+					<div class="form-group">
+						<label for="adj_type">Type *</label>
+						<select id="adj_type" name="adj_type" class="form-control" required>
+							<option value="Add" selected?={ adj.AdjType == "Add" }>Add</option>
+							<option value="Ded" selected?={ adj.AdjType == "Ded" }>Deduct</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group col-span-2">
+						<label for="description">Description *</label>
+						<input type="text" id="description" name="description" class="form-control" value={ adj.Description } maxlength="50" required/>
+					</div>
+					<div class="form-group">
+						<label for="amount">Amount *</label>
+						<input type="text" id="amount" name="amount" class="form-control" value={ adj.Amount } required/>
+					</div>
+					<div class="form-group">
+						<label for="reference">Reference</label>
+						<input type="text" id="reference" name="reference" class="form-control" value={ components.Deref(adj.Reference) } maxlength="20"/>
+					</div>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create Adjustment
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href="/accounting/truck-adjustments" class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}
+
+func driverFormTitle(isNew bool) string {
+	if isNew {
+		return "New Driver Adjustment"
+	}
+	return "Edit Driver Adjustment"
+}
+
+func truckFormTitle(isNew bool) string {
+	if isNew {
+		return "New Truck Adjustment"
+	}
+	return "Edit Truck Adjustment"
+}

@@ -149,6 +149,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	apStore := store.NewAccountsPayableStore(pool)
 	feedbackStore := store.NewFeedbackStore(pool)
 	attachmentStore := store.NewAttachmentStore(pool)
+	earningsAdjStore := store.NewEarningsAdjStore(pool)
 
 	// Storage service
 	storageSvc, err := storage.NewService(cfg.UploadDir)
@@ -219,6 +220,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewCreditMemoHandler(creditMemoStore, deps).Register(protectedMux)
 	handler.NewDamageClaimHandler(damageClaimStore, attachmentStore, storageSvc, deps).Register(protectedMux)
 	handler.NewAccountsPayableHandler(apStore, deps).Register(protectedMux)
+	handler.NewEarningsAdjHandler(earningsAdjStore, employeeStore, truckStore, deps).Register(protectedMux)
 
 	// Feedback
 	handler.NewFeedbackHandler(feedbackStore, attachmentStore, storageSvc, deps).Register(protectedMux)
