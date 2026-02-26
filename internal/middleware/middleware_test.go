@@ -275,3 +275,24 @@ func TestClearAuthCookieSetsSecureFlag(t *testing.T) {
 		t.Error("clearing cookie not set")
 	}
 }
+
+func TestClearAuthCookieOmitsSecureFlagWhenDisabled(t *testing.T) {
+	jwtSvc := auth.NewJWTService("test-secret")
+	mw := RequireAuth(jwtSvc, false)
+	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	r := httptest.NewRequest("GET", "/protected", nil)
+	r.AddCookie(&http.Cookie{Name: CookieName, Value: "bad-token"})
+	w := httptest.NewRecorder()
+	mw(inner).ServeHTTP(w, r)
+
+	for _, c := range w.Result().Cookies() {
+		if c.Name == CookieName && c.MaxAge == -1 {
+			if c.Secure {
+				t.Error("clearing cookie should not have Secure=true in insecure mode")
+			}
+		}
+	}
+}
