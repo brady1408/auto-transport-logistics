@@ -127,9 +127,12 @@ func (s *PaymentDetailStore) DeleteTx(ctx context.Context, tx pgx.Tx, id int) er
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(ctx, "UPDATE payment_details SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
+	result, err := tx.Exec(ctx, "UPDATE payment_details SET deleted_at = NOW() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", id, companyID)
 	if err != nil {
 		return fmt.Errorf("delete payment detail %d: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("payment detail %d not found", id)
 	}
 	return nil
 }
