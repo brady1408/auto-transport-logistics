@@ -49,6 +49,7 @@ func (h *VehicleHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /dispatch/vehicles/{id}", h.update)
 	mux.HandleFunc("DELETE /dispatch/vehicles/{id}", h.delete)
 	// Status transitions
+	mux.HandleFunc("POST /dispatch/vehicles/{id}/ground", h.ground)
 	mux.HandleFunc("POST /dispatch/vehicles/{id}/schedule", h.schedule)
 	mux.HandleFunc("POST /dispatch/vehicles/{id}/load", h.loadVehicle)
 	mux.HandleFunc("POST /dispatch/vehicles/{id}/deliver", h.deliver)
@@ -86,7 +87,7 @@ func (h *VehicleHandler) newForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, &models.OrderVehicle{OrderID: orderID, Active: true, Status: "Waiting", Operable: true}, order, true, ""))
+	h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, &models.OrderVehicle{OrderID: orderID, Active: true, Status: "Inbound", Operable: true}, order, true, ""))
 }
 
 func (h *VehicleHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +99,9 @@ func (h *VehicleHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	v := bindVehicleForm(r)
 	v.OrderID = orderID
-	v.Status = "Waiting"
+	if v.Status == "" {
+		v.Status = "Inbound"
+	}
 
 	if err := h.orderSvc.CreateVehicleAndSync(r.Context(), v); err != nil {
 		order, _ := h.orderStore.GetByID(r.Context(), orderID)
@@ -190,6 +193,10 @@ func (h *VehicleHandler) delete(w http.ResponseWriter, r *http.Request) {
 
 // Status transition handlers
 
+func (h *VehicleHandler) ground(w http.ResponseWriter, r *http.Request) {
+	h.transitionStatus(w, r, "Waiting")
+}
+
 func (h *VehicleHandler) schedule(w http.ResponseWriter, r *http.Request) {
 	h.transitionStatus(w, r, "Scheduled")
 }
@@ -265,6 +272,7 @@ func (h *VehicleHandler) renderVehicleRow(w http.ResponseWriter, r *http.Request
 func bindVehicleForm(r *http.Request) *models.OrderVehicle {
 	return &models.OrderVehicle{
 		Active:            !formBool(r, "inactive"),
+		Status:            r.FormValue("status"),
 		VIN:               formString(r, "vin"),
 		Year:              formString(r, "year"),
 		Make:              formString(r, "make"),

@@ -49,7 +49,7 @@ templ VehicleRow(v models.OrderVehicle, orderID int) {
 		<td class="text-right">
 			<div class="btn-group">
 				// Revert button
-				if v.Status == "Waiting" {
+				if v.Status == "Inbound" {
 					<button class="btn-icon" disabled title="Already at first status">
 						@chevronLeftSVG()
 					</button>
@@ -96,7 +96,9 @@ templ VehicleRow(v models.OrderVehicle, orderID int) {
 }
 
 templ vehicleStatusBadge(status string) {
-	if status == "Waiting" {
+	if status == "Inbound" {
+		<span class="badge badge-inbound">Inbound</span>
+	} else if status == "Waiting" {
 		<span class="badge badge-waiting">Waiting</span>
 	} else if status == "Scheduled" {
 		<span class="badge badge-scheduled">Scheduled</span>
@@ -113,6 +115,8 @@ templ vehicleStatusBadge(status string) {
 
 func revertTarget(status string) string {
 	switch status {
+	case "Waiting":
+		return "Inbound"
 	case "Scheduled":
 		return "Waiting"
 	case "Loaded":
@@ -128,6 +132,8 @@ func revertTarget(status string) string {
 
 func advanceTarget(status string) string {
 	switch status {
+	case "Inbound":
+		return "Waiting"
 	case "Waiting":
 		return "Scheduled"
 	case "Scheduled":
@@ -143,6 +149,8 @@ func advanceTarget(status string) string {
 
 func advanceAction(status string) string {
 	switch status {
+	case "Inbound":
+		return "ground"
 	case "Waiting":
 		return "schedule"
 	case "Scheduled":
