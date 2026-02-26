@@ -584,7 +584,7 @@ func (s *VehicleStore) WaitingGrid(ctx context.Context, state string) ([]Waiting
 			COALESCE(dro.name,'') as drop_name, dro.city, dro.state,
 			v.total_charge, o.create_date
 		FROM order_vehicles v
-		JOIN orders o ON o.id = v.order_id
+		JOIN orders o ON o.id = v.order_id AND o.deleted_at IS NULL
 		LEFT JOIN customers pu ON pu.id = o.load_customer_id
 		LEFT JOIN customers dro ON dro.id = o.drop_customer_id
 		%s
