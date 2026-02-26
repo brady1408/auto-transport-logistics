@@ -1,0 +1,47 @@
+package invoices
+
+import (
+	"fmt"
+	"github.com/brady1408/atlinks/internal/handler/components"
+)
+
+templ PostingPage(pg components.PageContext, invCount int, payCount int, errMsg string) {
+	@components.Layout(pg, "Period Posting - ATLinks") {
+		<div class="page-header">
+			<h1>Period Posting</h1>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<div class="card">
+			<div class="card-body">
+				<div class="alert alert-warning">
+					<strong>Warning:</strong> Posting is permanent. Posted invoices and payments cannot be edited or voided.
+				</div>
+				<p>Select a date range to post all unposted invoices and payments with dates in that range.</p>
+				<form method="POST" action="/accounting/posting">
+					@components.CSRFField(pg.CSRFToken)
+					<div class="form-row">
+						<div class="form-group">
+							<label for="date_from">Date From</label>
+							<input type="date" id="date_from" name="date_from" class="form-control" required/>
+						</div>
+						<div class="form-group">
+							<label for="date_to">Date To</label>
+							<input type="date" id="date_to" name="date_to" class="form-control" required/>
+						</div>
+					</div>
+					if invCount >= 0 {
+						<p>{ fmt.Sprintf("This will post %d invoices and %d payments.", invCount, payCount) }</p>
+					}
+					<div class="form-actions">
+						<button type="submit" class="btn btn-danger"
+							onclick="return confirm('This cannot be undone. Post all matching records?')">
+							Post Records
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	}
+}

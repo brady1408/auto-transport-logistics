@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/handler/components/invoices"
 	"github.com/brady1408/atlinks/internal/models"
 )
@@ -19,6 +20,13 @@ type invoiceStore interface {
 	Delete(ctx context.Context, id int) error
 	NextInvoiceNumber(ctx context.Context) (string, error)
 	IDsByDateRange(ctx context.Context, dateFrom, dateTo string) ([]int, error)
+	CountUnposted(ctx context.Context, dateFrom, dateTo string) (int, error)
+	PostByDateRange(ctx context.Context, dateFrom, dateTo, username string) (int, error)
+}
+
+type paymentPostingStore interface {
+	CountUnposted(ctx context.Context, dateFrom, dateTo string) (int, error)
+	PostByDateRange(ctx context.Context, dateFrom, dateTo, username string) (int, error)
 }
 
 type invoiceDetailStore interface {
@@ -38,11 +46,12 @@ type invoiceService interface {
 }
 
 type InvoiceHandler struct {
-	store       invoiceStore
-	detailStore invoiceDetailStore
-	payDetStore invoicePaymentDetailStore
-	invoiceSvc  invoiceService
-	deps        *Deps
+	store        invoiceStore
+	detailStore  invoiceDetailStore
+	payDetStore  invoicePaymentDetailStore
+	paymentStore paymentPostingStore
+	invoiceSvc   invoiceService
+	deps         *Deps
 }
 
 func NewInvoiceHandler(
@@ -50,13 +59,16 @@ func NewInvoiceHandler(
 	ds invoiceDetailStore,
 	pds invoicePaymentDetailStore,
 	svc invoiceService,
+	ps paymentPostingStore,
 	deps *Deps,
 ) *InvoiceHandler {
-	return &InvoiceHandler{store: s, detailStore: ds, payDetStore: pds, invoiceSvc: svc, deps: deps}
+	return &InvoiceHandler{store: s, detailStore: ds, payDetStore: pds, paymentStore: ps, invoiceSvc: svc, deps: deps}
 }
 
 func (h *InvoiceHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /accounting/invoices", h.list)
+	mux.HandleFunc("GET /accounting/posting", h.postingForm)
+	mux.HandleFunc("POST /accounting/posting", h.postingRun)
 	mux.HandleFunc("GET /accounting/invoices/recalc", h.recalcForm)
 	mux.HandleFunc("POST /accounting/invoices/recalc", h.recalcRun)
 	mux.HandleFunc("GET /accounting/invoices/new", h.newForm)
@@ -203,6 +215,11 @@ func (h *InvoiceHandler) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if old.PostedAt != nil {
+		http.Error(w, "Cannot modify a posted invoice", http.StatusForbidden)
+		return
+	}
+
 	inv := bindInvoiceForm(r)
 	inv.ID = id
 	inv.InvoiceNumber = old.InvoiceNumber
@@ -254,6 +271,17 @@ func (h *InvoiceHandler) void(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	inv, err := h.store.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Invoice not found", http.StatusNotFound)
+		return
+	}
+
+	if inv.PostedAt != nil {
+		http.Error(w, "Cannot void a posted invoice", http.StatusForbidden)
 		return
 	}
 
@@ -405,6 +433,37 @@ func (h *InvoiceHandler) recalcRun(w http.ResponseWriter, r *http.Request) {
 	}
 	pg := h.deps.pageContext(w, r)
 	h.deps.renderTempl(w, r, invoices.RecalcPage(pg, count, fmt.Sprintf("Recalculated %d invoices", count)))
+}
+
+func (h *InvoiceHandler) postingForm(w http.ResponseWriter, r *http.Request) {
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, invoices.PostingPage(pg, -1, -1, ""))
+}
+
+func (h *InvoiceHandler) postingRun(w http.ResponseWriter, r *http.Request) {
+	dateFrom := r.FormValue("date_from")
+	dateTo := r.FormValue("date_to")
+	if dateFrom == "" || dateTo == "" {
+		pg := h.deps.pageContext(w, r)
+		h.deps.renderTempl(w, r, invoices.PostingPage(pg, -1, -1, "Date range is required"))
+		return
+	}
+	username := "system"
+	if user, ok := auth.GetUserFromRequest(r); ok {
+		username = user.Username
+	}
+	invCount, err := h.store.PostByDateRange(r.Context(), dateFrom, dateTo, username)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+	payCount, err := h.paymentStore.PostByDateRange(r.Context(), dateFrom, dateTo, username)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+	h.deps.setFlash(w, fmt.Sprintf("Posted %d invoices and %d payments", invCount, payCount))
+	redirect(w, r, "/accounting/posting")
 }
 
 func bindInvoiceForm(r *http.Request) *models.Invoice {
