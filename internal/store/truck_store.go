@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
@@ -288,6 +289,61 @@ func (s *TruckStore) Delete(ctx context.Context, id int) error {
 		return fmt.Errorf("truck %d not found", id)
 	}
 	return nil
+}
+
+// ExpiringTruck represents a truck with an upcoming or past expiration.
+type ExpiringTruck struct {
+	TruckID      int
+	TruckNumber  string
+	ExpType      string    // "Truck License", "Trailer License", "Truck Inspection", "Trailer Inspection", "Insurance"
+	ExpDate      time.Time
+	DaysUntilExp int       // negative = already expired
+}
+
+// ExpiringWithin returns all expiration records (across 5 types) expiring within `days` days,
+// including already-expired ones.
+func (s *TruckStore) ExpiringWithin(ctx context.Context, days int) ([]ExpiringTruck, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cutoff := time.Now().AddDate(0, 0, days)
+	query := `
+		SELECT id, truck_number, expiry_type, exp_date,
+		       EXTRACT(DAY FROM exp_date - NOW())::int as days_until
+		FROM (
+			SELECT id, COALESCE(truck_number,'') as truck_number, 'Truck License' as expiry_type, truck_license_exp as exp_date
+			FROM trucks WHERE company_id=$1 AND deleted_at IS NULL AND truck_license_exp IS NOT NULL AND truck_license_exp <= $2
+			UNION ALL
+			SELECT id, COALESCE(truck_number,''), 'Trailer License', trailer_license_exp
+			FROM trucks WHERE company_id=$1 AND deleted_at IS NULL AND trailer_license_exp IS NOT NULL AND trailer_license_exp <= $2
+			UNION ALL
+			SELECT id, COALESCE(truck_number,''), 'Truck Inspection', truck_safety_inspection
+			FROM trucks WHERE company_id=$1 AND deleted_at IS NULL AND truck_safety_inspection IS NOT NULL AND truck_safety_inspection <= $2
+			UNION ALL
+			SELECT id, COALESCE(truck_number,''), 'Trailer Inspection', trailer_safety_inspection
+			FROM trucks WHERE company_id=$1 AND deleted_at IS NULL AND trailer_safety_inspection IS NOT NULL AND trailer_safety_inspection <= $2
+			UNION ALL
+			SELECT id, COALESCE(truck_number,''), 'Insurance', insurance_exp_date
+			FROM trucks WHERE company_id=$1 AND deleted_at IS NULL AND insurance_exp_date IS NOT NULL AND insurance_exp_date <= $2
+		) t
+		ORDER BY exp_date ASC`
+
+	rows, err := s.pool.Query(ctx, query, companyID, cutoff)
+	if err != nil {
+		return nil, fmt.Errorf("expiring trucks: %w", err)
+	}
+	defer rows.Close()
+
+	var result []ExpiringTruck
+	for rows.Next() {
+		var e ExpiringTruck
+		if err := rows.Scan(&e.TruckID, &e.TruckNumber, &e.ExpType, &e.ExpDate, &e.DaysUntilExp); err != nil {
+			return nil, err
+		}
+		result = append(result, e)
+	}
+	return result, rows.Err()
 }
 
 // ListAll returns all active trucks for the company (for dropdown menus).

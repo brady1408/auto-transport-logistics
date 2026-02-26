@@ -12,11 +12,12 @@ import (
 	"fmt"
 
 	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/handler/components/attachments"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
-func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDetailWithOrder, vehicleCount int) templ.Component {
+func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDetailWithOrder, vehicleCount int, atts []models.Attachment) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -56,7 +57,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(trip.LoadNumber)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 16, Col: 30}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 17, Col: 30}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -69,7 +70,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var4 templ.SafeURL
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d/edit", trip.ID)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 19, Col: 76}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 20, Col: 76}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -97,7 +98,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(trip.TruckNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 38, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 39, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -110,7 +111,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(trip.TrailerNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 42, Col: 50}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 43, Col: 50}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -123,7 +124,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(trip.Driver))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 46, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 47, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -136,7 +137,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(trip.Driver2))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 50, Col: 44}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 51, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -150,7 +151,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(trip.TripDate.Format("01/02/2006"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 56, Col: 44}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 57, Col: 44}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -165,7 +166,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(trip.EstDeliverDate.Format("01/02/2006"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 64, Col: 50}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 65, Col: 50}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -180,7 +181,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(trip.DeliverDate.Format("01/02/2006"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 72, Col: 47}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 73, Col: 47}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -194,7 +195,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(trip.Zone))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 78, Col: 41}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 79, Col: 41}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -207,7 +208,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(trip.EquipmentType))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 82, Col: 50}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 83, Col: 50}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -220,7 +221,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", vehicleCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 91, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 92, Col: 53}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -233,7 +234,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(trip.DriverRate))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 95, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 96, Col: 47}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -246,7 +247,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(trip.DriverCalcType))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 99, Col: 51}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 100, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -260,7 +261,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 				var templ_7745c5c3_Var17 string
 				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", components.DerefInt(trip.TotalMileage)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 105, Col: 67}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 106, Col: 67}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 				if templ_7745c5c3_Err != nil {
@@ -274,7 +275,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(trip.FuelAdvance))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 111, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 112, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -287,7 +288,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(trip.TripAdvance))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 115, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 116, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -300,7 +301,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var20 string
 			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(trip.Comments))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 119, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 120, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
@@ -321,7 +322,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var21 string
 			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", vehicleCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 126, Col: 109}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 127, Col: 109}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
@@ -342,7 +343,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/trips/%d/loads", trip.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 131, Col: 61}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 132, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
@@ -379,7 +380,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var23 string
 			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(trip.LoadNumber)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 151, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 152, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
@@ -400,7 +401,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var24 string
 			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/trips/%d/available-vehicles", trip.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 157, Col: 77}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 158, Col: 77}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 			if templ_7745c5c3_Err != nil {
@@ -413,7 +414,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var25 string
 			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/trips/%d/fuel", trip.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 170, Col: 59}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 171, Col: 59}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
@@ -426,7 +427,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var26 string
 			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/trips/%d/expenses", trip.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 179, Col: 63}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 180, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
@@ -439,13 +440,34 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			var templ_7745c5c3_Var27 string
 			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/trips/%d/routes", trip.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 188, Col: 61}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 189, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Attachments</h2><div class=\"card\" id=\"attachments-section\"><div class=\"card-body\"><div id=\"trip-attachments\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = attachments.AttachmentList(atts, "trips", trip.ID).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</div><form hx-post=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var28 string
+			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/trips/%d/attachments", trip.ID))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 202, Col: 69}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "\" hx-target=\"#trip-attachments\" hx-swap=\"innerHTML\" hx-encoding=\"multipart/form-data\" hx-on::after-request=\"if(event.detail.successful) this.reset()\"><div style=\"display: flex; align-items: center; gap: 12px; margin-top: 1rem;\"><input type=\"file\" name=\"file\" accept=\"image/*\"> <button type=\"submit\" class=\"btn btn-sm btn-primary\">Upload</button></div></form></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

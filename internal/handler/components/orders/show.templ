@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/handler/components/attachments"
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ ShowPage(pg components.PageContext, order *models.Order) {
+templ ShowPage(pg components.PageContext, order *models.Order, atts []models.Attachment) {
 	@components.Layout(pg, "Order " + order.OrderNumber + " - ATLinks") {
 		<div class="page-header">
 			<div>
@@ -166,6 +167,26 @@ templ ShowPage(pg components.PageContext, order *models.Order) {
 			hx-swap="innerHTML"
 		>
 			<p class="text-muted">Loading charges...</p>
+		</div>
+		<h2 class="section-title">Attachments</h2>
+		<div class="card" id="attachments-section">
+			<div class="card-body">
+				<div id="order-attachments">
+					@attachments.AttachmentList(atts, "orders", order.ID)
+				</div>
+				<form
+					hx-post={ fmt.Sprintf("/dispatch/orders/%d/attachments", order.ID) }
+					hx-target="#order-attachments"
+					hx-swap="innerHTML"
+					hx-encoding="multipart/form-data"
+					hx-on::after-request="if(event.detail.successful) this.reset()"
+				>
+					<div style="display: flex; align-items: center; gap: 12px; margin-top: 1rem;">
+						<input type="file" name="file" accept="image/*"/>
+						<button type="submit" class="btn btn-sm btn-primary">Upload</button>
+					</div>
+				</form>
+			</div>
 		</div>
 	}
 }

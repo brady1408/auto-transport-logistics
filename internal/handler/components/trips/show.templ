@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/handler/components/attachments"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
 
-templ ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDetailWithOrder, vehicleCount int) {
+templ ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDetailWithOrder, vehicleCount int, atts []models.Attachment) {
 	@components.Layout(pg, "Trip " + trip.LoadNumber + " - ATLinks") {
 		<div class="page-header">
 			<div>
@@ -190,6 +191,26 @@ templ ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadD
 			hx-swap="innerHTML"
 		>
 			<p class="text-muted">Loading...</p>
+		</div>
+		<h2 class="section-title">Attachments</h2>
+		<div class="card" id="attachments-section">
+			<div class="card-body">
+				<div id="trip-attachments">
+					@attachments.AttachmentList(atts, "trips", trip.ID)
+				</div>
+				<form
+					hx-post={ fmt.Sprintf("/dispatch/trips/%d/attachments", trip.ID) }
+					hx-target="#trip-attachments"
+					hx-swap="innerHTML"
+					hx-encoding="multipart/form-data"
+					hx-on::after-request="if(event.detail.successful) this.reset()"
+				>
+					<div style="display: flex; align-items: center; gap: 12px; margin-top: 1rem;">
+						<input type="file" name="file" accept="image/*"/>
+						<button type="submit" class="btn btn-sm btn-primary">Upload</button>
+					</div>
+				</form>
+			</div>
 		</div>
 	}
 }
