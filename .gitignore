@@ -38,3 +38,7 @@ Stargazer_Source/
 
 # Claude
 .claude/
+.mcp.json
+
+# Git worktrees
+.worktrees/
