@@ -706,3 +706,42 @@ func claimColumnsAliased() string {
 	c.picked_up_at, c.delivered_at,
 	c.created_at, c.updated_at`
 }
+
+// ListActiveClaimsForOrder returns accepted/in-progress claims for a given source order.
+// Used to display the subhauled loads section on the order show page.
+// No company_id scoping: the caller already verified they own the order.
+func (s *LoadboardStore) ListActiveClaimsForOrder(ctx context.Context, orderID int) ([]models.LoadboardClaim, error) {
+	query := fmt.Sprintf(`SELECT %s, l.listing_number, l.title, l.status
+		FROM loadboard_claims c
+		JOIN loadboard_listings l ON l.id = c.listing_id
+		WHERE l.source_order_id = $1
+		  AND c.status IN ('Accepted', 'PickedUp', 'Delivered', 'NoShow')
+		  AND c.deleted_at IS NULL
+		  AND l.deleted_at IS NULL
+		ORDER BY c.created_at DESC`,
+		claimColumnsAliased())
+	rows, err := s.pool.Query(ctx, query, orderID)
+	if err != nil {
+		return nil, fmt.Errorf("list active claims for order %d: %w", orderID, err)
+	}
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.LoadboardClaim, error) {
+		var c models.LoadboardClaim
+		if err := row.Scan(
+			&c.ID, &c.ListingID, &c.CarrierCompanyID, &c.CarrierUserID,
+			&c.CarrierCompanyName, &c.CarrierSCAC, &c.CarrierMCNumber, &c.CarrierDOTNumber, &c.CarrierInsuranceExp,
+			&c.CarrierOrderID, &c.AgreedPay, &c.VehicleCount, &c.Status,
+			&c.CarrierNotes, &c.PosterNotes,
+			&c.AcceptedAt, &c.RejectedAt, &c.CancelledAt, &c.CompletedAt,
+			&c.PickedUpAt, &c.DeliveredAt,
+			&c.CreatedAt, &c.UpdatedAt,
+			&c.ListingNumber, &c.ListingTitle, &c.ListingStatus,
+		); err != nil {
+			return models.LoadboardClaim{}, err
+		}
+		return c, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan active claim: %w", err)
+	}
+	return items, nil
+}
