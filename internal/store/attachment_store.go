@@ -112,7 +112,7 @@ func (s *AttachmentStore) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
-// DeleteByEntity deletes all attachments for a given entity and returns storage keys for disk cleanup.
+// DeleteByEntity soft-deletes all attachments for a given entity. Physical files are orphaned (acceptable trade-off).
 func (s *AttachmentStore) DeleteByEntity(ctx context.Context, category string, entityID int) ([]string, error) {
 	companyID, err := auth.GetCompanyID(ctx)
 	if err != nil {
