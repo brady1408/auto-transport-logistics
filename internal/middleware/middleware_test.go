@@ -10,7 +10,7 @@ import (
 
 func TestRequireAuthRedirectsWithNoCookie(t *testing.T) {
 	jwtSvc := auth.NewJWTService("test-secret")
-	mw := RequireAuth(jwtSvc)
+	mw := RequireAuth(jwtSvc, false)
 
 	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -30,7 +30,7 @@ func TestRequireAuthRedirectsWithNoCookie(t *testing.T) {
 
 func TestRequireAuthRedirectsWithBadToken(t *testing.T) {
 	jwtSvc := auth.NewJWTService("test-secret")
-	mw := RequireAuth(jwtSvc)
+	mw := RequireAuth(jwtSvc, false)
 
 	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -49,7 +49,7 @@ func TestRequireAuthRedirectsWithBadToken(t *testing.T) {
 func TestRequireAuthPassesWithValidToken(t *testing.T) {
 	jwtSvc := auth.NewJWTService("test-secret")
 	token, _ := jwtSvc.GenerateToken(1, "admin", "admin", 1)
-	mw := RequireAuth(jwtSvc)
+	mw := RequireAuth(jwtSvc, false)
 
 	var gotUser auth.ContextUser
 	var gotOK bool
@@ -175,7 +175,7 @@ func TestRequireRoleBlocksUnauthorized(t *testing.T) {
 func TestRequireRoleBlocksWrongRole(t *testing.T) {
 	jwtSvc := auth.NewJWTService("test-secret")
 	token, _ := jwtSvc.GenerateToken(1, "user", "company_user", 1)
-	authMw := RequireAuth(jwtSvc)
+	authMw := RequireAuth(jwtSvc, false)
 	roleMw := RequireRole("super_admin")
 
 	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -195,7 +195,7 @@ func TestRequireRoleBlocksWrongRole(t *testing.T) {
 func TestRequireRoleAllowsMatchingRole(t *testing.T) {
 	jwtSvc := auth.NewJWTService("test-secret")
 	token, _ := jwtSvc.GenerateToken(1, "admin", "super_admin", 0)
-	authMw := RequireAuth(jwtSvc)
+	authMw := RequireAuth(jwtSvc, false)
 	roleMw := RequireRole("super_admin")
 
 	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -215,7 +215,7 @@ func TestRequireRoleAllowsMatchingRole(t *testing.T) {
 func TestRequireRoleAllowsMultipleRoles(t *testing.T) {
 	jwtSvc := auth.NewJWTService("test-secret")
 	token, _ := jwtSvc.GenerateToken(1, "admin", "company_admin", 1)
-	authMw := RequireAuth(jwtSvc)
+	authMw := RequireAuth(jwtSvc, false)
 	roleMw := RequireRole("company_admin", "super_admin")
 
 	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -244,5 +244,34 @@ func TestRequestLoggerSetsStatus(t *testing.T) {
 
 	if w.Code != http.StatusNotFound {
 		t.Errorf("status = %d, want %d", w.Code, http.StatusNotFound)
+	}
+}
+
+func TestClearAuthCookieSetsSecureFlag(t *testing.T) {
+	jwtSvc := auth.NewJWTService("test-secret")
+	mw := RequireAuth(jwtSvc, true) // secure=true so cookie has Secure flag
+	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	r := httptest.NewRequest("GET", "/protected", nil)
+	r.AddCookie(&http.Cookie{Name: CookieName, Value: "bad-token"})
+	w := httptest.NewRecorder()
+	mw(inner).ServeHTTP(w, r)
+
+	var found bool
+	for _, c := range w.Result().Cookies() {
+		if c.Name == CookieName && c.MaxAge == -1 {
+			found = true
+			if !c.Secure {
+				t.Error("clearing cookie should have Secure=true")
+			}
+			if c.SameSite != http.SameSiteLaxMode {
+				t.Errorf("clearing cookie SameSite = %v, want Lax", c.SameSite)
+			}
+		}
+	}
+	if !found {
+		t.Error("clearing cookie not set")
 	}
 }
