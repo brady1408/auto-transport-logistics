@@ -9,6 +9,7 @@ import (
 
 	"github.com/brady1408/atlinks/internal/handler/components/orders"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/store"
 )
 
 type orderStore interface {
@@ -24,14 +25,19 @@ type orderInvoiceService interface {
 	GenerateFromOrder(ctx context.Context, orderID int) (*models.Invoice, error)
 }
 
-type OrderHandler struct {
-	store      orderStore
-	invoiceSvc orderInvoiceService
-	deps       *Deps
+type waitingGridStore interface {
+	WaitingGrid(ctx context.Context, state string) ([]store.WaitingVehicleRow, error)
 }
 
-func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, deps *Deps) *OrderHandler {
-	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, deps: deps}
+type OrderHandler struct {
+	store        orderStore
+	invoiceSvc   orderInvoiceService
+	waitingStore waitingGridStore
+	deps         *Deps
+}
+
+func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, waitingStore waitingGridStore, deps *Deps) *OrderHandler {
+	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, waitingStore: waitingStore, deps: deps}
 }
 
 func (h *OrderHandler) Register(mux *http.ServeMux) {
@@ -43,6 +49,7 @@ func (h *OrderHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /dispatch/orders/{id}", h.update)
 	mux.HandleFunc("DELETE /dispatch/orders/{id}", h.delete)
 	mux.HandleFunc("POST /dispatch/orders/{id}/invoice", h.generateInvoice)
+	mux.HandleFunc("GET /dispatch/waiting", h.waitingGrid)
 }
 
 func (h *OrderHandler) list(w http.ResponseWriter, r *http.Request) {
@@ -216,6 +223,21 @@ func (h *OrderHandler) generateInvoice(w http.ResponseWriter, r *http.Request) {
 	h.deps.setFlash(w, "Invoice "+inv.InvoiceNumber+" generated successfully")
 
 	redirect(w, r, fmt.Sprintf("/accounting/invoices/%d", inv.ID))
+}
+
+func (h *OrderHandler) waitingGrid(w http.ResponseWriter, r *http.Request) {
+	stateFilter := r.URL.Query().Get("state")
+	rows, err := h.waitingStore.WaitingGrid(r.Context(), stateFilter)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+	if isHTMX(r) {
+		h.deps.renderTempl(w, r, orders.WaitingGridTable(rows, stateFilter))
+		return
+	}
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, orders.WaitingGridPage(pg, rows, stateFilter))
 }
 
 func bindOrderForm(r *http.Request) *models.Order {

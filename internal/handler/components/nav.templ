@@ -31,6 +31,7 @@ templ Nav(user auth.ContextUser, companyName string) {
 				<div class="dropdown-menu" x-show="open === 'dispatch'" x-cloak>
 					<a href="/dispatch/orders" class="dropdown-item">Orders</a>
 					<a href="/dispatch/trips" class="dropdown-item">Trips/Loads</a>
+					<a href="/dispatch/waiting" class="dropdown-item">Waiting Grid</a>
 				</div>
 			</div>
 			<!-- Accounting -->
@@ -145,6 +146,7 @@ templ Nav(user auth.ContextUser, companyName string) {
 			<div class="mobile-section-label">Dispatch</div>
 			<a href="/dispatch/orders">Orders</a>
 			<a href="/dispatch/trips">Trips/Loads</a>
+			<a href="/dispatch/waiting">Waiting Grid</a>
 			<hr/>
 			<div class="mobile-section-label">Accounting</div>
 			<a href="/accounting/invoices">Invoices</a>

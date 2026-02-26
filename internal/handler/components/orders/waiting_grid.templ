@@ -1,0 +1,72 @@
+package orders
+
+import (
+	"fmt"
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+templ WaitingGridPage(pg components.PageContext, rows []store.WaitingVehicleRow, stateFilter string) {
+	@components.Layout(pg, "Waiting Grid - ATLinks") {
+		<div class="page-header">
+			<h1>Waiting Grid</h1>
+			<span class="text-muted">{ fmt.Sprintf("%d vehicles waiting", len(rows)) }</span>
+		</div>
+		<div class="filter-bar">
+			<div class="form-group">
+				<label for="state">Origin State</label>
+				<input
+					type="text" id="state" name="state" class="form-control" maxlength="2"
+					placeholder="e.g. MI" value={ stateFilter }
+					hx-get="/dispatch/waiting"
+					hx-trigger="keyup changed delay:400ms"
+					hx-target="#waiting-table"
+					hx-include="[name=state]"
+					style="text-transform:uppercase; width:80px"
+				/>
+			</div>
+		</div>
+		<div id="waiting-table">
+			@WaitingGridTable(rows, stateFilter)
+		</div>
+	}
+}
+
+templ WaitingGridTable(rows []store.WaitingVehicleRow, stateFilter string) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>VIN</th>
+					<th>Year/Make/Model</th>
+					<th>Order</th>
+					<th>Pickup</th>
+					<th>State</th>
+					<th>Dropoff</th>
+					<th class="text-right">Amount</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(rows) > 0 {
+					for _, r := range rows {
+						<tr>
+							<td class="font-mono text-sm">{ r.VIN }</td>
+							<td>{ components.Deref(r.Year) } { components.Deref(r.Make) } { components.Deref(r.Model) }</td>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)) }>{ r.OrderNumber }</a></td>
+							<td>{ r.PickupName } { components.Deref(r.PickupCity) }</td>
+							<td>{ components.Deref(r.PickupState) }</td>
+							<td>{ r.DropName } { components.Deref(r.DropCity) }</td>
+							<td class="text-right">{ components.Deref(r.Amount) }</td>
+							<td class="text-right">
+								<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)) } class="btn btn-sm">View Order</a>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="8" class="text-center text-muted">No vehicles waiting</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
