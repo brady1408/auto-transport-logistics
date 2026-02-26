@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
@@ -540,4 +541,72 @@ func (s *VehicleStore) SearchUnassigned(ctx context.Context, search string, limi
 		return nil, fmt.Errorf("scan vehicle: %w", err)
 	}
 	return items, nil
+}
+
+// WaitingVehicleRow is a denormalized view of a vehicle in Waiting status with order context.
+type WaitingVehicleRow struct {
+	VehicleID   int
+	VIN         string
+	Year        *string
+	Make        *string
+	Model       *string
+	OrderID     int
+	OrderNumber string
+	PickupName  string
+	PickupCity  *string
+	PickupState *string
+	DropName    string
+	DropCity    *string
+	DropState   *string
+	Amount      *string
+	OrderDate   *time.Time
+}
+
+// WaitingGrid returns all Waiting vehicles for the company, optionally filtered by origin state.
+func (s *VehicleStore) WaitingGrid(ctx context.Context, state string) ([]WaitingVehicleRow, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	qb := newQueryBuilder()
+	qb.Add("v.company_id = ?", companyID)
+	qb.AddRaw("v.status = 'Waiting'")
+	qb.AddRaw("v.deleted_at IS NULL")
+	if state != "" {
+		qb.Add("pu.state ILIKE ?", state)
+	}
+
+	query := fmt.Sprintf(`
+		SELECT v.id, v.vin,
+			v.year, v.make, v.model,
+			o.id, o.order_number,
+			COALESCE(pu.name,'') as pickup_name, pu.city, pu.state,
+			COALESCE(dro.name,'') as drop_name, dro.city, dro.state,
+			v.total_charge, o.create_date
+		FROM order_vehicles v
+		JOIN orders o ON o.id = v.order_id
+		LEFT JOIN customers pu ON pu.id = o.load_customer_id
+		LEFT JOIN customers dro ON dro.id = o.drop_customer_id
+		%s
+		ORDER BY pu.state, pu.city, v.id`, qb.Where())
+
+	rows, err := s.pool.Query(ctx, query, qb.Args()...)
+	if err != nil {
+		return nil, fmt.Errorf("waiting grid: %w", err)
+	}
+	defer rows.Close()
+
+	var result []WaitingVehicleRow
+	for rows.Next() {
+		var r WaitingVehicleRow
+		if err := rows.Scan(&r.VehicleID, &r.VIN, &r.Year, &r.Make, &r.Model,
+			&r.OrderID, &r.OrderNumber,
+			&r.PickupName, &r.PickupCity, &r.PickupState,
+			&r.DropName, &r.DropCity, &r.DropState,
+			&r.Amount, &r.OrderDate); err != nil {
+			return nil, fmt.Errorf("scan waiting vehicle: %w", err)
+		}
+		result = append(result, r)
+	}
+	return result, rows.Err()
 }
