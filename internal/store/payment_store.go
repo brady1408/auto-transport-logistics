@@ -20,14 +20,14 @@ func NewPaymentStore(pool *pgxpool.Pool) *PaymentStore {
 
 const paymentColumns = `id, company_id, customer_id, customer_number, customer_name,
 	payment_date, check_number, amount, applied_amount, unapplied_amount,
-	payment_method, comments, created_by, created_at, updated_at`
+	payment_method, comments, created_by, posted_at, posted_by, created_at, updated_at`
 
 func scanPayment(row interface{ Scan(dest ...any) error }) (*models.Payment, error) {
 	var p models.Payment
 	err := row.Scan(
 		&p.ID, &p.CompanyID, &p.CustomerID, &p.CustomerNumber, &p.CustomerName,
 		&p.PaymentDate, &p.CheckNumber, &p.Amount, &p.AppliedAmount, &p.UnappliedAmount,
-		&p.PaymentMethod, &p.Comments, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt,
+		&p.PaymentMethod, &p.Comments, &p.CreatedBy, &p.PostedAt, &p.PostedBy, &p.CreatedAt, &p.UpdatedAt,
 	)
 	return &p, err
 }
@@ -182,6 +182,39 @@ func (s *PaymentStore) Delete(ctx context.Context, id int) error {
 		return fmt.Errorf("payment %d not found", id)
 	}
 	return nil
+}
+
+func (s *PaymentStore) CountUnposted(ctx context.Context, dateFrom, dateTo string) (int, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return 0, err
+	}
+	var count int
+	err = s.pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM payments
+		 WHERE company_id=$1 AND deleted_at IS NULL AND posted_at IS NULL
+		   AND payment_date >= $2 AND payment_date <= $3`,
+		companyID, dateFrom, dateTo,
+	).Scan(&count)
+	return count, err
+}
+
+func (s *PaymentStore) PostByDateRange(ctx context.Context, dateFrom, dateTo, username string) (int, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return 0, err
+	}
+	result, err := s.pool.Exec(ctx,
+		`UPDATE payments SET posted_at = NOW(), posted_by = $1
+		 WHERE company_id = $2 AND deleted_at IS NULL
+		   AND posted_at IS NULL
+		   AND payment_date >= $3 AND payment_date <= $4`,
+		username, companyID, dateFrom, dateTo,
+	)
+	if err != nil {
+		return 0, fmt.Errorf("post payments: %w", err)
+	}
+	return int(result.RowsAffected()), nil
 }
 
 // PaymentReportRow is a single row in the payment report.

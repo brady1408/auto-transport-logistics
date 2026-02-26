@@ -16,6 +16,8 @@ type Payment struct {
 	PaymentMethod   *string    `json:"payment_method,omitempty"`
 	Comments        *string    `json:"comments,omitempty"`
 	CreatedBy       *string    `json:"created_by,omitempty"`
+	PostedAt        *time.Time `json:"posted_at,omitempty"`
+	PostedBy        *string    `json:"posted_by,omitempty"`
 	CreatedAt       time.Time  `json:"created_at"`
 	UpdatedAt       time.Time  `json:"updated_at"`
 }

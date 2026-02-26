@@ -29,9 +29,11 @@ type Invoice struct {
 	BillToState    *string   `json:"bill_to_state,omitempty"`
 	BillToZip      *string   `json:"bill_to_zip,omitempty"`
 	CreatedDate    *time.Time `json:"created_date,omitempty"`
-	CreatedBy      *string   `json:"created_by,omitempty"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	CreatedBy      *string    `json:"created_by,omitempty"`
+	PostedAt       *time.Time `json:"posted_at,omitempty"`
+	PostedBy       *string    `json:"posted_by,omitempty"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
 }
 
 type InvoiceDetail struct {

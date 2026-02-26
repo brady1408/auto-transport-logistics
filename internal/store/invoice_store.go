@@ -23,7 +23,7 @@ const invoiceColumns = `id, company_id, invoice_number, active, customer_id, cus
 	order_id, order_number, invoice_date, due_date, terms, tax_code,
 	subtotal, tax, total_amount, amount_paid, balance, status,
 	comments, bill_to_address, bill_to_address2, bill_to_city, bill_to_state, bill_to_zip,
-	created_date, created_by, created_at, updated_at`
+	created_date, created_by, posted_at, posted_by, created_at, updated_at`
 
 func scanInvoice(row interface{ Scan(dest ...any) error }) (*models.Invoice, error) {
 	var inv models.Invoice
@@ -32,7 +32,7 @@ func scanInvoice(row interface{ Scan(dest ...any) error }) (*models.Invoice, err
 		&inv.OrderID, &inv.OrderNumber, &inv.InvoiceDate, &inv.DueDate, &inv.Terms, &inv.TaxCode,
 		&inv.Subtotal, &inv.Tax, &inv.TotalAmount, &inv.AmountPaid, &inv.Balance, &inv.Status,
 		&inv.Comments, &inv.BillToAddress, &inv.BillToAddress2, &inv.BillToCity, &inv.BillToState, &inv.BillToZip,
-		&inv.CreatedDate, &inv.CreatedBy, &inv.CreatedAt, &inv.UpdatedAt,
+		&inv.CreatedDate, &inv.CreatedBy, &inv.PostedAt, &inv.PostedBy, &inv.CreatedAt, &inv.UpdatedAt,
 	)
 	return &inv, err
 }
@@ -442,6 +442,39 @@ func (s *InvoiceStore) IDsByDateRange(ctx context.Context, dateFrom, dateTo stri
 		ids = append(ids, id)
 	}
 	return ids, rows.Err()
+}
+
+func (s *InvoiceStore) CountUnposted(ctx context.Context, dateFrom, dateTo string) (int, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return 0, err
+	}
+	var count int
+	err = s.pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM invoices
+		 WHERE company_id=$1 AND deleted_at IS NULL AND posted_at IS NULL
+		   AND status != 'Void' AND invoice_date >= $2 AND invoice_date <= $3`,
+		companyID, dateFrom, dateTo,
+	).Scan(&count)
+	return count, err
+}
+
+func (s *InvoiceStore) PostByDateRange(ctx context.Context, dateFrom, dateTo, username string) (int, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return 0, err
+	}
+	result, err := s.pool.Exec(ctx,
+		`UPDATE invoices SET posted_at = NOW(), posted_by = $1
+		 WHERE company_id = $2 AND deleted_at IS NULL
+		   AND posted_at IS NULL AND status != 'Void'
+		   AND invoice_date >= $3 AND invoice_date <= $4`,
+		username, companyID, dateFrom, dateTo,
+	)
+	if err != nil {
+		return 0, fmt.Errorf("post invoices: %w", err)
+	}
+	return int(result.RowsAffected()), nil
 }
 
 // UpdateBalanceTx updates the payment-related fields on an invoice within a transaction.

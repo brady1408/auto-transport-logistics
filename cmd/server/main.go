@@ -215,7 +215,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewAPIHandler(customerStore, vehicleStore, deps).Register(protectedMux)
 
 	// Accounting
-	handler.NewInvoiceHandler(invoiceStore, invoiceDetailStore, paymentDetailStore, invoiceSvc, deps).Register(protectedMux)
+	handler.NewInvoiceHandler(invoiceStore, invoiceDetailStore, paymentDetailStore, invoiceSvc, paymentStore, deps).Register(protectedMux)
 	handler.NewPaymentHandler(paymentStore, paymentDetailStore, invoiceStore, paymentSvc, deps).Register(protectedMux)
 	handler.NewCreditMemoHandler(creditMemoStore, deps).Register(protectedMux)
 	handler.NewDamageClaimHandler(damageClaimStore, attachmentStore, storageSvc, deps).Register(protectedMux)
