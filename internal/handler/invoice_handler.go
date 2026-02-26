@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -17,6 +18,7 @@ type invoiceStore interface {
 	Update(ctx context.Context, inv *models.Invoice) error
 	Delete(ctx context.Context, id int) error
 	NextInvoiceNumber(ctx context.Context) (string, error)
+	IDsByDateRange(ctx context.Context, dateFrom, dateTo string) ([]int, error)
 }
 
 type invoiceDetailStore interface {
@@ -55,6 +57,8 @@ func NewInvoiceHandler(
 
 func (h *InvoiceHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /accounting/invoices", h.list)
+	mux.HandleFunc("GET /accounting/invoices/recalc", h.recalcForm)
+	mux.HandleFunc("POST /accounting/invoices/recalc", h.recalcRun)
 	mux.HandleFunc("GET /accounting/invoices/new", h.newForm)
 	mux.HandleFunc("POST /accounting/invoices", h.create)
 	mux.HandleFunc("GET /accounting/invoices/{id}", h.show)
@@ -376,6 +380,31 @@ func (h *InvoiceHandler) removeDetail(w http.ResponseWriter, r *http.Request) {
 		log.Printf("list details for invoice %d: %v", invoiceID, err)
 	}
 	h.deps.renderTempl(w, r, invoices.DetailTable(details, invoiceID))
+}
+
+func (h *InvoiceHandler) recalcForm(w http.ResponseWriter, r *http.Request) {
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, invoices.RecalcPage(pg, 0, ""))
+}
+
+func (h *InvoiceHandler) recalcRun(w http.ResponseWriter, r *http.Request) {
+	dateFrom := r.FormValue("date_from")
+	dateTo := r.FormValue("date_to")
+	ids, err := h.store.IDsByDateRange(r.Context(), dateFrom, dateTo)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+	count := 0
+	for _, id := range ids {
+		if err := h.invoiceSvc.RecalcTotals(r.Context(), id); err != nil {
+			log.Printf("recalc invoice %d: %v", id, err)
+		} else {
+			count++
+		}
+	}
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, invoices.RecalcPage(pg, count, fmt.Sprintf("Recalculated %d invoices", count)))
 }
 
 func bindInvoiceForm(r *http.Request) *models.Invoice {

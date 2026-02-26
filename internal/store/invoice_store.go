@@ -411,6 +411,38 @@ func (s *InvoiceStore) RevenueByCustomer(ctx context.Context, dateFrom, dateTo s
 	return items, nil
 }
 
+// IDsByDateRange returns IDs of all non-void, non-deleted invoices within the given date range.
+func (s *InvoiceStore) IDsByDateRange(ctx context.Context, dateFrom, dateTo string) ([]int, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	qb := newQueryBuilder()
+	qb.Add("company_id = ?", companyID)
+	qb.AddRaw("deleted_at IS NULL")
+	qb.AddRaw("status != 'Void'")
+	if dateFrom != "" {
+		qb.Add("invoice_date >= ?", dateFrom)
+	}
+	if dateTo != "" {
+		qb.Add("invoice_date <= ?", dateTo)
+	}
+	rows, err := s.pool.Query(ctx, "SELECT id FROM invoices "+qb.Where()+" ORDER BY id", qb.Args()...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var ids []int
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
+}
+
 // UpdateBalanceTx updates the payment-related fields on an invoice within a transaction.
 func (s *InvoiceStore) UpdateBalanceTx(ctx context.Context, tx pgx.Tx, id int, amountPaid string, balance string, status string) error {
 	companyID, err := auth.GetCompanyID(ctx)
