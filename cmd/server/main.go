@@ -177,7 +177,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	protectedMux := http.NewServeMux()
 
 	// Dashboard
-	dashHandler := handler.NewDashboardHandler(orderStore, invoiceStore, tripStore, deps)
+	dashHandler := handler.NewDashboardHandler(orderStore, invoiceStore, tripStore, truckStore, deps)
 	dashHandler.Register(protectedMux)
 
 	// Global Masters
@@ -203,9 +203,9 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewLoadboardHandler(loadboardStore, orderStore, vehicleStore, loadboardSvc, deps).Register(protectedMux)
 
 	// Dispatch
-	handler.NewOrderHandler(orderStore, invoiceSvc, vehicleStore, deps).Register(protectedMux)
+	handler.NewOrderHandler(orderStore, invoiceSvc, vehicleStore, attachmentStore, deps).Register(protectedMux)
 	handler.NewVehicleHandler(vehicleStore, orderStore, orderSvc, deps).Register(protectedMux)
-	handler.NewTripHandler(tripStore, loadDetailStore, vehicleStore, tripSvc, deps).Register(protectedMux)
+	handler.NewTripHandler(tripStore, loadDetailStore, vehicleStore, tripSvc, attachmentStore, deps).Register(protectedMux)
 	handler.NewChargeHandler(chargeStore, deps).Register(protectedMux)
 	handler.NewDamageHandler(damageStore, deps).Register(protectedMux)
 	handler.NewNoteHandler(noteStore, deps).Register(protectedMux)

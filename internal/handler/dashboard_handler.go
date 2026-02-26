@@ -21,18 +21,24 @@ type dashboardTripStore interface {
 	DashboardCounts(ctx context.Context) (store.TripDashboardCounts, error)
 }
 
+type dashboardTruckStore interface {
+	ExpiringWithin(ctx context.Context, days int) ([]store.ExpiringTruck, error)
+}
+
 type DashboardHandler struct {
 	orderStore   dashboardOrderStore
 	invoiceStore dashboardInvoiceStore
 	tripStore    dashboardTripStore
+	truckStore   dashboardTruckStore
 	deps         *Deps
 }
 
-func NewDashboardHandler(orderStore dashboardOrderStore, invoiceStore dashboardInvoiceStore, tripStore dashboardTripStore, deps *Deps) *DashboardHandler {
+func NewDashboardHandler(orderStore dashboardOrderStore, invoiceStore dashboardInvoiceStore, tripStore dashboardTripStore, truckStore dashboardTruckStore, deps *Deps) *DashboardHandler {
 	return &DashboardHandler{
 		orderStore:   orderStore,
 		invoiceStore: invoiceStore,
 		tripStore:    tripStore,
+		truckStore:   truckStore,
 		deps:         deps,
 	}
 }
@@ -64,6 +70,12 @@ func (h *DashboardHandler) show(w http.ResponseWriter, r *http.Request) {
 		log.Printf("dashboard trip counts: %v", err)
 	}
 
+	expiringTrucks, err := h.truckStore.ExpiringWithin(ctx, 60)
+	if err != nil {
+		log.Printf("expiring trucks: %v", err)
+		expiringTrucks = nil // non-fatal
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, pages.DashboardPage(pg, orderCounts, aging, tripCounts))
+	h.deps.renderTempl(w, r, pages.DashboardPage(pg, orderCounts, aging, tripCounts, expiringTrucks))
 }

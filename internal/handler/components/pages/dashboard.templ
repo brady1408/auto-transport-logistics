@@ -7,7 +7,7 @@ import (
 	"github.com/brady1408/atlinks/internal/store"
 )
 
-templ DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardCounts, aging store.AgingBucket, tripCounts store.TripDashboardCounts) {
+templ DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardCounts, aging store.AgingBucket, tripCounts store.TripDashboardCounts, expiringTrucks []store.ExpiringTruck) {
 	@components.Layout(pg, "ATLinks - Dashboard") {
 		<div class="page-header">
 			<h1>Dashboard</h1>
@@ -34,6 +34,30 @@ templ DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardC
 				<a href="/dispatch/trips?active=active" class="kpi-link">View Trips</a>
 			</div>
 		</div>
+		if len(expiringTrucks) > 0 {
+			<div class="card" style="margin-bottom: 1.5rem;">
+				<div class="card-header" style="color:var(--danger)">&#9888; Truck Expirations (within 60 days)</div>
+				<div class="card-body">
+					<table>
+						<tbody>
+							for _, t := range expiringTrucks {
+								<tr>
+									<td><a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/edit", t.TruckID)) }>{ t.TruckNumber }</a></td>
+									<td>{ t.ExpType }</td>
+									<td>
+										if t.DaysUntilExp < 0 {
+											<span class="badge badge-inactive">EXPIRED { fmt.Sprintf("%d days ago", -t.DaysUntilExp) }</span>
+										} else {
+											<span class="badge" style="background:var(--warning,#f59e0b);color:#fff">{ t.ExpDate.Format("Jan 2, 2006") } ({ fmt.Sprintf("%d days", t.DaysUntilExp) })</span>
+										}
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		}
 		<div class="dashboard-grid">
 			<div class="card">
 				<div class="card-header">AR Aging Summary</div>

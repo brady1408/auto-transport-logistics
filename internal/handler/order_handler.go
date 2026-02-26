@@ -29,15 +29,20 @@ type waitingGridStore interface {
 	WaitingGrid(ctx context.Context, state string) ([]store.WaitingVehicleRow, error)
 }
 
-type OrderHandler struct {
-	store        orderStore
-	invoiceSvc   orderInvoiceService
-	waitingStore waitingGridStore
-	deps         *Deps
+type orderAttachmentStore interface {
+	ListByEntity(ctx context.Context, category string, entityID int) ([]models.Attachment, error)
 }
 
-func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, waitingStore waitingGridStore, deps *Deps) *OrderHandler {
-	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, waitingStore: waitingStore, deps: deps}
+type OrderHandler struct {
+	store           orderStore
+	invoiceSvc      orderInvoiceService
+	waitingStore    waitingGridStore
+	attachmentStore orderAttachmentStore
+	deps            *Deps
+}
+
+func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, waitingStore waitingGridStore, attachmentStore orderAttachmentStore, deps *Deps) *OrderHandler {
+	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, waitingStore: waitingStore, attachmentStore: attachmentStore, deps: deps}
 }
 
 func (h *OrderHandler) Register(mux *http.ServeMux) {
@@ -130,8 +135,14 @@ func (h *OrderHandler) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	atts, err := h.attachmentStore.ListByEntity(r.Context(), "orders", id)
+	if err != nil {
+		log.Printf("list order attachments %d: %v", id, err)
+		atts = nil
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, orders.ShowPage(pg, o))
+	h.deps.renderTempl(w, r, orders.ShowPage(pg, o, atts))
 }
 
 func (h *OrderHandler) editForm(w http.ResponseWriter, r *http.Request) {

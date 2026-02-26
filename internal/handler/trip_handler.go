@@ -35,12 +35,17 @@ type tripService interface {
 	AssignAllFromOrder(ctx context.Context, tripID, orderID int) (int, error)
 }
 
+type tripAttachmentStore interface {
+	ListByEntity(ctx context.Context, category string, entityID int) ([]models.Attachment, error)
+}
+
 type TripHandler struct {
-	store     tripStore
-	loadStore tripLoadDetailStore
-	vehStore  tripVehicleStore
-	tripSvc   tripService
-	deps      *Deps
+	store           tripStore
+	loadStore       tripLoadDetailStore
+	vehStore        tripVehicleStore
+	tripSvc         tripService
+	attachmentStore tripAttachmentStore
+	deps            *Deps
 }
 
 func NewTripHandler(
@@ -48,9 +53,10 @@ func NewTripHandler(
 	loadStore tripLoadDetailStore,
 	vehStore tripVehicleStore,
 	tripSvc tripService,
+	attachmentStore tripAttachmentStore,
 	deps *Deps,
 ) *TripHandler {
-	return &TripHandler{store: store, loadStore: loadStore, vehStore: vehStore, tripSvc: tripSvc, deps: deps}
+	return &TripHandler{store: store, loadStore: loadStore, vehStore: vehStore, tripSvc: tripSvc, attachmentStore: attachmentStore, deps: deps}
 }
 
 func (h *TripHandler) Register(mux *http.ServeMux) {
@@ -146,8 +152,14 @@ func (h *TripHandler) show(w http.ResponseWriter, r *http.Request) {
 		log.Printf("ERROR loading trip %d manifest: %v", id, err)
 	}
 
+	atts, err := h.attachmentStore.ListByEntity(r.Context(), "trips", id)
+	if err != nil {
+		log.Printf("list trip attachments %d: %v", id, err)
+		atts = nil
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, trips.ShowPage(pg, t, loads, len(loads)))
+	h.deps.renderTempl(w, r, trips.ShowPage(pg, t, loads, len(loads), atts))
 }
 
 func (h *TripHandler) editForm(w http.ResponseWriter, r *http.Request) {

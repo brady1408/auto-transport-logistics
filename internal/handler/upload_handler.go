@@ -49,6 +49,8 @@ func (h *UploadHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("DELETE /attachments/{id}", h.deleteAttachment)
 	mux.HandleFunc("POST /feedback/{id}/attachments", h.uploadFeedback)
 	mux.HandleFunc("POST /accounting/damage-claims/{id}/attachments", h.uploadDamageClaim)
+	mux.HandleFunc("POST /dispatch/orders/{id}/attachments", h.uploadOrder)
+	mux.HandleFunc("POST /dispatch/trips/{id}/attachments", h.uploadTrip)
 }
 
 // RegisterAdmin registers super_admin-only routes.
@@ -203,6 +205,24 @@ func (h *UploadHandler) handleImageUpload(w http.ResponseWriter, r *http.Request
 	}
 
 	h.deps.renderTempl(w, r, attachments.AttachmentList(atts, category, entityID))
+}
+
+func (h *UploadHandler) uploadOrder(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+	h.handleImageUpload(w, r, "orders", id)
+}
+
+func (h *UploadHandler) uploadTrip(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+	h.handleImageUpload(w, r, "trips", id)
 }
 
 func (h *UploadHandler) deleteAttachment(w http.ResponseWriter, r *http.Request) {
