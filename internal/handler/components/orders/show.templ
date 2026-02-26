@@ -8,7 +8,7 @@ import (
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ ShowPage(pg components.PageContext, order *models.Order, atts []models.Attachment) {
+templ ShowPage(pg components.PageContext, order *models.Order, atts []models.Attachment, subhauledClaims []models.LoadboardClaim) {
 	@components.Layout(pg, "Order " + order.OrderNumber + " - ATLinks") {
 		<div class="page-header">
 			<div>
@@ -188,5 +188,65 @@ templ ShowPage(pg components.PageContext, order *models.Order, atts []models.Att
 				</form>
 			</div>
 		</div>
+		if len(subhauledClaims) > 0 {
+			<h2 class="section-title">Subhauled Loads</h2>
+			<div class="table-container">
+				<table>
+					<thead>
+						<tr>
+							<th>Listing</th>
+							<th>Carrier</th>
+							<th>MC#</th>
+							<th>DOT#</th>
+							<th>Agreed Pay</th>
+							<th>Status</th>
+							<th>Picked Up</th>
+							<th>Delivered</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, c := range subhauledClaims {
+							<tr>
+								<td>{ c.ListingNumber }</td>
+								<td>{ components.Deref(c.CarrierCompanyName) }</td>
+								<td>{ components.Deref(c.CarrierMCNumber) }</td>
+								<td>{ components.Deref(c.CarrierDOTNumber) }</td>
+								<td>${ c.AgreedPay }</td>
+								<td>@subhaulStatusBadge(c.Status)</td>
+								<td>
+									if c.PickedUpAt != nil {
+										{ c.PickedUpAt.Format("01/02/2006") }
+									}
+								</td>
+								<td>
+									if c.DeliveredAt != nil {
+										{ c.DeliveredAt.Format("01/02/2006") }
+									}
+								</td>
+								<td>
+									<a href={ templ.SafeURL(fmt.Sprintf("/loadboard/my-listings/%d", c.ListingID)) } class="btn btn-sm">View</a>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	}
+}
+
+templ subhaulStatusBadge(status string) {
+	switch status {
+		case "Accepted":
+			<span class="badge badge-waiting">Accepted</span>
+		case "PickedUp":
+			<span class="badge badge-loaded">In Transit</span>
+		case "Delivered":
+			<span class="badge badge-confirmed">Delivered</span>
+		case "NoShow":
+			<span class="badge badge-inactive">No-Show</span>
+		default:
+			<span class="badge">{ status }</span>
 	}
 }

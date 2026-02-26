@@ -33,16 +33,21 @@ type orderAttachmentStore interface {
 	ListByEntity(ctx context.Context, category string, entityID int) ([]models.Attachment, error)
 }
 
+type loadboardSubhaulStore interface {
+	ListActiveClaimsForOrder(ctx context.Context, orderID int) ([]models.LoadboardClaim, error)
+}
+
 type OrderHandler struct {
 	store           orderStore
 	invoiceSvc      orderInvoiceService
 	waitingStore    waitingGridStore
 	attachmentStore orderAttachmentStore
+	loadboardStore  loadboardSubhaulStore
 	deps            *Deps
 }
 
-func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, waitingStore waitingGridStore, attachmentStore orderAttachmentStore, deps *Deps) *OrderHandler {
-	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, waitingStore: waitingStore, attachmentStore: attachmentStore, deps: deps}
+func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, waitingStore waitingGridStore, attachmentStore orderAttachmentStore, loadboardStore loadboardSubhaulStore, deps *Deps) *OrderHandler {
+	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, waitingStore: waitingStore, attachmentStore: attachmentStore, loadboardStore: loadboardStore, deps: deps}
 }
 
 func (h *OrderHandler) Register(mux *http.ServeMux) {
@@ -141,8 +146,14 @@ func (h *OrderHandler) show(w http.ResponseWriter, r *http.Request) {
 		atts = nil
 	}
 
+	subhauledClaims, err := h.loadboardStore.ListActiveClaimsForOrder(r.Context(), id)
+	if err != nil {
+		log.Printf("list subhauled claims for order %d: %v", id, err)
+		subhauledClaims = nil
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, orders.ShowPage(pg, o, atts))
+	h.deps.renderTempl(w, r, orders.ShowPage(pg, o, atts, subhauledClaims))
 }
 
 func (h *OrderHandler) editForm(w http.ResponseWriter, r *http.Request) {
