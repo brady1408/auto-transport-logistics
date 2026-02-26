@@ -10,7 +10,10 @@ import (
 templ ShowPage(pg components.PageContext, apRecord *models.AccountsPayable) {
 	@components.Layout(pg, fmt.Sprintf("AP #%d - ATLinks", apRecord.ID)) {
 		<div class="page-header">
-			<h1>Accounts Payable #{ fmt.Sprintf("%d", apRecord.ID) }</h1>
+			<div>
+				<a href="/accounting/ap" class="page-header-back">← Back to List</a>
+				<h1>Accounts Payable #{ fmt.Sprintf("%d", apRecord.ID) }</h1>
+			</div>
 			<div class="btn-group">
 				<a href={ templ.SafeURL(fmt.Sprintf("/accounting/ap/%d/edit", apRecord.ID)) } class="btn">Edit</a>
 				<button
@@ -18,7 +21,6 @@ templ ShowPage(pg components.PageContext, apRecord *models.AccountsPayable) {
 					hx-delete={ fmt.Sprintf("/accounting/ap/%d", apRecord.ID) }
 					hx-confirm="Delete this AP record?"
 				>Delete</button>
-				<a href="/accounting/ap" class="btn">Back to List</a>
 			</div>
 		</div>
 		<div class="order-detail-grid">

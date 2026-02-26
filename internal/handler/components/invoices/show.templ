@@ -10,7 +10,10 @@ import (
 templ ShowPage(pg components.PageContext, invoice *models.Invoice, details []models.InvoiceDetail, payments []models.PaymentDetail) {
 	@components.Layout(pg, "Invoice " + invoice.InvoiceNumber + " - ATLinks") {
 		<div class="page-header">
-			<h1>Invoice { invoice.InvoiceNumber }</h1>
+			<div>
+				<a href="/accounting/invoices" class="page-header-back">← Back to List</a>
+				<h1>Invoice { invoice.InvoiceNumber }</h1>
+			</div>
 			<div class="btn-group">
 				<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d/edit", invoice.ID)) } class="btn">Edit</a>
 				<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d/print", invoice.ID)) } class="btn" target="_blank">Print</a>
@@ -21,7 +24,6 @@ templ ShowPage(pg components.PageContext, invoice *models.Invoice, details []mod
 						hx-confirm={ fmt.Sprintf("Void invoice %s? This will clear vehicle invoice references.", invoice.InvoiceNumber) }
 					>Void</button>
 				}
-				<a href="/accounting/invoices" class="btn">Back to List</a>
 			</div>
 		</div>
 		<div class="order-detail-grid">

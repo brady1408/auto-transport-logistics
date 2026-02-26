@@ -10,7 +10,10 @@ import (
 templ ShowPage(pg components.PageContext, order *models.Order) {
 	@components.Layout(pg, "Order " + order.OrderNumber + " - ATLinks") {
 		<div class="page-header">
-			<h1>Order { order.OrderNumber }</h1>
+			<div>
+				<a href="/dispatch/orders" class="page-header-back">← Back to List</a>
+				<h1>Order { order.OrderNumber }</h1>
+			</div>
 			<div class="btn-group">
 				<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/edit", order.ID)) } class="btn">Edit Order</a>
 				<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/vehicles/new", order.ID)) } class="btn btn-primary">Add Vehicle</a>
@@ -24,7 +27,6 @@ templ ShowPage(pg components.PageContext, order *models.Order) {
 				if order.WaitingCount > 0 {
 					<a href={ templ.SafeURL(fmt.Sprintf("/loadboard/post/%d", order.ID)) } class="btn">Post to Loadboard</a>
 				}
-				<a href="/dispatch/orders" class="btn">Back to List</a>
 			</div>
 		</div>
 		<div class="order-detail-grid">

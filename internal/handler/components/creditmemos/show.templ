@@ -10,7 +10,10 @@ import (
 templ ShowPage(pg components.PageContext, creditMemo *models.CreditMemo) {
 	@components.Layout(pg, "Credit Memo " + creditMemo.CreditNumber + " - ATLinks") {
 		<div class="page-header">
-			<h1>Credit Memo { creditMemo.CreditNumber }</h1>
+			<div>
+				<a href="/accounting/credit-memos" class="page-header-back">← Back to List</a>
+				<h1>Credit Memo { creditMemo.CreditNumber }</h1>
+			</div>
 			<div class="btn-group">
 				<a href={ templ.SafeURL(fmt.Sprintf("/accounting/credit-memos/%d/edit", creditMemo.ID)) } class="btn">Edit</a>
 				<button
@@ -18,7 +21,6 @@ templ ShowPage(pg components.PageContext, creditMemo *models.CreditMemo) {
 					hx-delete={ fmt.Sprintf("/accounting/credit-memos/%d", creditMemo.ID) }
 					hx-confirm={ fmt.Sprintf("Delete credit memo %s?", creditMemo.CreditNumber) }
 				>Delete</button>
-				<a href="/accounting/credit-memos" class="btn">Back to List</a>
 			</div>
 		</div>
 		<div class="order-detail-grid">
