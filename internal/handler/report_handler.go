@@ -19,6 +19,7 @@ type reportOrderStore interface {
 type reportInvoiceStore interface {
 	GetArAgingReport(ctx context.Context) ([]store.ArAgingRow, error)
 	RevenueByCustomer(ctx context.Context, dateFrom, dateTo string) ([]store.RevenueByCustomerRow, error)
+	GetStatement(ctx context.Context, customerID int) (*store.StatementData, error)
 }
 
 type reportTripStore interface {
@@ -88,6 +89,8 @@ func (h *ReportHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /reports/damages/csv", h.damageReportCSV)
 	mux.HandleFunc("GET /reports/vehicle-history", h.vehicleHistory)
 	mux.HandleFunc("GET /reports/vehicle-history/csv", h.vehicleHistoryCSV)
+	mux.HandleFunc("GET /reports/statement", h.statementForm)
+	mux.HandleFunc("GET /reports/statement/{id}", h.statementShow)
 }
 
 // --- Index ---
@@ -448,5 +451,27 @@ func (h *ReportHandler) vehicleHistoryCSV(w http.ResponseWriter, r *http.Request
 	}
 
 	writeCSV(w, "vehicle_history.csv", headers, csvRows)
+}
+
+// --- Customer Statement ---
+
+func (h *ReportHandler) statementForm(w http.ResponseWriter, r *http.Request) {
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, reports.StatementFormPage(pg))
+}
+
+func (h *ReportHandler) statementShow(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+	stmt, err := h.invoiceStore.GetStatement(r.Context(), id)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, reports.StatementPage(pg, stmt))
 }
 

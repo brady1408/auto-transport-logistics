@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
@@ -460,4 +461,101 @@ func (s *InvoiceStore) UpdateBalanceTx(ctx context.Context, tx pgx.Tx, id int, a
 		return fmt.Errorf("invoice %d not found", id)
 	}
 	return nil
+}
+
+// --- Customer Statement ---
+
+type StatementRow struct {
+	InvoiceNumber string
+	InvoiceDate   *time.Time
+	DueDate       *time.Time
+	OrderNumber   *string
+	TotalAmount   *string
+	AmountPaid    *string
+	Balance       *string
+	Status        *string
+	DaysOld       int
+}
+
+type StatementData struct {
+	CustomerID     int
+	CustomerNumber string
+	CustomerName   string
+	BillToAddress  *string
+	BillToCity     *string
+	BillToState    *string
+	BillToZip      *string
+	StatementDate  time.Time
+	Rows           []StatementRow
+	TotalBalance   string
+	Current        string // 0-30 days
+	Days31         string // 31-60 days
+	Days61         string // 61-90 days
+	Days90         string // 90+ days
+}
+
+func (s *InvoiceStore) GetStatement(ctx context.Context, customerID int) (*StatementData, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var stmt StatementData
+	stmt.CustomerID = customerID
+	stmt.StatementDate = time.Now()
+
+	err = s.pool.QueryRow(ctx,
+		`SELECT COALESCE(number,''), name,
+            address, city, state, zip
+        FROM customers WHERE id=$1 AND company_id=$2 AND deleted_at IS NULL`,
+		customerID, companyID,
+	).Scan(&stmt.CustomerNumber, &stmt.CustomerName,
+		&stmt.BillToAddress, &stmt.BillToCity, &stmt.BillToState, &stmt.BillToZip)
+	if err != nil {
+		return nil, fmt.Errorf("get statement customer: %w", err)
+	}
+
+	rows, err := s.pool.Query(ctx,
+		`SELECT invoice_number, invoice_date, due_date, order_number,
+            total_amount::text, amount_paid::text, balance::text, status,
+            (CURRENT_DATE - invoice_date::date)::int as days_old
+        FROM invoices
+        WHERE customer_id=$1 AND company_id=$2 AND deleted_at IS NULL
+            AND status != 'Void' AND balance::numeric > 0
+        ORDER BY invoice_date`,
+		customerID, companyID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("statement rows: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var r StatementRow
+		if err := rows.Scan(&r.InvoiceNumber, &r.InvoiceDate, &r.DueDate, &r.OrderNumber,
+			&r.TotalAmount, &r.AmountPaid, &r.Balance, &r.Status, &r.DaysOld); err != nil {
+			return nil, err
+		}
+		stmt.Rows = append(stmt.Rows, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Aging totals
+	err = s.pool.QueryRow(ctx,
+		`SELECT
+            COALESCE(SUM(balance::numeric) FILTER (WHERE (CURRENT_DATE - invoice_date::date) <= 30), 0)::text,
+            COALESCE(SUM(balance::numeric) FILTER (WHERE (CURRENT_DATE - invoice_date::date) BETWEEN 31 AND 60), 0)::text,
+            COALESCE(SUM(balance::numeric) FILTER (WHERE (CURRENT_DATE - invoice_date::date) BETWEEN 61 AND 90), 0)::text,
+            COALESCE(SUM(balance::numeric) FILTER (WHERE (CURRENT_DATE - invoice_date::date) > 90), 0)::text,
+            COALESCE(SUM(balance::numeric), 0)::text
+        FROM invoices
+        WHERE customer_id=$1 AND company_id=$2 AND deleted_at IS NULL
+            AND status != 'Void' AND balance::numeric > 0`,
+		customerID, companyID,
+	).Scan(&stmt.Current, &stmt.Days31, &stmt.Days61, &stmt.Days90, &stmt.TotalBalance)
+	if err != nil {
+		return nil, fmt.Errorf("statement aging: %w", err)
+	}
+
+	return &stmt, nil
 }
