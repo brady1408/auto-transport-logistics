@@ -36,10 +36,15 @@ type loadboardVehicleStore interface {
 	ListByOrder(ctx context.Context, orderID int) ([]models.OrderVehicle, error)
 }
 
+type loadboardCompanyStoreInterface interface {
+	GetByID(ctx context.Context, id int) (*models.Company, error)
+}
+
 type LoadboardHandler struct {
 	store        loadboardStoreInterface
 	orderStore   loadboardOrderStore
 	vehicleStore loadboardVehicleStore
+	companyStore loadboardCompanyStoreInterface
 	svc          *service.LoadboardService
 	deps         *Deps
 }
@@ -48,6 +53,7 @@ func NewLoadboardHandler(
 	store loadboardStoreInterface,
 	orderStore loadboardOrderStore,
 	vehicleStore loadboardVehicleStore,
+	companyStore loadboardCompanyStoreInterface,
 	svc *service.LoadboardService,
 	deps *Deps,
 ) *LoadboardHandler {
@@ -55,6 +61,7 @@ func NewLoadboardHandler(
 		store:        store,
 		orderStore:   orderStore,
 		vehicleStore: vehicleStore,
+		companyStore: companyStore,
 		svc:          svc,
 		deps:         deps,
 	}
@@ -70,7 +77,9 @@ func (h *LoadboardHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /loadboard/my-listings/{id}/cancel", h.cancelListing)
 	mux.HandleFunc("GET /loadboard/my-claims", h.myClaims)
 	mux.HandleFunc("GET /loadboard/my-claims/{id}", h.myClaimShow)
-	mux.HandleFunc("POST /loadboard/my-claims/{id}/complete", h.completeClaim)
+	mux.HandleFunc("POST /loadboard/my-claims/{id}/pickup", h.pickupClaim)
+	mux.HandleFunc("POST /loadboard/my-claims/{id}/deliver", h.deliverClaim)
+	mux.HandleFunc("POST /loadboard/claims/{id}/no-show", h.noShowClaim)
 	mux.HandleFunc("POST /loadboard/my-claims/{id}/cancel", h.cancelClaim)
 	mux.HandleFunc("POST /loadboard/claims/{id}/accept", h.acceptClaim)
 	mux.HandleFunc("POST /loadboard/claims/{id}/reject", h.rejectClaim)
@@ -165,8 +174,14 @@ func (h *LoadboardHandler) show(w http.ResponseWriter, r *http.Request) {
 
 	canClaim := listing.Status == "Posted" && listing.PosterCompanyID != user.CompanyID
 
+	// Load viewer's company for insurance warning (non-fatal)
+	var viewerInsuranceExp *time.Time
+	if company, err := h.companyStore.GetByID(r.Context(), user.CompanyID); err == nil {
+		viewerInsuranceExp = company.InsuranceExpDate
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, loadboard.ShowPage(pg, listing, vehicles, canClaim))
+	h.deps.renderTempl(w, r, loadboard.ShowPage(pg, listing, vehicles, canClaim, viewerInsuranceExp))
 }
 
 func (h *LoadboardHandler) postForm(w http.ResponseWriter, r *http.Request) {
@@ -434,22 +449,57 @@ func (h *LoadboardHandler) myClaimShow(w http.ResponseWriter, r *http.Request) {
 	h.deps.renderTempl(w, r, loadboard.MyClaimShowPage(pg, claim, listing, vehicles, messages))
 }
 
-func (h *LoadboardHandler) completeClaim(w http.ResponseWriter, r *http.Request) {
+func (h *LoadboardHandler) pickupClaim(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
-
 	if err := h.svc.MarkPickedUp(r.Context(), id); err != nil {
-		log.Printf("mark picked up: %v", err)
+		log.Printf("mark pickup: %v", err)
 		h.deps.setFlash(w, "Failed to mark pickup")
 		redirect(w, r, fmt.Sprintf("/loadboard/my-claims/%d", id))
 		return
 	}
+	h.deps.setFlash(w, "Pickup confirmed — vehicles are now in transit")
+	redirect(w, r, fmt.Sprintf("/loadboard/my-claims/%d", id))
+}
 
-	h.deps.setFlash(w, "Pickup confirmed")
+func (h *LoadboardHandler) deliverClaim(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+	if err := h.svc.MarkDelivered(r.Context(), id); err != nil {
+		log.Printf("mark delivered: %v", err)
+		h.deps.setFlash(w, "Failed to mark delivery")
+		redirect(w, r, fmt.Sprintf("/loadboard/my-claims/%d", id))
+		return
+	}
+	h.deps.setFlash(w, "Delivery confirmed — load complete")
 	redirect(w, r, "/loadboard/my-claims")
+}
+
+func (h *LoadboardHandler) noShowClaim(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+	claim, err := h.store.GetClaimByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Claim not found", http.StatusNotFound)
+		return
+	}
+	if err := h.svc.ReportNoShow(r.Context(), id); err != nil {
+		log.Printf("report no-show: %v", err)
+		h.deps.setFlash(w, "Failed to report no-show")
+		redirect(w, r, fmt.Sprintf("/loadboard/my-listings/%d", claim.ListingID))
+		return
+	}
+	h.deps.setFlash(w, "No-show reported — load has been relisted")
+	redirect(w, r, fmt.Sprintf("/loadboard/my-listings/%d", claim.ListingID))
 }
 
 func (h *LoadboardHandler) cancelClaim(w http.ResponseWriter, r *http.Request) {
