@@ -61,15 +61,15 @@ templ FormPage(pg components.PageContext, employee *models.Employee, isNew bool,
 					</div>
 				</div>
 				<div class="form-row">
-					<div class="form-check" style="padding-top:8px">
+					<div class="form-check form-check-aligned-sm">
 						<input type="checkbox" id="active" name="active" checked?={ employee.Active }/>
 						<label for="active">Active</label>
 					</div>
-					<div class="form-check" style="padding-top:8px">
+					<div class="form-check form-check-aligned-sm">
 						<input type="checkbox" id="is_driver" name="is_driver" checked?={ employee.IsDriver }/>
 						<label for="is_driver">Driver</label>
 					</div>
-					<div class="form-check" style="padding-top:8px">
+					<div class="form-check form-check-aligned-sm">
 						<input type="checkbox" id="is_sales" name="is_sales" checked?={ employee.IsSales }/>
 						<label for="is_sales">Sales</label>
 					</div>
@@ -78,13 +78,13 @@ templ FormPage(pg components.PageContext, employee *models.Employee, isNew bool,
 			<fieldset>
 				<legend>Address</legend>
 				<div class="form-row">
-					<div class="form-group" style="grid-column:span 2">
+					<div class="form-group col-span-2">
 						<label for="address">Address</label>
 						<input type="text" id="address" name="address" class="form-control" value={ components.Deref(employee.Address) } maxlength="30"/>
 					</div>
 				</div>
 				<div class="form-row">
-					<div class="form-group" style="grid-column:span 2">
+					<div class="form-group col-span-2">
 						<label for="address2">Address 2</label>
 						<input type="text" id="address2" name="address2" class="form-control" value={ components.Deref(employee.Address2) } maxlength="30"/>
 					</div>

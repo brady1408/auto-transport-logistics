@@ -203,7 +203,7 @@ func FormPage(pg components.PageContext, employee *models.Employee, isNew bool, 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\"></div></div><div class=\"form-row\"><div class=\"form-check\" style=\"padding-top:8px\"><input type=\"checkbox\" id=\"active\" name=\"active\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\"></div></div><div class=\"form-row\"><div class=\"form-check form-check-aligned-sm\"><input type=\"checkbox\" id=\"active\" name=\"active\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -213,7 +213,7 @@ func FormPage(pg components.PageContext, employee *models.Employee, isNew bool, 
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "> <label for=\"active\">Active</label></div><div class=\"form-check\" style=\"padding-top:8px\"><input type=\"checkbox\" id=\"is_driver\" name=\"is_driver\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "> <label for=\"active\">Active</label></div><div class=\"form-check form-check-aligned-sm\"><input type=\"checkbox\" id=\"is_driver\" name=\"is_driver\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -223,7 +223,7 @@ func FormPage(pg components.PageContext, employee *models.Employee, isNew bool, 
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "> <label for=\"is_driver\">Driver</label></div><div class=\"form-check\" style=\"padding-top:8px\"><input type=\"checkbox\" id=\"is_sales\" name=\"is_sales\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "> <label for=\"is_driver\">Driver</label></div><div class=\"form-check form-check-aligned-sm\"><input type=\"checkbox\" id=\"is_sales\" name=\"is_sales\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -233,7 +233,7 @@ func FormPage(pg components.PageContext, employee *models.Employee, isNew bool, 
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "> <label for=\"is_sales\">Sales</label></div></div></fieldset><fieldset><legend>Address</legend><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column:span 2\"><label for=\"address\">Address</label> <input type=\"text\" id=\"address\" name=\"address\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "> <label for=\"is_sales\">Sales</label></div></div></fieldset><fieldset><legend>Address</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"address\">Address</label> <input type=\"text\" id=\"address\" name=\"address\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -246,7 +246,7 @@ func FormPage(pg components.PageContext, employee *models.Employee, isNew bool, 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\" style=\"grid-column:span 2\"><label for=\"address2\">Address 2</label> <input type=\"text\" id=\"address2\" name=\"address2\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"address2\">Address 2</label> <input type=\"text\" id=\"address2\" name=\"address2\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

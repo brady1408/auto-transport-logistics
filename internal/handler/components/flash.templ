@@ -1,5 +1,7 @@
 package components
 
+// FlashMessage renders a transient success notification.
+// Intentionally success-only — the app only flashes on create/update/delete success.
 templ FlashMessage(msg string) {
 	<div class="alert alert-success" id="flash-msg">
 		{ msg }
