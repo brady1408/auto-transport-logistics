@@ -289,3 +289,24 @@ func (s *TruckStore) Delete(ctx context.Context, id int) error {
 	}
 	return nil
 }
+
+// ListAll returns all active trucks for the company (for dropdown menus).
+func (s *TruckStore) ListAll(ctx context.Context) ([]models.Truck, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	query := fmt.Sprintf("SELECT %s FROM trucks WHERE company_id = $1 AND deleted_at IS NULL ORDER BY truck_number", truckColumns)
+	rows, err := s.pool.Query(ctx, query, companyID)
+	if err != nil {
+		return nil, fmt.Errorf("list all trucks: %w", err)
+	}
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Truck, error) {
+		t, err := scanTruck(row)
+		if err != nil {
+			return models.Truck{}, err
+		}
+		return *t, nil
+	})
+	return items, err
+}

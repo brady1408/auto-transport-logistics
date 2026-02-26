@@ -1,0 +1,120 @@
+package earnings
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ DriverTable(result models.DriverEarningsAdjResult, filter models.EarningsAdjFilter) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Employee</th>
+					<th>Date</th>
+					<th>Description</th>
+					<th>Type</th>
+					<th class="text-right">Amount</th>
+					<th>Reference</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, a := range result.Items {
+						<tr>
+							<td>{ a.EmployeeName }</td>
+							<td>{ a.AdjDate.Format("2006-01-02") }</td>
+							<td>{ a.Description }</td>
+							<td>
+								if a.AdjType == "Add" {
+									<span class="badge badge-active">Add</span>
+								} else {
+									<span class="badge badge-inactive">Ded</span>
+								}
+							</td>
+							<td class="text-right">{ a.Amount }</td>
+							<td>{ components.Deref(a.Reference) }</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/driver-adjustments/%d/edit", a.ID)) } class="btn btn-sm">Edit</a>
+									<button
+										class="btn btn-sm btn-danger"
+										hx-delete={ fmt.Sprintf("/accounting/driver-adjustments/%d", a.ID) }
+										hx-confirm={ fmt.Sprintf("Delete this driver adjustment for %s?", a.EmployeeName) }
+									>Delete</button>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="7" class="text-center text-muted">No driver adjustments found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/accounting/driver-adjustments", "#adj-table",
+		))
+	}
+}
+
+templ TruckTable(result models.TruckEarningsAdjResult, filter models.EarningsAdjFilter) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Truck</th>
+					<th>Date</th>
+					<th>Description</th>
+					<th>Type</th>
+					<th class="text-right">Amount</th>
+					<th>Reference</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, a := range result.Items {
+						<tr>
+							<td>{ a.TruckNumber }</td>
+							<td>{ a.AdjDate.Format("2006-01-02") }</td>
+							<td>{ a.Description }</td>
+							<td>
+								if a.AdjType == "Add" {
+									<span class="badge badge-active">Add</span>
+								} else {
+									<span class="badge badge-inactive">Ded</span>
+								}
+							</td>
+							<td class="text-right">{ a.Amount }</td>
+							<td>{ components.Deref(a.Reference) }</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/truck-adjustments/%d/edit", a.ID)) } class="btn btn-sm">Edit</a>
+									<button
+										class="btn btn-sm btn-danger"
+										hx-delete={ fmt.Sprintf("/accounting/truck-adjustments/%d", a.ID) }
+										hx-confirm={ fmt.Sprintf("Delete this truck adjustment for %s?", a.TruckNumber) }
+									>Delete</button>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="7" class="text-center text-muted">No truck adjustments found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/accounting/truck-adjustments", "#adj-table",
+		))
+	}
+}
