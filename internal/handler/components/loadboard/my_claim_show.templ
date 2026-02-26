@@ -21,10 +21,17 @@ templ MyClaimShowPage(pg components.PageContext, claim *models.LoadboardClaim, l
 				}
 				if claim.Status == "Accepted" {
 					<button
+						class="btn btn-primary"
+						hx-post={ fmt.Sprintf("/loadboard/my-claims/%d/pickup", claim.ID) }
+						hx-confirm="Confirm all vehicles have been picked up?"
+					>Mark Picked Up</button>
+				}
+				if claim.Status == "PickedUp" {
+					<button
 						class="btn btn-success"
-						hx-post={ fmt.Sprintf("/loadboard/my-claims/%d/complete", claim.ID) }
-						hx-confirm="Mark this claim as completed?"
-					>Mark Completed</button>
+						hx-post={ fmt.Sprintf("/loadboard/my-claims/%d/deliver", claim.ID) }
+						hx-confirm="Confirm all vehicles have been delivered?"
+					>Mark Delivered</button>
 				}
 				if claim.CarrierOrderID != nil {
 					<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", *claim.CarrierOrderID)) } class="btn btn-primary">View Imported Order</a>
@@ -60,6 +67,18 @@ templ MyClaimShowPage(pg components.PageContext, claim *models.LoadboardClaim, l
 						<div class="detail-row">
 							<span class="detail-label">Accepted:</span>
 							<span>{ claim.AcceptedAt.Format("01/02/2006 3:04 PM") }</span>
+						</div>
+					}
+					if claim.PickedUpAt != nil {
+						<div class="detail-row">
+							<span class="detail-label">Picked Up:</span>
+							<span>{ claim.PickedUpAt.Format("01/02/2006 3:04 PM") }</span>
+						</div>
+					}
+					if claim.DeliveredAt != nil {
+						<div class="detail-row">
+							<span class="detail-label">Delivered:</span>
+							<span>{ claim.DeliveredAt.Format("01/02/2006 3:04 PM") }</span>
 						</div>
 					}
 					if claim.RejectedAt != nil {
