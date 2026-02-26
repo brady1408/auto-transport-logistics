@@ -11,10 +11,12 @@ import (
 templ ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDetailWithOrder, vehicleCount int) {
 	@components.Layout(pg, "Trip " + trip.LoadNumber + " - ATLinks") {
 		<div class="page-header">
-			<h1>Trip { trip.LoadNumber }</h1>
+			<div>
+				<a href="/dispatch/trips" class="page-header-back">← Back to List</a>
+				<h1>Trip { trip.LoadNumber }</h1>
+			</div>
 			<div class="btn-group">
 				<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d/edit", trip.ID)) } class="btn">Edit Trip</a>
-				<a href="/dispatch/trips" class="btn">Back to List</a>
 			</div>
 		</div>
 		<div class="order-detail-grid">

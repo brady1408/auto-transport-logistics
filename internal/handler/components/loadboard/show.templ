@@ -10,9 +10,12 @@ import (
 templ ShowPage(pg components.PageContext, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle, canClaim bool) {
 	@components.Layout(pg, listing.ListingNumber + " - Loadboard - ATLinks") {
 		<div class="page-header">
-			<h1>{ listing.ListingNumber } — { listing.Title }</h1>
-			<div class="btn-group">
-				if canClaim {
+			<div>
+				<a href="/loadboard" class="page-header-back">← Back to Loadboard</a>
+				<h1>{ listing.ListingNumber } — { listing.Title }</h1>
+			</div>
+			if canClaim {
+				<div class="btn-group">
 					<button
 						class="btn btn-primary"
 						hx-post={ fmt.Sprintf("/loadboard/claim/%d", listing.ID) }
@@ -24,9 +27,8 @@ templ ShowPage(pg components.PageContext, listing *models.LoadboardListing, vehi
 							Request to Claim
 						}
 					</button>
-				}
-				<a href="/loadboard" class="btn">Back to Loadboard</a>
-			</div>
+				</div>
+			}
 		</div>
 		<div class="order-detail-grid">
 			<div class="card">

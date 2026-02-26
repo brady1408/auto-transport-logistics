@@ -10,7 +10,10 @@ import (
 templ ShowPage(pg components.PageContext, payment *models.Payment, details []models.PaymentDetail, openInvoices []models.Invoice) {
 	@components.Layout(pg, fmt.Sprintf("Payment #%d - ATLinks", payment.ID)) {
 		<div class="page-header">
-			<h1>Payment #{ fmt.Sprintf("%d", payment.ID) }</h1>
+			<div>
+				<a href="/accounting/payments" class="page-header-back">← Back to List</a>
+				<h1>Payment #{ fmt.Sprintf("%d", payment.ID) }</h1>
+			</div>
 			<div class="btn-group">
 				<a href={ templ.SafeURL(fmt.Sprintf("/accounting/payments/%d/edit", payment.ID)) } class="btn">Edit</a>
 				<button
@@ -18,7 +21,6 @@ templ ShowPage(pg components.PageContext, payment *models.Payment, details []mod
 					hx-delete={ fmt.Sprintf("/accounting/payments/%d", payment.ID) }
 					hx-confirm="Delete this payment?"
 				>Delete</button>
-				<a href="/accounting/payments" class="btn">Back to List</a>
 			</div>
 		</div>
 		<div class="order-detail-grid">

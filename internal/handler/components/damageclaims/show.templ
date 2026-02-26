@@ -11,7 +11,10 @@ import (
 templ ShowPage(pg components.PageContext, claim *models.DamageClaim, atts []models.Attachment) {
 	@components.Layout(pg, "Damage Claim " + claim.ClaimNumber + " - ATLinks") {
 		<div class="page-header">
-			<h1>Damage Claim { claim.ClaimNumber }</h1>
+			<div>
+				<a href="/accounting/damage-claims" class="page-header-back">← Back to List</a>
+				<h1>Damage Claim { claim.ClaimNumber }</h1>
+			</div>
 			<div class="btn-group">
 				<a href={ templ.SafeURL(fmt.Sprintf("/accounting/damage-claims/%d/edit", claim.ID)) } class="btn">Edit</a>
 				<button
@@ -19,7 +22,6 @@ templ ShowPage(pg components.PageContext, claim *models.DamageClaim, atts []mode
 					hx-delete={ fmt.Sprintf("/accounting/damage-claims/%d", claim.ID) }
 					hx-confirm={ fmt.Sprintf("Delete claim %s?", claim.ClaimNumber) }
 				>Delete</button>
-				<a href="/accounting/damage-claims" class="btn">Back to List</a>
 			</div>
 		</div>
 		<div class="order-detail-grid">
