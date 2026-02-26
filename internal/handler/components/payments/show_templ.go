@@ -48,27 +48,27 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h1>Payment #")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><div><a href=\"/accounting/payments\" class=\"page-header-back\">← Back to List</a><h1>Payment #")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", payment.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 13, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 15, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</h1><div class=\"btn-group\"><a href=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</h1></div><div class=\"btn-group\"><a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 templ.SafeURL
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/accounting/payments/%d/edit", payment.ID)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 15, Col: 84}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 18, Col: 84}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -81,13 +81,13 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/accounting/payments/%d", payment.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 18, Col: 67}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 21, Col: 67}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" hx-confirm=\"Delete this payment?\">Delete</button> <a href=\"/accounting/payments\" class=\"btn\">Back to List</a></div></div><div class=\"order-detail-grid\"><div class=\"card\"><div class=\"card-header\">Payment Info</div><div class=\"card-body\"><div class=\"detail-row\"><span class=\"detail-label\">Date:</span> <span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" hx-confirm=\"Delete this payment?\">Delete</button></div></div><div class=\"order-detail-grid\"><div class=\"card\"><div class=\"card-header\">Payment Info</div><div class=\"card-body\"><div class=\"detail-row\"><span class=\"detail-label\">Date:</span> <span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -95,7 +95,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(payment.PaymentDate.Format("01/02/2006"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 32, Col: 50}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 34, Col: 50}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -109,7 +109,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.PaymentMethod))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 38, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 40, Col: 53}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -122,7 +122,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.CheckNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 42, Col: 51}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 44, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -135,7 +135,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.CustomerName))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 47, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 49, Col: 47}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -153,7 +153,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.CustomerNumber))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 49, Col: 52}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 51, Col: 52}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -171,7 +171,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.Amount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 60, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 62, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -184,7 +184,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.AppliedAmount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 64, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 66, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -197,7 +197,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.UnappliedAmount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 68, Col: 64}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 70, Col: 64}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -225,7 +225,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 						var templ_7745c5c3_Var14 templ.SafeURL
 						templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d", components.DerefInt(d.InvoiceID))))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 91, Col: 107}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 93, Col: 107}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 						if templ_7745c5c3_Err != nil {
@@ -238,7 +238,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 						var templ_7745c5c3_Var15 string
 						templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(d.InvoiceNumber))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 91, Col: 145}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 93, Col: 145}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 						if templ_7745c5c3_Err != nil {
@@ -256,7 +256,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 					var templ_7745c5c3_Var16 string
 					templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(d.Amount))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 94, Col: 59}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 96, Col: 59}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 					if templ_7745c5c3_Err != nil {
@@ -269,7 +269,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 					var templ_7745c5c3_Var17 string
 					templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(d.DiscountAmount))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 95, Col: 67}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 97, Col: 67}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 					if templ_7745c5c3_Err != nil {
@@ -282,7 +282,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 					var templ_7745c5c3_Var18 string
 					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(d.CreatedAt.Format("01/02/2006"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 96, Col: 46}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 98, Col: 46}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 					if templ_7745c5c3_Err != nil {
@@ -295,7 +295,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 					var templ_7745c5c3_Var19 string
 					templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/accounting/payment-details/%d", d.ID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 100, Col: 73}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 102, Col: 73}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 					if templ_7745c5c3_Err != nil {
@@ -328,7 +328,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 				var templ_7745c5c3_Var20 templ.SafeURL
 				templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/accounting/payments/%d/apply", payment.ID)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 118, Col: 86}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 120, Col: 86}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 				if templ_7745c5c3_Err != nil {
@@ -341,7 +341,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 				var templ_7745c5c3_Var21 string
 				templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/accounting/payments/%d/apply", payment.ID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 119, Col: 72}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 121, Col: 72}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 				if templ_7745c5c3_Err != nil {
@@ -367,7 +367,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 					var templ_7745c5c3_Var22 string
 					templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", inv.ID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 128, Col: 51}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 130, Col: 51}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 					if templ_7745c5c3_Err != nil {
@@ -380,7 +380,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 					var templ_7745c5c3_Var23 string
 					templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(inv.InvoiceNumber)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 128, Col: 74}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 130, Col: 74}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 					if templ_7745c5c3_Err != nil {
@@ -393,7 +393,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 					var templ_7745c5c3_Var24 string
 					templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(inv.Balance))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 128, Col: 120}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 130, Col: 120}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 					if templ_7745c5c3_Err != nil {
@@ -411,7 +411,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 				var templ_7745c5c3_Var25 string
 				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.UnappliedAmount))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 134, Col: 129}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 136, Col: 129}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 				if templ_7745c5c3_Err != nil {
@@ -434,7 +434,7 @@ func ShowPage(pg components.PageContext, payment *models.Payment, details []mode
 				var templ_7745c5c3_Var26 string
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.Comments))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 151, Col: 63}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/show.templ`, Line: 153, Col: 63}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {

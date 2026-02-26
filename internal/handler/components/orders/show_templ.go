@@ -48,27 +48,27 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h1>Order ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><div><a href=\"/dispatch/orders\" class=\"page-header-back\">← Back to List</a><h1>Order ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(order.OrderNumber)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 13, Col: 32}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 15, Col: 33}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</h1><div class=\"btn-group\"><a href=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</h1></div><div class=\"btn-group\"><a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 templ.SafeURL
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/edit", order.ID)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 15, Col: 78}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 18, Col: 78}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -81,7 +81,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var5 templ.SafeURL
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/vehicles/new", order.ID)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 16, Col: 86}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 19, Col: 86}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -99,7 +99,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/orders/%d/invoice", order.ID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 20, Col: 68}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 23, Col: 68}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -118,18 +118,18 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var7 templ.SafeURL
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/loadboard/post/%d", order.ID)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 25, Col: 73}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 28, Col: 73}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" class=\"btn\">Post to Loadboard</a> ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" class=\"btn\">Post to Loadboard</a>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<a href=\"/dispatch/orders\" class=\"btn\">Back to List</a></div></div><div class=\"order-detail-grid\"><div class=\"card\"><div class=\"card-header\">Order Info</div><div class=\"card-body\"><div class=\"detail-row\"><span class=\"detail-label\">Status:</span> <span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div></div><div class=\"order-detail-grid\"><div class=\"card\"><div class=\"card-header\">Order Info</div><div class=\"card-body\"><div class=\"detail-row\"><span class=\"detail-label\">Status:</span> <span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -151,7 +151,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.Zone))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 46, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 48, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -164,7 +164,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.DispatchCode))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 50, Col: 50}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 52, Col: 50}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -178,7 +178,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(order.CreateDate.Format("01/02/2006"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 56, Col: 47}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 58, Col: 47}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -193,7 +193,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(order.EstPickupDate.Format("01/02/2006"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 64, Col: 50}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 66, Col: 50}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -208,7 +208,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(order.EstDeliverDate.Format("01/02/2006"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 72, Col: 51}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 74, Col: 51}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -222,7 +222,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", order.VehicleCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 82, Col: 95}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 84, Col: 95}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -235,7 +235,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", order.WaitingCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 83, Col: 95}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 85, Col: 95}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -248,7 +248,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", order.ScheduledCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 84, Col: 97}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 86, Col: 97}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -261,7 +261,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", order.LoadedCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 85, Col: 94}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 87, Col: 94}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -274,7 +274,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", order.DeliveredCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 86, Col: 97}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 88, Col: 97}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -287,7 +287,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", order.ConfirmedCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 87, Col: 97}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 89, Col: 97}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -300,7 +300,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.BillCustomerName))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 94, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 96, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -318,7 +318,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var20 string
 				templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.BillToAddress))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 97, Col: 45}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 99, Col: 45}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 				if templ_7745c5c3_Err != nil {
@@ -337,7 +337,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var21 string
 				templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.BillToCity))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 101, Col: 42}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 103, Col: 42}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 				if templ_7745c5c3_Err != nil {
@@ -350,7 +350,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var22 string
 				templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.BillToState))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 101, Col: 83}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 103, Col: 83}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 				if templ_7745c5c3_Err != nil {
@@ -363,7 +363,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.BillToZip))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 101, Col: 121}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 103, Col: 121}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
@@ -377,7 +377,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var24 string
 			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.LoadCustomerName))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 108, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 110, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 			if templ_7745c5c3_Err != nil {
@@ -395,7 +395,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var25 string
 				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.LoadAddress))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 111, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 113, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 				if templ_7745c5c3_Err != nil {
@@ -414,7 +414,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var26 string
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.LoadCity))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 115, Col: 40}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 117, Col: 40}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
@@ -427,7 +427,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var27 string
 				templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.LoadState))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 115, Col: 79}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 117, Col: 79}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 				if templ_7745c5c3_Err != nil {
@@ -440,7 +440,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var28 string
 				templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.LoadZip))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 115, Col: 115}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 117, Col: 115}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 				if templ_7745c5c3_Err != nil {
@@ -459,7 +459,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var29 string
 				templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.LoadContact))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 119, Col: 52}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 121, Col: 52}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 				if templ_7745c5c3_Err != nil {
@@ -478,7 +478,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var30 string
 				templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.LoadPhone))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 123, Col: 48}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 125, Col: 48}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 				if templ_7745c5c3_Err != nil {
@@ -492,7 +492,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var31 string
 			templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.DropCustomerName))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 130, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 132, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 			if templ_7745c5c3_Err != nil {
@@ -510,7 +510,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var32 string
 				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.DropAddress))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 133, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 135, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 				if templ_7745c5c3_Err != nil {
@@ -529,7 +529,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var33 string
 				templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.DropCity))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 137, Col: 40}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 139, Col: 40}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 				if templ_7745c5c3_Err != nil {
@@ -542,7 +542,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var34 string
 				templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.DropState))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 137, Col: 79}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 139, Col: 79}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 				if templ_7745c5c3_Err != nil {
@@ -555,7 +555,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var35 string
 				templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.DropZip))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 137, Col: 115}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 139, Col: 115}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 				if templ_7745c5c3_Err != nil {
@@ -574,7 +574,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var36 string
 				templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.DropContact))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 141, Col: 52}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 143, Col: 52}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 				if templ_7745c5c3_Err != nil {
@@ -593,7 +593,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 				var templ_7745c5c3_Var37 string
 				templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.DropPhone))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 145, Col: 48}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 147, Col: 48}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 				if templ_7745c5c3_Err != nil {
@@ -607,7 +607,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var38 string
 			templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/orders/%d/vehicles", order.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 153, Col: 65}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 155, Col: 65}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 			if templ_7745c5c3_Err != nil {
@@ -620,7 +620,7 @@ func ShowPage(pg components.PageContext, order *models.Order) templ.Component {
 			var templ_7745c5c3_Var39 string
 			templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/orders/%d/charges", order.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 162, Col: 64}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/show.templ`, Line: 164, Col: 64}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 			if templ_7745c5c3_Err != nil {
