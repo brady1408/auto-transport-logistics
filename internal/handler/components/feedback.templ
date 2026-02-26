@@ -3,7 +3,7 @@ package components
 templ FeedbackButton() {
 	<div x-data="{ open: false, submitted: false }" @feedback-submitted.window="submitted = true; setTimeout(() => { open = false; submitted = false; }, 2000)">
 		<!-- Floating button -->
-		<button @click="open = !open" class="feedback-fab" title="Send Feedback">
+		<button @click="open = !open; submitted = false" class="feedback-fab" title="Send Feedback">
 			?
 		</button>
 		<!-- Modal backdrop + dialog -->
