@@ -441,14 +441,14 @@ func (h *LoadboardHandler) completeClaim(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.svc.CompleteClaim(r.Context(), id); err != nil {
-		log.Printf("complete claim: %v", err)
-		h.deps.setFlash(w, "Failed to complete")
+	if err := h.svc.MarkPickedUp(r.Context(), id); err != nil {
+		log.Printf("mark picked up: %v", err)
+		h.deps.setFlash(w, "Failed to mark pickup")
 		redirect(w, r, fmt.Sprintf("/loadboard/my-claims/%d", id))
 		return
 	}
 
-	h.deps.setFlash(w, "Claim marked as completed")
+	h.deps.setFlash(w, "Pickup confirmed")
 	redirect(w, r, "/loadboard/my-claims")
 }
 
