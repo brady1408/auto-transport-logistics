@@ -1,0 +1,33 @@
+package vendors
+
+import (
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ListPage(pg components.PageContext, result models.VendorListResult, filter models.VendorFilter) {
+	@components.Layout(pg, "Vendors - ATLinks") {
+		<div class="page-header">
+			<h1>Vendors</h1>
+			<a href="/global/vendors/new" class="btn btn-primary">New Vendor</a>
+		</div>
+		<div class="filter-bar">
+			<div class="form-group">
+				<label for="search">Search</label>
+				<input
+					type="text" id="search" name="search" class="form-control search-input"
+					placeholder="Name or contact..."
+					value={ filter.Search }
+					hx-get="/global/vendors"
+					hx-trigger="keyup changed delay:300ms"
+					hx-target="#vendor-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				/>
+			</div>
+		</div>
+		<div id="vendor-table">
+			@Table(result, filter)
+		</div>
+	}
+}
