@@ -168,18 +168,35 @@ func (s *CreditMemoStore) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
+// NextCreditNumber returns the next credit memo number within a short-lived advisory-locked
+// transaction to prevent race conditions with concurrent inserts.
 func (s *CreditMemoStore) NextCreditNumber(ctx context.Context) (string, error) {
 	companyID, err := auth.GetCompanyID(ctx)
 	if err != nil {
 		return "", err
 	}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return "", fmt.Errorf("begin tx for next credit number: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Advisory lock keyed on company_id + 4 (keys 1-3 used by orders/trips/invoices)
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1, 4)`, companyID); err != nil {
+		return "", fmt.Errorf("advisory lock for next credit number: %w", err)
+	}
+
 	var next int
-	err = s.pool.QueryRow(ctx,
+	err = tx.QueryRow(ctx,
 		`SELECT COALESCE(MAX(credit_number::int), 0) + 1 FROM credit_memos WHERE credit_number ~ '^\d+$' AND company_id = $1`,
 		companyID,
 	).Scan(&next)
 	if err != nil {
 		return "", fmt.Errorf("next credit number: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return "", fmt.Errorf("commit next credit number: %w", err)
 	}
 	return fmt.Sprintf("CM%05d", next), nil
 }
