@@ -1,0 +1,57 @@
+package vendors
+
+import (
+	"fmt"
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Table(result models.VendorListResult, filter models.VendorFilter) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Contact</th>
+					<th>City</th>
+					<th>State</th>
+					<th>Phone</th>
+					<th>Terms</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, v := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/global/vendors/%d/edit", v.ID)) }>{ v.Name }</a></td>
+							<td>{ components.Deref(v.Contact) }</td>
+							<td>{ components.Deref(v.City) }</td>
+							<td>{ components.Deref(v.State) }</td>
+							<td>{ components.FormatPhone(v.Phone) }</td>
+							<td>{ components.Deref(v.Terms) }</td>
+							<td class="text-right">
+								<div class="btn-group">
+									<a href={ templ.SafeURL(fmt.Sprintf("/global/vendors/%d/edit", v.ID)) } class="btn btn-sm">Edit</a>
+									<button
+										class="btn btn-sm btn-danger"
+										hx-delete={ fmt.Sprintf("/global/vendors/%d", v.ID) }
+										hx-confirm={ fmt.Sprintf("Delete vendor %s?", v.Name) }
+									>Delete</button>
+								</div>
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="7" class="text-center text-muted">No vendors found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/global/vendors", "#vendor-table",
+		))
+	}
+}

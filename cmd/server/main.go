@@ -186,6 +186,8 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewZoneHandler(zoneStore, zonePricingStore, deps).Register(protectedMux)
 	handler.NewCompanyHandler(companyStore, deps).Register(protectedMux)
 
+	handler.NewVendorHandler(store.NewVendorStore(pool), deps).Register(protectedMux)
+
 	// Lookup tables
 	registerLookups(protectedMux, pool, deps)
 

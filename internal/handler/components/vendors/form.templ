@@ -1,0 +1,114 @@
+package vendors
+
+import (
+	"fmt"
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ FormPage(pg components.PageContext, vendor *models.Vendor, isNew bool, errMsg string) {
+	@components.Layout(pg, vendorFormTitle(isNew)+" - ATLinks") {
+		<div class="page-header">
+			<h1>
+				if isNew {
+					New Vendor
+				} else {
+					Edit Vendor: { vendor.Name }
+				}
+			</h1>
+			<a href="/global/vendors" class="btn">Back to List</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			if isNew {
+				action="/global/vendors"
+				hx-post="/global/vendors"
+			} else {
+				action={ templ.SafeURL(fmt.Sprintf("/global/vendors/%d/edit", vendor.ID)) }
+				hx-put={ fmt.Sprintf("/global/vendors/%d", vendor.ID) }
+			}
+		>
+			@components.CSRFField(pg.CSRFToken)
+			<fieldset>
+				<legend>Vendor Information</legend>
+				<div class="form-row">
+					<div class="form-group col-span-2">
+						<label for="name">Name *</label>
+						<input type="text" id="name" name="name" class="form-control" value={ vendor.Name } maxlength="30" required/>
+					</div>
+					<div class="form-group">
+						<label for="contact">Contact</label>
+						<input type="text" id="contact" name="contact" class="form-control" value={ components.Deref(vendor.Contact) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="terms">Terms</label>
+						<input type="text" id="terms" name="terms" class="form-control" value={ components.Deref(vendor.Terms) } maxlength="20"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="tax_id">Tax ID</label>
+						<input type="text" id="tax_id" name="tax_id" class="form-control" value={ components.Deref(vendor.TaxID) } maxlength="15"/>
+					</div>
+					<div class="form-group">
+						<label for="phone">Phone</label>
+						<input type="text" id="phone" name="phone" class="form-control" value={ components.Deref(vendor.Phone) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="fax">Fax</label>
+						<input type="text" id="fax" name="fax" class="form-control" value={ components.Deref(vendor.Fax) } maxlength="10"/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Address</legend>
+				<div class="form-row">
+					<div class="form-group col-span-2">
+						<label for="address">Address</label>
+						<input type="text" id="address" name="address" class="form-control" value={ components.Deref(vendor.Address) } maxlength="30"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group col-span-2">
+						<label for="address2">Address 2</label>
+						<input type="text" id="address2" name="address2" class="form-control" value={ components.Deref(vendor.Address2) } maxlength="30"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="city">City</label>
+						<input type="text" id="city" name="city" class="form-control" value={ components.Deref(vendor.City) } maxlength="25"/>
+					</div>
+					<div class="form-group">
+						<label for="state">State</label>
+						<input type="text" id="state" name="state" class="form-control" value={ components.Deref(vendor.State) } maxlength="2" style="text-transform:uppercase"/>
+					</div>
+					<div class="form-group">
+						<label for="zip">Zip</label>
+						<input type="text" id="zip" name="zip" class="form-control" value={ components.Deref(vendor.Zip) } maxlength="10"/>
+					</div>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create Vendor
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href="/global/vendors" class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}
+
+func vendorFormTitle(isNew bool) string {
+	if isNew {
+		return "New Vendor"
+	}
+	return "Edit Vendor"
+}
