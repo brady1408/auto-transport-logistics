@@ -200,7 +200,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	// Loadboard
 	loadboardStore := store.NewLoadboardStore(pool)
 	loadboardSvc := service.NewLoadboardService(pool, loadboardStore, orderStore, vehicleStore, companyStore, orderSvc, auditSvc)
-	handler.NewLoadboardHandler(loadboardStore, orderStore, vehicleStore, loadboardSvc, deps).Register(protectedMux)
+	handler.NewLoadboardHandler(loadboardStore, orderStore, vehicleStore, companyStore, loadboardSvc, deps).Register(protectedMux)
 
 	// Dispatch
 	handler.NewOrderHandler(orderStore, invoiceSvc, vehicleStore, attachmentStore, deps).Register(protectedMux)
