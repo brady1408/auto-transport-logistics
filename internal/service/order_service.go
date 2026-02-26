@@ -164,7 +164,12 @@ func isForwardTransition(from, to string) bool {
 		"Delivered": 4,
 		"Confirmed": 5,
 	}
-	return order[to] > order[from]
+	fromRank, fromOk := order[from]
+	toRank, toOk := order[to]
+	if !fromOk || !toOk {
+		return false
+	}
+	return toRank > fromRank
 }
 
 // RevertVehicleStatus reverts a vehicle to its previous status.
