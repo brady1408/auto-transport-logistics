@@ -2,12 +2,13 @@ package loadboard
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ ShowPage(pg components.PageContext, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle, canClaim bool) {
+templ ShowPage(pg components.PageContext, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle, canClaim bool, viewerInsuranceExp *time.Time) {
 	@components.Layout(pg, listing.ListingNumber + " - Loadboard - ATLinks") {
 		<div class="page-header">
 			<div>
@@ -30,6 +31,9 @@ templ ShowPage(pg components.PageContext, listing *models.LoadboardListing, vehi
 				</div>
 			}
 		</div>
+		if canClaim {
+			@insuranceWarningBanner(viewerInsuranceExp)
+		}
 		<div class="order-detail-grid">
 			<div class="card">
 				<div class="card-header">Listing Details</div>
@@ -195,6 +199,25 @@ templ statusBadge(status string) {
 			<span class="badge badge-inactive">Rejected</span>
 		default:
 			<span class="badge">{ status }</span>
+	}
+}
+
+templ insuranceWarningBanner(exp *time.Time) {
+	if exp == nil {
+		<div class="alert alert-warning" style="margin-bottom:1rem;">
+			&#9888; No insurance information on file for your company.
+			<a href="/settings/company">Update your company profile</a> before claiming loads.
+		</div>
+	} else if exp.Before(time.Now()) {
+		<div class="alert alert-danger" style="margin-bottom:1rem;">
+			&#9888; Your insurance on file expired { exp.Format("01/02/2006") }.
+			<a href="/settings/company">Update your company profile</a> before claiming loads.
+		</div>
+	} else if exp.Before(time.Now().AddDate(0, 0, 30)) {
+		<div class="alert alert-warning" style="margin-bottom:1rem;">
+			&#9888; Your insurance on file expires { exp.Format("01/02/2006") }.
+			Consider <a href="/settings/company">updating your company profile</a>.
+		</div>
 	}
 }
 
