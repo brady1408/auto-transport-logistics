@@ -461,8 +461,9 @@ func (s *LoadboardService) CancelClaim(ctx context.Context, claimID int) error {
 	return nil
 }
 
-// CompleteClaim allows a carrier to mark a claim as completed.
-func (s *LoadboardService) CompleteClaim(ctx context.Context, claimID int) error {
+// MarkPickedUp is called by the carrier to confirm vehicle pickup.
+// Updates claim → PickedUp, carrier's vehicles → Loaded, poster's vehicles → Scheduled.
+func (s *LoadboardService) MarkPickedUp(ctx context.Context, claimID int) error {
 	user, ok := auth.GetUser(ctx)
 	if !ok {
 		return auth.ErrNoUser
@@ -473,23 +474,181 @@ func (s *LoadboardService) CompleteClaim(ctx context.Context, claimID int) error
 		return fmt.Errorf("get claim: %w", err)
 	}
 	if claim.CarrierCompanyID != user.CompanyID {
-		return fmt.Errorf("only the carrier can complete their claim")
+		return fmt.Errorf("only the carrier can mark pickup")
 	}
 	if claim.Status != "Accepted" {
-		return fmt.Errorf("can only complete accepted claims (status: %s)", claim.Status)
+		return fmt.Errorf("can only mark pickup on accepted claims (status: %s)", claim.Status)
+	}
+	if claim.CarrierOrderID == nil {
+		return fmt.Errorf("claim has no carrier order")
 	}
 
-	if err := s.loadboardStore.UpdateClaimStatus(ctx, claimID, "Completed"); err != nil {
-		return fmt.Errorf("complete claim: %w", err)
+	listing, err := s.loadboardStore.GetByID(ctx, claim.ListingID)
+	if err != nil {
+		return fmt.Errorf("get listing: %w", err)
 	}
 
-	// Also update listing to completed
-	if err := s.loadboardStore.UpdateListingStatus(ctx, claim.ListingID, "Completed"); err != nil {
-		return fmt.Errorf("complete listing: %w", err)
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	if err := s.loadboardStore.UpdateClaimStatusTx(ctx, tx, claimID, "PickedUp"); err != nil {
+		return fmt.Errorf("update claim status: %w", err)
 	}
 
-	s.audit.Log(ctx, "loadboard_claims", claimID, "UPDATE", nil, map[string]string{"action": "complete"})
+	// Carrier's order vehicles: Waiting → Loaded
+	if _, err := tx.Exec(ctx,
+		`UPDATE order_vehicles SET status = 'Loaded', updated_at = NOW()
+		 WHERE order_id = $1 AND company_id = $2 AND status = 'Waiting' AND deleted_at IS NULL`,
+		*claim.CarrierOrderID, claim.CarrierCompanyID); err != nil {
+		return fmt.Errorf("update carrier vehicles: %w", err)
+	}
 
+	// Poster's source vehicles: Waiting → Scheduled
+	if _, err := tx.Exec(ctx,
+		`UPDATE order_vehicles ov SET status = 'Scheduled', updated_at = NOW()
+		 FROM loadboard_listing_vehicles llv
+		 WHERE llv.listing_id = $1 AND ov.id = llv.source_vehicle_id
+		   AND ov.company_id = $2 AND ov.status = 'Waiting' AND ov.deleted_at IS NULL`,
+		listing.ID, listing.PosterCompanyID); err != nil {
+		return fmt.Errorf("update poster vehicles: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit pickup: %w", err)
+	}
+
+	s.audit.Log(ctx, "loadboard_claims", claimID, "UPDATE", nil, map[string]string{"action": "pickup"})
+	return nil
+}
+
+// MarkDelivered is called by the carrier to confirm delivery.
+// Updates claim → Delivered, listing → Completed, both sides' vehicles → Delivered.
+func (s *LoadboardService) MarkDelivered(ctx context.Context, claimID int) error {
+	user, ok := auth.GetUser(ctx)
+	if !ok {
+		return auth.ErrNoUser
+	}
+
+	claim, err := s.loadboardStore.GetClaimByID(ctx, claimID)
+	if err != nil {
+		return fmt.Errorf("get claim: %w", err)
+	}
+	if claim.CarrierCompanyID != user.CompanyID {
+		return fmt.Errorf("only the carrier can mark delivery")
+	}
+	if claim.Status != "PickedUp" {
+		return fmt.Errorf("can only mark delivery on picked-up claims (status: %s)", claim.Status)
+	}
+	if claim.CarrierOrderID == nil {
+		return fmt.Errorf("claim has no carrier order")
+	}
+
+	listing, err := s.loadboardStore.GetByID(ctx, claim.ListingID)
+	if err != nil {
+		return fmt.Errorf("get listing: %w", err)
+	}
+
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	if err := s.loadboardStore.UpdateClaimStatusTx(ctx, tx, claimID, "Delivered"); err != nil {
+		return fmt.Errorf("update claim status: %w", err)
+	}
+
+	if err := s.loadboardStore.UpdateListingStatusTx(ctx, tx, claim.ListingID, "Completed"); err != nil {
+		return fmt.Errorf("update listing status: %w", err)
+	}
+
+	// Carrier's order vehicles: Loaded → Delivered
+	if _, err := tx.Exec(ctx,
+		`UPDATE order_vehicles SET status = 'Delivered', updated_at = NOW()
+		 WHERE order_id = $1 AND company_id = $2 AND status = 'Loaded' AND deleted_at IS NULL`,
+		*claim.CarrierOrderID, claim.CarrierCompanyID); err != nil {
+		return fmt.Errorf("update carrier vehicles: %w", err)
+	}
+
+	// Poster's source vehicles: Scheduled → Delivered
+	if _, err := tx.Exec(ctx,
+		`UPDATE order_vehicles ov SET status = 'Delivered', updated_at = NOW()
+		 FROM loadboard_listing_vehicles llv
+		 WHERE llv.listing_id = $1 AND ov.id = llv.source_vehicle_id
+		   AND ov.company_id = $2 AND ov.status = 'Scheduled' AND ov.deleted_at IS NULL`,
+		listing.ID, listing.PosterCompanyID); err != nil {
+		return fmt.Errorf("update poster vehicles: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit delivery: %w", err)
+	}
+
+	s.audit.Log(ctx, "loadboard_claims", claimID, "UPDATE", nil, map[string]string{"action": "delivered"})
+	return nil
+}
+
+// ReportNoShow is called by the poster when the carrier fails to pick up.
+// Reverts claim → NoShow, listing → Posted, poster's vehicles → Waiting.
+func (s *LoadboardService) ReportNoShow(ctx context.Context, claimID int) error {
+	user, ok := auth.GetUser(ctx)
+	if !ok {
+		return auth.ErrNoUser
+	}
+
+	claim, err := s.loadboardStore.GetClaimByID(ctx, claimID)
+	if err != nil {
+		return fmt.Errorf("get claim: %w", err)
+	}
+	if claim.Status != "Accepted" {
+		return fmt.Errorf("can only report no-show on accepted claims (status: %s)", claim.Status)
+	}
+
+	listing, err := s.loadboardStore.GetByID(ctx, claim.ListingID)
+	if err != nil {
+		return fmt.Errorf("get listing: %w", err)
+	}
+	if listing.PosterCompanyID != user.CompanyID {
+		return fmt.Errorf("only the poster can report no-show")
+	}
+
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Mark claim as NoShow with reason in poster_notes
+	if _, err := tx.Exec(ctx,
+		`UPDATE loadboard_claims SET status = 'NoShow', cancelled_at = NOW(),
+		 poster_notes = 'No-show reported by poster', updated_at = NOW()
+		 WHERE id = $1 AND deleted_at IS NULL`,
+		claimID); err != nil {
+		return fmt.Errorf("mark no-show: %w", err)
+	}
+
+	if err := s.loadboardStore.UpdateListingStatusTx(ctx, tx, claim.ListingID, "Posted"); err != nil {
+		return fmt.Errorf("relist: %w", err)
+	}
+
+	// Revert poster's source vehicles: Scheduled → Waiting
+	if _, err := tx.Exec(ctx,
+		`UPDATE order_vehicles ov SET status = 'Waiting', updated_at = NOW()
+		 FROM loadboard_listing_vehicles llv
+		 WHERE llv.listing_id = $1 AND ov.id = llv.source_vehicle_id
+		   AND ov.company_id = $2 AND ov.status = 'Scheduled' AND ov.deleted_at IS NULL`,
+		listing.ID, listing.PosterCompanyID); err != nil {
+		return fmt.Errorf("revert poster vehicles: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit no-show: %w", err)
+	}
+
+	s.audit.Log(ctx, "loadboard_claims", claimID, "UPDATE", nil, map[string]string{"action": "no-show"})
 	return nil
 }
 
