@@ -109,6 +109,10 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 					<hr class="dropdown-divider"/>
 					<a href="/settings/change-password" class="dropdown-item">Change Password</a>
 					<a href="/feedback" class="dropdown-item">Feedback</a>
+					if features.Has(models.FeatureQBO) {
+						<hr class="dropdown-divider"/>
+						<a href="/settings/integrations" class="dropdown-item">Integrations</a>
+					}
 				</div>
 			</div>
 			if user.Role == "super_admin" {
@@ -188,6 +192,9 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 			}
 			<a href="/settings/change-password">Change Password</a>
 			<a href="/feedback">Feedback</a>
+			if features.Has(models.FeatureQBO) {
+				<a href="/settings/integrations">Integrations</a>
+			}
 			if user.Role == "super_admin" {
 				<hr/>
 				<div class="mobile-section-label">Admin</div>

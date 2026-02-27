@@ -52,51 +52,51 @@ func Page(pc components.PageContext, conn *models.QBOConnection, failures []mode
 				return templ_7745c5c3_Err
 			}
 			if conn == nil {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<p>Connect your QuickBooks Online account to automatically sync customers, invoices, and payments.</p><a href=\"/integrations/qbo/connect\" class=\"btn btn-primary\">Connect to QuickBooks</a>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<p class=\"text-muted mb-3\">Connect your QuickBooks Online account to automatically sync the following data:</p><ul class=\"mb-3\"><li>Customers — synced as QBO customers</li><li>Invoices — synced as QBO invoices</li><li>Payments — synced as QBO payments</li></ul><a href=\"/integrations/qbo/connect\" class=\"btn btn-primary\">Connect to QuickBooks</a>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"mb-3\"><span class=\"badge bg-success\">Connected</span> <span class=\"text-muted ms-2\">Realm: ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"mb-3 d-flex align-items-center gap-3\"><span class=\"badge bg-success\">Connected</span> <span class=\"text-muted\">Realm ID: <strong>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var3 string
 				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(conn.RealmID)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 25, Col: 57}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 30, Col: 63}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</span> <span class=\"text-muted ms-2\">Connected by ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</strong></span> <span class=\"text-muted\">Connected by <strong>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(conn.ConnectedBy)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 26, Col: 67}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 31, Col: 70}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</span></div><div class=\"mb-3 d-flex gap-2\"><form method=\"POST\" action=\"/integrations/qbo/sync-all\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</strong> on ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var5 string
-				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(pc.CSRFToken)
+				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(conn.ConnectedAt.Format("Jan 2, 2006"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 30, Col: 66}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 31, Col: 125}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"> <button type=\"submit\" class=\"btn btn-secondary\">Sync All Unsynced</button></form><form method=\"POST\" action=\"/integrations/qbo/disconnect\" onsubmit=\"return confirm('Disconnect QuickBooks? Existing QBO records will remain.')\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</span></div><div class=\"mb-3 d-flex gap-2\"><form method=\"POST\" action=\"/integrations/qbo/sync-all\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -109,80 +109,99 @@ func Page(pc components.PageContext, conn *models.QBOConnection, failures []mode
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"> <button type=\"submit\" class=\"btn btn-danger\">Disconnect</button></form></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"> <button type=\"submit\" class=\"btn btn-secondary\" onclick=\"return confirm('Queue all unsynced customers, invoices, and payments for sync to QuickBooks?')\">Sync All Unsynced</button></form><form method=\"POST\" action=\"/integrations/qbo/disconnect\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var7 string
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(pc.CSRFToken)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 43, Col: 66}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"> <button type=\"submit\" class=\"btn btn-danger\" onclick=\"return confirm('Disconnect QuickBooks? Existing QBO records will remain but future changes will not sync.')\">Disconnect</button></form></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if len(failures) > 0 {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"alert alert-warning\"><strong>Recent sync failures (")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"alert alert-warning\"><strong>Recent sync failures (")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var7 string
-					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", len(failures)))
+					var templ_7745c5c3_Var8 string
+					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", len(failures)))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 41, Col: 71}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 53, Col: 71}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "):</strong><ul class=\"mb-0 mt-1\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "):</strong><ul class=\"mb-0 mt-1\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					for _, f := range failures {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<li>")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-						var templ_7745c5c3_Var8 string
-						templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(f.EntityType)
-						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 44, Col: 27}
-						}
-						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " #")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<li><strong>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var9 string
-						templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", f.EntityID))
+						templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(f.EntityType)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 44, Col: 62}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 57, Col: 32}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, " — ")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</strong> #")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var10 string
-						templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(derefStr(f.ErrorMessage))
+						templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", f.EntityID))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 44, Col: 95}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 57, Col: 76}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</li>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, " ")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+						if f.ErrorMessage != nil {
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "— ")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+							var templ_7745c5c3_Var11 string
+							templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(truncate(*f.ErrorMessage, 100))
+							if templ_7745c5c3_Err != nil {
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/integrations/integrations.templ`, Line: 59, Col: 47}
+							}
+							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+						}
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</li>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</ul></div>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</ul></div>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -196,11 +215,11 @@ func Page(pc components.PageContext, conn *models.QBOConnection, failures []mode
 	})
 }
 
-func derefStr(s *string) string {
-	if s == nil {
-		return ""
+func truncate(s string, max int) string {
+	if len(s) <= max {
+		return s
 	}
-	return *s
+	return s[:max] + "..."
 }
 
 var _ = templruntime.GeneratedTemplate

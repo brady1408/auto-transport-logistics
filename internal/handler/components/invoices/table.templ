@@ -44,6 +44,9 @@ templ Table(result models.InvoiceListResult) {
 							<td class="text-right">{ components.Deref(inv.Balance) }</td>
 							<td>
 								@invoiceStatusBadge(inv.Status)
+								if inv.QBOSyncedAt != nil {
+									<span class="badge bg-success ms-1" style="font-size:0.7em;">QBO ✓</span>
+								}
 							</td>
 							<td class="text-right">
 								<div class="btn-group">

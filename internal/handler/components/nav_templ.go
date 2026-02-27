@@ -79,60 +79,76 @@ func Nav(user auth.ContextUser, companyName string, features models.FeatureSet, 
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<hr class=\"dropdown-divider\"><a href=\"/settings/change-password\" class=\"dropdown-item\">Change Password</a> <a href=\"/feedback\" class=\"dropdown-item\">Feedback</a></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<hr class=\"dropdown-divider\"><a href=\"/settings/change-password\" class=\"dropdown-item\">Change Password</a> <a href=\"/feedback\" class=\"dropdown-item\">Feedback</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if user.Role == "super_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<!-- Admin (super_admin only) --> <div class=\"nav-dropdown\" @mouseenter=\"open = 'admin'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Admin</button><div class=\"dropdown-menu\" x-show=\"open === 'admin'\" x-cloak><a href=\"/admin/companies\" class=\"dropdown-item\">Companies</a> <a href=\"/admin/backups\" class=\"dropdown-item\">Backups</a></div></div>")
+		if features.Has(models.FeatureQBO) {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<hr class=\"dropdown-divider\"><a href=\"/settings/integrations\" class=\"dropdown-item\">Integrations</a>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div><!-- Hamburger (mobile/tablet) --><button class=\"nav-hamburger\" @click=\"mobileOpen = !mobileOpen\" type=\"button\" :aria-expanded=\"mobileOpen\" aria-label=\"Toggle navigation menu\" aria-controls=\"nav-mobile-menu\">☰</button><div class=\"nav-user\"><!-- Notification bell --><div class=\"notification-bell\" x-data=\"{ open: false }\" @click.away=\"open = false\"><button class=\"bell-btn\" @click=\"open = !open; if(open) { htmx.ajax('POST', '/notifications/mark-read', {swap:'none'}); htmx.ajax('GET', '/notifications', {target:'#notification-panel', swap:'innerHTML'}) }\" type=\"button\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"></path><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"></path></svg> <span hx-get=\"/notifications/count\" hx-trigger=\"load, every 30s\" hx-swap=\"innerHTML\"></span></button><div id=\"notification-panel\" class=\"notification-panel\" x-show=\"open\" x-cloak><p style=\"padding:1rem; color:var(--gray-400); text-align:center;\">Loading...</p></div></div><span>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if user.Role == "super_admin" {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<!-- Admin (super_admin only) --> <div class=\"nav-dropdown\" @mouseenter=\"open = 'admin'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Admin</button><div class=\"dropdown-menu\" x-show=\"open === 'admin'\" x-cloak><a href=\"/admin/companies\" class=\"dropdown-item\">Companies</a> <a href=\"/admin/backups\" class=\"dropdown-item\">Backups</a></div></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><!-- Hamburger (mobile/tablet) --><button class=\"nav-hamburger\" @click=\"mobileOpen = !mobileOpen\" type=\"button\" :aria-expanded=\"mobileOpen\" aria-label=\"Toggle navigation menu\" aria-controls=\"nav-mobile-menu\">☰</button><div class=\"nav-user\"><!-- Notification bell --><div class=\"notification-bell\" x-data=\"{ open: false }\" @click.away=\"open = false\"><button class=\"bell-btn\" @click=\"open = !open; if(open) { htmx.ajax('POST', '/notifications/mark-read', {swap:'none'}); htmx.ajax('GET', '/notifications', {target:'#notification-panel', swap:'innerHTML'}) }\" type=\"button\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"></path><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"></path></svg> <span hx-get=\"/notifications/count\" hx-trigger=\"load, every 30s\" hx-swap=\"innerHTML\"></span></button><div id=\"notification-panel\" class=\"notification-panel\" x-show=\"open\" x-cloak><p style=\"padding:1rem; color:var(--gray-400); text-align:center;\">Loading...</p></div></div><span>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(user.Username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 142, Col: 24}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 146, Col: 24}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</span> <button class=\"btn btn-sm\" hx-post=\"/logout\">Logout</button></div><!-- Mobile nav drawer --><div id=\"nav-mobile-menu\" class=\"nav-mobile-menu\" x-show=\"mobileOpen\" x-cloak><a href=\"/search/vin\">VIN Search</a><hr>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</span> <button class=\"btn btn-sm\" hx-post=\"/logout\">Logout</button></div><!-- Mobile nav drawer --><div id=\"nav-mobile-menu\" class=\"nav-mobile-menu\" x-show=\"mobileOpen\" x-cloak><a href=\"/search/vin\">VIN Search</a><hr>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if features.Has(models.FeatureLoadboard) {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"mobile-section-label\">Loadboard</div><a href=\"/loadboard\">Browse Loads</a> <a href=\"/loadboard/my-listings\">My Listings</a> <a href=\"/loadboard/my-claims\">My Claims</a><hr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<div class=\"mobile-section-label\">Loadboard</div><a href=\"/loadboard\">Browse Loads</a> <a href=\"/loadboard/my-listings\">My Listings</a> <a href=\"/loadboard/my-claims\">My Claims</a><hr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"mobile-section-label\">Dispatch</div><a href=\"/dispatch/orders\">Orders</a> <a href=\"/dispatch/trips\">Trips/Loads</a> <a href=\"/dispatch/waiting\">Waiting Grid</a><hr><div class=\"mobile-section-label\">Accounting</div><a href=\"/accounting/invoices\">Invoices</a> <a href=\"/accounting/payments\">Payments</a> <a href=\"/accounting/credit-memos\">Credit Memos</a> <a href=\"/accounting/damage-claims\">Damage Claims</a> <a href=\"/accounting/ap\">Accounts Payable</a> <a href=\"/accounting/driver-adjustments\">Driver Adjustments</a> <a href=\"/accounting/truck-adjustments\">Truck Adjustments</a> <a href=\"/accounting/posting\">Period Posting</a><hr><div class=\"mobile-section-label\">Global</div><a href=\"/global/customers\">Customers</a> <a href=\"/global/employees\">Employees</a> <a href=\"/global/trucks\">Trucks</a> <a href=\"/global/vendors\">Vendors</a> <a href=\"/global/zones\">Zones</a><hr><div class=\"mobile-section-label\">Reports</div><a href=\"/reports\">All Reports</a> <a href=\"/reports/ar-aging\">AR Aging</a> <a href=\"/reports/trip-summary\">Trip Summary</a> <a href=\"/reports/driver-settlement\">Driver Settlement</a><hr><div class=\"mobile-section-label\">Utilities</div><a href=\"/utilities/company\">Company Settings</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"mobile-section-label\">Dispatch</div><a href=\"/dispatch/orders\">Orders</a> <a href=\"/dispatch/trips\">Trips/Loads</a> <a href=\"/dispatch/waiting\">Waiting Grid</a><hr><div class=\"mobile-section-label\">Accounting</div><a href=\"/accounting/invoices\">Invoices</a> <a href=\"/accounting/payments\">Payments</a> <a href=\"/accounting/credit-memos\">Credit Memos</a> <a href=\"/accounting/damage-claims\">Damage Claims</a> <a href=\"/accounting/ap\">Accounts Payable</a> <a href=\"/accounting/driver-adjustments\">Driver Adjustments</a> <a href=\"/accounting/truck-adjustments\">Truck Adjustments</a> <a href=\"/accounting/posting\">Period Posting</a><hr><div class=\"mobile-section-label\">Global</div><a href=\"/global/customers\">Customers</a> <a href=\"/global/employees\">Employees</a> <a href=\"/global/trucks\">Trucks</a> <a href=\"/global/vendors\">Vendors</a> <a href=\"/global/zones\">Zones</a><hr><div class=\"mobile-section-label\">Reports</div><a href=\"/reports\">All Reports</a> <a href=\"/reports/ar-aging\">AR Aging</a> <a href=\"/reports/trip-summary\">Trip Summary</a> <a href=\"/reports/driver-settlement\">Driver Settlement</a><hr><div class=\"mobile-section-label\">Utilities</div><a href=\"/utilities/company\">Company Settings</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if user.Role == "super_admin" || user.Role == "company_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<a href=\"/settings/users\">Users</a> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<a href=\"/settings/users\">Users</a> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<a href=\"/settings/change-password\">Change Password</a> <a href=\"/feedback\">Feedback</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<a href=\"/settings/change-password\">Change Password</a> <a href=\"/feedback\">Feedback</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if user.Role == "super_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<hr><div class=\"mobile-section-label\">Admin</div><a href=\"/admin/companies\">Companies</a> <a href=\"/admin/backups\">Backups</a>")
+		if features.Has(models.FeatureQBO) {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<a href=\"/settings/integrations\">Integrations</a> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<hr><button hx-post=\"/logout\">Logout</button></div></nav>")
+		if user.Role == "super_admin" {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<hr><div class=\"mobile-section-label\">Admin</div><a href=\"/admin/companies\">Companies</a> <a href=\"/admin/backups\">Backups</a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<hr><button hx-post=\"/logout\">Logout</button></div></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -60,6 +60,10 @@ func (h *IntegrationsHandler) Register(mux *http.ServeMux) {
 
 // show renders the integrations settings page.
 func (h *IntegrationsHandler) show(w http.ResponseWriter, r *http.Request) {
+	if !h.deps.GetFeatures(r).Has(models.FeatureQBO) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 	companyID, err := auth.GetCompanyID(r.Context())
 	if err != nil {
 		serverError(w, err)
@@ -88,6 +92,10 @@ func (h *IntegrationsHandler) show(w http.ResponseWriter, r *http.Request) {
 
 // connect initiates the OAuth2 flow by redirecting to QBO.
 func (h *IntegrationsHandler) connect(w http.ResponseWriter, r *http.Request) {
+	if !h.deps.GetFeatures(r).Has(models.FeatureQBO) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 	state := uuid.New().String()
 	http.SetCookie(w, &http.Cookie{
 		Name:     "qbo_oauth_state",
@@ -103,6 +111,10 @@ func (h *IntegrationsHandler) connect(w http.ResponseWriter, r *http.Request) {
 
 // callback handles the OAuth2 redirect from QBO.
 func (h *IntegrationsHandler) callback(w http.ResponseWriter, r *http.Request) {
+	if !h.deps.GetFeatures(r).Has(models.FeatureQBO) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 	// Validate state cookie
 	stateCookie, err := r.Cookie("qbo_oauth_state")
 	if err != nil {
@@ -170,6 +182,10 @@ func (h *IntegrationsHandler) callback(w http.ResponseWriter, r *http.Request) {
 
 // disconnect removes the QBO connection for the current company.
 func (h *IntegrationsHandler) disconnect(w http.ResponseWriter, r *http.Request) {
+	if !h.deps.GetFeatures(r).Has(models.FeatureQBO) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 	companyID, err := auth.GetCompanyID(r.Context())
 	if err != nil {
 		serverError(w, err)
@@ -189,6 +205,10 @@ func (h *IntegrationsHandler) disconnect(w http.ResponseWriter, r *http.Request)
 
 // syncAll enqueues River jobs for all unsynced customers, invoices, and payments.
 func (h *IntegrationsHandler) syncAll(w http.ResponseWriter, r *http.Request) {
+	if !h.deps.GetFeatures(r).Has(models.FeatureQBO) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 	companyID, err := auth.GetCompanyID(r.Context())
 	if err != nil {
 		serverError(w, err)

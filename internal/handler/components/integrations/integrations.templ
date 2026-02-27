@@ -17,23 +17,35 @@ templ Page(pc components.PageContext, conn *models.QBOConnection, failures []mod
 			</div>
 			<div class="card-body">
 				if conn == nil {
-					<p>Connect your QuickBooks Online account to automatically sync customers, invoices, and payments.</p>
+					<p class="text-muted mb-3">Connect your QuickBooks Online account to automatically sync the following data:</p>
+					<ul class="mb-3">
+						<li>Customers — synced as QBO customers</li>
+						<li>Invoices — synced as QBO invoices</li>
+						<li>Payments — synced as QBO payments</li>
+					</ul>
 					<a href="/integrations/qbo/connect" class="btn btn-primary">Connect to QuickBooks</a>
 				} else {
-					<div class="mb-3">
+					<div class="mb-3 d-flex align-items-center gap-3">
 						<span class="badge bg-success">Connected</span>
-						<span class="text-muted ms-2">Realm: { conn.RealmID }</span>
-						<span class="text-muted ms-2">Connected by { conn.ConnectedBy }</span>
+						<span class="text-muted">Realm ID: <strong>{ conn.RealmID }</strong></span>
+						<span class="text-muted">Connected by <strong>{ conn.ConnectedBy }</strong> on { conn.ConnectedAt.Format("Jan 2, 2006") }</span>
 					</div>
 					<div class="mb-3 d-flex gap-2">
 						<form method="POST" action="/integrations/qbo/sync-all">
 							<input type="hidden" name="csrf_token" value={ pc.CSRFToken }/>
-							<button type="submit" class="btn btn-secondary">Sync All Unsynced</button>
+							<button
+								type="submit"
+								class="btn btn-secondary"
+								onclick="return confirm('Queue all unsynced customers, invoices, and payments for sync to QuickBooks?')"
+							>Sync All Unsynced</button>
 						</form>
-						<form method="POST" action="/integrations/qbo/disconnect"
-							onsubmit="return confirm('Disconnect QuickBooks? Existing QBO records will remain.')">
+						<form method="POST" action="/integrations/qbo/disconnect">
 							<input type="hidden" name="csrf_token" value={ pc.CSRFToken }/>
-							<button type="submit" class="btn btn-danger">Disconnect</button>
+							<button
+								type="submit"
+								class="btn btn-danger"
+								onclick="return confirm('Disconnect QuickBooks? Existing QBO records will remain but future changes will not sync.')"
+							>Disconnect</button>
 						</form>
 					</div>
 					if len(failures) > 0 {
@@ -41,7 +53,12 @@ templ Page(pc components.PageContext, conn *models.QBOConnection, failures []mod
 							<strong>Recent sync failures ({ fmt.Sprintf("%d", len(failures)) }):</strong>
 							<ul class="mb-0 mt-1">
 								for _, f := range failures {
-									<li>{ f.EntityType } #{ fmt.Sprintf("%d", f.EntityID) } — { derefStr(f.ErrorMessage) }</li>
+									<li>
+										<strong>{ f.EntityType }</strong> #{ fmt.Sprintf("%d", f.EntityID) }
+										if f.ErrorMessage != nil {
+											— { truncate(*f.ErrorMessage, 100) }
+										}
+									</li>
 								}
 							</ul>
 						</div>
@@ -52,9 +69,9 @@ templ Page(pc components.PageContext, conn *models.QBOConnection, failures []mod
 	}
 }
 
-func derefStr(s *string) string {
-	if s == nil {
-		return ""
+func truncate(s string, max int) string {
+	if len(s) <= max {
+		return s
 	}
-	return *s
+	return s[:max] + "..."
 }
