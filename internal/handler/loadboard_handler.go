@@ -67,29 +67,39 @@ func NewLoadboardHandler(
 	}
 }
 
-func (h *LoadboardHandler) Register(mux *http.ServeMux) {
+func (h *LoadboardHandler) Register(mux *http.ServeMux, gate ...func(http.Handler) http.Handler) {
+	wrap := func(fn http.HandlerFunc) http.HandlerFunc {
+		if len(gate) == 0 {
+			return fn
+		}
+		var handler http.Handler = fn
+		for i := len(gate) - 1; i >= 0; i-- {
+			handler = gate[i](handler)
+		}
+		return handler.ServeHTTP
+	}
 	// Browse available listings (cross-company)
-	mux.HandleFunc("GET /loadboard", h.browse)
-	mux.HandleFunc("GET /loadboard/post/{orderID}", h.postForm)
-	mux.HandleFunc("POST /loadboard/post/{orderID}", h.postCreate)
-	mux.HandleFunc("GET /loadboard/my-listings", h.myListings)
-	mux.HandleFunc("GET /loadboard/my-listings/{id}", h.myListingShow)
-	mux.HandleFunc("POST /loadboard/my-listings/{id}/cancel", h.cancelListing)
-	mux.HandleFunc("GET /loadboard/my-claims", h.myClaims)
-	mux.HandleFunc("GET /loadboard/my-claims/{id}", h.myClaimShow)
-	mux.HandleFunc("POST /loadboard/my-claims/{id}/pickup", h.pickupClaim)
-	mux.HandleFunc("POST /loadboard/my-claims/{id}/deliver", h.deliverClaim)
-	mux.HandleFunc("POST /loadboard/claims/{id}/no-show", h.noShowClaim)
-	mux.HandleFunc("POST /loadboard/my-claims/{id}/cancel", h.cancelClaim)
-	mux.HandleFunc("POST /loadboard/claims/{id}/accept", h.acceptClaim)
-	mux.HandleFunc("POST /loadboard/claims/{id}/reject", h.rejectClaim)
-	mux.HandleFunc("GET /loadboard/claims/{id}/messages", h.claimMessages)
-	mux.HandleFunc("POST /loadboard/claims/{id}/messages", h.sendMessage)
-	mux.HandleFunc("GET /loadboard/map-data", h.mapData)
-	mux.HandleFunc("GET /loadboard/unread-count", h.unreadCount)
-	mux.HandleFunc("POST /loadboard/claim/{id}", h.claim)
+	mux.HandleFunc("GET /loadboard", wrap(h.browse))
+	mux.HandleFunc("GET /loadboard/post/{orderID}", wrap(h.postForm))
+	mux.HandleFunc("POST /loadboard/post/{orderID}", wrap(h.postCreate))
+	mux.HandleFunc("GET /loadboard/my-listings", wrap(h.myListings))
+	mux.HandleFunc("GET /loadboard/my-listings/{id}", wrap(h.myListingShow))
+	mux.HandleFunc("POST /loadboard/my-listings/{id}/cancel", wrap(h.cancelListing))
+	mux.HandleFunc("GET /loadboard/my-claims", wrap(h.myClaims))
+	mux.HandleFunc("GET /loadboard/my-claims/{id}", wrap(h.myClaimShow))
+	mux.HandleFunc("POST /loadboard/my-claims/{id}/pickup", wrap(h.pickupClaim))
+	mux.HandleFunc("POST /loadboard/my-claims/{id}/deliver", wrap(h.deliverClaim))
+	mux.HandleFunc("POST /loadboard/claims/{id}/no-show", wrap(h.noShowClaim))
+	mux.HandleFunc("POST /loadboard/my-claims/{id}/cancel", wrap(h.cancelClaim))
+	mux.HandleFunc("POST /loadboard/claims/{id}/accept", wrap(h.acceptClaim))
+	mux.HandleFunc("POST /loadboard/claims/{id}/reject", wrap(h.rejectClaim))
+	mux.HandleFunc("GET /loadboard/claims/{id}/messages", wrap(h.claimMessages))
+	mux.HandleFunc("POST /loadboard/claims/{id}/messages", wrap(h.sendMessage))
+	mux.HandleFunc("GET /loadboard/map-data", wrap(h.mapData))
+	mux.HandleFunc("GET /loadboard/unread-count", wrap(h.unreadCount))
+	mux.HandleFunc("POST /loadboard/claim/{id}", wrap(h.claim))
 	// This must be last — {id} wildcard would match other paths
-	mux.HandleFunc("GET /loadboard/{id}", h.show)
+	mux.HandleFunc("GET /loadboard/{id}", wrap(h.show))
 }
 
 func (h *LoadboardHandler) browse(w http.ResponseWriter, r *http.Request) {

@@ -205,11 +205,8 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	loadboardStore := store.NewLoadboardStore(pool)
 	loadboardSvc := service.NewLoadboardService(pool, loadboardStore, orderStore, vehicleStore, companyStore, orderSvc, auditSvc)
 	featureCheck := func(r *http.Request) models.FeatureSet { return deps.GetFeatures(r) }
-	loadboardMux := http.NewServeMux()
-	handler.NewLoadboardHandler(loadboardStore, orderStore, vehicleStore, companyStore, loadboardSvc, deps).Register(loadboardMux)
 	loadboardGate := middleware.RequireFeature(featureCheck, models.FeatureLoadboard, deps.UpgradeHandler(models.FeatureLoadboard))
-	protectedMux.Handle("/loadboard", loadboardGate(loadboardMux))
-	protectedMux.Handle("/loadboard/", loadboardGate(loadboardMux))
+	handler.NewLoadboardHandler(loadboardStore, orderStore, vehicleStore, companyStore, loadboardSvc, deps).Register(protectedMux, loadboardGate)
 
 	// Dispatch
 	handler.NewOrderHandler(orderStore, invoiceSvc, vehicleStore, attachmentStore, loadboardStore, deps).Register(protectedMux)
