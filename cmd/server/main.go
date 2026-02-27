@@ -90,14 +90,15 @@ func main() {
 	routeStores.paymentStore.RiverClient = riverClient
 	routeStores.invoiceSvc.RiverClient = riverClient
 
-	// Register integrations handler (needs riverClient, only available post-initRiver)
+	// Register integrations handler (needs riverClient, only available post-initRiver).
+	// Mutating routes (connect/disconnect/sync-all) require company_admin or super_admin.
 	handler.NewIntegrationsHandler(
 		qboStore, oauthCfg, riverClient,
 		routeStores.customerStore,
 		routeStores.invoiceStore,
 		routeStores.paymentStore,
 		deps,
-	).Register(routeStores.protectedMux)
+	).Register(routeStores.protectedMux, middleware.RequireRole("company_admin", "super_admin"))
 
 	// Background: expire loadboard listings every 5 minutes
 	go runLoadboardExpiry(ctx, loadboardSvc)

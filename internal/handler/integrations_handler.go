@@ -49,13 +49,16 @@ func NewIntegrationsHandler(
 	}
 }
 
-// Register wires routes onto the given mux (expected to be the protected mux).
-func (h *IntegrationsHandler) Register(mux *http.ServeMux) {
+// Register wires routes onto the given mux.
+// mw is applied to the mutating routes (connect/callback/disconnect/sync-all);
+// pass middleware.RequireRole("company_admin", "super_admin") from the caller.
+func (h *IntegrationsHandler) Register(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
+	wrap := func(fn http.HandlerFunc) http.Handler { return mw(fn) }
 	mux.HandleFunc("GET /settings/integrations", h.show)
-	mux.HandleFunc("GET /integrations/qbo/connect", h.connect)
-	mux.HandleFunc("GET /integrations/qbo/callback", h.callback)
-	mux.HandleFunc("POST /integrations/qbo/disconnect", h.disconnect)
-	mux.HandleFunc("POST /integrations/qbo/sync-all", h.syncAll)
+	mux.Handle("GET /integrations/qbo/connect", wrap(h.connect))
+	mux.Handle("GET /integrations/qbo/callback", wrap(h.callback))
+	mux.Handle("POST /integrations/qbo/disconnect", wrap(h.disconnect))
+	mux.Handle("POST /integrations/qbo/sync-all", wrap(h.syncAll))
 }
 
 // show renders the integrations settings page.
@@ -104,6 +107,7 @@ func (h *IntegrationsHandler) connect(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   600,
 		HttpOnly: true,
 		Secure:   h.deps.SecureCookies,
+		SameSite: http.SameSiteLaxMode,
 	})
 	authURL := h.oauthCfg.AuthCodeURL(state, oauth2.AccessTypeOffline)
 	http.Redirect(w, r, authURL, http.StatusFound)
@@ -129,6 +133,7 @@ func (h *IntegrationsHandler) callback(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   -1,
 		HttpOnly: true,
 		Secure:   h.deps.SecureCookies,
+		SameSite: http.SameSiteLaxMode,
 	})
 
 	if r.URL.Query().Get("state") != stateCookie.Value {

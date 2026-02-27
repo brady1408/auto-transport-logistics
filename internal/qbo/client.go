@@ -125,13 +125,34 @@ func (c *Client) UpsertCustomer(ctx context.Context, cust Customer) (string, err
 	return resp.Customer.ID, nil
 }
 
+// isStaleTokenError returns true if the QBO error response indicates a stale SyncToken (fault code 6140).
+// QBO returns HTTP 400 (not 409) with fault code "6140" for stale SyncToken conflicts.
+func isStaleTokenError(body []byte) bool {
+	var fault struct {
+		Fault struct {
+			Error []struct {
+				Code string `json:"code"`
+			} `json:"Error"`
+		} `json:"Fault"`
+	}
+	if err := json.Unmarshal(body, &fault); err != nil {
+		return false
+	}
+	for _, e := range fault.Fault.Error {
+		if e.Code == "6140" {
+			return true
+		}
+	}
+	return false
+}
+
 // UpsertInvoice creates or updates a QBO Invoice. Returns QBO Invoice ID and SyncToken.
 func (c *Client) UpsertInvoice(ctx context.Context, inv Invoice) (id, syncToken string, err error) {
 	b, status, reqErr := c.do(ctx, http.MethodPost, "/invoice"+minorVersion, inv)
 	if reqErr != nil {
 		return "", "", reqErr
 	}
-	if status == http.StatusConflict {
+	if status == http.StatusBadRequest && isStaleTokenError(b) {
 		return "", "", &SyncTokenError{EntityID: inv.ID}
 	}
 	if status != http.StatusOK {
@@ -159,7 +180,7 @@ func (c *Client) VoidInvoice(ctx context.Context, qboID, syncToken string) error
 }
 
 // GetInvoiceSyncToken fetches the current SyncToken for a QBO invoice.
-// Used to recover from a 409 stale-token conflict.
+// Used to recover from a stale-token conflict (fault code 6140).
 func (c *Client) GetInvoiceSyncToken(ctx context.Context, qboID string) (string, error) {
 	b, status, err := c.do(ctx, http.MethodGet, "/invoice/"+qboID, nil)
 	if err != nil {
@@ -191,7 +212,7 @@ func (c *Client) UpsertPayment(ctx context.Context, pmt Payment) (id, syncToken 
 	return resp.Payment.ID, resp.Payment.SyncToken, nil
 }
 
-// SyncTokenError is returned when QBO responds with a 409 stale SyncToken.
+// SyncTokenError is returned when QBO responds with fault code 6140 (stale SyncToken).
 type SyncTokenError struct {
 	EntityID string
 }
