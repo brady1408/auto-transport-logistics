@@ -26,6 +26,7 @@ const (
 	FeatureReports    Feature = "reports"
 	FeatureLoadboard  Feature = "loadboard"
 	FeatureEDI        Feature = "edi"
+	FeatureQBO        Feature = "quickbooks"
 )
 
 // TierFeatures maps each tier to its included features (cumulative).
@@ -34,12 +35,14 @@ var TierFeatures = map[Tier][]Feature{
 		FeatureDispatch,
 		FeatureAccounting,
 		FeatureReports,
+		FeatureQBO,
 	},
 	TierPro: {
 		FeatureDispatch,
 		FeatureAccounting,
 		FeatureReports,
 		FeatureLoadboard,
+		FeatureQBO,
 	},
 	TierEnterprise: {
 		FeatureDispatch,
@@ -47,6 +50,7 @@ var TierFeatures = map[Tier][]Feature{
 		FeatureReports,
 		FeatureLoadboard,
 		FeatureEDI,
+		FeatureQBO,
 	},
 }
 
