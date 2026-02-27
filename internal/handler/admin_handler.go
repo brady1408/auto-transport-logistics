@@ -117,14 +117,21 @@ type adminUserStore interface {
 	UpdatePassword(ctx context.Context, id int, companyID int, hash string) error
 }
 
-type AdminHandler struct {
-	companyStore adminCompanyStore
-	userStore    adminUserStore
-	deps         *Deps
+type adminSubscriptionStore interface {
+	GetByCompanyID(ctx context.Context, companyID int) (*models.Subscription, error)
+	Upsert(ctx context.Context, sub *models.Subscription) error
+	ListAll(ctx context.Context) ([]models.Subscription, error)
 }
 
-func NewAdminHandler(companyStore adminCompanyStore, userStore adminUserStore, deps *Deps) *AdminHandler {
-	return &AdminHandler{companyStore: companyStore, userStore: userStore, deps: deps}
+type AdminHandler struct {
+	companyStore      adminCompanyStore
+	userStore         adminUserStore
+	subscriptionStore adminSubscriptionStore
+	deps              *Deps
+}
+
+func NewAdminHandler(companyStore adminCompanyStore, userStore adminUserStore, subscriptionStore adminSubscriptionStore, deps *Deps) *AdminHandler {
+	return &AdminHandler{companyStore: companyStore, userStore: userStore, subscriptionStore: subscriptionStore, deps: deps}
 }
 
 // RegisterAdmin registers super_admin-only routes with the given middleware applied per-handler.
@@ -161,13 +168,21 @@ func (h *AdminHandler) listCompanies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Build a map of companyID -> Subscription for the table
+	subMap := make(map[int]models.Subscription)
+	if subs, err := h.subscriptionStore.ListAll(r.Context()); err == nil {
+		for _, s := range subs {
+			subMap[s.CompanyID] = s
+		}
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, admin.CompaniesPage(pg, companies))
+	h.deps.renderTempl(w, r, admin.CompaniesPage(pg, companies, subMap))
 }
 
 func (h *AdminHandler) newCompany(w http.ResponseWriter, r *http.Request) {
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, nil, true, nil, ""))
+	h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, nil, true, nil, "", nil))
 }
 
 func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
@@ -185,14 +200,24 @@ func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
 	pg := h.deps.pageContext(w, r)
 
 	if errs := validateCompany(c); len(errs) > 0 {
-		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, true, errs, ""))
+		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, true, errs, "", nil))
 		return
 	}
 
 	if err := h.companyStore.Create(r.Context(), c); err != nil {
 		log.Printf("create company: %v", err)
-		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, true, nil, "Failed to create company"))
+		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, true, nil, "Failed to create company", nil))
 		return
+	}
+
+	// Create default Basic subscription for new company
+	sub := &models.Subscription{
+		CompanyID: c.ID,
+		Tier:      models.TierBasic,
+		AddonEDI:  false,
+	}
+	if err := h.subscriptionStore.Upsert(r.Context(), sub); err != nil {
+		log.Printf("create subscription for company %d: %v", c.ID, err)
 	}
 
 	h.deps.setFlash(w, "Company created successfully")
@@ -212,8 +237,13 @@ func (h *AdminHandler) editCompany(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sub, err := h.subscriptionStore.GetByCompanyID(r.Context(), id)
+	if err != nil {
+		sub = nil
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, false, nil, ""))
+	h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, false, nil, "", sub))
 }
 
 func (h *AdminHandler) updateCompany(w http.ResponseWriter, r *http.Request) {
@@ -245,15 +275,33 @@ func (h *AdminHandler) updateCompany(w http.ResponseWriter, r *http.Request) {
 	pg := h.deps.pageContext(w, r)
 
 	if errs := validateCompany(c); len(errs) > 0 {
-		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, false, errs, ""))
+		sub, _ := h.subscriptionStore.GetByCompanyID(r.Context(), id)
+		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, false, errs, "", sub))
 		return
 	}
 
 	if err := h.companyStore.UpdateByID(r.Context(), c); err != nil {
 		log.Printf("update company: %v", err)
-		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, false, nil, "Failed to update"))
+		sub, _ := h.subscriptionStore.GetByCompanyID(r.Context(), id)
+		h.deps.renderTempl(w, r, admin.CompanyFormPage(pg, c, false, nil, "Failed to update", sub))
 		return
 	}
+
+	// Update subscription
+	tier := formStringRequired(r, "tier")
+	if !models.ValidTier(tier) {
+		tier = models.TierBasic
+	}
+	sub := &models.Subscription{
+		CompanyID: id,
+		Tier:      tier,
+		AddonEDI:  formBool(r, "addon_edi"),
+		EDIMonthlyLimit: formInt(r, "edi_monthly_limit"),
+	}
+	if err := h.subscriptionStore.Upsert(r.Context(), sub); err != nil {
+		log.Printf("upsert subscription for company %d: %v", id, err)
+	}
+	h.deps.InvalidateSubscription(id)
 
 	h.deps.setFlash(w, "Company updated successfully")
 	http.Redirect(w, r, "/admin/companies", http.StatusSeeOther)

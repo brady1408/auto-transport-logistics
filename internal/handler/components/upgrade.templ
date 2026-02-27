@@ -1,0 +1,17 @@
+package components
+
+templ UpgradePage(pg PageContext, feature string) {
+	@Layout(pg, "Feature Not Available") {
+		<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:50vh; text-align:center; padding:2rem;">
+			<div style="max-width:480px;">
+				<div style="font-size:3rem; margin-bottom:1rem;">🔒</div>
+				<h2 style="margin-bottom:0.5rem;">Feature Not Available</h2>
+				<p style="color:var(--gray-400); margin-bottom:1.5rem;">
+					This feature is not included in your current plan.
+					Contact your administrator to upgrade.
+				</p>
+				<a href="/" class="btn btn-primary">Back to Dashboard</a>
+			</div>
+		</div>
+	}
+}

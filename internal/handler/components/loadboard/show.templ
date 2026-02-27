@@ -2,13 +2,19 @@ package loadboard
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ ShowPage(pg components.PageContext, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle, canClaim bool) {
+templ ShowPage(pg components.PageContext, listing *models.LoadboardListing, vehicles []models.LoadboardListingVehicle, canClaim bool, viewerInsuranceExp *time.Time) {
 	@components.Layout(pg, listing.ListingNumber + " - Loadboard - ATLinks") {
+		if viewerInsuranceExp != nil && viewerInsuranceExp.Before(time.Now()) {
+			<div class="alert alert-danger" style="margin-bottom:1rem;">
+				⚠️ Your company's insurance expired on { viewerInsuranceExp.Format("01/02/2006") }. You may not be able to claim loads until it is updated.
+			</div>
+		}
 		<div class="page-header">
 			<div>
 				<a href="/loadboard" class="page-header-back">← Back to Loadboard</a>
