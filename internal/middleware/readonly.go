@@ -5,12 +5,17 @@ import "net/http"
 // SuspendedChecker returns true if the current request belongs to a suspended account.
 type SuspendedChecker func(*http.Request) bool
 
+// readOnlyExempt lists paths that suspended accounts may still POST to (e.g. logout).
+var readOnlyExempt = map[string]bool{
+	"/logout": true,
+}
+
 // ReadOnlyIfSuspended returns middleware that blocks write requests (POST/PUT/PATCH/DELETE)
-// for suspended accounts by calling onBlocked. GET and HEAD requests always pass through.
+// for suspended accounts by calling onBlocked. GET, HEAD, and exempt paths always pass through.
 func ReadOnlyIfSuspended(check SuspendedChecker, onBlocked http.HandlerFunc) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if isWriteMethod(r.Method) && check(r) {
+			if isWriteMethod(r.Method) && !readOnlyExempt[r.URL.Path] && check(r) {
 				onBlocked(w, r)
 				return
 			}
