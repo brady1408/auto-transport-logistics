@@ -2,12 +2,13 @@ package admin
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ CompaniesPage(pg components.PageContext, companies []models.Company) {
+templ CompaniesPage(pg components.PageContext, companies []models.Company, subMap map[int]models.Subscription) {
 	@components.Layout(pg, "Companies - Admin") {
 		<div class="page-header">
 			<h2>Companies</h2>
@@ -20,6 +21,7 @@ templ CompaniesPage(pg components.PageContext, companies []models.Company) {
 					<th>ID</th>
 					<th>Name</th>
 					<th>Slug</th>
+					<th>Tier</th>
 					<th>Active</th>
 					<th>City</th>
 					<th>State</th>
@@ -35,6 +37,13 @@ templ CompaniesPage(pg components.PageContext, companies []models.Company) {
 							<td>{ fmt.Sprintf("%d", c.ID) }</td>
 							<td>{ c.CompanyName }</td>
 							<td>{ c.Slug }</td>
+							<td>
+								if sub, ok := subMap[c.ID]; ok {
+									<span class="badge badge-active">{ strings.ToUpper(sub.Tier) }</span>
+								} else {
+									<span class="badge badge-waiting">—</span>
+								}
+							</td>
 							<td>
 								if c.Active {
 									Yes
@@ -53,7 +62,7 @@ templ CompaniesPage(pg components.PageContext, companies []models.Company) {
 						</tr>
 					}
 				} else {
-					<tr><td colspan="9" class="text-center">No companies found</td></tr>
+					<tr><td colspan="10" class="text-center">No companies found</td></tr>
 				}
 				</tbody>
 			</table>

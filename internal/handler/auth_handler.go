@@ -39,27 +39,33 @@ type authPendingRegistrationStore interface {
 	Delete(ctx context.Context, id int) error
 }
 
-type AuthHandler struct {
-	users        authUserStore
-	companyStore authCompanyStore
-	inviteCode   string
-	deps         *Deps
-	emailSvc     *email.Service
-	resetStore   authResetTokenStore
-	pendingStore authPendingRegistrationStore
-	appBaseURL   string
+type authSubscriptionStore interface {
+	Upsert(ctx context.Context, sub *models.Subscription) error
 }
 
-func NewAuthHandler(users authUserStore, companyStore authCompanyStore, inviteCode string, deps *Deps, emailSvc *email.Service, resetStore authResetTokenStore, pendingStore authPendingRegistrationStore, appBaseURL string) *AuthHandler {
+type AuthHandler struct {
+	users             authUserStore
+	companyStore      authCompanyStore
+	subscriptionStore authSubscriptionStore
+	inviteCode        string
+	deps              *Deps
+	emailSvc          *email.Service
+	resetStore        authResetTokenStore
+	pendingStore      authPendingRegistrationStore
+	appBaseURL        string
+}
+
+func NewAuthHandler(users authUserStore, companyStore authCompanyStore, subscriptionStore authSubscriptionStore, inviteCode string, deps *Deps, emailSvc *email.Service, resetStore authResetTokenStore, pendingStore authPendingRegistrationStore, appBaseURL string) *AuthHandler {
 	return &AuthHandler{
-		users:        users,
-		companyStore: companyStore,
-		inviteCode:   inviteCode,
-		deps:         deps,
-		emailSvc:     emailSvc,
-		resetStore:   resetStore,
-		pendingStore: pendingStore,
-		appBaseURL:   appBaseURL,
+		users:             users,
+		companyStore:      companyStore,
+		subscriptionStore: subscriptionStore,
+		inviteCode:        inviteCode,
+		deps:              deps,
+		emailSvc:          emailSvc,
+		resetStore:        resetStore,
+		pendingStore:      pendingStore,
+		appBaseURL:        appBaseURL,
 	}
 }
 
@@ -365,6 +371,16 @@ func (h *AuthHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request) 
 		log.Printf("ERROR: create user from verification: %v", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
+	}
+
+	// Create default Basic subscription for new company
+	sub := &models.Subscription{
+		CompanyID: company.ID,
+		Tier:      models.TierBasic,
+		AddonEDI:  false,
+	}
+	if err := h.subscriptionStore.Upsert(r.Context(), sub); err != nil {
+		log.Printf("ERROR: create subscription for company %d: %v", company.ID, err)
 	}
 
 	// Clean up pending registration

@@ -27,7 +27,7 @@ templ Layout(pg PageContext, title string) {
 	</head>
 	<body>
 		if pg.User != nil {
-			@Nav(*pg.User, pg.CompanyName)
+			@Nav(*pg.User, pg.CompanyName, pg.Features)
 		}
 		<main class="container">
 			if pg.Flash != "" {

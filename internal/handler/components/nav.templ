@@ -1,8 +1,11 @@
 package components
 
-import "github.com/brady1408/atlinks/internal/auth"
+import (
+	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/atlinks/internal/models"
+)
 
-templ Nav(user auth.ContextUser, companyName string) {
+templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet) {
 	<nav class="main-nav" x-data="{ open: '', mobileOpen: false }" @click.outside="mobileOpen = false" style="position:relative">
 		<div class="nav-brand">
 			<a href="/">
@@ -16,15 +19,17 @@ templ Nav(user auth.ContextUser, companyName string) {
 		<div class="nav-menu">
 			<!-- VIN Search (top-level) -->
 			<a href="/search/vin" class="nav-link" style="text-decoration:none;">VIN Search</a>
-			<!-- Loadboard -->
-			<div class="nav-dropdown" @mouseenter="open = 'loadboard'" @mouseleave="open = ''">
-				<button class="nav-link">Loadboard</button>
-				<div class="dropdown-menu" x-show="open === 'loadboard'" x-cloak>
-					<a href="/loadboard" class="dropdown-item">Browse Loads</a>
-					<a href="/loadboard/my-listings" class="dropdown-item">My Listings</a>
-					<a href="/loadboard/my-claims" class="dropdown-item">My Claims</a>
+			<!-- Loadboard (Pro+) -->
+			if features.Has(models.FeatureLoadboard) {
+				<div class="nav-dropdown" @mouseenter="open = 'loadboard'" @mouseleave="open = ''">
+					<button class="nav-link">Loadboard</button>
+					<div class="dropdown-menu" x-show="open === 'loadboard'" x-cloak>
+						<a href="/loadboard" class="dropdown-item">Browse Loads</a>
+						<a href="/loadboard/my-listings" class="dropdown-item">My Listings</a>
+						<a href="/loadboard/my-claims" class="dropdown-item">My Claims</a>
+					</div>
 				</div>
-			</div>
+			}
 			<!-- Dispatch -->
 			<div class="nav-dropdown" @mouseenter="open = 'dispatch'" @mouseleave="open = ''">
 				<button class="nav-link">Dispatch</button>
@@ -140,11 +145,13 @@ templ Nav(user auth.ContextUser, companyName string) {
 		<div id="nav-mobile-menu" class="nav-mobile-menu" x-show="mobileOpen" x-cloak>
 			<a href="/search/vin">VIN Search</a>
 			<hr/>
-			<div class="mobile-section-label">Loadboard</div>
-			<a href="/loadboard">Browse Loads</a>
-			<a href="/loadboard/my-listings">My Listings</a>
-			<a href="/loadboard/my-claims">My Claims</a>
-			<hr/>
+			if features.Has(models.FeatureLoadboard) {
+				<div class="mobile-section-label">Loadboard</div>
+				<a href="/loadboard">Browse Loads</a>
+				<a href="/loadboard/my-listings">My Listings</a>
+				<a href="/loadboard/my-claims">My Claims</a>
+				<hr/>
+			}
 			<div class="mobile-section-label">Dispatch</div>
 			<a href="/dispatch/orders">Orders</a>
 			<a href="/dispatch/trips">Trips/Loads</a>

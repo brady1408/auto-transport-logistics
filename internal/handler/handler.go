@@ -25,13 +25,20 @@ type depsCompanyStore interface {
 	Get(ctx context.Context) (*models.Company, error)
 }
 
+// depsSubscriptionStore is the subset of SubscriptionStore used by Deps for feature lookups.
+type depsSubscriptionStore interface {
+	GetByCompanyID(ctx context.Context, companyID int) (*models.Subscription, error)
+}
+
 type Deps struct {
-	JWT           *auth.JWTService
-	Audit         *audit.Service
-	CompanyStore  depsCompanyStore
-	BuildVersion  string
-	SecureCookies bool
-	companyNames  sync.Map // cache: companyID(int) -> companyName(string)
+	JWT               *auth.JWTService
+	Audit             *audit.Service
+	CompanyStore      depsCompanyStore
+	SubscriptionStore depsSubscriptionStore
+	BuildVersion      string
+	SecureCookies     bool
+	companyNames      sync.Map // cache: companyID(int) -> companyName(string)
+	subscriptions     sync.Map // cache: companyID(int) -> models.FeatureSet
 }
 
 func parseID(r *http.Request) (int, error) {
@@ -89,6 +96,57 @@ func (d *Deps) InvalidateCompanyName(companyID int) {
 	d.companyNames.Delete(companyID)
 }
 
+// getFeatures returns the FeatureSet for the current request's company.
+// Super_admin gets all features. Results are cached per company.
+func (d *Deps) getFeatures(ctx context.Context) models.FeatureSet {
+	user, ok := auth.GetUser(ctx)
+	if !ok {
+		return models.BuildFeatureSet(nil)
+	}
+	// super_admin always gets everything
+	if user.Role == "super_admin" {
+		fs := make(models.FeatureSet)
+		for _, features := range models.TierFeatures[models.TierEnterprise] {
+			fs[features] = true
+		}
+		fs[models.FeatureEDI] = true
+		return fs
+	}
+	if user.CompanyID == 0 || d.SubscriptionStore == nil {
+		return models.BuildFeatureSet(nil)
+	}
+	if cached, ok := d.subscriptions.Load(user.CompanyID); ok {
+		return cached.(models.FeatureSet)
+	}
+	sub, err := d.SubscriptionStore.GetByCompanyID(ctx, user.CompanyID)
+	if err != nil {
+		// No subscription row → treat as Basic
+		sub = nil
+	}
+	fs := models.BuildFeatureSet(sub)
+	d.subscriptions.Store(user.CompanyID, fs)
+	return fs
+}
+
+// InvalidateSubscription clears the cached FeatureSet for a company.
+func (d *Deps) InvalidateSubscription(companyID int) {
+	d.subscriptions.Delete(companyID)
+}
+
+// GetFeatures is the public entry point for feature checks, used from main.go middleware wiring.
+func (d *Deps) GetFeatures(r *http.Request) models.FeatureSet {
+	return d.getFeatures(r.Context())
+}
+
+// UpgradeHandler returns an http.HandlerFunc that renders the upgrade page for a gated feature.
+func (d *Deps) UpgradeHandler(feature models.Feature) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		pg := d.pageContext(w, r)
+		w.WriteHeader(http.StatusForbidden)
+		d.renderTempl(w, r, components.UpgradePage(pg, string(feature)))
+	}
+}
+
 // pageContext builds a PageContext from the current request.
 func (d *Deps) pageContext(w http.ResponseWriter, r *http.Request) components.PageContext {
 	ctx := components.PageContext{}
@@ -104,6 +162,7 @@ func (d *Deps) pageContext(w http.ResponseWriter, r *http.Request) components.Pa
 	if cookie, err := r.Cookie("csrf_token"); err == nil {
 		ctx.CSRFToken = cookie.Value
 	}
+	ctx.Features = d.getFeatures(r.Context())
 	return ctx
 }
 

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/atlinks/internal/models"
 )
 
 // PageContext holds data available to every page layout.
@@ -14,6 +15,7 @@ type PageContext struct {
 	CompanyName string
 	Flash       string
 	CSRFToken   string
+	Features    models.FeatureSet
 }
 
 // PaginationData holds computed values for pagination controls.

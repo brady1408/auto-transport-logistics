@@ -23,6 +23,7 @@ import (
 	"github.com/brady1408/atlinks/internal/handler"
 	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/middleware"
+	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/storage"
 	"github.com/brady1408/atlinks/internal/store"
@@ -96,13 +97,15 @@ func initDeps(pool *pgxpool.Pool, cfg *config.Config) *handler.Deps {
 	secureCookies := strings.HasPrefix(cfg.AppBaseURL, "https://")
 
 	companyStore := store.NewCompanyStore(pool)
+	subscriptionStore := store.NewSubscriptionStore(pool)
 
 	return &handler.Deps{
-		JWT:           jwtSvc,
-		Audit:         auditSvc,
-		CompanyStore:  companyStore,
-		BuildVersion:  version,
-		SecureCookies: secureCookies,
+		JWT:               jwtSvc,
+		Audit:             auditSvc,
+		CompanyStore:      companyStore,
+		SubscriptionStore: subscriptionStore,
+		BuildVersion:      version,
+		SecureCookies:     secureCookies,
 	}
 }
 
@@ -168,9 +171,10 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	emailSvc := email.NewService(cfg.ResendAPIKey, cfg.FromEmail)
 	resetTokenStore := store.NewResetTokenStore(pool)
 	pendingRegStore := store.NewPendingRegistrationStore(pool)
+	authSubStore := store.NewSubscriptionStore(pool)
 
 	// Auth routes (public)
-	authHandler := handler.NewAuthHandler(userStore, companyStore, cfg.InviteCode, deps, emailSvc, resetTokenStore, pendingRegStore, cfg.AppBaseURL)
+	authHandler := handler.NewAuthHandler(userStore, companyStore, authSubStore, cfg.InviteCode, deps, emailSvc, resetTokenStore, pendingRegStore, cfg.AppBaseURL)
 	authHandler.Register(mux)
 
 	// Protected routes
@@ -197,10 +201,15 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewTaxCodeHandler(store.NewTaxCodeStore(pool), deps).Register(protectedMux)
 	handler.NewItemHandler(store.NewItemStore(pool), deps).Register(protectedMux)
 
-	// Loadboard
+	// Loadboard (gated to Pro+)
 	loadboardStore := store.NewLoadboardStore(pool)
 	loadboardSvc := service.NewLoadboardService(pool, loadboardStore, orderStore, vehicleStore, companyStore, orderSvc, auditSvc)
-	handler.NewLoadboardHandler(loadboardStore, orderStore, vehicleStore, companyStore, loadboardSvc, deps).Register(protectedMux)
+	featureCheck := func(r *http.Request) models.FeatureSet { return deps.GetFeatures(r) }
+	loadboardMux := http.NewServeMux()
+	handler.NewLoadboardHandler(loadboardStore, orderStore, vehicleStore, companyStore, loadboardSvc, deps).Register(loadboardMux)
+	loadboardGate := middleware.RequireFeature(featureCheck, models.FeatureLoadboard, deps.UpgradeHandler(models.FeatureLoadboard))
+	protectedMux.Handle("/loadboard", loadboardGate(loadboardMux))
+	protectedMux.Handle("/loadboard/", loadboardGate(loadboardMux))
 
 	// Dispatch
 	handler.NewOrderHandler(orderStore, invoiceSvc, vehicleStore, attachmentStore, loadboardStore, deps).Register(protectedMux)
@@ -247,7 +256,8 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	uploadHandler.RegisterAdmin(protectedMux, middleware.RequireRole("super_admin"))
 
 	// Admin + User Management
-	adminHandler := handler.NewAdminHandler(companyStore, userStore, deps)
+	subscriptionStore := store.NewSubscriptionStore(pool)
+	adminHandler := handler.NewAdminHandler(companyStore, userStore, subscriptionStore, deps)
 	adminHandler.RegisterAdmin(protectedMux, middleware.RequireRole("super_admin"))
 	adminHandler.RegisterSettings(protectedMux, middleware.RequireRole("company_admin", "super_admin"))
 
