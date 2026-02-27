@@ -7,12 +7,26 @@ services:
     environment:
       PORT: "8080"
       UPLOAD_DIR: "/data/uploads"
+      MIGRATIONS_DIR: "/migrations"
     volumes:
       - /volume1/docker/atlinks/uploads:/data/uploads
+      - migrations:/migrations
     networks:
       - tunnel
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: atlinks-mssql
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    volumes:
+      - migrations:/migrations
+    networks:
+      - tunnel
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -41,3 +55,6 @@ services:
 networks:
   tunnel:
     driver: bridge
+
+volumes:
+  migrations:
