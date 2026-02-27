@@ -11,6 +11,12 @@ const (
 	TierEnterprise Tier = "enterprise"
 )
 
+// Status constants for subscription billing status.
+const (
+	StatusActive    = "active"
+	StatusSuspended = "suspended"
+)
+
 // Feature constants for gated features.
 type Feature string
 
@@ -49,6 +55,7 @@ type Subscription struct {
 	ID              int
 	CompanyID       int
 	Tier            Tier
+	Status          string
 	AddonEDI        bool
 	EDIMonthlyLimit *int
 	ExternalID      *string

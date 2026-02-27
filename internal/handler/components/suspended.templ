@@ -1,0 +1,15 @@
+package components
+
+templ SuspendedPage(pg PageContext) {
+	@Layout(pg, "Account Suspended - ATLinks") {
+		<div style="max-width:480px; margin:4rem auto; text-align:center;">
+			<div style="font-size:3rem; margin-bottom:1rem;">🔒</div>
+			<h1 style="margin-bottom:0.5rem;">Account Suspended</h1>
+			<p style="color:var(--gray-600); margin-bottom:2rem;">
+				Your account has been suspended. All data is currently in read-only mode.
+				Please contact your administrator to restore full access.
+			</p>
+			<a href="/dashboard" class="btn">Back to Dashboard</a>
+		</div>
+	}
+}

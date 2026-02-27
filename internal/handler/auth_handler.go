@@ -377,6 +377,7 @@ func (h *AuthHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request) 
 	sub := &models.Subscription{
 		CompanyID: company.ID,
 		Tier:      models.TierBasic,
+		Status:    models.StatusActive,
 		AddonEDI:  false,
 	}
 	if err := h.subscriptionStore.Upsert(r.Context(), sub); err != nil {

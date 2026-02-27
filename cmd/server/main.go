@@ -258,10 +258,14 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	adminHandler.RegisterAdmin(protectedMux, middleware.RequireRole("super_admin"))
 	adminHandler.RegisterSettings(protectedMux, middleware.RequireRole("company_admin", "super_admin"))
 
-	// Wrap protected routes with auth + CSRF middleware
+	// Suspended info page (GET only — accessible even when account is suspended)
+	protectedMux.HandleFunc("GET /suspended", deps.SuspendedPageHandler())
+
+	// Wrap protected routes with auth + CSRF + read-only-if-suspended middleware
 	authMiddleware := middleware.RequireAuth(deps.JWT, deps.SecureCookies)
 	csrfMiddleware := middleware.CSRF(deps.SecureCookies)
-	mux.Handle("/", authMiddleware(csrfMiddleware(protectedMux)))
+	readOnlyGate := middleware.ReadOnlyIfSuspended(deps.IsSuspended, deps.SuspendedBlockHandler())
+	mux.Handle("/", authMiddleware(csrfMiddleware(readOnlyGate(protectedMux))))
 
 	return mux, loadboardSvc, loadboardStore
 }

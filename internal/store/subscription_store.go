@@ -19,7 +19,7 @@ func NewSubscriptionStore(pool *pgxpool.Pool) *SubscriptionStore {
 func scanSubscription(row interface{ Scan(dest ...any) error }) (*models.Subscription, error) {
 	var s models.Subscription
 	err := row.Scan(
-		&s.ID, &s.CompanyID, &s.Tier, &s.AddonEDI, &s.EDIMonthlyLimit,
+		&s.ID, &s.CompanyID, &s.Tier, &s.Status, &s.AddonEDI, &s.EDIMonthlyLimit,
 		&s.ExternalID, &s.CreatedAt, &s.UpdatedAt,
 	)
 	return &s, err
@@ -27,7 +27,7 @@ func scanSubscription(row interface{ Scan(dest ...any) error }) (*models.Subscri
 
 // GetByCompanyID fetches the subscription for a company.
 func (s *SubscriptionStore) GetByCompanyID(ctx context.Context, companyID int) (*models.Subscription, error) {
-	const q = `SELECT id, company_id, tier, addon_edi, edi_monthly_limit, external_id, created_at, updated_at
+	const q = `SELECT id, company_id, tier, status, addon_edi, edi_monthly_limit, external_id, created_at, updated_at
 		FROM subscriptions WHERE company_id = $1`
 	sub, err := scanSubscription(s.pool.QueryRow(ctx, q, companyID))
 	if err != nil {
@@ -39,24 +39,25 @@ func (s *SubscriptionStore) GetByCompanyID(ctx context.Context, companyID int) (
 // Upsert inserts or updates a subscription, populating ID and timestamps on the model.
 func (s *SubscriptionStore) Upsert(ctx context.Context, sub *models.Subscription) error {
 	const q = `
-		INSERT INTO subscriptions (company_id, tier, addon_edi, edi_monthly_limit, external_id)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO subscriptions (company_id, tier, status, addon_edi, edi_monthly_limit, external_id)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT (company_id) DO UPDATE SET
-			tier             = EXCLUDED.tier,
-			addon_edi        = EXCLUDED.addon_edi,
+			tier              = EXCLUDED.tier,
+			status            = EXCLUDED.status,
+			addon_edi         = EXCLUDED.addon_edi,
 			edi_monthly_limit = EXCLUDED.edi_monthly_limit,
-			external_id      = EXCLUDED.external_id,
-			updated_at       = NOW()
+			external_id       = EXCLUDED.external_id,
+			updated_at        = NOW()
 		RETURNING id, created_at, updated_at`
 	row := s.pool.QueryRow(ctx, q,
-		sub.CompanyID, sub.Tier, sub.AddonEDI, sub.EDIMonthlyLimit, sub.ExternalID,
+		sub.CompanyID, sub.Tier, sub.Status, sub.AddonEDI, sub.EDIMonthlyLimit, sub.ExternalID,
 	)
 	return row.Scan(&sub.ID, &sub.CreatedAt, &sub.UpdatedAt)
 }
 
 // ListAll fetches all subscriptions (for admin company list).
 func (s *SubscriptionStore) ListAll(ctx context.Context) ([]models.Subscription, error) {
-	const q = `SELECT id, company_id, tier, addon_edi, edi_monthly_limit, external_id, created_at, updated_at
+	const q = `SELECT id, company_id, tier, status, addon_edi, edi_monthly_limit, external_id, created_at, updated_at
 		FROM subscriptions ORDER BY company_id`
 	rows, err := s.pool.Query(ctx, q)
 	if err != nil {

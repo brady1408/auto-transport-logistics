@@ -31,6 +31,11 @@ templ Layout(pg PageContext, title string) {
 			@Nav(*pg.User, pg.CompanyName, pg.Features)
 		}
 		<main class="container">
+			if pg.Suspended {
+				<div class="alert alert-danger" style="margin-bottom:1rem;">
+					&#128274; Your account is suspended. All data is in read-only mode. Contact your administrator to restore access.
+				</div>
+			}
 			if pg.Flash != "" {
 				@FlashMessage(pg.Flash)
 			}

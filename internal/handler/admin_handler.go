@@ -214,6 +214,7 @@ func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
 	sub := &models.Subscription{
 		CompanyID: c.ID,
 		Tier:      models.TierBasic,
+		Status:    models.StatusActive,
 		AddonEDI:  false,
 	}
 	if err := h.subscriptionStore.Upsert(r.Context(), sub); err != nil {
@@ -292,10 +293,15 @@ func (h *AdminHandler) updateCompany(w http.ResponseWriter, r *http.Request) {
 	if !models.ValidTier(tier) {
 		tier = models.TierBasic
 	}
+	status := formStringRequired(r, "sub_status")
+	if status != models.StatusSuspended {
+		status = models.StatusActive
+	}
 	sub := &models.Subscription{
-		CompanyID: id,
-		Tier:      tier,
-		AddonEDI:  formBool(r, "addon_edi"),
+		CompanyID:       id,
+		Tier:            tier,
+		Status:          status,
+		AddonEDI:        formBool(r, "addon_edi"),
 		EDIMonthlyLimit: formInt(r, "edi_monthly_limit"),
 	}
 	if err := h.subscriptionStore.Upsert(r.Context(), sub); err != nil {

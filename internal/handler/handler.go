@@ -37,8 +37,8 @@ type Deps struct {
 	SubscriptionStore depsSubscriptionStore
 	BuildVersion      string
 	SecureCookies     bool
-	companyNames      sync.Map // cache: companyID(int) -> companyName(string)
-	subscriptions     sync.Map // cache: companyID(int) -> models.FeatureSet
+	companyNames  sync.Map // cache: companyID(int) -> companyName(string)
+	subscriptions sync.Map // cache: companyID(int) -> *models.Subscription
 }
 
 func parseID(r *http.Request) (int, error) {
@@ -96,6 +96,24 @@ func (d *Deps) InvalidateCompanyName(companyID int) {
 	d.companyNames.Delete(companyID)
 }
 
+// getSub returns the cached Subscription for the current request's company.
+// Returns nil if there is no subscription row or the company is unknown.
+func (d *Deps) getSub(ctx context.Context) *models.Subscription {
+	user, ok := auth.GetUser(ctx)
+	if !ok || user.CompanyID == 0 || d.SubscriptionStore == nil {
+		return nil
+	}
+	if cached, ok := d.subscriptions.Load(user.CompanyID); ok {
+		return cached.(*models.Subscription)
+	}
+	sub, err := d.SubscriptionStore.GetByCompanyID(ctx, user.CompanyID)
+	if err != nil {
+		sub = nil
+	}
+	d.subscriptions.Store(user.CompanyID, sub)
+	return sub
+}
+
 // getFeatures returns the FeatureSet for the current request's company.
 // Super_admin gets all features. Results are cached per company.
 func (d *Deps) getFeatures(ctx context.Context) models.FeatureSet {
@@ -106,29 +124,27 @@ func (d *Deps) getFeatures(ctx context.Context) models.FeatureSet {
 	// super_admin always gets everything
 	if user.Role == "super_admin" {
 		fs := make(models.FeatureSet)
-		for _, features := range models.TierFeatures[models.TierEnterprise] {
-			fs[features] = true
+		for _, f := range models.TierFeatures[models.TierEnterprise] {
+			fs[f] = true
 		}
 		fs[models.FeatureEDI] = true
 		return fs
 	}
-	if user.CompanyID == 0 || d.SubscriptionStore == nil {
-		return models.BuildFeatureSet(nil)
-	}
-	if cached, ok := d.subscriptions.Load(user.CompanyID); ok {
-		return cached.(models.FeatureSet)
-	}
-	sub, err := d.SubscriptionStore.GetByCompanyID(ctx, user.CompanyID)
-	if err != nil {
-		// No subscription row → treat as Basic
-		sub = nil
-	}
-	fs := models.BuildFeatureSet(sub)
-	d.subscriptions.Store(user.CompanyID, fs)
-	return fs
+	return models.BuildFeatureSet(d.getSub(ctx))
 }
 
-// InvalidateSubscription clears the cached FeatureSet for a company.
+// IsSuspended returns true if the current request's company has a suspended subscription.
+// Super_admin is never suspended.
+func (d *Deps) IsSuspended(r *http.Request) bool {
+	user, ok := auth.GetUserFromRequest(r)
+	if !ok || user.Role == "super_admin" {
+		return false
+	}
+	sub := d.getSub(r.Context())
+	return sub != nil && sub.Status == models.StatusSuspended
+}
+
+// InvalidateSubscription clears the cached Subscription for a company.
 func (d *Deps) InvalidateSubscription(companyID int) {
 	d.subscriptions.Delete(companyID)
 }
@@ -136,6 +152,27 @@ func (d *Deps) InvalidateSubscription(companyID int) {
 // GetFeatures is the public entry point for feature checks, used from main.go middleware wiring.
 func (d *Deps) GetFeatures(r *http.Request) models.FeatureSet {
 	return d.getFeatures(r.Context())
+}
+
+// SuspendedBlockHandler is called by the read-only middleware when a write is attempted on a
+// suspended account. HTMX requests get an HX-Redirect; others get a normal redirect.
+func (d *Deps) SuspendedBlockHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("HX-Request") == "true" {
+			w.Header().Set("HX-Redirect", "/suspended")
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		http.Redirect(w, r, "/suspended", http.StatusSeeOther)
+	}
+}
+
+// SuspendedPageHandler renders the account-suspended info page.
+func (d *Deps) SuspendedPageHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		pg := d.pageContext(w, r)
+		d.renderTempl(w, r, components.SuspendedPage(pg))
+	}
 }
 
 // UpgradeHandler returns an http.HandlerFunc that renders the upgrade page for a gated feature.
@@ -163,6 +200,7 @@ func (d *Deps) pageContext(w http.ResponseWriter, r *http.Request) components.Pa
 		ctx.CSRFToken = cookie.Value
 	}
 	ctx.Features = d.getFeatures(r.Context())
+	ctx.Suspended = d.IsSuspended(r)
 	return ctx
 }
 

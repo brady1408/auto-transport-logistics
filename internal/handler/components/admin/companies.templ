@@ -39,7 +39,11 @@ templ CompaniesPage(pg components.PageContext, companies []models.Company, subMa
 							<td>{ c.Slug }</td>
 							<td>
 								if sub, ok := subMap[c.ID]; ok {
-									<span class="badge badge-active">{ strings.ToUpper(sub.Tier) }</span>
+									if sub.Status == models.StatusSuspended {
+										<span class="badge badge-inactive">SUSPENDED</span>
+									} else {
+										<span class="badge badge-active">{ strings.ToUpper(sub.Tier) }</span>
+									}
 								} else {
 									<span class="badge badge-waiting">—</span>
 								}

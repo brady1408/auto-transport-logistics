@@ -16,6 +16,7 @@ type PageContext struct {
 	Flash       string
 	CSRFToken   string
 	Features    models.FeatureSet
+	Suspended   bool
 }
 
 // PaginationData holds computed values for pagination controls.
