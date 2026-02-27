@@ -101,9 +101,7 @@ func main() {
 	}
 	authMw := middleware.RequireAuth(deps.JWT, deps.SecureCookies)
 	mux.Handle(riverUIPrefix+"/",
-		authMw(middleware.RequireRole("super_admin")(
-			http.StripPrefix(riverUIPrefix, uiServer),
-		)),
+		authMw(middleware.RequireRole("super_admin")(uiServer)),
 	)
 
 	// Register integrations handler (needs riverClient, only available post-initRiver).
