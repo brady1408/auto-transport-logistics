@@ -23,7 +23,7 @@ const customerColumns = `id, company_id, legacy_id, number, name, address, addre
 	credit_limit, credit_terms, combine_inv_det_line, fuel_surcharge,
 	splc, rate_class, route_code, comments, do_instructions, pu_instructions,
 	fuel_calc_type, sales_rep, sales_date, revenue_class, terms, tax_code,
-	location_type, discount, discount_calc_type, created_at, updated_at`
+	location_type, discount, discount_calc_type, qbo_customer_id, created_at, updated_at`
 
 func scanCustomer(row interface{ Scan(dest ...any) error }) (*models.Customer, error) {
 	var c models.Customer
@@ -35,7 +35,7 @@ func scanCustomer(row interface{ Scan(dest ...any) error }) (*models.Customer, e
 		&c.SPLC, &c.RateClass, &c.RouteCode, &c.Comments, &c.DOInstructions,
 		&c.PUInstructions, &c.FuelCalcType, &c.SalesRep, &c.SalesDate,
 		&c.RevenueClass, &c.Terms, &c.TaxCode, &c.LocationType,
-		&c.Discount, &c.DiscountCalcType, &c.CreatedAt, &c.UpdatedAt,
+		&c.Discount, &c.DiscountCalcType, &c.QBOCustomerID, &c.CreatedAt, &c.UpdatedAt,
 	)
 	return &c, err
 }

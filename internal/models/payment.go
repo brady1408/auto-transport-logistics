@@ -18,6 +18,9 @@ type Payment struct {
 	CreatedBy       *string    `json:"created_by,omitempty"`
 	PostedAt        *time.Time `json:"posted_at,omitempty"`
 	PostedBy        *string    `json:"posted_by,omitempty"`
+	QBOPaymentID    *string    `json:"qbo_payment_id,omitempty"`
+	QBOSyncToken    *string    `json:"qbo_sync_token,omitempty"`
+	QBOSyncedAt     *time.Time `json:"qbo_synced_at,omitempty"`
 	CreatedAt       time.Time  `json:"created_at"`
 	UpdatedAt       time.Time  `json:"updated_at"`
 }

@@ -23,7 +23,7 @@ const invoiceColumns = `id, company_id, invoice_number, active, customer_id, cus
 	order_id, order_number, invoice_date, due_date, terms, tax_code,
 	subtotal, tax, total_amount, amount_paid, balance, status,
 	comments, bill_to_address, bill_to_address2, bill_to_city, bill_to_state, bill_to_zip,
-	created_date, created_by, posted_at, posted_by, created_at, updated_at`
+	created_date, created_by, posted_at, posted_by, qbo_invoice_id, qbo_sync_token, qbo_synced_at, created_at, updated_at`
 
 func scanInvoice(row interface{ Scan(dest ...any) error }) (*models.Invoice, error) {
 	var inv models.Invoice
@@ -32,7 +32,7 @@ func scanInvoice(row interface{ Scan(dest ...any) error }) (*models.Invoice, err
 		&inv.OrderID, &inv.OrderNumber, &inv.InvoiceDate, &inv.DueDate, &inv.Terms, &inv.TaxCode,
 		&inv.Subtotal, &inv.Tax, &inv.TotalAmount, &inv.AmountPaid, &inv.Balance, &inv.Status,
 		&inv.Comments, &inv.BillToAddress, &inv.BillToAddress2, &inv.BillToCity, &inv.BillToState, &inv.BillToZip,
-		&inv.CreatedDate, &inv.CreatedBy, &inv.PostedAt, &inv.PostedBy, &inv.CreatedAt, &inv.UpdatedAt,
+		&inv.CreatedDate, &inv.CreatedBy, &inv.PostedAt, &inv.PostedBy, &inv.QBOInvoiceID, &inv.QBOSyncToken, &inv.QBOSyncedAt, &inv.CreatedAt, &inv.UpdatedAt,
 	)
 	return &inv, err
 }

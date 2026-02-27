@@ -20,14 +20,14 @@ func NewPaymentStore(pool *pgxpool.Pool) *PaymentStore {
 
 const paymentColumns = `id, company_id, customer_id, customer_number, customer_name,
 	payment_date, check_number, amount, applied_amount, unapplied_amount,
-	payment_method, comments, created_by, posted_at, posted_by, created_at, updated_at`
+	payment_method, comments, created_by, posted_at, posted_by, qbo_payment_id, qbo_sync_token, qbo_synced_at, created_at, updated_at`
 
 func scanPayment(row interface{ Scan(dest ...any) error }) (*models.Payment, error) {
 	var p models.Payment
 	err := row.Scan(
 		&p.ID, &p.CompanyID, &p.CustomerID, &p.CustomerNumber, &p.CustomerName,
 		&p.PaymentDate, &p.CheckNumber, &p.Amount, &p.AppliedAmount, &p.UnappliedAmount,
-		&p.PaymentMethod, &p.Comments, &p.CreatedBy, &p.PostedAt, &p.PostedBy, &p.CreatedAt, &p.UpdatedAt,
+		&p.PaymentMethod, &p.Comments, &p.CreatedBy, &p.PostedAt, &p.PostedBy, &p.QBOPaymentID, &p.QBOSyncToken, &p.QBOSyncedAt, &p.CreatedAt, &p.UpdatedAt,
 	)
 	return &p, err
 }

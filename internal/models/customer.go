@@ -40,6 +40,7 @@ type Customer struct {
 	LocationType       *string    `json:"location_type,omitempty"`
 	Discount           *string    `json:"discount,omitempty"`
 	DiscountCalcType   *string    `json:"discount_calc_type,omitempty"`
+	QBOCustomerID      *string    `json:"qbo_customer_id,omitempty"`
 	CreatedAt          time.Time  `json:"created_at"`
 	UpdatedAt          time.Time  `json:"updated_at"`
 }
