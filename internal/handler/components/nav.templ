@@ -122,6 +122,8 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 					<div class="dropdown-menu" x-show="open === 'admin'" x-cloak>
 						<a href="/admin/companies" class="dropdown-item">Companies</a>
 						<a href="/admin/backups" class="dropdown-item">Backups</a>
+						<hr class="dropdown-divider"/>
+						<a href="/admin/riverui/" class="dropdown-item">Job Queue</a>
 					</div>
 				</div>
 			}
@@ -200,6 +202,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 				<div class="mobile-section-label">Admin</div>
 				<a href="/admin/companies">Companies</a>
 				<a href="/admin/backups">Backups</a>
+				<a href="/admin/riverui/">Job Queue</a>
 			}
 			<hr/>
 			<button hx-post="/logout">Logout</button>

@@ -28,12 +28,15 @@ import (
 	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/storage"
 	"github.com/brady1408/atlinks/internal/store"
+	"log/slog"
+
 	"github.com/brady1408/atlinks/internal/worker"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"golang.org/x/oauth2"
+	"riverqueue.com/riverui"
 )
 
 var buildVersion string
@@ -89,6 +92,19 @@ func main() {
 	routeStores.invoiceStore.RiverClient = riverClient
 	routeStores.paymentStore.RiverClient = riverClient
 	routeStores.invoiceSvc.RiverClient = riverClient
+
+	// Mount River UI for super_admin job monitoring (bypasses CSRF — uses its own API).
+	const riverUIPrefix = "/admin/riverui"
+	uiServer, err := initRiverUI(ctx, riverClient, riverUIPrefix)
+	if err != nil {
+		log.Fatalf("river ui: %v", err)
+	}
+	authMw := middleware.RequireAuth(deps.JWT, deps.SecureCookies)
+	mux.Handle(riverUIPrefix+"/",
+		authMw(middleware.RequireRole("super_admin")(
+			http.StripPrefix(riverUIPrefix, uiServer),
+		)),
+	)
 
 	// Register integrations handler (needs riverClient, only available post-initRiver).
 	// Mutating routes (connect/disconnect/sync-all) require company_admin or super_admin.
@@ -378,6 +394,22 @@ func initRiver(
 	}
 
 	return riverClient, nil
+}
+
+func initRiverUI(ctx context.Context, riverClient *river.Client[pgx.Tx], prefix string) (http.Handler, error) {
+	endpoints := riverui.NewEndpoints(riverClient, nil)
+	h, err := riverui.NewHandler(&riverui.HandlerOpts{
+		Endpoints: endpoints,
+		Logger:    slog.Default(),
+		Prefix:    prefix,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("river ui: %w", err)
+	}
+	if err := h.Start(ctx); err != nil {
+		return nil, fmt.Errorf("river ui start: %w", err)
+	}
+	return h, nil
 }
 
 func registerLookups(mux *http.ServeMux, pool *pgxpool.Pool, deps *handler.Deps) {
