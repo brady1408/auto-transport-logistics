@@ -42,3 +42,14 @@ func (SyncPaymentArgs) Kind() string { return "qbo_sync_payment" }
 func (SyncPaymentArgs) InsertOpts() river.InsertOpts {
 	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
 }
+
+// MigrateArgs is the job args type for MSSQL migration jobs.
+type MigrateArgs struct {
+	RunID     int64  `json:"run_id"`
+	CompanyID int    `json:"company_id"`
+	BakPath   string `json:"bak_path"` // full path to .bak on shared volume
+}
+
+func (MigrateArgs) Kind() string { return "mssql_migrate" }
+
+// No UniqueOpts — allow at most one by capping queue concurrency to 1.
