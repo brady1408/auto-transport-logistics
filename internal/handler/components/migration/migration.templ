@@ -1,0 +1,123 @@
+package migration
+
+import (
+	"fmt"
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Index(pc components.PageContext, runs []models.MigrationRun) {
+	@components.Layout(pc, "MSSQL Migrations - ATLinks") {
+		<div class="page-header">
+			<h1>MSSQL Migrations</h1>
+			<a href="/admin/migration/new" class="btn btn-primary">New Migration</a>
+		</div>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Company</th>
+					<th>File</th>
+					<th>Status</th>
+					<th>Started</th>
+					<th>Finished</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, r := range runs {
+					<tr>
+						<td><a href={ templ.SafeURL(fmt.Sprintf("/admin/migration/%d", r.ID)) }>{ fmt.Sprint(r.ID) }</a></td>
+						<td>{ r.CompanyName }</td>
+						<td>{ r.BackupFilename }</td>
+						<td><span class={ "badge badge-" + r.Status }>{ r.Status }</span></td>
+						<td>{ components.FormatDate(r.StartedAt) }</td>
+						<td>{ components.FormatDate(r.FinishedAt) }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+}
+
+templ NewForm(pc components.PageContext, companies []models.Company) {
+	@components.Layout(pc, "New Migration - ATLinks") {
+		<div class="page-header"><h1>New Migration</h1></div>
+		<form method="POST" action="/admin/migration/start" enctype="multipart/form-data" class="form-card">
+			<input type="hidden" name="csrf_token" value={ pc.CSRFToken }/>
+			<div class="form-group">
+				<label>Target Company</label>
+				<select name="company_id" class="form-control" required>
+					for _, c := range companies {
+						<option value={ fmt.Sprint(c.ID) }>{ c.CompanyName }</option>
+					}
+				</select>
+			</div>
+			<div class="form-group">
+				<label>Backup File (.bak)</label>
+				<input type="file" name="backup" accept=".bak" class="form-control" required/>
+			</div>
+			<button type="submit" class="btn btn-primary">Start Migration</button>
+		</form>
+	}
+}
+
+templ Show(pc components.PageContext, run *models.MigrationRun) {
+	@components.Layout(pc, fmt.Sprintf("Migration #%d - ATLinks", run.ID)) {
+		<div class="page-header">
+			<h1>Migration #{ fmt.Sprint(run.ID) }</h1>
+			<span class={ "badge badge-" + run.Status }>{ run.Status }</span>
+		</div>
+		<dl class="detail-list">
+			<dt>Company</dt><dd>{ run.CompanyName }</dd>
+			<dt>File</dt><dd>{ run.BackupFilename }</dd>
+		</dl>
+		@LogPanel(run.Log, run.Status)
+		if len(run.Stats) > 0 {
+			@StatsTable(run.Stats)
+		}
+		if run.Status == "failed" {
+			<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/admin/migration/%d/rerun", run.ID)) }>
+				<input type="hidden" name="csrf_token" value={ pc.CSRFToken }/>
+				<button type="submit" class="btn btn-warning">Re-run Migration</button>
+			</form>
+		}
+	}
+}
+
+templ LogPanel(log string, status string) {
+	<div
+		id="log-panel"
+		if status == "pending" || status == "running" {
+			hx-get="."
+			hx-trigger="every 2s"
+			hx-target="#log-panel"
+			hx-swap="outerHTML"
+		}
+	>
+		<pre class="migration-log">{ log }</pre>
+	</div>
+}
+
+templ StatsTable(stats []models.MigrationTableStat) {
+	<h3>Results</h3>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Table</th>
+				<th>Source</th>
+				<th>Inserted</th>
+				<th>Skipped</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, s := range stats {
+				<tr>
+					<td>{ s.Table }</td>
+					<td>{ fmt.Sprint(s.Source) }</td>
+					<td>{ fmt.Sprint(s.Inserted) }</td>
+					<td>{ fmt.Sprint(s.Skipped) }</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
