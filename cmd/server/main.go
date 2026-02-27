@@ -24,10 +24,16 @@ import (
 	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/middleware"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/qbo"
 	"github.com/brady1408/atlinks/internal/service"
 	"github.com/brady1408/atlinks/internal/storage"
 	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/atlinks/internal/worker"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"golang.org/x/oauth2"
 )
 
 var buildVersion string
@@ -68,8 +74,16 @@ func main() {
 	}
 	defer pool.Close()
 
+	oauthCfg := qbo.NewOAuthConfig(cfg.QBOClientID, cfg.QBOClientSecret, cfg.QBORedirectURL)
+	qboStore := store.NewQBOStore(pool)
+
 	deps := initDeps(pool, cfg)
-	mux, loadboardSvc, loadboardSt := initRoutes(pool, cfg, deps)
+	mux, loadboardSvc, loadboardSt, routeStores := initRoutes(pool, cfg, deps)
+
+	riverClient, err := initRiver(ctx, pool, cfg, qboStore, oauthCfg, routeStores)
+	if err != nil {
+		log.Fatalf("init river: %v", err)
+	}
 
 	// Background: expire loadboard listings every 5 minutes
 	go runLoadboardExpiry(ctx, loadboardSvc)
@@ -81,7 +95,7 @@ func main() {
 	var httpHandler http.Handler = mux
 	httpHandler = middleware.RequestLogger(httpHandler)
 
-	runServer(cfg, httpHandler, ctx)
+	runServer(cfg, httpHandler, ctx, riverClient)
 }
 
 func initDeps(pool *pgxpool.Pool, cfg *config.Config) *handler.Deps {
@@ -109,7 +123,16 @@ func initDeps(pool *pgxpool.Pool, cfg *config.Config) *handler.Deps {
 	}
 }
 
-func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*http.ServeMux, *service.LoadboardService, *store.LoadboardStore) {
+// riverStores holds the store references needed by initRiver.
+type riverStores struct {
+	customerStore      *store.CustomerStore
+	invoiceStore       *store.InvoiceStore
+	invoiceDetailStore *store.InvoiceDetailStore
+	paymentStore       *store.PaymentStore
+	paymentDetailStore *store.PaymentDetailStore
+}
+
+func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*http.ServeMux, *service.LoadboardService, *store.LoadboardStore, riverStores) {
 	mux := http.NewServeMux()
 
 	// Static files
@@ -268,7 +291,74 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	readOnlyGate := middleware.ReadOnlyIfSuspended(deps.IsSuspended, deps.SuspendedBlockHandler())
 	mux.Handle("/", authMiddleware(csrfMiddleware(readOnlyGate(protectedMux))))
 
-	return mux, loadboardSvc, loadboardStore
+	rs := riverStores{
+		customerStore:      customerStore,
+		invoiceStore:       invoiceStore,
+		invoiceDetailStore: invoiceDetailStore,
+		paymentStore:       paymentStore,
+		paymentDetailStore: paymentDetailStore,
+	}
+	return mux, loadboardSvc, loadboardStore, rs
+}
+
+func initRiver(
+	ctx context.Context,
+	pool *pgxpool.Pool,
+	cfg *config.Config,
+	qboStore *store.QBOStore,
+	oauthCfg *oauth2.Config,
+	rs riverStores,
+) (*river.Client[pgx.Tx], error) {
+	workers := river.NewWorkers()
+
+	customerWorker := &worker.SyncCustomerWorker{
+		CustomerStore: rs.customerStore,
+		QBOStore:      qboStore,
+		OAuthCfg:      oauthCfg,
+		Sandbox:       cfg.QBOSandbox,
+	}
+	river.AddWorker(workers, customerWorker)
+
+	invoiceWorker := &worker.SyncInvoiceWorker{
+		InvoiceStore:       rs.invoiceStore,
+		InvoiceDetailStore: rs.invoiceDetailStore,
+		CustomerStore:      rs.customerStore,
+		QBOStore:           qboStore,
+		OAuthCfg:           oauthCfg,
+		Sandbox:            cfg.QBOSandbox,
+	}
+	river.AddWorker(workers, invoiceWorker)
+
+	paymentWorker := &worker.SyncPaymentWorker{
+		PaymentStore:       rs.paymentStore,
+		PaymentDetailStore: rs.paymentDetailStore,
+		InvoiceStore:       rs.invoiceStore,
+		CustomerStore:      rs.customerStore,
+		QBOStore:           qboStore,
+		OAuthCfg:           oauthCfg,
+		Sandbox:            cfg.QBOSandbox,
+	}
+	river.AddWorker(workers, paymentWorker)
+
+	riverClient, err := river.NewClient(riverpgxv5.New(pool), &river.Config{
+		Workers: workers,
+		Queues: map[string]river.QueueConfig{
+			river.QueueDefault: {MaxWorkers: 5},
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("river new client: %w", err)
+	}
+
+	// Set RiverClient on workers that need to enqueue jobs (after NewClient, before Start).
+	invoiceWorker.RiverClient = riverClient
+	paymentWorker.RiverClient = riverClient
+
+	if err := riverClient.Start(ctx); err != nil {
+		return nil, fmt.Errorf("river start: %w", err)
+	}
+
+	return riverClient, nil
 }
 
 func registerLookups(mux *http.ServeMux, pool *pgxpool.Pool, deps *handler.Deps) {
@@ -296,7 +386,7 @@ func registerLookups(mux *http.ServeMux, pool *pgxpool.Pool, deps *handler.Deps)
 	}
 }
 
-func runServer(cfg *config.Config, handler http.Handler, ctx context.Context) {
+func runServer(cfg *config.Config, handler http.Handler, ctx context.Context, riverClient *river.Client[pgx.Tx]) {
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
 		Handler:      handler,
@@ -319,6 +409,13 @@ func runServer(cfg *config.Config, handler http.Handler, ctx context.Context) {
 	log.Println("Shutting down server...")
 	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+
+	if riverClient != nil {
+		if err := riverClient.Stop(shutdownCtx); err != nil {
+			log.Printf("river stop: %v", err)
+		}
+	}
+
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		log.Fatalf("server shutdown: %v", err)
 	}
