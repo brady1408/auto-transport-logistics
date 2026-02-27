@@ -26,6 +26,18 @@ services:
     depends_on:
       - atlinks
 
+  cloudflared-atlascloud:
+    image: cloudflare/cloudflared:latest
+    container_name: atlascloud-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN_ATLASCLOUD}
+    networks:
+      - tunnel
+    depends_on:
+      - atlinks
+
 networks:
   tunnel:
     driver: bridge
