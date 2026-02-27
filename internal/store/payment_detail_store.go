@@ -35,6 +35,12 @@ func (s *PaymentDetailStore) ListByPayment(ctx context.Context, paymentID int) (
 	if err != nil {
 		return nil, err
 	}
+	return s.ListByPaymentForCompany(ctx, paymentID, companyID)
+}
+
+// ListByPaymentForCompany lists payment details with an explicit company ID.
+// Use this in background workers that have no HTTP request context.
+func (s *PaymentDetailStore) ListByPaymentForCompany(ctx context.Context, paymentID, companyID int) ([]models.PaymentDetail, error) {
 	query := fmt.Sprintf("SELECT %s FROM payment_details WHERE payment_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY id", paymentDetailColumns)
 	rows, err := s.pool.Query(ctx, query, paymentID, companyID)
 	if err != nil {

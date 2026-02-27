@@ -114,6 +114,12 @@ func (s *CustomerStore) GetByID(ctx context.Context, id int) (*models.Customer, 
 	if err != nil {
 		return nil, err
 	}
+	return s.GetByIDForCompany(ctx, id, companyID)
+}
+
+// GetByIDForCompany fetches a customer by ID with an explicit company ID.
+// Use this in background workers that have no HTTP request context.
+func (s *CustomerStore) GetByIDForCompany(ctx context.Context, id, companyID int) (*models.Customer, error) {
 	query := fmt.Sprintf("SELECT %s FROM customers WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", customerColumns)
 	c, err := scanCustomer(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {

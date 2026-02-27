@@ -102,6 +102,12 @@ func (s *PaymentStore) GetByID(ctx context.Context, id int) (*models.Payment, er
 	if err != nil {
 		return nil, err
 	}
+	return s.GetByIDForCompany(ctx, id, companyID)
+}
+
+// GetByIDForCompany fetches a payment by ID with an explicit company ID.
+// Use this in background workers that have no HTTP request context.
+func (s *PaymentStore) GetByIDForCompany(ctx context.Context, id, companyID int) (*models.Payment, error) {
 	query := fmt.Sprintf("SELECT %s FROM payments WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", paymentColumns)
 	p, err := scanPayment(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {

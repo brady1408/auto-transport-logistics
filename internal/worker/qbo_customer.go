@@ -36,7 +36,7 @@ func (w *SyncCustomerWorker) Work(ctx context.Context, job *river.Job[SyncCustom
 		return fmt.Errorf("get qbo connection: %w", err)
 	}
 
-	cust, err := w.CustomerStore.GetByID(ctx, args.CustomerID)
+	cust, err := w.CustomerStore.GetByIDForCompany(ctx, args.CustomerID, args.CompanyID)
 	if err != nil {
 		return fmt.Errorf("load customer %d: %w", args.CustomerID, err)
 	}

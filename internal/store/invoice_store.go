@@ -111,6 +111,12 @@ func (s *InvoiceStore) GetByID(ctx context.Context, id int) (*models.Invoice, er
 	if err != nil {
 		return nil, err
 	}
+	return s.GetByIDForCompany(ctx, id, companyID)
+}
+
+// GetByIDForCompany fetches an invoice by ID with an explicit company ID.
+// Use this in background workers that have no HTTP request context.
+func (s *InvoiceStore) GetByIDForCompany(ctx context.Context, id, companyID int) (*models.Invoice, error) {
 	query := fmt.Sprintf("SELECT %s FROM invoices WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL", invoiceColumns)
 	inv, err := scanInvoice(s.pool.QueryRow(ctx, query, id, companyID))
 	if err != nil {

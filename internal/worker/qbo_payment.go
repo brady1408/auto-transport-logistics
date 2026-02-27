@@ -40,7 +40,7 @@ func (w *SyncPaymentWorker) Work(ctx context.Context, job *river.Job[SyncPayment
 		return fmt.Errorf("get qbo connection: %w", err)
 	}
 
-	pmt, err := w.PaymentStore.GetByID(ctx, args.PaymentID)
+	pmt, err := w.PaymentStore.GetByIDForCompany(ctx, args.PaymentID, args.CompanyID)
 	if err != nil {
 		return fmt.Errorf("load payment %d: %w", args.PaymentID, err)
 	}
@@ -49,7 +49,7 @@ func (w *SyncPaymentWorker) Work(ctx context.Context, job *river.Job[SyncPayment
 		return nil
 	}
 
-	cust, err := w.CustomerStore.GetByID(ctx, *pmt.CustomerID)
+	cust, err := w.CustomerStore.GetByIDForCompany(ctx, *pmt.CustomerID, args.CompanyID)
 	if err != nil {
 		return fmt.Errorf("load customer: %w", err)
 	}
@@ -61,7 +61,7 @@ func (w *SyncPaymentWorker) Work(ctx context.Context, job *river.Job[SyncPayment
 		return river.JobSnooze(30 * time.Second)
 	}
 
-	details, err := w.PaymentDetailStore.ListByPayment(ctx, args.PaymentID)
+	details, err := w.PaymentDetailStore.ListByPaymentForCompany(ctx, args.PaymentID, args.CompanyID)
 	if err != nil {
 		return fmt.Errorf("load payment details: %w", err)
 	}
@@ -72,7 +72,7 @@ func (w *SyncPaymentWorker) Work(ctx context.Context, job *river.Job[SyncPayment
 		if d.InvoiceID == nil {
 			continue
 		}
-		inv, err := w.InvoiceStore.GetByID(ctx, *d.InvoiceID)
+		inv, err := w.InvoiceStore.GetByIDForCompany(ctx, *d.InvoiceID, args.CompanyID)
 		if err != nil {
 			continue
 		}

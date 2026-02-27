@@ -35,6 +35,12 @@ func (s *InvoiceDetailStore) ListByInvoice(ctx context.Context, invoiceID int) (
 	if err != nil {
 		return nil, err
 	}
+	return s.ListByInvoiceForCompany(ctx, invoiceID, companyID)
+}
+
+// ListByInvoiceForCompany lists invoice details with an explicit company ID.
+// Use this in background workers that have no HTTP request context.
+func (s *InvoiceDetailStore) ListByInvoiceForCompany(ctx context.Context, invoiceID, companyID int) ([]models.InvoiceDetail, error) {
 	query := fmt.Sprintf("SELECT %s FROM invoice_details WHERE invoice_id = $1 AND company_id = $2 AND deleted_at IS NULL ORDER BY id", invoiceDetailColumns)
 	rows, err := s.pool.Query(ctx, query, invoiceID, companyID)
 	if err != nil {

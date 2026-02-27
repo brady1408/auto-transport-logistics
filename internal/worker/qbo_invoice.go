@@ -39,7 +39,7 @@ func (w *SyncInvoiceWorker) Work(ctx context.Context, job *river.Job[SyncInvoice
 		return fmt.Errorf("get qbo connection: %w", err)
 	}
 
-	inv, err := w.InvoiceStore.GetByID(ctx, args.InvoiceID)
+	inv, err := w.InvoiceStore.GetByIDForCompany(ctx, args.InvoiceID, args.CompanyID)
 	if err != nil {
 		return fmt.Errorf("load invoice %d: %w", args.InvoiceID, err)
 	}
@@ -48,7 +48,7 @@ func (w *SyncInvoiceWorker) Work(ctx context.Context, job *river.Job[SyncInvoice
 		return nil
 	}
 
-	cust, err := w.CustomerStore.GetByID(ctx, *inv.CustomerID)
+	cust, err := w.CustomerStore.GetByIDForCompany(ctx, *inv.CustomerID, args.CompanyID)
 	if err != nil {
 		return fmt.Errorf("load customer: %w", err)
 	}
@@ -75,7 +75,7 @@ func (w *SyncInvoiceWorker) Work(ctx context.Context, job *river.Job[SyncInvoice
 		return nil
 	}
 
-	details, err := w.InvoiceDetailStore.ListByInvoice(ctx, args.InvoiceID)
+	details, err := w.InvoiceDetailStore.ListByInvoiceForCompany(ctx, args.InvoiceID, args.CompanyID)
 	if err != nil {
 		return fmt.Errorf("load invoice details: %w", err)
 	}
