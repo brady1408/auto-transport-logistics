@@ -1,0 +1,60 @@
+package integrations
+
+import (
+	"fmt"
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ Page(pc components.PageContext, conn *models.QBOConnection, failures []models.QBOSyncLog) {
+	@components.Layout(pc, "Integrations - ATLinks") {
+		<div class="page-header">
+			<h1>Integrations</h1>
+		</div>
+		<div class="card">
+			<div class="card-header">
+				<h2>QuickBooks Online</h2>
+			</div>
+			<div class="card-body">
+				if conn == nil {
+					<p>Connect your QuickBooks Online account to automatically sync customers, invoices, and payments.</p>
+					<a href="/integrations/qbo/connect" class="btn btn-primary">Connect to QuickBooks</a>
+				} else {
+					<div class="mb-3">
+						<span class="badge bg-success">Connected</span>
+						<span class="text-muted ms-2">Realm: { conn.RealmID }</span>
+						<span class="text-muted ms-2">Connected by { conn.ConnectedBy }</span>
+					</div>
+					<div class="mb-3 d-flex gap-2">
+						<form method="POST" action="/integrations/qbo/sync-all">
+							<input type="hidden" name="csrf_token" value={ pc.CSRFToken }/>
+							<button type="submit" class="btn btn-secondary">Sync All Unsynced</button>
+						</form>
+						<form method="POST" action="/integrations/qbo/disconnect"
+							onsubmit="return confirm('Disconnect QuickBooks? Existing QBO records will remain.')">
+							<input type="hidden" name="csrf_token" value={ pc.CSRFToken }/>
+							<button type="submit" class="btn btn-danger">Disconnect</button>
+						</form>
+					</div>
+					if len(failures) > 0 {
+						<div class="alert alert-warning">
+							<strong>Recent sync failures ({ fmt.Sprintf("%d", len(failures)) }):</strong>
+							<ul class="mb-0 mt-1">
+								for _, f := range failures {
+									<li>{ f.EntityType } #{ fmt.Sprintf("%d", f.EntityID) } — { derefStr(f.ErrorMessage) }</li>
+								}
+							</ul>
+						</div>
+					}
+				}
+			</div>
+		</div>
+	}
+}
+
+func derefStr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}

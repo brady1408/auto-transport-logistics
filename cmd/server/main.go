@@ -90,6 +90,15 @@ func main() {
 	routeStores.paymentStore.RiverClient = riverClient
 	routeStores.invoiceSvc.RiverClient = riverClient
 
+	// Register integrations handler (needs riverClient, only available post-initRiver)
+	handler.NewIntegrationsHandler(
+		qboStore, oauthCfg, riverClient,
+		routeStores.customerStore,
+		routeStores.invoiceStore,
+		routeStores.paymentStore,
+		deps,
+	).Register(routeStores.protectedMux)
+
 	// Background: expire loadboard listings every 5 minutes
 	go runLoadboardExpiry(ctx, loadboardSvc)
 
@@ -128,7 +137,7 @@ func initDeps(pool *pgxpool.Pool, cfg *config.Config) *handler.Deps {
 	}
 }
 
-// riverStores holds the store references needed by initRiver.
+// riverStores holds the store references needed by initRiver and post-init registration.
 type riverStores struct {
 	customerStore      *store.CustomerStore
 	invoiceStore       *store.InvoiceStore
@@ -136,6 +145,7 @@ type riverStores struct {
 	paymentStore       *store.PaymentStore
 	paymentDetailStore *store.PaymentDetailStore
 	invoiceSvc         *service.InvoiceService
+	protectedMux       *http.ServeMux
 }
 
 func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*http.ServeMux, *service.LoadboardService, *store.LoadboardStore, riverStores) {
@@ -304,6 +314,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 		paymentStore:       paymentStore,
 		paymentDetailStore: paymentDetailStore,
 		invoiceSvc:         invoiceSvc,
+		protectedMux:       protectedMux,
 	}
 	return mux, loadboardSvc, loadboardStore, rs
 }
