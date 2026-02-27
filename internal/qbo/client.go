@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/models"
@@ -199,22 +198,4 @@ type SyncTokenError struct {
 
 func (e *SyncTokenError) Error() string {
 	return "qbo sync token conflict for entity " + e.EntityID
-}
-
-// strToFloat parses a *string amount (stored as numeric text in ATLinks) to float64.
-func strToFloat(s *string) float64 {
-	if s == nil {
-		return 0
-	}
-	f, _ := strconv.ParseFloat(*s, 64)
-	return f
-}
-
-// intToFloat converts a *int quantity to float64 for QBO Qty fields.
-// Returns 1 if nil.
-func intToFloat(n *int) float64 {
-	if n == nil {
-		return 1
-	}
-	return float64(*n)
 }

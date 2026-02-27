@@ -2,6 +2,7 @@ package qbo
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/brady1408/atlinks/internal/models"
 )
@@ -134,4 +135,19 @@ func strDeref(s *string) string {
 		return ""
 	}
 	return *s
+}
+
+func strToFloat(s *string) float64 {
+	if s == nil {
+		return 0
+	}
+	f, _ := strconv.ParseFloat(*s, 64)
+	return f
+}
+
+func intToFloat(n *int) float64 {
+	if n == nil {
+		return 1
+	}
+	return float64(*n)
 }
