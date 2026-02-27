@@ -10,6 +10,7 @@ import (
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/email"
+	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/handler/components/authpages"
 	"github.com/brady1408/atlinks/internal/middleware"
 	"github.com/brady1408/atlinks/internal/models"
@@ -98,21 +99,23 @@ func (h *AuthHandler) showLogin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.deps.renderTempl(w, r, authpages.LoginPage("", "", "", "", "", h.deps.getFlash(w, r), "", "", nil, nil))
+	brand := components.BrandFromHost(r.Host)
+	h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "", "", "", h.deps.getFlash(w, r), "", "", nil, nil))
 }
 
 func (h *AuthHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
+	brand := components.BrandFromHost(r.Host)
 
 	user, err := h.users.GetByUsername(r.Context(), username)
 	if err != nil || !user.Active {
-		h.deps.renderTempl(w, r, authpages.LoginPage("", "", "", username, "Invalid username or password", "", "", "", nil, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "", username, "Invalid username or password", "", "", "", nil, nil))
 		return
 	}
 
 	if err := auth.CheckPassword(user.PasswordHash, password); err != nil {
-		h.deps.renderTempl(w, r, authpages.LoginPage("", "", "", username, "Invalid username or password", "", "", "", nil, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "", username, "Invalid username or password", "", "", "", nil, nil))
 		return
 	}
 
@@ -157,7 +160,8 @@ func (h *AuthHandler) showCompanyLogin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.deps.renderTempl(w, r, authpages.LoginPage(company.CompanyName, "/c/"+slug+"/login", "", "", "", h.deps.getFlash(w, r), "", "", nil, nil))
+	brand := components.BrandFromHost(r.Host)
+	h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, "/c/"+slug+"/login", "", "", "", h.deps.getFlash(w, r), "", "", nil, nil))
 }
 
 func (h *AuthHandler) handleCompanyLogin(w http.ResponseWriter, r *http.Request) {
@@ -170,23 +174,24 @@ func (h *AuthHandler) handleCompanyLogin(w http.ResponseWriter, r *http.Request)
 
 	username := r.FormValue("username")
 	password := r.FormValue("password")
+	brand := components.BrandFromHost(r.Host)
 
 	loginAction := "/c/" + slug + "/login"
 
 	user, err := h.users.GetByUsername(r.Context(), username)
 	if err != nil || !user.Active {
-		h.deps.renderTempl(w, r, authpages.LoginPage(company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
 		return
 	}
 
 	// Verify user belongs to this company
 	if user.CompanyID == nil || *user.CompanyID != company.ID {
-		h.deps.renderTempl(w, r, authpages.LoginPage(company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
 		return
 	}
 
 	if err := auth.CheckPassword(user.PasswordHash, password); err != nil {
-		h.deps.renderTempl(w, r, authpages.LoginPage(company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
 		return
 	}
 
@@ -220,7 +225,8 @@ func (h *AuthHandler) showRegister(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.deps.renderTempl(w, r, authpages.LoginPage("", "", "register", "", "", "", "", "", nil, nil))
+	brand := components.BrandFromHost(r.Host)
+	h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "register", "", "", "", "", "", nil, nil))
 }
 
 func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
@@ -291,8 +297,9 @@ func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	brand := components.BrandFromHost(r.Host)
 	if len(errs) > 0 {
-		h.deps.renderTempl(w, r, authpages.LoginPage("", "", "register", "", "", "", "", "", formData, errs))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "register", "", "", "", "", "", formData, errs))
 		return
 	}
 
@@ -313,18 +320,18 @@ func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 	token, err := h.pendingStore.Create(r.Context(), reg)
 	if err != nil {
-		h.deps.renderTempl(w, r, authpages.LoginPage("", "", "register", "", "", "", "", "Failed to start registration. Please try again.", formData, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "register", "", "", "", "", "Failed to start registration. Please try again.", formData, nil))
 		return
 	}
 
 	verifyURL := h.appBaseURL + "/verify-email/" + token
 	if err := h.emailSvc.SendVerification(emailAddr, companyName, verifyURL); err != nil {
 		log.Printf("ERROR: send verification email to %s: %v", emailAddr, err)
-		h.deps.renderTempl(w, r, authpages.LoginPage("", "", "register", "", "", "", "", "Failed to send verification email. Please try again.", formData, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "register", "", "", "", "", "Failed to send verification email. Please try again.", formData, nil))
 		return
 	}
 
-	h.deps.renderTempl(w, r, authpages.LoginPage("", "", "register", "", "", "", fmt.Sprintf("Verification email sent to %s. Please check your inbox to complete registration.", emailAddr), "", nil, nil))
+	h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "register", "", "", "", fmt.Sprintf("Verification email sent to %s. Please check your inbox to complete registration.", emailAddr), "", nil, nil))
 }
 
 func (h *AuthHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request) {

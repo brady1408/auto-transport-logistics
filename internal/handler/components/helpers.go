@@ -3,11 +3,39 @@ package components
 import (
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
 )
+
+// Brand holds white-label display values resolved from the incoming host.
+type Brand struct {
+	Name        string // Short product name, e.g. "ATLinks" or "Atlas"
+	Tagline     string // Subtitle shown on login page
+	FaviconFile string // Path to favicon SVG
+}
+
+// BrandFromHost resolves the Brand for a given Host header value.
+func BrandFromHost(host string) Brand {
+	// Strip port if present (e.g. "localhost:8080" → "localhost")
+	if i := strings.LastIndex(host, ":"); i >= 0 {
+		host = host[:i]
+	}
+	if host == "atlascloud.app" {
+		return Brand{
+			Name:        "Atlas",
+			Tagline:     "Auto Transport Logistics Administration System",
+			FaviconFile: "/static/favicon-ac.svg",
+		}
+	}
+	return Brand{
+		Name:        "ATLinks",
+		Tagline:     "Vehicle Transport Management",
+		FaviconFile: "/static/favicon.svg",
+	}
+}
 
 // PageContext holds data available to every page layout.
 type PageContext struct {
@@ -17,6 +45,7 @@ type PageContext struct {
 	CSRFToken   string
 	Features    models.FeatureSet
 	Suspended   bool
+	Brand       Brand
 }
 
 // PaginationData holds computed values for pagination controls.

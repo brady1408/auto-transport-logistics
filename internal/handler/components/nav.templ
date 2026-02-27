@@ -5,14 +5,14 @@ import (
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet) {
+templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet, brand Brand) {
 	<nav class="main-nav" x-data="{ open: '', mobileOpen: false }" @click.outside="mobileOpen = false" style="position:relative">
 		<div class="nav-brand">
 			<a href="/">
 				if companyName != "" {
 					{ companyName }
 				} else {
-					ATLinks
+					{ brand.Name }
 				}
 			</a>
 		</div>

@@ -201,6 +201,7 @@ func (d *Deps) pageContext(w http.ResponseWriter, r *http.Request) components.Pa
 	}
 	ctx.Features = d.getFeatures(r.Context())
 	ctx.Suspended = d.IsSuspended(r)
+	ctx.Brand = components.BrandFromHost(r.Host)
 	return ctx
 }
 

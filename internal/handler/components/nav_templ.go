@@ -13,7 +13,7 @@ import (
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-func Nav(user auth.ContextUser, companyName string, features models.FeatureSet) templ.Component {
+func Nav(user auth.ContextUser, companyName string, features models.FeatureSet, brand Brand) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -49,85 +49,90 @@ func Nav(user auth.ContextUser, companyName string, features models.FeatureSet) 
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "ATLinks")
+			var templ_7745c5c3_Var3 string
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(brand.Name)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 15, Col: 17}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</a></div><div class=\"nav-menu\"><!-- VIN Search (top-level) --><a href=\"/search/vin\" class=\"nav-link\" style=\"text-decoration:none;\">VIN Search</a><!-- Loadboard (Pro+) -->")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</a></div><div class=\"nav-menu\"><!-- VIN Search (top-level) --><a href=\"/search/vin\" class=\"nav-link\" style=\"text-decoration:none;\">VIN Search</a><!-- Loadboard (Pro+) -->")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if features.Has(models.FeatureLoadboard) {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"nav-dropdown\" @mouseenter=\"open = 'loadboard'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Loadboard</button><div class=\"dropdown-menu\" x-show=\"open === 'loadboard'\" x-cloak><a href=\"/loadboard\" class=\"dropdown-item\">Browse Loads</a> <a href=\"/loadboard/my-listings\" class=\"dropdown-item\">My Listings</a> <a href=\"/loadboard/my-claims\" class=\"dropdown-item\">My Claims</a></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"nav-dropdown\" @mouseenter=\"open = 'loadboard'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Loadboard</button><div class=\"dropdown-menu\" x-show=\"open === 'loadboard'\" x-cloak><a href=\"/loadboard\" class=\"dropdown-item\">Browse Loads</a> <a href=\"/loadboard/my-listings\" class=\"dropdown-item\">My Listings</a> <a href=\"/loadboard/my-claims\" class=\"dropdown-item\">My Claims</a></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<!-- Dispatch --><div class=\"nav-dropdown\" @mouseenter=\"open = 'dispatch'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Dispatch</button><div class=\"dropdown-menu\" x-show=\"open === 'dispatch'\" x-cloak><a href=\"/dispatch/orders\" class=\"dropdown-item\">Orders</a> <a href=\"/dispatch/trips\" class=\"dropdown-item\">Trips/Loads</a> <a href=\"/dispatch/waiting\" class=\"dropdown-item\">Waiting Grid</a></div></div><!-- Accounting --><div class=\"nav-dropdown\" @mouseenter=\"open = 'accounting'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Accounting</button><div class=\"dropdown-menu\" x-show=\"open === 'accounting'\" x-cloak><a href=\"/accounting/invoices\" class=\"dropdown-item\">Invoices</a> <a href=\"/accounting/payments\" class=\"dropdown-item\">Payments</a> <a href=\"/accounting/credit-memos\" class=\"dropdown-item\">Credit Memos</a> <a href=\"/accounting/damage-claims\" class=\"dropdown-item\">Damage Claims</a> <a href=\"/accounting/ap\" class=\"dropdown-item\">Accounts Payable</a><hr class=\"dropdown-divider\"><a href=\"/accounting/driver-adjustments\" class=\"dropdown-item\">Driver Adjustments</a> <a href=\"/accounting/truck-adjustments\" class=\"dropdown-item\">Truck Adjustments</a><hr class=\"dropdown-divider\"><a href=\"/accounting/posting\" class=\"dropdown-item\">Period Posting</a></div></div><!-- Global --><div class=\"nav-dropdown\" @mouseenter=\"open = 'global'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Global</button><div class=\"dropdown-menu\" x-show=\"open === 'global'\" x-cloak><a href=\"/global/customers\" class=\"dropdown-item\">Customers</a> <a href=\"/global/employees\" class=\"dropdown-item\">Employees</a> <a href=\"/global/trucks\" class=\"dropdown-item\">Trucks</a> <a href=\"/global/vendors\" class=\"dropdown-item\">Vendors</a> <a href=\"/global/zones\" class=\"dropdown-item\">Zones</a> <a href=\"/global/zone-pricing\" class=\"dropdown-item\">Zone Pricing</a><hr class=\"dropdown-divider\"><a href=\"/global/dispatch-codes\" class=\"dropdown-item\">Dispatch Codes</a> <a href=\"/global/equipment-types\" class=\"dropdown-item\">Equipment Types</a> <a href=\"/global/items\" class=\"dropdown-item\">Items/Charges</a> <a href=\"/global/regions\" class=\"dropdown-item\">Regions</a> <a href=\"/global/terms\" class=\"dropdown-item\">Terms</a> <a href=\"/global/tax-codes\" class=\"dropdown-item\">Tax Codes</a><hr class=\"dropdown-divider\"><a href=\"/global/damage-areas\" class=\"dropdown-item\">Damage Areas</a> <a href=\"/global/damage-types\" class=\"dropdown-item\">Damage Types</a> <a href=\"/global/damage-severities\" class=\"dropdown-item\">Damage Severities</a> <a href=\"/global/hold-codes\" class=\"dropdown-item\">Hold Codes</a> <a href=\"/global/declination-codes\" class=\"dropdown-item\">Declination Codes</a></div></div><!-- Reports --><div class=\"nav-dropdown\" @mouseenter=\"open = 'reports'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Reports</button><div class=\"dropdown-menu\" x-show=\"open === 'reports'\" x-cloak><a href=\"/reports\" class=\"dropdown-item\">All Reports</a><hr class=\"dropdown-divider\"><a href=\"/reports/ar-aging\" class=\"dropdown-item\">AR Aging</a> <a href=\"/reports/revenue-by-customer\" class=\"dropdown-item\">Revenue by Customer</a> <a href=\"/reports/payments\" class=\"dropdown-item\">Payment Report</a><hr class=\"dropdown-divider\"><a href=\"/reports/order-status\" class=\"dropdown-item\">Order Status</a> <a href=\"/reports/trip-summary\" class=\"dropdown-item\">Trip Summary</a> <a href=\"/reports/driver-settlement\" class=\"dropdown-item\">Driver Settlement</a> <a href=\"/reports/vehicle-history\" class=\"dropdown-item\">Vehicle History</a><hr class=\"dropdown-divider\"><a href=\"/reports/damages\" class=\"dropdown-item\">Damage Report</a></div></div><!-- Utilities --><div class=\"nav-dropdown\" @mouseenter=\"open = 'utilities'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Utilities</button><div class=\"dropdown-menu\" x-show=\"open === 'utilities'\" x-cloak><a href=\"/utilities/company\" class=\"dropdown-item\">Company Settings</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<!-- Dispatch --><div class=\"nav-dropdown\" @mouseenter=\"open = 'dispatch'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Dispatch</button><div class=\"dropdown-menu\" x-show=\"open === 'dispatch'\" x-cloak><a href=\"/dispatch/orders\" class=\"dropdown-item\">Orders</a> <a href=\"/dispatch/trips\" class=\"dropdown-item\">Trips/Loads</a> <a href=\"/dispatch/waiting\" class=\"dropdown-item\">Waiting Grid</a></div></div><!-- Accounting --><div class=\"nav-dropdown\" @mouseenter=\"open = 'accounting'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Accounting</button><div class=\"dropdown-menu\" x-show=\"open === 'accounting'\" x-cloak><a href=\"/accounting/invoices\" class=\"dropdown-item\">Invoices</a> <a href=\"/accounting/payments\" class=\"dropdown-item\">Payments</a> <a href=\"/accounting/credit-memos\" class=\"dropdown-item\">Credit Memos</a> <a href=\"/accounting/damage-claims\" class=\"dropdown-item\">Damage Claims</a> <a href=\"/accounting/ap\" class=\"dropdown-item\">Accounts Payable</a><hr class=\"dropdown-divider\"><a href=\"/accounting/driver-adjustments\" class=\"dropdown-item\">Driver Adjustments</a> <a href=\"/accounting/truck-adjustments\" class=\"dropdown-item\">Truck Adjustments</a><hr class=\"dropdown-divider\"><a href=\"/accounting/posting\" class=\"dropdown-item\">Period Posting</a></div></div><!-- Global --><div class=\"nav-dropdown\" @mouseenter=\"open = 'global'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Global</button><div class=\"dropdown-menu\" x-show=\"open === 'global'\" x-cloak><a href=\"/global/customers\" class=\"dropdown-item\">Customers</a> <a href=\"/global/employees\" class=\"dropdown-item\">Employees</a> <a href=\"/global/trucks\" class=\"dropdown-item\">Trucks</a> <a href=\"/global/vendors\" class=\"dropdown-item\">Vendors</a> <a href=\"/global/zones\" class=\"dropdown-item\">Zones</a> <a href=\"/global/zone-pricing\" class=\"dropdown-item\">Zone Pricing</a><hr class=\"dropdown-divider\"><a href=\"/global/dispatch-codes\" class=\"dropdown-item\">Dispatch Codes</a> <a href=\"/global/equipment-types\" class=\"dropdown-item\">Equipment Types</a> <a href=\"/global/items\" class=\"dropdown-item\">Items/Charges</a> <a href=\"/global/regions\" class=\"dropdown-item\">Regions</a> <a href=\"/global/terms\" class=\"dropdown-item\">Terms</a> <a href=\"/global/tax-codes\" class=\"dropdown-item\">Tax Codes</a><hr class=\"dropdown-divider\"><a href=\"/global/damage-areas\" class=\"dropdown-item\">Damage Areas</a> <a href=\"/global/damage-types\" class=\"dropdown-item\">Damage Types</a> <a href=\"/global/damage-severities\" class=\"dropdown-item\">Damage Severities</a> <a href=\"/global/hold-codes\" class=\"dropdown-item\">Hold Codes</a> <a href=\"/global/declination-codes\" class=\"dropdown-item\">Declination Codes</a></div></div><!-- Reports --><div class=\"nav-dropdown\" @mouseenter=\"open = 'reports'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Reports</button><div class=\"dropdown-menu\" x-show=\"open === 'reports'\" x-cloak><a href=\"/reports\" class=\"dropdown-item\">All Reports</a><hr class=\"dropdown-divider\"><a href=\"/reports/ar-aging\" class=\"dropdown-item\">AR Aging</a> <a href=\"/reports/revenue-by-customer\" class=\"dropdown-item\">Revenue by Customer</a> <a href=\"/reports/payments\" class=\"dropdown-item\">Payment Report</a><hr class=\"dropdown-divider\"><a href=\"/reports/order-status\" class=\"dropdown-item\">Order Status</a> <a href=\"/reports/trip-summary\" class=\"dropdown-item\">Trip Summary</a> <a href=\"/reports/driver-settlement\" class=\"dropdown-item\">Driver Settlement</a> <a href=\"/reports/vehicle-history\" class=\"dropdown-item\">Vehicle History</a><hr class=\"dropdown-divider\"><a href=\"/reports/damages\" class=\"dropdown-item\">Damage Report</a></div></div><!-- Utilities --><div class=\"nav-dropdown\" @mouseenter=\"open = 'utilities'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Utilities</button><div class=\"dropdown-menu\" x-show=\"open === 'utilities'\" x-cloak><a href=\"/utilities/company\" class=\"dropdown-item\">Company Settings</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if user.Role == "super_admin" || user.Role == "company_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<a href=\"/settings/users\" class=\"dropdown-item\">Users</a>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<a href=\"/settings/users\" class=\"dropdown-item\">Users</a>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<hr class=\"dropdown-divider\"><a href=\"/feedback\" class=\"dropdown-item\">Feedback</a></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<hr class=\"dropdown-divider\"><a href=\"/feedback\" class=\"dropdown-item\">Feedback</a></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if user.Role == "super_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<!-- Admin (super_admin only) --> <div class=\"nav-dropdown\" @mouseenter=\"open = 'admin'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Admin</button><div class=\"dropdown-menu\" x-show=\"open === 'admin'\" x-cloak><a href=\"/admin/companies\" class=\"dropdown-item\">Companies</a> <a href=\"/admin/backups\" class=\"dropdown-item\">Backups</a></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<!-- Admin (super_admin only) --> <div class=\"nav-dropdown\" @mouseenter=\"open = 'admin'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Admin</button><div class=\"dropdown-menu\" x-show=\"open === 'admin'\" x-cloak><a href=\"/admin/companies\" class=\"dropdown-item\">Companies</a> <a href=\"/admin/backups\" class=\"dropdown-item\">Backups</a></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div><!-- Hamburger (mobile/tablet) --><button class=\"nav-hamburger\" @click=\"mobileOpen = !mobileOpen\" type=\"button\" :aria-expanded=\"mobileOpen\" aria-label=\"Toggle navigation menu\" aria-controls=\"nav-mobile-menu\">☰</button><div class=\"nav-user\"><!-- Notification bell --><div class=\"notification-bell\" x-data=\"{ open: false }\" @click.away=\"open = false\"><button class=\"bell-btn\" @click=\"open = !open; if(open) { htmx.ajax('POST', '/notifications/mark-read', {swap:'none'}); htmx.ajax('GET', '/notifications', {target:'#notification-panel', swap:'innerHTML'}) }\" type=\"button\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"></path><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"></path></svg> <span hx-get=\"/notifications/count\" hx-trigger=\"load, every 30s\" hx-swap=\"innerHTML\"></span></button><div id=\"notification-panel\" class=\"notification-panel\" x-show=\"open\" x-cloak><p style=\"padding:1rem; color:var(--gray-400); text-align:center;\">Loading...</p></div></div><span>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div><!-- Hamburger (mobile/tablet) --><button class=\"nav-hamburger\" @click=\"mobileOpen = !mobileOpen\" type=\"button\" :aria-expanded=\"mobileOpen\" aria-label=\"Toggle navigation menu\" aria-controls=\"nav-mobile-menu\">☰</button><div class=\"nav-user\"><!-- Notification bell --><div class=\"notification-bell\" x-data=\"{ open: false }\" @click.away=\"open = false\"><button class=\"bell-btn\" @click=\"open = !open; if(open) { htmx.ajax('POST', '/notifications/mark-read', {swap:'none'}); htmx.ajax('GET', '/notifications', {target:'#notification-panel', swap:'innerHTML'}) }\" type=\"button\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"></path><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"></path></svg> <span hx-get=\"/notifications/count\" hx-trigger=\"load, every 30s\" hx-swap=\"innerHTML\"></span></button><div id=\"notification-panel\" class=\"notification-panel\" x-show=\"open\" x-cloak><p style=\"padding:1rem; color:var(--gray-400); text-align:center;\">Loading...</p></div></div><span>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(user.Username)
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(user.Username)
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 141, Col: 24}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</span> <button class=\"btn btn-sm\" hx-post=\"/logout\">Logout</button></div><!-- Mobile nav drawer --><div id=\"nav-mobile-menu\" class=\"nav-mobile-menu\" x-show=\"mobileOpen\" x-cloak><a href=\"/search/vin\">VIN Search</a><hr>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</span> <button class=\"btn btn-sm\" hx-post=\"/logout\">Logout</button></div><!-- Mobile nav drawer --><div id=\"nav-mobile-menu\" class=\"nav-mobile-menu\" x-show=\"mobileOpen\" x-cloak><a href=\"/search/vin\">VIN Search</a><hr>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if features.Has(models.FeatureLoadboard) {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"mobile-section-label\">Loadboard</div><a href=\"/loadboard\">Browse Loads</a> <a href=\"/loadboard/my-listings\">My Listings</a> <a href=\"/loadboard/my-claims\">My Claims</a><hr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"mobile-section-label\">Loadboard</div><a href=\"/loadboard\">Browse Loads</a> <a href=\"/loadboard/my-listings\">My Listings</a> <a href=\"/loadboard/my-claims\">My Claims</a><hr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<div class=\"mobile-section-label\">Dispatch</div><a href=\"/dispatch/orders\">Orders</a> <a href=\"/dispatch/trips\">Trips/Loads</a> <a href=\"/dispatch/waiting\">Waiting Grid</a><hr><div class=\"mobile-section-label\">Accounting</div><a href=\"/accounting/invoices\">Invoices</a> <a href=\"/accounting/payments\">Payments</a> <a href=\"/accounting/credit-memos\">Credit Memos</a> <a href=\"/accounting/damage-claims\">Damage Claims</a> <a href=\"/accounting/ap\">Accounts Payable</a> <a href=\"/accounting/driver-adjustments\">Driver Adjustments</a> <a href=\"/accounting/truck-adjustments\">Truck Adjustments</a> <a href=\"/accounting/posting\">Period Posting</a><hr><div class=\"mobile-section-label\">Global</div><a href=\"/global/customers\">Customers</a> <a href=\"/global/employees\">Employees</a> <a href=\"/global/trucks\">Trucks</a> <a href=\"/global/vendors\">Vendors</a> <a href=\"/global/zones\">Zones</a><hr><div class=\"mobile-section-label\">Reports</div><a href=\"/reports\">All Reports</a> <a href=\"/reports/ar-aging\">AR Aging</a> <a href=\"/reports/trip-summary\">Trip Summary</a> <a href=\"/reports/driver-settlement\">Driver Settlement</a><hr><div class=\"mobile-section-label\">Utilities</div><a href=\"/utilities/company\">Company Settings</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"mobile-section-label\">Dispatch</div><a href=\"/dispatch/orders\">Orders</a> <a href=\"/dispatch/trips\">Trips/Loads</a> <a href=\"/dispatch/waiting\">Waiting Grid</a><hr><div class=\"mobile-section-label\">Accounting</div><a href=\"/accounting/invoices\">Invoices</a> <a href=\"/accounting/payments\">Payments</a> <a href=\"/accounting/credit-memos\">Credit Memos</a> <a href=\"/accounting/damage-claims\">Damage Claims</a> <a href=\"/accounting/ap\">Accounts Payable</a> <a href=\"/accounting/driver-adjustments\">Driver Adjustments</a> <a href=\"/accounting/truck-adjustments\">Truck Adjustments</a> <a href=\"/accounting/posting\">Period Posting</a><hr><div class=\"mobile-section-label\">Global</div><a href=\"/global/customers\">Customers</a> <a href=\"/global/employees\">Employees</a> <a href=\"/global/trucks\">Trucks</a> <a href=\"/global/vendors\">Vendors</a> <a href=\"/global/zones\">Zones</a><hr><div class=\"mobile-section-label\">Reports</div><a href=\"/reports\">All Reports</a> <a href=\"/reports/ar-aging\">AR Aging</a> <a href=\"/reports/trip-summary\">Trip Summary</a> <a href=\"/reports/driver-settlement\">Driver Settlement</a><hr><div class=\"mobile-section-label\">Utilities</div><a href=\"/utilities/company\">Company Settings</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if user.Role == "super_admin" || user.Role == "company_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<a href=\"/settings/users\">Users</a> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<a href=\"/settings/users\">Users</a> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<a href=\"/feedback\">Feedback</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<a href=\"/feedback\">Feedback</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if user.Role == "super_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<hr><div class=\"mobile-section-label\">Admin</div><a href=\"/admin/companies\">Companies</a> <a href=\"/admin/backups\">Backups</a>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<hr><div class=\"mobile-section-label\">Admin</div><a href=\"/admin/companies\">Companies</a> <a href=\"/admin/backups\">Backups</a>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<hr><button hx-post=\"/logout\">Logout</button></div></nav>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<hr><button hx-post=\"/logout\">Logout</button></div></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
