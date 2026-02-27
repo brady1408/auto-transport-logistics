@@ -14,7 +14,7 @@ func fieldError(errs map[string]string, key string) string {
 	return errs[key]
 }
 
-templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew bool, fieldErrors map[string]string, errMsg string) {
+templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew bool, fieldErrors map[string]string, errMsg string, sub *models.Subscription) {
 	@components.Layout(pg, func() string {
 		if isNew {
 			return "New Company - Admin"
@@ -312,6 +312,39 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew 
 						if fe := fieldError(fieldErrors, "splc"); fe != "" {
 							<small class="field-error">{ fe }</small>
 						}
+					</div>
+				</div>
+			}
+			if !isNew {
+				<h3 style="margin-top:1.5rem; margin-bottom:0.5rem;">Subscription</h3>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="tier">Plan Tier</label>
+						<select id="tier" name="tier" class="form-control">
+							<option value="basic" selected?={ sub == nil || sub.Tier == models.TierBasic }>Basic</option>
+							<option value="pro" selected?={ sub != nil && sub.Tier == models.TierPro }>Pro (+ Loadboard)</option>
+							<option value="enterprise" selected?={ sub != nil && sub.Tier == models.TierEnterprise }>Enterprise (+ EDI)</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label>
+							<input
+								type="checkbox" name="addon_edi" value="on"
+								checked?={ sub != nil && sub.AddonEDI }
+							/>
+							EDI Add-on
+						</label>
+						<small>Enables EDI on Basic/Pro tiers</small>
+					</div>
+					<div class="form-group">
+						<label for="edi_monthly_limit">EDI Monthly Limit</label>
+						<select id="edi_monthly_limit" name="edi_monthly_limit" class="form-control">
+							<option value="">Unlimited</option>
+							<option value="500" selected?={ sub != nil && sub.EDIMonthlyLimit != nil && *sub.EDIMonthlyLimit == 500 }>500 / month</option>
+							<option value="1000" selected?={ sub != nil && sub.EDIMonthlyLimit != nil && *sub.EDIMonthlyLimit == 1000 }>1,000 / month</option>
+							<option value="1500" selected?={ sub != nil && sub.EDIMonthlyLimit != nil && *sub.EDIMonthlyLimit == 1500 }>1,500 / month</option>
+							<option value="2000" selected?={ sub != nil && sub.EDIMonthlyLimit != nil && *sub.EDIMonthlyLimit == 2000 }>2,000 / month</option>
+						</select>
 					</div>
 				</div>
 			}
