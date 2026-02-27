@@ -7,18 +7,15 @@ import (
 	"log"
 
 	"github.com/brady1408/atlinks/internal/qbo"
+	"github.com/brady1408/atlinks/internal/riverargs"
 	"github.com/brady1408/atlinks/internal/store"
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"golang.org/x/oauth2"
 )
 
-type SyncCustomerArgs struct {
-	CompanyID  int `json:"company_id"`
-	CustomerID int `json:"customer_id"`
-}
-
-func (SyncCustomerArgs) Kind() string { return "qbo_sync_customer" }
+// SyncCustomerArgs is re-exported from riverargs for backward compatibility.
+type SyncCustomerArgs = riverargs.SyncCustomerArgs
 
 type SyncCustomerWorker struct {
 	river.WorkerDefaults[SyncCustomerArgs]

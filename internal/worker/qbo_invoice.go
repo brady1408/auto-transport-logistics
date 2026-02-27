@@ -7,19 +7,15 @@ import (
 	"time"
 
 	"github.com/brady1408/atlinks/internal/qbo"
+	"github.com/brady1408/atlinks/internal/riverargs"
 	"github.com/brady1408/atlinks/internal/store"
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"golang.org/x/oauth2"
 )
 
-type SyncInvoiceArgs struct {
-	CompanyID int    `json:"company_id"`
-	InvoiceID int    `json:"invoice_id"`
-	Action    string `json:"action"` // "create", "update", "void"
-}
-
-func (SyncInvoiceArgs) Kind() string { return "qbo_sync_invoice" }
+// SyncInvoiceArgs is re-exported from riverargs for backward compatibility.
+type SyncInvoiceArgs = riverargs.SyncInvoiceArgs
 
 type SyncInvoiceWorker struct {
 	river.WorkerDefaults[SyncInvoiceArgs]

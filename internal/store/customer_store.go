@@ -6,12 +6,15 @@ import (
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/riverargs"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/riverqueue/river"
 )
 
 type CustomerStore struct {
-	pool *pgxpool.Pool
+	pool        *pgxpool.Pool
+	RiverClient *river.Client[pgx.Tx]
 }
 
 func NewCustomerStore(pool *pgxpool.Pool) *CustomerStore {
@@ -148,6 +151,14 @@ func (s *CustomerStore) Create(ctx context.Context, c *models.Customer) error {
 	if err != nil {
 		return fmt.Errorf("create customer: %w", err)
 	}
+	if s.RiverClient != nil {
+		if companyID, err := auth.GetCompanyID(ctx); err == nil {
+			_, _ = s.RiverClient.Insert(ctx, riverargs.SyncCustomerArgs{
+				CompanyID:  companyID,
+				CustomerID: c.ID,
+			}, nil)
+		}
+	}
 	return nil
 }
 
@@ -179,6 +190,14 @@ func (s *CustomerStore) Update(ctx context.Context, c *models.Customer) error {
 	if result.RowsAffected() == 0 {
 		return fmt.Errorf("customer %d not found", c.ID)
 	}
+	if s.RiverClient != nil {
+		if companyID, err := auth.GetCompanyID(ctx); err == nil {
+			_, _ = s.RiverClient.Insert(ctx, riverargs.SyncCustomerArgs{
+				CompanyID:  companyID,
+				CustomerID: c.ID,
+			}, nil)
+		}
+	}
 	return nil
 }
 
@@ -195,4 +214,23 @@ func (s *CustomerStore) Delete(ctx context.Context, id int) error {
 		return fmt.Errorf("customer %d not found", id)
 	}
 	return nil
+}
+
+func (s *CustomerStore) ListUnsynced(ctx context.Context, companyID int) ([]models.Customer, error) {
+	rows, err := s.pool.Query(ctx,
+		`SELECT `+customerColumns+` FROM customers WHERE company_id = $1 AND qbo_customer_id IS NULL AND deleted_at IS NULL`,
+		companyID)
+	if err != nil {
+		return nil, fmt.Errorf("list unsynced customers: %w", err)
+	}
+	defer rows.Close()
+	var results []models.Customer
+	for rows.Next() {
+		c, err := scanCustomer(rows)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, *c)
+	}
+	return results, rows.Err()
 }

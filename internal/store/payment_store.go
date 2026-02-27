@@ -6,12 +6,15 @@ import (
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/riverargs"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/riverqueue/river"
 )
 
 type PaymentStore struct {
-	pool *pgxpool.Pool
+	pool        *pgxpool.Pool
+	RiverClient *river.Client[pgx.Tx]
 }
 
 func NewPaymentStore(pool *pgxpool.Pool) *PaymentStore {
@@ -141,6 +144,15 @@ func (s *PaymentStore) Create(ctx context.Context, p *models.Payment) error {
 	if err != nil {
 		return fmt.Errorf("create payment: %w", err)
 	}
+	if s.RiverClient != nil {
+		if companyID, err := auth.GetCompanyID(ctx); err == nil {
+			_, _ = s.RiverClient.Insert(ctx, riverargs.SyncPaymentArgs{
+				CompanyID: companyID,
+				PaymentID: p.ID,
+				Action:    "create",
+			}, nil)
+		}
+	}
 	return nil
 }
 
@@ -165,6 +177,15 @@ func (s *PaymentStore) Update(ctx context.Context, p *models.Payment) error {
 	}
 	if result.RowsAffected() == 0 {
 		return fmt.Errorf("payment %d not found", p.ID)
+	}
+	if s.RiverClient != nil {
+		if companyID, err := auth.GetCompanyID(ctx); err == nil {
+			_, _ = s.RiverClient.Insert(ctx, riverargs.SyncPaymentArgs{
+				CompanyID: companyID,
+				PaymentID: p.ID,
+				Action:    "update",
+			}, nil)
+		}
 	}
 	return nil
 }
@@ -295,4 +316,23 @@ func (s *PaymentStore) UpdateAmountsTx(ctx context.Context, tx pgx.Tx, id int, a
 		return fmt.Errorf("payment %d not found", id)
 	}
 	return nil
+}
+
+func (s *PaymentStore) ListUnsynced(ctx context.Context, companyID int) ([]models.Payment, error) {
+	rows, err := s.pool.Query(ctx,
+		`SELECT `+paymentColumns+` FROM payments WHERE company_id = $1 AND qbo_payment_id IS NULL AND deleted_at IS NULL`,
+		companyID)
+	if err != nil {
+		return nil, fmt.Errorf("list unsynced payments: %w", err)
+	}
+	defer rows.Close()
+	var results []models.Payment
+	for rows.Next() {
+		p, err := scanPayment(rows)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, *p)
+	}
+	return results, rows.Err()
 }

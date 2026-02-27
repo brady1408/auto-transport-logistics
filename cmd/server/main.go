@@ -84,6 +84,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("init river: %v", err)
 	}
+	// Wire RiverClient into stores for QBO sync
+	routeStores.customerStore.RiverClient = riverClient
+	routeStores.invoiceStore.RiverClient = riverClient
+	routeStores.paymentStore.RiverClient = riverClient
+	routeStores.invoiceSvc.RiverClient = riverClient
 
 	// Background: expire loadboard listings every 5 minutes
 	go runLoadboardExpiry(ctx, loadboardSvc)
@@ -130,6 +135,7 @@ type riverStores struct {
 	invoiceDetailStore *store.InvoiceDetailStore
 	paymentStore       *store.PaymentStore
 	paymentDetailStore *store.PaymentDetailStore
+	invoiceSvc         *service.InvoiceService
 }
 
 func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*http.ServeMux, *service.LoadboardService, *store.LoadboardStore, riverStores) {
@@ -297,6 +303,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 		invoiceDetailStore: invoiceDetailStore,
 		paymentStore:       paymentStore,
 		paymentDetailStore: paymentDetailStore,
+		invoiceSvc:         invoiceSvc,
 	}
 	return mux, loadboardSvc, loadboardStore, rs
 }

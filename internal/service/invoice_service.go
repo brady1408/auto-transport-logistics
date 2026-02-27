@@ -8,8 +8,11 @@ import (
 	"github.com/brady1408/atlinks/internal/audit"
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/riverargs"
 	"github.com/brady1408/atlinks/internal/store"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/riverqueue/river"
 )
 
 type InvoiceService struct {
@@ -19,6 +22,7 @@ type InvoiceService struct {
 	orderStore   *store.OrderStore
 	vehicleStore *store.VehicleStore
 	audit        *audit.Service
+	RiverClient  *river.Client[pgx.Tx]
 }
 
 func NewInvoiceService(
@@ -286,5 +290,14 @@ func (s *InvoiceService) VoidInvoice(ctx context.Context, invoiceID int) error {
 	}
 
 	s.audit.Log(ctx, "invoices", invoiceID, "VOID", inv, nil)
+	if s.RiverClient != nil {
+		if companyID, err := auth.GetCompanyID(ctx); err == nil {
+			_, _ = s.RiverClient.Insert(ctx, riverargs.SyncInvoiceArgs{
+				CompanyID: companyID,
+				InvoiceID: invoiceID,
+				Action:    "void",
+			}, nil)
+		}
+	}
 	return nil
 }
