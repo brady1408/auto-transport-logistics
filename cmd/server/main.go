@@ -257,6 +257,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	adminHandler := handler.NewAdminHandler(companyStore, userStore, subscriptionStore, deps)
 	adminHandler.RegisterAdmin(protectedMux, middleware.RequireRole("super_admin"))
 	adminHandler.RegisterSettings(protectedMux, middleware.RequireRole("company_admin", "super_admin"))
+	adminHandler.RegisterProfile(protectedMux)
 
 	// Suspended info page (GET only — accessible even when account is suspended)
 	protectedMux.HandleFunc("GET /suspended", deps.SuspendedPageHandler())

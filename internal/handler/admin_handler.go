@@ -115,6 +115,7 @@ type adminUserStore interface {
 	Create(ctx context.Context, u *models.User) error
 	Update(ctx context.Context, u *models.User) error
 	UpdatePassword(ctx context.Context, id int, companyID int, hash string) error
+	UpdatePasswordByID(ctx context.Context, id int, hash string) error
 }
 
 type adminSubscriptionStore interface {
@@ -157,6 +158,60 @@ func (h *AdminHandler) RegisterSettings(mux *http.ServeMux, mw func(http.Handler
 	mux.Handle("POST /settings/users", wrap(h.createUser))
 	mux.Handle("GET /settings/users/{id}/edit", wrap(h.editUser))
 	mux.Handle("POST /settings/users/{id}", wrap(h.updateUser))
+}
+
+// RegisterProfile registers the self-service change-password route (all authenticated users).
+func (h *AdminHandler) RegisterProfile(mux *http.ServeMux) {
+	mux.HandleFunc("GET /settings/change-password", h.showChangePassword)
+	mux.HandleFunc("POST /settings/change-password", h.handleChangePassword)
+}
+
+func (h *AdminHandler) showChangePassword(w http.ResponseWriter, r *http.Request) {
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, settings.ChangePasswordPage(pg, "", ""))
+}
+
+func (h *AdminHandler) handleChangePassword(w http.ResponseWriter, r *http.Request) {
+	pg := h.deps.pageContext(w, r)
+
+	currentPw := r.FormValue("current_password")
+	newPw := r.FormValue("new_password")
+	confirmPw := r.FormValue("confirm_password")
+
+	if currentPw == "" || newPw == "" || confirmPw == "" {
+		h.deps.renderTempl(w, r, settings.ChangePasswordPage(pg, "All fields are required.", ""))
+		return
+	}
+	if newPw != confirmPw {
+		h.deps.renderTempl(w, r, settings.ChangePasswordPage(pg, "New passwords do not match.", ""))
+		return
+	}
+	if len(newPw) < 8 {
+		h.deps.renderTempl(w, r, settings.ChangePasswordPage(pg, "New password must be at least 8 characters.", ""))
+		return
+	}
+
+	user, err := h.userStore.GetByID(r.Context(), pg.User.ID)
+	if err != nil {
+		h.deps.renderTempl(w, r, settings.ChangePasswordPage(pg, "Failed to load user.", ""))
+		return
+	}
+	if err := auth.CheckPassword(user.PasswordHash, currentPw); err != nil {
+		h.deps.renderTempl(w, r, settings.ChangePasswordPage(pg, "Current password is incorrect.", ""))
+		return
+	}
+
+	hash, err := auth.HashPassword(newPw)
+	if err != nil {
+		h.deps.renderTempl(w, r, settings.ChangePasswordPage(pg, "Failed to hash password.", ""))
+		return
+	}
+	if err := h.userStore.UpdatePasswordByID(r.Context(), pg.User.ID, hash); err != nil {
+		h.deps.renderTempl(w, r, settings.ChangePasswordPage(pg, "Failed to update password.", ""))
+		return
+	}
+
+	h.deps.renderTempl(w, r, settings.ChangePasswordPage(pg, "", "Password changed successfully."))
 }
 
 // --- Company Management (super_admin only) ---

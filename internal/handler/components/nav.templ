@@ -107,6 +107,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 						<a href="/settings/users" class="dropdown-item">Users</a>
 					}
 					<hr class="dropdown-divider"/>
+					<a href="/settings/change-password" class="dropdown-item">Change Password</a>
 					<a href="/feedback" class="dropdown-item">Feedback</a>
 				</div>
 			</div>
@@ -185,6 +186,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 			if user.Role == "super_admin" || user.Role == "company_admin" {
 				<a href="/settings/users">Users</a>
 			}
+			<a href="/settings/change-password">Change Password</a>
 			<a href="/feedback">Feedback</a>
 			if user.Role == "super_admin" {
 				<hr/>

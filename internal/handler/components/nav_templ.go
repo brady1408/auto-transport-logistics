@@ -79,7 +79,7 @@ func Nav(user auth.ContextUser, companyName string, features models.FeatureSet, 
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<hr class=\"dropdown-divider\"><a href=\"/feedback\" class=\"dropdown-item\">Feedback</a></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<hr class=\"dropdown-divider\"><a href=\"/settings/change-password\" class=\"dropdown-item\">Change Password</a> <a href=\"/feedback\" class=\"dropdown-item\">Feedback</a></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -96,7 +96,7 @@ func Nav(user auth.ContextUser, companyName string, features models.FeatureSet, 
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(user.Username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 141, Col: 24}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 142, Col: 24}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -122,7 +122,7 @@ func Nav(user auth.ContextUser, companyName string, features models.FeatureSet, 
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<a href=\"/feedback\">Feedback</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<a href=\"/settings/change-password\">Change Password</a> <a href=\"/feedback\">Feedback</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
