@@ -1,5 +1,7 @@
 package riverargs
 
+import "github.com/riverqueue/river"
+
 // SyncCustomerArgs is the job args type for QBO customer sync jobs.
 type SyncCustomerArgs struct {
 	CompanyID  int `json:"company_id"`
@@ -7,6 +9,11 @@ type SyncCustomerArgs struct {
 }
 
 func (SyncCustomerArgs) Kind() string { return "qbo_sync_customer" }
+
+// InsertOpts deduplicates: only one pending/running job per customer at a time.
+func (SyncCustomerArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
+}
 
 // SyncInvoiceArgs is the job args type for QBO invoice sync jobs.
 type SyncInvoiceArgs struct {
@@ -17,6 +24,11 @@ type SyncInvoiceArgs struct {
 
 func (SyncInvoiceArgs) Kind() string { return "qbo_sync_invoice" }
 
+// InsertOpts deduplicates: only one pending/running job per (invoice, action) at a time.
+func (SyncInvoiceArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
+}
+
 // SyncPaymentArgs is the job args type for QBO payment sync jobs.
 type SyncPaymentArgs struct {
 	CompanyID int    `json:"company_id"`
@@ -25,3 +37,8 @@ type SyncPaymentArgs struct {
 }
 
 func (SyncPaymentArgs) Kind() string { return "qbo_sync_payment" }
+
+// InsertOpts deduplicates: only one pending/running job per (payment, action) at a time.
+func (SyncPaymentArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
+}
