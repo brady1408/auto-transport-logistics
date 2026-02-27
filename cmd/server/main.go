@@ -114,6 +114,15 @@ func main() {
 		deps,
 	).Register(routeStores.protectedMux, middleware.RequireRole("company_admin", "super_admin"))
 
+	// Register MSSQL migration handler (super_admin only).
+	handler.NewMigrationHandler(
+		routeStores.migrationRunStore,
+		routeStores.companyStore,
+		riverClient,
+		cfg.MigrationsDir,
+		deps,
+	).Register(routeStores.protectedMux, middleware.RequireRole("super_admin"))
+
 	// Background: expire loadboard listings every 5 minutes
 	go runLoadboardExpiry(ctx, loadboardSvc)
 
@@ -160,6 +169,8 @@ type riverStores struct {
 	paymentStore       *store.PaymentStore
 	paymentDetailStore *store.PaymentDetailStore
 	invoiceSvc         *service.InvoiceService
+	migrationRunStore  *store.MigrationRunStore
+	companyStore       *store.CompanyStore
 	protectedMux       *http.ServeMux
 }
 
@@ -322,6 +333,8 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	readOnlyGate := middleware.ReadOnlyIfSuspended(deps.IsSuspended, deps.SuspendedBlockHandler())
 	mux.Handle("/", authMiddleware(csrfMiddleware(readOnlyGate(protectedMux))))
 
+	migrationRunStore := store.NewMigrationRunStore(pool)
+
 	rs := riverStores{
 		customerStore:      customerStore,
 		invoiceStore:       invoiceStore,
@@ -329,6 +342,8 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 		paymentStore:       paymentStore,
 		paymentDetailStore: paymentDetailStore,
 		invoiceSvc:         invoiceSvc,
+		migrationRunStore:  migrationRunStore,
+		companyStore:       companyStore,
 		protectedMux:       protectedMux,
 	}
 	return mux, loadboardSvc, loadboardStore, rs
@@ -373,10 +388,18 @@ func initRiver(
 	}
 	river.AddWorker(workers, paymentWorker)
 
+	migrationWorker := &worker.MigrationWorker{
+		Pool:     pool,
+		RunStore: rs.migrationRunStore,
+		MSSQLDSN: cfg.MSSQLMigrationDSN,
+	}
+	river.AddWorker(workers, migrationWorker)
+
 	riverClient, err := river.NewClient(riverpgxv5.New(pool), &river.Config{
 		Workers: workers,
 		Queues: map[string]river.QueueConfig{
 			river.QueueDefault: {MaxWorkers: 5},
+			"migration":        {MaxWorkers: 1},
 		},
 	})
 	if err != nil {
