@@ -94,7 +94,7 @@ func Nav(user auth.ContextUser, companyName string, features models.FeatureSet, 
 			return templ_7745c5c3_Err
 		}
 		if user.Role == "super_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<!-- Admin (super_admin only) --> <div class=\"nav-dropdown\" @mouseenter=\"open = 'admin'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Admin</button><div class=\"dropdown-menu\" x-show=\"open === 'admin'\" x-cloak><a href=\"/admin/companies\" class=\"dropdown-item\">Companies</a> <a href=\"/admin/backups\" class=\"dropdown-item\">Backups</a><hr class=\"dropdown-divider\"><a href=\"/admin/migration\" class=\"dropdown-item\">Migration</a> <a href=\"/admin/riverui/\" class=\"dropdown-item\">Job Queue</a></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<!-- Admin (super_admin only) --> <div class=\"nav-dropdown\" @mouseenter=\"open = 'admin'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Admin</button><div class=\"dropdown-menu\" x-show=\"open === 'admin'\" x-cloak><a href=\"/admin/companies\" class=\"dropdown-item\">Companies</a> <a href=\"/admin/backups\" class=\"dropdown-item\">Backups</a><hr class=\"dropdown-divider\"><a href=\"/admin/migration\" class=\"dropdown-item\">Migration</a> <a href=\"/admin/riverui/\" class=\"dropdown-item\">Job Queue</a> <a href=\"/admin/activity\" class=\"dropdown-item\">Activity</a></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -106,7 +106,7 @@ func Nav(user auth.ContextUser, companyName string, features models.FeatureSet, 
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(user.Username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 149, Col: 24}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 150, Col: 24}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -143,7 +143,7 @@ func Nav(user auth.ContextUser, companyName string, features models.FeatureSet, 
 			}
 		}
 		if user.Role == "super_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<hr><div class=\"mobile-section-label\">Admin</div><a href=\"/admin/companies\">Companies</a> <a href=\"/admin/backups\">Backups</a> <a href=\"/admin/migration\">Migration</a> <a href=\"/admin/riverui/\">Job Queue</a>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<hr><div class=\"mobile-section-label\">Admin</div><a href=\"/admin/companies\">Companies</a> <a href=\"/admin/backups\">Backups</a> <a href=\"/admin/migration\">Migration</a> <a href=\"/admin/riverui/\">Job Queue</a> <a href=\"/admin/activity\">Activity</a>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

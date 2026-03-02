@@ -1,0 +1,48 @@
+package admin
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ActivityUserTimelinePage(pg components.PageContext, username string, userID int, items []models.ActivityLog) {
+	@components.Layout(pg, "User Timeline - Admin") {
+		<div class="page-header">
+			<h2>
+				<a href="/admin/activity" style="color:inherit;text-decoration:none;">Activity</a>
+				&rsaquo; { username }
+			</h2>
+		</div>
+		<div class="table-container">
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Time</th>
+						<th>Method</th>
+						<th>Path</th>
+						<th>Status</th>
+						<th>Duration</th>
+						<th>IP</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(items) == 0 {
+						<tr><td colspan="6" style="text-align:center;color:var(--gray-400)">No activity found</td></tr>
+					}
+					for _, l := range items {
+						<tr>
+							<td style="white-space:nowrap">{ l.CreatedAt.Local().Format("Jan 2 15:04:05") }</td>
+							<td><code>{ l.Method }</code></td>
+							<td style="font-family:monospace">{ l.Path }</td>
+							<td>{ fmt.Sprintf("%d", l.StatusCode) }</td>
+							<td>{ fmt.Sprintf("%dms", l.DurationMS) }</td>
+							<td style="font-family:monospace">{ derefStr(l.IPAddress) }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}

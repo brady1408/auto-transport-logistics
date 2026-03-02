@@ -1,0 +1,113 @@
+package admin
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/models"
+)
+
+templ ActivityDashboardPage(pg components.PageContext, stats *models.ActivityStats, since time.Time) {
+	@components.Layout(pg, "Activity - Admin") {
+		<div class="page-header">
+			<h2>Activity Dashboard</h2>
+			<span style="color:var(--gray-400);font-size:.85rem;">Last 24 hours</span>
+		</div>
+		<!-- KPI cards -->
+		<div class="kpi-grid">
+			<div class="kpi-card">
+				<div class="kpi-label">Total Requests</div>
+				<div class="kpi-value">{ fmt.Sprintf("%d", stats.TotalRequests) }</div>
+			</div>
+			<div class="kpi-card">
+				<div class="kpi-label">Unique Users</div>
+				<div class="kpi-value">{ fmt.Sprintf("%d", stats.UniqueUsers) }</div>
+			</div>
+		</div>
+		<!-- Active users -->
+		<h3 style="margin:1.5rem 0 .5rem">Active Users</h3>
+		<div class="table-container">
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>User</th>
+						<th>Requests</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(stats.ActiveUsers) == 0 {
+						<tr><td colspan="3" style="text-align:center;color:var(--gray-400)">No activity yet</td></tr>
+					}
+					for _, u := range stats.ActiveUsers {
+						<tr>
+							<td>{ u.Username }</td>
+							<td>{ fmt.Sprintf("%d", u.Count) }</td>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/admin/activity/user/%d", u.UserID)) } class="btn btn-sm">Timeline</a></td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		<!-- Top pages -->
+		<h3 style="margin:1.5rem 0 .5rem">Top Pages</h3>
+		<div class="table-container">
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Path</th>
+						<th>Requests</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(stats.TopPaths) == 0 {
+						<tr><td colspan="2" style="text-align:center;color:var(--gray-400)">No data</td></tr>
+					}
+					for _, p := range stats.TopPaths {
+						<tr>
+							<td style="font-family:monospace">{ p.Path }</td>
+							<td>{ fmt.Sprintf("%d", p.Count) }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		<!-- Recent logins -->
+		<h3 style="margin:1.5rem 0 .5rem">Recent Logins (first request per user per day)</h3>
+		<div class="table-container">
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>User</th>
+						<th>Time</th>
+						<th>IP</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(stats.RecentLogins) == 0 {
+						<tr><td colspan="3" style="text-align:center;color:var(--gray-400)">No logins recorded</td></tr>
+					}
+					for _, l := range stats.RecentLogins {
+						<tr>
+							<td>{ derefStr(l.Username) }</td>
+							<td>{ l.CreatedAt.Local().Format("Jan 2 15:04") }</td>
+							<td style="font-family:monospace">{ derefStr(l.IPAddress) }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		<!-- JSON API hint -->
+		<p style="margin-top:1.5rem;font-size:.8rem;color:var(--gray-400)">
+			Export: <a href="/admin/api/activity" style="font-family:monospace">/admin/api/activity</a>
+		</p>
+	}
+}
+
+func derefStr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}

@@ -123,6 +123,20 @@ func main() {
 		deps,
 	).Register(routeStores.protectedMux, middleware.RequireRole("super_admin"))
 
+	// Admin + User Management (registered post-initRiver to receive migration deps).
+	adminHandler := handler.NewAdminHandler(
+		routeStores.companyStore,
+		routeStores.userStore,
+		routeStores.subscriptionStore,
+		routeStores.migrationRunStore,
+		riverClient,
+		cfg.MigrationsDir,
+		deps,
+	)
+	adminHandler.RegisterAdmin(routeStores.protectedMux, middleware.RequireRole("super_admin"))
+	adminHandler.RegisterSettings(routeStores.protectedMux, middleware.RequireRole("company_admin", "super_admin"))
+	adminHandler.RegisterProfile(routeStores.protectedMux)
+
 	// Background: expire loadboard listings every 5 minutes
 	go runLoadboardExpiry(ctx, loadboardSvc)
 
@@ -171,6 +185,9 @@ type riverStores struct {
 	invoiceSvc         *service.InvoiceService
 	migrationRunStore  *store.MigrationRunStore
 	companyStore       *store.CompanyStore
+	userStore          *store.UserStore
+	subscriptionStore  *store.SubscriptionStore
+	activityStore      *store.ActivityStore
 	protectedMux       *http.ServeMux
 }
 
@@ -218,6 +235,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	feedbackStore := store.NewFeedbackStore(pool)
 	attachmentStore := store.NewAttachmentStore(pool)
 	earningsAdjStore := store.NewEarningsAdjStore(pool)
+	activityStore := store.NewActivityStore(pool)
 
 	// Storage service
 	storageSvc, err := storage.NewService(cfg.UploadDir)
@@ -296,6 +314,9 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	// Feedback
 	handler.NewFeedbackHandler(feedbackStore, attachmentStore, storageSvc, deps).Register(protectedMux)
 
+	// Activity (super_admin only)
+	handler.NewActivityHandler(activityStore, deps).Register(protectedMux, middleware.RequireRole("super_admin"))
+
 	// Notifications
 	notificationStore := store.NewNotificationStore(pool)
 	handler.NewNotificationHandler(notificationStore, deps).Register(protectedMux)
@@ -317,23 +338,18 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	uploadHandler.Register(protectedMux)
 	uploadHandler.RegisterAdmin(protectedMux, middleware.RequireRole("super_admin"))
 
-	// Admin + User Management
-	subscriptionStore := store.NewSubscriptionStore(pool)
-	adminHandler := handler.NewAdminHandler(companyStore, userStore, subscriptionStore, deps)
-	adminHandler.RegisterAdmin(protectedMux, middleware.RequireRole("super_admin"))
-	adminHandler.RegisterSettings(protectedMux, middleware.RequireRole("company_admin", "super_admin"))
-	adminHandler.RegisterProfile(protectedMux)
-
 	// Suspended info page (GET only — accessible even when account is suspended)
 	protectedMux.HandleFunc("GET /suspended", deps.SuspendedPageHandler())
 
-	// Wrap protected routes with auth + CSRF + read-only-if-suspended middleware
+	// Wrap protected routes with auth + activity tracking + CSRF + read-only-if-suspended middleware
 	authMiddleware := middleware.RequireAuth(deps.JWT, deps.SecureCookies)
+	activityMw := middleware.ActivityTracker(activityStore)
 	csrfMiddleware := middleware.CSRF(deps.SecureCookies)
 	readOnlyGate := middleware.ReadOnlyIfSuspended(deps.IsSuspended, deps.SuspendedBlockHandler())
-	mux.Handle("/", authMiddleware(csrfMiddleware(readOnlyGate(protectedMux))))
+	mux.Handle("/", authMiddleware(activityMw(csrfMiddleware(readOnlyGate(protectedMux)))))
 
 	migrationRunStore := store.NewMigrationRunStore(pool)
+	subscriptionStore := store.NewSubscriptionStore(pool)
 
 	rs := riverStores{
 		customerStore:      customerStore,
@@ -344,6 +360,9 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 		invoiceSvc:         invoiceSvc,
 		migrationRunStore:  migrationRunStore,
 		companyStore:       companyStore,
+		userStore:          userStore,
+		subscriptionStore:  subscriptionStore,
+		activityStore:      activityStore,
 		protectedMux:       protectedMux,
 	}
 	return mux, loadboardSvc, loadboardStore, rs
@@ -395,11 +414,26 @@ func initRiver(
 	}
 	river.AddWorker(workers, migrationWorker)
 
+	cleanupWorker := &worker.ActivityCleanupWorker{
+		ActivityStore: rs.activityStore,
+	}
+	river.AddWorker(workers, cleanupWorker)
+
 	riverClient, err := river.NewClient(riverpgxv5.New(pool), &river.Config{
 		Workers: workers,
 		Queues: map[string]river.QueueConfig{
 			river.QueueDefault: {MaxWorkers: 5},
 			"migration":        {MaxWorkers: 1},
+			"activity":         {MaxWorkers: 1},
+		},
+		PeriodicJobs: []*river.PeriodicJob{
+			river.NewPeriodicJob(
+				activityCleanupSchedule{},
+				func() (river.JobArgs, *river.InsertOpts) {
+					return worker.ActivityCleanupArgs{}, &river.InsertOpts{Queue: "activity"}
+				},
+				&river.PeriodicJobOpts{ID: "activity_cleanup", RunOnStart: false},
+			),
 		},
 	})
 	if err != nil {
@@ -570,4 +604,11 @@ func deref(s *string) string {
 		return ""
 	}
 	return *s
+}
+
+// activityCleanupSchedule runs the activity log cleanup once every 24 hours.
+type activityCleanupSchedule struct{}
+
+func (activityCleanupSchedule) Next(t time.Time) time.Time {
+	return t.Add(24 * time.Hour)
 }

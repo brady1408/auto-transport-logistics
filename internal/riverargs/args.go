@@ -53,3 +53,8 @@ type MigrateArgs struct {
 func (MigrateArgs) Kind() string { return "mssql_migrate" }
 
 // No UniqueOpts — allow at most one by capping queue concurrency to 1.
+
+// ActivityCleanupArgs is the job args type for the nightly activity log cleanup job.
+type ActivityCleanupArgs struct{}
+
+func (ActivityCleanupArgs) Kind() string { return "activity_cleanup" }

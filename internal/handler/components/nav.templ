@@ -125,6 +125,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 						<hr class="dropdown-divider"/>
 						<a href="/admin/migration" class="dropdown-item">Migration</a>
 						<a href="/admin/riverui/" class="dropdown-item">Job Queue</a>
+						<a href="/admin/activity" class="dropdown-item">Activity</a>
 					</div>
 				</div>
 			}
@@ -205,6 +206,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 				<a href="/admin/backups">Backups</a>
 				<a href="/admin/migration">Migration</a>
 			<a href="/admin/riverui/">Job Queue</a>
+			<a href="/admin/activity">Activity</a>
 			}
 			<hr/>
 			<button hx-post="/logout">Logout</button>
