@@ -3,23 +3,52 @@ package middleware
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
 )
+
+// wantsJSON returns true if the request prefers a JSON response (API clients, mobile apps).
+func wantsJSON(r *http.Request) bool {
+	accept := r.Header.Get("Accept")
+	return strings.Contains(accept, "application/json") ||
+		strings.HasPrefix(r.URL.Path, "/api/")
+}
 
 const CookieName = "atlinks_token"
 
 func RequireAuth(jwt *auth.JWTService, secure bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			cookie, err := r.Cookie(CookieName)
-			if err != nil {
+			var tokenString string
+
+			// Try Bearer token first (mobile app)
+			if authHeader := r.Header.Get("Authorization"); strings.HasPrefix(authHeader, "Bearer ") {
+				tokenString = strings.TrimPrefix(authHeader, "Bearer ")
+			} else if cookie, err := r.Cookie(CookieName); err == nil {
+				// Fall back to cookie (web app)
+				tokenString = cookie.Value
+			}
+
+			if tokenString == "" {
+				if wantsJSON(r) {
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusUnauthorized)
+					json.NewEncoder(w).Encode(map[string]string{"error": "authentication required"})
+					return
+				}
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
 			}
 
-			claims, err := jwt.ValidateToken(cookie.Value)
+			claims, err := jwt.ValidateToken(tokenString)
 			if err != nil {
+				if wantsJSON(r) {
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusUnauthorized)
+					json.NewEncoder(w).Encode(map[string]string{"error": "invalid or expired token"})
+					return
+				}
 				clearAuthCookie(w, secure)
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
@@ -27,6 +56,12 @@ func RequireAuth(jwt *auth.JWTService, secure bool) func(http.Handler) http.Hand
 
 			// Require company assignment for non-super_admin users
 			if claims.CompanyID == 0 && claims.Role != "super_admin" {
+				if wantsJSON(r) {
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusForbidden)
+					json.NewEncoder(w).Encode(map[string]string{"error": "no company assigned"})
+					return
+				}
 				clearAuthCookie(w, secure)
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return

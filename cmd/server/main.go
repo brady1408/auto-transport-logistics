@@ -128,9 +128,6 @@ func main() {
 		routeStores.companyStore,
 		routeStores.userStore,
 		routeStores.subscriptionStore,
-		routeStores.migrationRunStore,
-		riverClient,
-		cfg.MigrationsDir,
 		deps,
 	)
 	adminHandler.RegisterAdmin(routeStores.protectedMux, middleware.RequireRole("super_admin"))
@@ -260,6 +257,13 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	authHandler := handler.NewAuthHandler(userStore, companyStore, authSubStore, cfg.InviteCode, deps, emailSvc, resetTokenStore, pendingRegStore, cfg.AppBaseURL)
 	authHandler.Register(mux)
 
+	// Mobile API (public auth endpoint)
+	mobileHandler := handler.NewMobileHandler(
+		userStore, tripStore, loadDetailStore, vehicleStore, orderSvc,
+		damageStore, attachmentStore, storageSvc, deps,
+	)
+	mobileHandler.RegisterAuth(mux)
+
 	// Protected routes
 	protectedMux := http.NewServeMux()
 
@@ -302,6 +306,9 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewExpenseHandler(expenseStore, deps).Register(protectedMux)
 	handler.NewRouteHandler(routeStore, deps).Register(protectedMux)
 	handler.NewAPIHandler(customerStore, vehicleStore, deps).Register(protectedMux)
+
+	// Mobile API (protected endpoints)
+	mobileHandler.Register(protectedMux)
 
 	// Accounting
 	handler.NewInvoiceHandler(invoiceStore, invoiceDetailStore, paymentDetailStore, invoiceSvc, paymentStore, deps).Register(protectedMux)
