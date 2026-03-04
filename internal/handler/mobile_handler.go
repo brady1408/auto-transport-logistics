@@ -28,6 +28,8 @@ type MobileHandler struct {
 	attachmentStore mobileAttachmentStore
 	storageSvc      *storage.Service
 	deps            *Deps
+	truckStore      mobileTruckStore
+	checkinStore    mobileCheckinStore
 }
 
 type mobileUserStore interface {
@@ -41,6 +43,7 @@ type mobileTripStore interface {
 
 type mobileLoadDetailStore interface {
 	ListByTripWithOrder(ctx context.Context, tripID int) ([]store.LoadDetailWithOrder, error)
+	UpdateStatusLocation(ctx context.Context, id int, lat, lng float64) error
 }
 
 type mobileVehicleStore interface {
@@ -61,6 +64,15 @@ type mobileAttachmentStore interface {
 	ListByEntity(ctx context.Context, category string, entityID int) ([]models.Attachment, error)
 }
 
+type mobileTruckStore interface {
+	ListAll(ctx context.Context) ([]models.Truck, error)
+}
+
+type mobileCheckinStore interface {
+	Create(ctx context.Context, c *models.TruckCheckin) error
+}
+
+
 func NewMobileHandler(
 	userStore mobileUserStore,
 	tripStore mobileTripStore,
@@ -71,6 +83,8 @@ func NewMobileHandler(
 	attachmentStore mobileAttachmentStore,
 	storageSvc *storage.Service,
 	deps *Deps,
+	truckStore mobileTruckStore,
+	checkinStore mobileCheckinStore,
 ) *MobileHandler {
 	return &MobileHandler{
 		userStore:       userStore,
@@ -82,6 +96,8 @@ func NewMobileHandler(
 		attachmentStore: attachmentStore,
 		storageSvc:      storageSvc,
 		deps:            deps,
+		truckStore:      truckStore,
+		checkinStore:    checkinStore,
 	}
 }
 
@@ -95,6 +111,8 @@ func (h *MobileHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/driver/vehicles/{id}/damage", h.createDamage)
 	mux.HandleFunc("GET /api/v1/driver/vehicles/{id}/photos", h.listPhotos)
 	mux.HandleFunc("POST /api/v1/driver/vehicles/{id}/photos", h.uploadPhoto)
+	mux.HandleFunc("GET /api/v1/driver/trucks", h.listTrucks)
+	mux.HandleFunc("POST /api/v1/driver/checkin", h.createCheckin)
 }
 
 // RegisterAuth registers the login endpoint on the public mux (no auth required).
@@ -317,7 +335,9 @@ func (h *MobileHandler) getTrip(w http.ResponseWriter, r *http.Request) {
 // --- Vehicle Status ---
 
 type statusRequest struct {
-	Status string `json:"status"`
+	Status    string   `json:"status"`
+	Latitude  *float64 `json:"latitude,omitempty"`
+	Longitude *float64 `json:"longitude,omitempty"`
 }
 
 func (h *MobileHandler) updateVehicleStatus(w http.ResponseWriter, r *http.Request) {
@@ -352,6 +372,12 @@ func (h *MobileHandler) updateVehicleStatus(w http.ResponseWriter, r *http.Reque
 	if err := h.orderSvc.UpdateVehicleStatus(r.Context(), id, req.Status, confirmedBy); err != nil {
 		h.writeError(w, http.StatusBadRequest, "failed to update status")
 		return
+	}
+
+	if req.Latitude != nil && req.Longitude != nil {
+		if err := h.loadDetailStore.UpdateStatusLocation(r.Context(), id, *req.Latitude, *req.Longitude); err != nil {
+			log.Printf("mobile api: save status location for vehicle %d: %v", id, err)
+		}
 	}
 
 	vehicle, err := h.vehicleStore.GetByID(r.Context(), id)
@@ -555,6 +581,79 @@ func (h *MobileHandler) uploadPhoto(w http.ResponseWriter, r *http.Request) {
 		"content_type": att.ContentType,
 		"size_bytes":   att.SizeBytes,
 	})
+}
+
+// --- Trucks ---
+
+type truckListDTO struct {
+	ID            int     `json:"id"`
+	TruckNumber   string  `json:"truck_number"`
+	TruckMake     *string `json:"truck_make,omitempty"`
+	TruckModel    *string `json:"truck_model,omitempty"`
+	TruckYear     *string `json:"truck_year,omitempty"`
+	TrailerNumber *string `json:"trailer_number,omitempty"`
+}
+
+func (h *MobileHandler) listTrucks(w http.ResponseWriter, r *http.Request) {
+	trucks, err := h.truckStore.ListAll(r.Context())
+	if err != nil {
+		h.writeError(w, http.StatusInternalServerError, "failed to load trucks")
+		return
+	}
+
+	result := make([]truckListDTO, len(trucks))
+	for i, t := range trucks {
+		result[i] = truckListDTO{
+			ID:            t.ID,
+			TruckNumber:   t.TruckNumber,
+			TruckMake:     t.TruckMake,
+			TruckModel:    t.TruckModel,
+			TruckYear:     t.TruckYear,
+			TrailerNumber: t.TrailerNumber,
+		}
+	}
+
+	h.writeJSON(w, http.StatusOK, map[string]any{"trucks": result})
+}
+
+// --- Check-in ---
+
+type checkinRequest struct {
+	TruckID   int      `json:"truck_id"`
+	Latitude  float64  `json:"latitude"`
+	Longitude float64  `json:"longitude"`
+	Accuracy  *float64 `json:"accuracy,omitempty"`
+	Speed     *float64 `json:"speed,omitempty"`
+	Heading   *float64 `json:"heading,omitempty"`
+}
+
+func (h *MobileHandler) createCheckin(w http.ResponseWriter, r *http.Request) {
+	var req checkinRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if req.TruckID == 0 {
+		h.writeError(w, http.StatusBadRequest, "truck_id is required")
+		return
+	}
+
+	c := &models.TruckCheckin{
+		TruckID:   req.TruckID,
+		Latitude:  req.Latitude,
+		Longitude: req.Longitude,
+		Accuracy:  req.Accuracy,
+		Speed:     req.Speed,
+		Heading:   req.Heading,
+	}
+
+	if err := h.checkinStore.Create(r.Context(), c); err != nil {
+		h.writeError(w, http.StatusInternalServerError, "failed to save check-in")
+		return
+	}
+
+	h.writeJSON(w, http.StatusCreated, c)
 }
 
 // strPtr is defined in payment_handler.go

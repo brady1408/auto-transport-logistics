@@ -258,9 +258,11 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	authHandler.Register(mux)
 
 	// Mobile API (public auth endpoint)
+	checkinStore := store.NewCheckinStore(pool)
 	mobileHandler := handler.NewMobileHandler(
 		userStore, tripStore, loadDetailStore, vehicleStore, orderSvc,
 		damageStore, attachmentStore, storageSvc, deps,
+		truckStore, checkinStore,
 	)
 	mobileHandler.RegisterAuth(mux)
 

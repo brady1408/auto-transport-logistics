@@ -183,6 +183,21 @@ func (s *LoadDetailStore) UpdateBayNumber(ctx context.Context, id int, bayNumber
 	return nil
 }
 
+func (s *LoadDetailStore) UpdateStatusLocation(ctx context.Context, id int, lat, lng float64) error {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = s.pool.Exec(ctx,
+		`UPDATE load_details SET status_latitude = $1, status_longitude = $2, status_location_at = NOW()
+		 WHERE id = $3 AND company_id = $4 AND deleted_at IS NULL`,
+		lat, lng, id, companyID)
+	if err != nil {
+		return fmt.Errorf("update status location for load detail %d: %w", id, err)
+	}
+	return nil
+}
+
 func (s *LoadDetailStore) Delete(ctx context.Context, id int) error {
 	companyID, err := auth.GetCompanyID(ctx)
 	if err != nil {
