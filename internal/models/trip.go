@@ -39,12 +39,13 @@ type Trip struct {
 }
 
 type TripFilter struct {
-	Search   string
-	Active   string
-	DateFrom string
-	DateTo   string
-	Page     int
-	PageSize int
+	Search      string
+	Active      string
+	DateFrom    string
+	DateTo      string
+	TruckNumber string
+	Page        int
+	PageSize    int
 }
 
 type TripListResult struct {

@@ -257,10 +257,11 @@ func tripToDTO(t models.Trip, vehicleCount int) tripDTO {
 
 func (h *MobileHandler) listTrips(w http.ResponseWriter, r *http.Request) {
 	filter := models.TripFilter{
-		Search:   r.URL.Query().Get("search"),
-		Active:   "true",
-		Page:     intParam(r, "page", 1),
-		PageSize: 50,
+		Search:      r.URL.Query().Get("search"),
+		TruckNumber: r.URL.Query().Get("truck"),
+		Active:      "active",
+		Page:        intParam(r, "page", 1),
+		PageSize:    50,
 	}
 
 	result, err := h.tripStore.List(r.Context(), filter)

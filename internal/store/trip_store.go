@@ -64,6 +64,9 @@ func (s *TripStore) List(ctx context.Context, f models.TripFilter) (*models.Trip
 		qb.Add("(load_number ILIKE ? OR truck_number ILIKE ? OR driver ILIKE ?)",
 			search, search, search)
 	}
+	if f.TruckNumber != "" {
+		qb.Add("truck_number = ?", f.TruckNumber)
+	}
 	if f.DateFrom != "" {
 		qb.Add("trip_date >= ?", f.DateFrom)
 	}
