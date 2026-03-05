@@ -3,8 +3,11 @@ package handler
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -12,6 +15,10 @@ import (
 	"github.com/brady1408/atlinks/internal/handler/components/admin"
 	"github.com/brady1408/atlinks/internal/handler/components/settings"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/riverargs"
+	"github.com/brady1408/atlinks/internal/store"
+	"github.com/jackc/pgx/v5"
+	"github.com/riverqueue/river"
 )
 
 var digitsOnly = regexp.MustCompile(`\D`)
@@ -124,15 +131,86 @@ type adminSubscriptionStore interface {
 	ListAll(ctx context.Context) ([]models.Subscription, error)
 }
 
+type adminTruckStore interface {
+	ListAll(ctx context.Context) ([]models.Truck, error)
+}
+
 type AdminHandler struct {
 	companyStore      adminCompanyStore
 	userStore         adminUserStore
 	subscriptionStore adminSubscriptionStore
+	migrationRunStore *store.MigrationRunStore
+	truckStore        adminTruckStore
+	river             *river.Client[pgx.Tx]
+	migrationsDir     string
 	deps              *Deps
 }
 
-func NewAdminHandler(companyStore adminCompanyStore, userStore adminUserStore, subscriptionStore adminSubscriptionStore, deps *Deps) *AdminHandler {
-	return &AdminHandler{companyStore: companyStore, userStore: userStore, subscriptionStore: subscriptionStore, deps: deps}
+func NewAdminHandler(
+	companyStore adminCompanyStore,
+	userStore adminUserStore,
+	subscriptionStore adminSubscriptionStore,
+	migrationRunStore *store.MigrationRunStore,
+	truckStore adminTruckStore,
+	riverClient *river.Client[pgx.Tx],
+	migrationsDir string,
+	deps *Deps,
+) *AdminHandler {
+	return &AdminHandler{
+		companyStore:      companyStore,
+		userStore:         userStore,
+		subscriptionStore: subscriptionStore,
+		migrationRunStore: migrationRunStore,
+		truckStore:        truckStore,
+		river:             riverClient,
+		migrationsDir:     migrationsDir,
+		deps:              deps,
+	}
+}
+
+// enqueueMigration checks for a .bak file upload, saves it, creates a migration run,
+// and enqueues a River job. Returns the run ID (or 0 if no file was uploaded).
+func (h *AdminHandler) enqueueMigration(ctx context.Context, r *http.Request, companyID int) (int64, error) {
+	if h.river == nil {
+		return 0, nil
+	}
+	file, header, err := r.FormFile("backup")
+	if err == http.ErrMissingFile {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, fmt.Errorf("read backup file: %w", err)
+	}
+	defer file.Close()
+
+	run, err := h.migrationRunStore.Create(ctx, int64(companyID), header.Filename)
+	if err != nil {
+		return 0, fmt.Errorf("create migration run: %w", err)
+	}
+
+	if err := os.MkdirAll(h.migrationsDir, 0755); err != nil {
+		return 0, fmt.Errorf("create migrations dir: %w", err)
+	}
+	bakPath := filepath.Join(h.migrationsDir, fmt.Sprintf("%d.bak", run.ID))
+	f, err := os.Create(bakPath)
+	if err != nil {
+		return 0, fmt.Errorf("save bak file: %w", err)
+	}
+	defer f.Close()
+	if _, err := io.Copy(f, file); err != nil {
+		return 0, fmt.Errorf("write bak file: %w", err)
+	}
+
+	_, err = h.river.Insert(ctx, riverargs.MigrateArgs{
+		RunID:     run.ID,
+		CompanyID: companyID,
+		BakPath:   bakPath,
+	}, &river.InsertOpts{Queue: "migration"})
+	if err != nil {
+		return 0, fmt.Errorf("enqueue migration: %w", err)
+	}
+
+	return run.ID, nil
 }
 
 // RegisterAdmin registers super_admin-only routes with the given middleware applied per-handler.
@@ -241,6 +319,10 @@ func (h *AdminHandler) newCompany(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(2 << 30); err != nil {
+		_ = r.ParseForm()
+	}
+
 	c := &models.Company{
 		CompanyName: formStringRequired(r, "company_name"),
 		Slug:        formStringRequired(r, "slug"),
@@ -276,7 +358,16 @@ func (h *AdminHandler) createCompany(w http.ResponseWriter, r *http.Request) {
 		log.Printf("create subscription for company %d: %v", c.ID, err)
 	}
 
+	runID, err := h.enqueueMigration(r.Context(), r, c.ID)
+	if err != nil {
+		log.Printf("enqueue migration for company %d: %v", c.ID, err)
+	}
+
 	h.deps.setFlash(w, "Company created successfully")
+	if runID > 0 {
+		http.Redirect(w, r, fmt.Sprintf("/admin/migration/%d", runID), http.StatusSeeOther)
+		return
+	}
 	http.Redirect(w, r, "/admin/companies", http.StatusSeeOther)
 }
 
@@ -303,6 +394,10 @@ func (h *AdminHandler) editCompany(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AdminHandler) updateCompany(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(2 << 30); err != nil {
+		_ = r.ParseForm()
+	}
+
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -364,7 +459,16 @@ func (h *AdminHandler) updateCompany(w http.ResponseWriter, r *http.Request) {
 	}
 	h.deps.InvalidateSubscription(id)
 
+	runID, err := h.enqueueMigration(r.Context(), r, id)
+	if err != nil {
+		log.Printf("enqueue migration for company %d: %v", id, err)
+	}
+
 	h.deps.setFlash(w, "Company updated successfully")
+	if runID > 0 {
+		http.Redirect(w, r, fmt.Sprintf("/admin/migration/%d", runID), http.StatusSeeOther)
+		return
+	}
 	http.Redirect(w, r, "/admin/companies", http.StatusSeeOther)
 }
 
@@ -408,9 +512,17 @@ func (h *AdminHandler) listUsers(w http.ResponseWriter, r *http.Request) {
 	h.deps.renderTempl(w, r, settings.UsersPage(pg, users))
 }
 
+func (h *AdminHandler) loadTrucks(r *http.Request) []models.Truck {
+	if h.truckStore == nil {
+		return nil
+	}
+	trucks, _ := h.truckStore.ListAll(r.Context())
+	return trucks
+}
+
 func (h *AdminHandler) newUser(w http.ResponseWriter, r *http.Request) {
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, nil, nil, nil, ""))
+	h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, nil, nil, nil, "", h.loadTrucks(r)))
 }
 
 func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
@@ -424,6 +536,7 @@ func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
 	email := formStringRequired(r, "email")
 	password := formStringRequired(r, "password")
 	role := formStringRequired(r, "role")
+	defaultTruckID := formInt(r, "default_truck_id")
 
 	// Non-super_admin can only create "user" role
 	if ctxUser.Role != "super_admin" && role != "user" {
@@ -433,9 +546,10 @@ func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
 	formData := map[string]string{"username": username, "email": email, "role": role}
 
 	pg := h.deps.pageContext(w, r)
+	trucks := h.loadTrucks(r)
 
 	if errs := validateUser(username, email, password, role, true); len(errs) > 0 {
-		h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, formData, nil, errs, ""))
+		h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, formData, nil, errs, "", trucks))
 		return
 	}
 
@@ -446,17 +560,18 @@ func (h *AdminHandler) createUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u := &models.User{
-		Username:     username,
-		Email:        email,
-		PasswordHash: hash,
-		Role:         role,
-		Active:       true,
-		CompanyID:    &companyID,
+		Username:       username,
+		Email:          email,
+		PasswordHash:   hash,
+		Role:           role,
+		Active:         true,
+		CompanyID:      &companyID,
+		DefaultTruckID: defaultTruckID,
 	}
 
 	if err := h.userStore.Create(r.Context(), u); err != nil {
 		log.Printf("create user: %v", err)
-		h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, formData, nil, nil, "Failed to create user"))
+		h.deps.renderTempl(w, r, settings.UserFormPage(pg, true, formData, nil, nil, "Failed to create user", trucks))
 		return
 	}
 
@@ -489,7 +604,7 @@ func (h *AdminHandler) editUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, ""))
+	h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, "", h.loadTrucks(r)))
 }
 
 func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
@@ -509,6 +624,7 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 	email := formStringRequired(r, "email")
 	password := formStringRequired(r, "password")
 	role := formStringRequired(r, "role")
+	defaultTruckID := formInt(r, "default_truck_id")
 
 	// Non-super_admin can only assign "user" role
 	if ctxUser.Role != "super_admin" && role != "user" && role != "company_admin" {
@@ -516,24 +632,26 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u := &models.User{
-		ID:        id,
-		Username:  username,
-		Email:     email,
-		Role:      role,
-		Active:    formBool(r, "active"),
-		CompanyID: &companyID,
+		ID:             id,
+		Username:       username,
+		Email:          email,
+		Role:           role,
+		Active:         formBool(r, "active"),
+		CompanyID:      &companyID,
+		DefaultTruckID: defaultTruckID,
 	}
 
 	pg := h.deps.pageContext(w, r)
+	trucks := h.loadTrucks(r)
 
 	if errs := validateUser(username, email, password, role, false); len(errs) > 0 {
-		h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, errs, ""))
+		h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, errs, "", trucks))
 		return
 	}
 
 	if err := h.userStore.Update(r.Context(), u); err != nil {
 		log.Printf("update user: %v", err)
-		h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, "Failed to update user"))
+		h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, "Failed to update user", trucks))
 		return
 	}
 
@@ -546,7 +664,7 @@ func (h *AdminHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 		}
 		if err := h.userStore.UpdatePassword(r.Context(), id, companyID, hash); err != nil {
 			log.Printf("update user password: %v", err)
-			h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, "User updated but password change failed"))
+			h.deps.renderTempl(w, r, settings.UserFormPage(pg, false, nil, u, nil, "User updated but password change failed", trucks))
 			return
 		}
 	}

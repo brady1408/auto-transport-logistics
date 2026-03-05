@@ -145,10 +145,11 @@ type loginResponse struct {
 }
 
 type loginUserDTO struct {
-	ID        int    `json:"id"`
-	Username  string `json:"username"`
-	Role      string `json:"role"`
-	CompanyID int    `json:"company_id"`
+	ID             int  `json:"id"`
+	Username       string `json:"username"`
+	Role           string `json:"role"`
+	CompanyID      int    `json:"company_id"`
+	DefaultTruckID *int   `json:"default_truck_id,omitempty"`
 }
 
 func (h *MobileHandler) login(w http.ResponseWriter, r *http.Request) {
@@ -188,10 +189,11 @@ func (h *MobileHandler) login(w http.ResponseWriter, r *http.Request) {
 	h.writeJSON(w, http.StatusOK, loginResponse{
 		Token: token,
 		User: loginUserDTO{
-			ID:        user.ID,
-			Username:  user.Username,
-			Role:      user.Role,
-			CompanyID: companyID,
+			ID:             user.ID,
+			Username:       user.Username,
+			Role:           user.Role,
+			CompanyID:      companyID,
+			DefaultTruckID: user.DefaultTruckID,
 		},
 	})
 }

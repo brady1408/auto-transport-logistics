@@ -2,6 +2,7 @@ package settings
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/models"
@@ -38,7 +39,14 @@ func userFieldValue(editUser *models.User, form map[string]string, field string)
 	return ""
 }
 
-templ UserFormPage(pg components.PageContext, isNew bool, form map[string]string, editUser *models.User, fieldErrors map[string]string, errMsg string) {
+func defaultTruckSelected(editUser *models.User, truckID int) bool {
+	if editUser != nil && editUser.DefaultTruckID != nil {
+		return *editUser.DefaultTruckID == truckID
+	}
+	return false
+}
+
+templ UserFormPage(pg components.PageContext, isNew bool, form map[string]string, editUser *models.User, fieldErrors map[string]string, errMsg string, trucks []models.Truck) {
 	@components.Layout(pg, func() string {
 		if isNew {
 			return "New User - Settings"
@@ -135,6 +143,22 @@ templ UserFormPage(pg components.PageContext, isNew bool, form map[string]string
 					}
 				</div>
 			</div>
+			if len(trucks) > 0 {
+				<div class="form-row">
+					<div class="form-group">
+						<label for="default_truck_id">Default Truck</label>
+						<select id="default_truck_id" name="default_truck_id" class="form-control">
+							<option value="">No default truck</option>
+							for _, t := range trucks {
+								<option value={ strconv.Itoa(t.ID) } selected?={ defaultTruckSelected(editUser, t.ID) }>
+									{ t.TruckNumber }
+								</option>
+							}
+						</select>
+						<small class="field-hint">Pre-selects this truck in the driver app. Driver can still change it.</small>
+					</div>
+				</div>
+			}
 			if editUser != nil {
 				<div class="form-row">
 					<div class="form-group">

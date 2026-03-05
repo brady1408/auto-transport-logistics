@@ -129,6 +129,7 @@ func main() {
 		routeStores.userStore,
 		routeStores.subscriptionStore,
 		routeStores.migrationRunStore,
+		routeStores.truckStore,
 		riverClient,
 		cfg.MigrationsDir,
 		deps,
@@ -188,6 +189,7 @@ type riverStores struct {
 	userStore          *store.UserStore
 	subscriptionStore  *store.SubscriptionStore
 	activityStore      *store.ActivityStore
+	truckStore         *store.TruckStore
 	protectedMux       *http.ServeMux
 }
 
@@ -383,6 +385,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 		userStore:          userStore,
 		subscriptionStore:  subscriptionStore,
 		activityStore:      activityStore,
+		truckStore:         truckStore,
 		protectedMux:       protectedMux,
 	}
 	return mux, loadboardSvc, loadboardStore, rs
