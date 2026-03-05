@@ -192,6 +192,15 @@ templ ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadD
 		>
 			<p class="text-muted">Loading...</p>
 		</div>
+		<h2 class="section-title">Damage &amp; Inspection Photos</h2>
+		<div
+			id="damage-section"
+			hx-get={ fmt.Sprintf("/dispatch/trips/%d/damage", trip.ID) }
+			hx-trigger="load"
+			hx-swap="innerHTML"
+		>
+			<p class="text-muted">Loading...</p>
+		</div>
 		<h2 class="section-title">Attachments</h2>
 		<div class="card" id="attachments-section">
 			<div class="card-body">

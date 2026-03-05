@@ -446,7 +446,20 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Attachments</h2><div class=\"card\" id=\"attachments-section\"><div class=\"card-body\"><div id=\"trip-attachments\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Damage &amp; Inspection Photos</h2><div id=\"damage-section\" hx-get=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var28 string
+			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/trips/%d/damage", trip.ID))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 198, Col: 61}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Attachments</h2><div class=\"card\" id=\"attachments-section\"><div class=\"card-body\"><div id=\"trip-attachments\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -454,20 +467,20 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</div><form hx-post=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</div><form hx-post=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var28 string
-			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/trips/%d/attachments", trip.ID))
+			var templ_7745c5c3_Var29 string
+			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/trips/%d/attachments", trip.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 202, Col: 69}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trips/show.templ`, Line: 211, Col: 69}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "\" hx-target=\"#trip-attachments\" hx-swap=\"innerHTML\" hx-encoding=\"multipart/form-data\" hx-on::after-request=\"if(event.detail.successful) this.reset()\"><div style=\"display: flex; align-items: center; gap: 12px; margin-top: 1rem;\"><input type=\"file\" name=\"file\" accept=\"image/*\"> <button type=\"submit\" class=\"btn btn-sm btn-primary\">Upload</button></div></form></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "\" hx-target=\"#trip-attachments\" hx-swap=\"innerHTML\" hx-encoding=\"multipart/form-data\" hx-on::after-request=\"if(event.detail.successful) this.reset()\"><div style=\"display: flex; align-items: center; gap: 12px; margin-top: 1rem;\"><input type=\"file\" name=\"file\" accept=\"image/*\"> <button type=\"submit\" class=\"btn btn-sm btn-primary\">Upload</button></div></form></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
