@@ -122,11 +122,16 @@ func (s *FeedbackStore) Create(ctx context.Context, fb *models.Feedback) error {
 		return err
 	}
 	fb.CompanyID = companyID
+	// company_id=0 means no company (API/system origin) — store as NULL to satisfy FK
+	var companyIDArg any
+	if fb.CompanyID != 0 {
+		companyIDArg = fb.CompanyID
+	}
 	err = s.pool.QueryRow(ctx,
 		`INSERT INTO feedback (company_id, user_id, page_url, category, message)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, status, created_at, updated_at`,
-		fb.CompanyID, fb.UserID, fb.PageURL, fb.Category, fb.Message,
+		companyIDArg, fb.UserID, fb.PageURL, fb.Category, fb.Message,
 	).Scan(&fb.ID, &fb.Status, &fb.CreatedAt, &fb.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("create feedback: %w", err)
