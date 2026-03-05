@@ -1,0 +1,86 @@
+package trips
+
+import (
+	"fmt"
+
+	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/atlinks/internal/handler/components/attachments"
+	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/store"
+)
+
+// VehicleDamageGroup holds all damage and photos for a single vehicle on a trip.
+type VehicleDamageGroup struct {
+	Load    store.LoadDetailWithOrder
+	Damages []models.VehicleDamage
+	Photos  []models.Attachment
+}
+
+templ DamageSection(groups []VehicleDamageGroup) {
+	if len(groups) == 0 {
+		<p class="text-muted">No vehicles on this trip.</p>
+	} else {
+		for _, g := range groups {
+			<div class="card" style="margin-bottom: 1rem;">
+				<div class="card-header">
+					<strong>
+						if g.Load.VIN != nil {
+							{ *g.Load.VIN }
+						} else {
+							Vehicle { fmt.Sprintf("%d", g.Load.ID) }
+						}
+					</strong>
+					if g.Load.Year != nil || g.Load.Make != nil || g.Load.Model != nil {
+						<span class="text-muted" style="margin-left: 8px; font-size: 0.875rem;">
+							{ components.Deref(g.Load.Year) } { components.Deref(g.Load.Make) } { components.Deref(g.Load.Model) }
+						</span>
+					}
+					if g.Load.Color != nil {
+						<span class="text-muted" style="margin-left: 8px; font-size: 0.875rem;">– { components.Deref(g.Load.Color) }</span>
+					}
+				</div>
+				<div class="card-body">
+					if len(g.Damages) > 0 {
+						<h4 style="margin: 0 0 0.5rem 0; font-size: 0.875rem; text-transform: uppercase; color: var(--text-muted);">Damage Records</h4>
+						<div class="table-container" style="margin-bottom: 1rem;">
+							<table>
+								<thead>
+									<tr>
+										<th>Area</th>
+										<th>Type</th>
+										<th>Severity</th>
+										<th>Description</th>
+										<th>Inspected By</th>
+										<th>Date</th>
+									</tr>
+								</thead>
+								<tbody>
+									for _, d := range g.Damages {
+										<tr>
+											<td>{ components.Deref(d.DamageArea) }</td>
+											<td>{ components.Deref(d.DamageType) }</td>
+											<td>{ components.Deref(d.DamageSeverity) }</td>
+											<td>{ components.Deref(d.Description) }</td>
+											<td>{ components.Deref(d.InspectedBy) }</td>
+											<td>
+												if d.InspectionDate != nil {
+													{ d.InspectionDate.Format("01/02/2006") }
+												}
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					} else {
+						<p class="text-muted" style="margin-bottom: 0.75rem;">No damage recorded.</p>
+					}
+					if len(g.Photos) > 0 {
+						<h4 style="margin: 0 0 0.5rem 0; font-size: 0.875rem; text-transform: uppercase; color: var(--text-muted);">Inspection Photos</h4>
+						@attachments.AttachmentList(g.Photos, "vehicle_inspection", components.DerefInt(g.Load.VehicleID))
+					}
+				</div>
+			</div>
+		}
+	}
+}
