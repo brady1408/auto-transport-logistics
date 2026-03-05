@@ -43,6 +43,10 @@ type tripDamageStore interface {
 	ListByTrip(ctx context.Context, tripID int) ([]models.VehicleDamage, error)
 }
 
+type tripDamageLabelStore interface {
+	Maps(ctx context.Context) (store.DamageLabelMaps, error)
+}
+
 type TripHandler struct {
 	store           tripStore
 	loadStore       tripLoadDetailStore
@@ -50,6 +54,7 @@ type TripHandler struct {
 	tripSvc         tripService
 	attachmentStore tripAttachmentStore
 	damageStore     tripDamageStore
+	damageLabelStore tripDamageLabelStore
 	deps            *Deps
 }
 
@@ -60,9 +65,10 @@ func NewTripHandler(
 	tripSvc tripService,
 	attachmentStore tripAttachmentStore,
 	damageStore tripDamageStore,
+	damageLabelStore tripDamageLabelStore,
 	deps *Deps,
 ) *TripHandler {
-	return &TripHandler{store: store, loadStore: loadStore, vehStore: vehStore, tripSvc: tripSvc, attachmentStore: attachmentStore, damageStore: damageStore, deps: deps}
+	return &TripHandler{store: store, loadStore: loadStore, vehStore: vehStore, tripSvc: tripSvc, attachmentStore: attachmentStore, damageStore: damageStore, damageLabelStore: damageLabelStore, deps: deps}
 }
 
 func (h *TripHandler) Register(mux *http.ServeMux) {
@@ -418,6 +424,11 @@ func (h *TripHandler) damageSection(w http.ResponseWriter, r *http.Request) {
 		damages = nil
 	}
 
+	labels, err := h.damageLabelStore.Maps(r.Context())
+	if err != nil {
+		log.Printf("trip damage section: load damage labels: %v", err)
+	}
+
 	// Index damage by vehicle_id for grouping.
 	damageByVehicle := make(map[int][]models.VehicleDamage)
 	for _, d := range damages {
@@ -468,7 +479,7 @@ func (h *TripHandler) damageSection(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	h.deps.renderTempl(w, r, trips.DamageSection(groups))
+	h.deps.renderTempl(w, r, trips.DamageSection(groups, labels))
 }
 
 func bindTripForm(r *http.Request) *models.Trip {

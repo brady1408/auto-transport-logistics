@@ -22,7 +22,7 @@ type VehicleDamageGroup struct {
 	InspectionPhotos  []models.Attachment
 }
 
-templ DamageSection(groups []VehicleDamageGroup) {
+templ DamageSection(groups []VehicleDamageGroup, labels store.DamageLabelMaps) {
 	if len(groups) == 0 {
 		<p class="text-muted">No damage or inspection photos recorded for this trip.</p>
 	} else {
@@ -53,15 +53,15 @@ templ DamageSection(groups []VehicleDamageGroup) {
 								<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.5rem;">
 									<div>
 										<span class="detail-label">Area</span>
-										<div>{ components.Deref(dp.Damage.DamageArea) }</div>
+										<div>{ labels.Area(dp.Damage.DamageArea) }</div>
 									</div>
 									<div>
 										<span class="detail-label">Type</span>
-										<div>{ components.Deref(dp.Damage.DamageType) }</div>
+										<div>{ labels.Type(dp.Damage.DamageType) }</div>
 									</div>
 									<div>
 										<span class="detail-label">Severity</span>
-										<div>{ components.Deref(dp.Damage.DamageSeverity) }</div>
+										<div>{ labels.Severity(dp.Damage.DamageSeverity) }</div>
 									</div>
 								</div>
 								if dp.Damage.Description != nil {
@@ -87,7 +87,8 @@ templ DamageSection(groups []VehicleDamageGroup) {
 						}
 					}
 					if len(g.InspectionPhotos) > 0 {
-						<h4 style="margin: 0 0 0.5rem 0; font-size: 0.875rem; text-transform: uppercase; color: var(--text-muted);">Inspection Photos</h4>
+						<h4 style="margin: 0 0 0.25rem 0; font-size: 0.875rem; text-transform: uppercase; color: var(--text-muted);">General Inspection Photos</h4>
+						<p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">These photos were uploaded before per-damage photo tracking and are not linked to a specific damage record.</p>
 						@attachments.AttachmentList(g.InspectionPhotos, "vehicle_inspection", components.DerefInt(g.Load.VehicleID))
 					}
 				</div>

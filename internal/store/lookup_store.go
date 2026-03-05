@@ -60,6 +60,19 @@ func (s *LookupStore) codeColumn() string {
 	}
 }
 
+// CodeMap returns a map of code → description for this lookup table.
+func (s *LookupStore) CodeMap(ctx context.Context) (map[string]string, error) {
+	items, err := s.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string]string, len(items))
+	for _, item := range items {
+		m[item.Code] = item.Description
+	}
+	return m, nil
+}
+
 func (s *LookupStore) List(ctx context.Context) ([]LookupItem, error) {
 	companyID, err := auth.GetCompanyID(ctx)
 	if err != nil {
