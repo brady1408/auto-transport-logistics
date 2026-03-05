@@ -128,6 +128,9 @@ func main() {
 		routeStores.companyStore,
 		routeStores.userStore,
 		routeStores.subscriptionStore,
+		routeStores.migrationRunStore,
+		riverClient,
+		cfg.MigrationsDir,
 		deps,
 	)
 	adminHandler.RegisterAdmin(routeStores.protectedMux, middleware.RequireRole("super_admin"))
@@ -309,8 +312,9 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewRouteHandler(routeStore, deps).Register(protectedMux)
 	handler.NewAPIHandler(customerStore, vehicleStore, deps).Register(protectedMux)
 
-	// Mobile API (protected endpoints)
-	mobileHandler.Register(protectedMux)
+	// Mobile API — own mux so driver role can reach it without accessing web routes
+	mobileMux := http.NewServeMux()
+	mobileHandler.Register(mobileMux)
 
 	// Accounting
 	handler.NewInvoiceHandler(invoiceStore, invoiceDetailStore, paymentDetailStore, invoiceSvc, paymentStore, deps).Register(protectedMux)
@@ -353,11 +357,16 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	protectedMux.HandleFunc("GET /suspended", deps.SuspendedPageHandler())
 
 	// Wrap protected routes with auth + activity tracking + CSRF + read-only-if-suspended middleware
+	// Driver role is blocked from web routes — they only access /api/v1/ via the mobile app.
 	authMiddleware := middleware.RequireAuth(deps.JWT, deps.SecureCookies)
 	activityMw := middleware.ActivityTracker(activityStore)
 	csrfMiddleware := middleware.CSRF(deps.SecureCookies)
 	readOnlyGate := middleware.ReadOnlyIfSuspended(deps.IsSuspended, deps.SuspendedBlockHandler())
-	mux.Handle("/", authMiddleware(activityMw(csrfMiddleware(readOnlyGate(protectedMux)))))
+	blockDriver := middleware.BlockRole("driver")
+	mux.Handle("/", authMiddleware(blockDriver(activityMw(csrfMiddleware(readOnlyGate(protectedMux))))))
+
+	// Mobile API — JWT auth only, no CSRF, driver role allowed
+	mux.Handle("/api/v1/", authMiddleware(mobileMux))
 
 	migrationRunStore := store.NewMigrationRunStore(pool)
 	subscriptionStore := store.NewSubscriptionStore(pool)

@@ -125,6 +125,7 @@ templ UserFormPage(pg components.PageContext, isNew bool, form map[string]string
 					>
 						<option value="user" selected?={ userFieldValue(editUser, form, "role") == "user" }>User</option>
 						<option value="company_admin" selected?={ userFieldValue(editUser, form, "role") == "company_admin" }>Company Admin</option>
+						<option value="driver" selected?={ userFieldValue(editUser, form, "role") == "driver" }>Driver (mobile only)</option>
 						if pg.User != nil && pg.User.Role == "super_admin" {
 							<option value="super_admin" selected?={ userFieldValue(editUser, form, "role") == "super_admin" }>Super Admin</option>
 						}
