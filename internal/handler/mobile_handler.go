@@ -111,6 +111,7 @@ func (h *MobileHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/driver/vehicles/{id}/damage", h.createDamage)
 	mux.HandleFunc("GET /api/v1/driver/vehicles/{id}/photos", h.listPhotos)
 	mux.HandleFunc("POST /api/v1/driver/vehicles/{id}/photos", h.uploadPhoto)
+	mux.HandleFunc("POST /api/v1/driver/vehicles/{vehicleID}/damage/{damageID}/photos", h.uploadDamagePhoto)
 	mux.HandleFunc("GET /api/v1/driver/trucks", h.listTrucks)
 	mux.HandleFunc("POST /api/v1/driver/checkin", h.createCheckin)
 }
@@ -574,6 +575,89 @@ func (h *MobileHandler) uploadPhoto(w http.ResponseWriter, r *http.Request) {
 	if err := h.attachmentStore.Create(r.Context(), att); err != nil {
 		h.storageSvc.Delete(storageKey)
 		log.Printf("mobile api: create attachment record: %v", err)
+		h.writeError(w, http.StatusInternalServerError, "failed to save attachment")
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "attachments", att.ID, "INSERT", nil, att)
+
+	h.writeJSON(w, http.StatusCreated, map[string]any{
+		"id":           att.ID,
+		"filename":     att.Filename,
+		"content_type": att.ContentType,
+		"size_bytes":   att.SizeBytes,
+	})
+}
+
+func (h *MobileHandler) uploadDamagePhoto(w http.ResponseWriter, r *http.Request) {
+	damageID, err := parsePathID(r, "damageID")
+	if err != nil {
+		h.writeError(w, http.StatusBadRequest, "invalid damage ID")
+		return
+	}
+
+	user, ok := auth.GetUserFromRequest(r)
+	if !ok {
+		h.writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, 25<<20)
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			h.writeError(w, http.StatusRequestEntityTooLarge, "file too large (max 25MB)")
+			return
+		}
+		h.writeError(w, http.StatusBadRequest, "no file provided")
+		return
+	}
+	defer file.Close()
+
+	buf := make([]byte, 512)
+	n, _ := file.Read(buf)
+	contentType := http.DetectContentType(buf[:n])
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		h.writeError(w, http.StatusInternalServerError, "failed to process file")
+		return
+	}
+
+	if !mobileAllowedImageTypes[contentType] {
+		h.writeError(w, http.StatusBadRequest, "only image files allowed (JPEG, PNG, GIF, WebP)")
+		return
+	}
+
+	ext := filepath.Ext(header.Filename)
+	if ext == "" {
+		exts, _ := mime.ExtensionsByType(contentType)
+		if len(exts) > 0 {
+			ext = exts[0]
+		}
+	}
+
+	storageKey, written, err := h.storageSvc.Save(user.CompanyID, "vehicle_damage", damageID, ext, file)
+	if err != nil {
+		log.Printf("mobile api: save damage photo: %v", err)
+		h.writeError(w, http.StatusInternalServerError, "failed to save file")
+		return
+	}
+
+	att := &models.Attachment{
+		CompanyID:   user.CompanyID,
+		Category:    "vehicle_damage",
+		EntityID:    damageID,
+		Filename:    header.Filename,
+		StorageKey:  storageKey,
+		ContentType: contentType,
+		SizeBytes:   written,
+		UploadedBy:  &user.ID,
+	}
+
+	if err := h.attachmentStore.Create(r.Context(), att); err != nil {
+		h.storageSvc.Delete(storageKey)
+		log.Printf("mobile api: create damage attachment record: %v", err)
 		h.writeError(w, http.StatusInternalServerError, "failed to save attachment")
 		return
 	}
