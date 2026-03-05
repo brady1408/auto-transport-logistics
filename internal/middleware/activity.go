@@ -18,7 +18,8 @@ func ActivityTracker(activityStore *store.ActivityStore) func(http.Handler) http
 	skip := func(path string) bool {
 		return strings.HasPrefix(path, "/static/") ||
 			path == "/favicon.ico" ||
-			path == "/health"
+			path == "/health" ||
+			path == "/notifications/count"
 	}
 
 	return func(next http.Handler) http.Handler {
