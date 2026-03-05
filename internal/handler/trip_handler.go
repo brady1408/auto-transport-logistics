@@ -434,16 +434,37 @@ func (h *TripHandler) damageSection(w http.ResponseWriter, r *http.Request) {
 		}
 		vehicleID := *ld.VehicleID
 
-		photos, err := h.attachmentStore.ListByEntity(r.Context(), "vehicle_inspection", vehicleID)
+		// Fetch damage-linked photos for each damage record on this vehicle.
+		vdamages := damageByVehicle[vehicleID]
+		damagesWithPhotos := make([]trips.DamageWithPhotos, 0, len(vdamages))
+		for _, d := range vdamages {
+			photos, err := h.attachmentStore.ListByEntity(r.Context(), "vehicle_damage", d.ID)
+			if err != nil {
+				log.Printf("trip damage section: list damage photos for damage %d: %v", d.ID, err)
+				photos = nil
+			}
+			damagesWithPhotos = append(damagesWithPhotos, trips.DamageWithPhotos{
+				Damage: d,
+				Photos: photos,
+			})
+		}
+
+		// General vehicle inspection photos (not linked to a specific damage record).
+		inspectionPhotos, err := h.attachmentStore.ListByEntity(r.Context(), "vehicle_inspection", vehicleID)
 		if err != nil {
-			log.Printf("trip damage section: list photos for vehicle %d: %v", vehicleID, err)
-			photos = nil
+			log.Printf("trip damage section: list inspection photos for vehicle %d: %v", vehicleID, err)
+			inspectionPhotos = nil
+		}
+
+		// Skip vehicles with nothing to show.
+		if len(damagesWithPhotos) == 0 && len(inspectionPhotos) == 0 {
+			continue
 		}
 
 		groups = append(groups, trips.VehicleDamageGroup{
-			Load:    ld,
-			Damages: damageByVehicle[vehicleID],
-			Photos:  photos,
+			Load:              ld,
+			DamagesWithPhotos: damagesWithPhotos,
+			InspectionPhotos:  inspectionPhotos,
 		})
 	}
 

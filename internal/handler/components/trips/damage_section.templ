@@ -9,16 +9,22 @@ import (
 	"github.com/brady1408/atlinks/internal/store"
 )
 
-// VehicleDamageGroup holds all damage and photos for a single vehicle on a trip.
+// DamageWithPhotos pairs a damage record with photos taken specifically for it.
+type DamageWithPhotos struct {
+	Damage models.VehicleDamage
+	Photos []models.Attachment
+}
+
+// VehicleDamageGroup holds all damage (with their photos) and general inspection photos for one vehicle.
 type VehicleDamageGroup struct {
-	Load    store.LoadDetailWithOrder
-	Damages []models.VehicleDamage
-	Photos  []models.Attachment
+	Load              store.LoadDetailWithOrder
+	DamagesWithPhotos []DamageWithPhotos
+	InspectionPhotos  []models.Attachment
 }
 
 templ DamageSection(groups []VehicleDamageGroup) {
 	if len(groups) == 0 {
-		<p class="text-muted">No vehicles on this trip.</p>
+		<p class="text-muted">No damage or inspection photos recorded for this trip.</p>
 	} else {
 		for _, g := range groups {
 			<div class="card" style="margin-bottom: 1rem;">
@@ -40,44 +46,49 @@ templ DamageSection(groups []VehicleDamageGroup) {
 					}
 				</div>
 				<div class="card-body">
-					if len(g.Damages) > 0 {
-						<h4 style="margin: 0 0 0.5rem 0; font-size: 0.875rem; text-transform: uppercase; color: var(--text-muted);">Damage Records</h4>
-						<div class="table-container" style="margin-bottom: 1rem;">
-							<table>
-								<thead>
-									<tr>
-										<th>Area</th>
-										<th>Type</th>
-										<th>Severity</th>
-										<th>Description</th>
-										<th>Inspected By</th>
-										<th>Date</th>
-									</tr>
-								</thead>
-								<tbody>
-									for _, d := range g.Damages {
-										<tr>
-											<td>{ components.Deref(d.DamageArea) }</td>
-											<td>{ components.Deref(d.DamageType) }</td>
-											<td>{ components.Deref(d.DamageSeverity) }</td>
-											<td>{ components.Deref(d.Description) }</td>
-											<td>{ components.Deref(d.InspectedBy) }</td>
-											<td>
-												if d.InspectionDate != nil {
-													{ d.InspectionDate.Format("01/02/2006") }
-												}
-											</td>
-										</tr>
+					if len(g.DamagesWithPhotos) > 0 {
+						<h4 style="margin: 0 0 0.75rem 0; font-size: 0.875rem; text-transform: uppercase; color: var(--text-muted);">Damage Records</h4>
+						for _, dp := range g.DamagesWithPhotos {
+							<div style="border: 1px solid var(--border-color); border-radius: 4px; padding: 0.75rem; margin-bottom: 0.75rem;">
+								<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.5rem;">
+									<div>
+										<span class="detail-label">Area</span>
+										<div>{ components.Deref(dp.Damage.DamageArea) }</div>
+									</div>
+									<div>
+										<span class="detail-label">Type</span>
+										<div>{ components.Deref(dp.Damage.DamageType) }</div>
+									</div>
+									<div>
+										<span class="detail-label">Severity</span>
+										<div>{ components.Deref(dp.Damage.DamageSeverity) }</div>
+									</div>
+								</div>
+								if dp.Damage.Description != nil {
+									<div style="margin-bottom: 0.5rem;">
+										<span class="detail-label">Description</span>
+										<div>{ components.Deref(dp.Damage.Description) }</div>
+									</div>
+								}
+								<div style="display: flex; gap: 1.5rem; font-size: 0.875rem; color: var(--text-muted);">
+									if dp.Damage.InspectedBy != nil {
+										<span>Inspected by { components.Deref(dp.Damage.InspectedBy) }</span>
 									}
-								</tbody>
-							</table>
-						</div>
-					} else {
-						<p class="text-muted" style="margin-bottom: 0.75rem;">No damage recorded.</p>
+									if dp.Damage.InspectionDate != nil {
+										<span>{ dp.Damage.InspectionDate.Format("01/02/2006") }</span>
+									}
+								</div>
+								if len(dp.Photos) > 0 {
+									<div style="margin-top: 0.75rem;">
+										@attachments.AttachmentList(dp.Photos, "vehicle_damage", dp.Damage.ID)
+									</div>
+								}
+							</div>
+						}
 					}
-					if len(g.Photos) > 0 {
+					if len(g.InspectionPhotos) > 0 {
 						<h4 style="margin: 0 0 0.5rem 0; font-size: 0.875rem; text-transform: uppercase; color: var(--text-muted);">Inspection Photos</h4>
-						@attachments.AttachmentList(g.Photos, "vehicle_inspection", components.DerefInt(g.Load.VehicleID))
+						@attachments.AttachmentList(g.InspectionPhotos, "vehicle_inspection", components.DerefInt(g.Load.VehicleID))
 					}
 				</div>
 			</div>
