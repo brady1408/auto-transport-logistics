@@ -59,6 +59,42 @@ func (s *DamageStore) ListByVehicle(ctx context.Context, vehicleID int) ([]model
 	return items, nil
 }
 
+// ListByTrip returns all damage records for a trip. It returns records directly
+// linked by trip_id (new) plus legacy records where the vehicle is on this trip
+// (trip_id IS NULL, vehicle linked via load_details).
+func (s *DamageStore) ListByTrip(ctx context.Context, tripID int) ([]models.VehicleDamage, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	query := fmt.Sprintf(`
+        SELECT %s FROM vehicle_damage
+        WHERE company_id = $2 AND deleted_at IS NULL
+        AND (
+            trip_id = $1
+            OR (trip_id IS NULL AND vehicle_id IN (
+                SELECT vehicle_id FROM load_details
+                WHERE trip_id = $1 AND vehicle_id IS NOT NULL AND deleted_at IS NULL
+            ))
+        )
+        ORDER BY vehicle_id, id`, damageColumns)
+	rows, err := s.pool.Query(ctx, query, tripID, companyID)
+	if err != nil {
+		return nil, fmt.Errorf("list damage for trip %d: %w", tripID, err)
+	}
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.VehicleDamage, error) {
+		d, err := scanDamage(row)
+		if err != nil {
+			return models.VehicleDamage{}, err
+		}
+		return *d, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan damage for trip %d: %w", tripID, err)
+	}
+	return items, nil
+}
+
 func (s *DamageStore) GetByID(ctx context.Context, id int) (*models.VehicleDamage, error) {
 	companyID, err := auth.GetCompanyID(ctx)
 	if err != nil {
