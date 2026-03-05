@@ -27,11 +27,12 @@ func (h *FeedbackAPIHandler) Register(mux *http.ServeMux) {
 }
 
 func (h *FeedbackAPIHandler) create(w http.ResponseWriter, r *http.Request) {
+	ctxUser, _ := auth.GetUser(r.Context())
+
 	var body struct {
-		Category  string `json:"category"`
-		Message   string `json:"message"`
-		PageURL   string `json:"page_url"`
-		CompanyID int    `json:"company_id"`
+		Category string `json:"category"`
+		Message  string `json:"message"`
+		PageURL  string `json:"page_url"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		writeJSONError(w, http.StatusBadRequest, "invalid JSON body")
@@ -44,32 +45,19 @@ func (h *FeedbackAPIHandler) create(w http.ResponseWriter, r *http.Request) {
 	if body.Category == "" {
 		body.Category = "other"
 	}
-	if body.CompanyID == 0 {
-		writeJSONError(w, http.StatusBadRequest, "company_id is required")
-		return
-	}
-
-	// Inject company_id into context so the store picks it up correctly
-	ctxUser, _ := auth.GetUser(r.Context())
-	ctx := auth.SetUser(r.Context(), auth.ContextUser{
-		ID:        ctxUser.ID,
-		Username:  ctxUser.Username,
-		Role:      ctxUser.Role,
-		CompanyID: body.CompanyID,
-	})
 
 	fb := &models.Feedback{
-		UserID:   1, // admin user for API-created items
+		UserID:   ctxUser.ID,
 		Category: body.Category,
 		Message:  body.Message,
 		PageURL:  body.PageURL,
 	}
-	if err := h.store.Create(ctx, fb); err != nil {
+	if err := h.store.Create(r.Context(), fb); err != nil {
 		writeJSONError(w, http.StatusInternalServerError, "failed to create feedback")
 		return
 	}
 
-	h.deps.Audit.Log(ctx, "feedback", fb.ID, "INSERT", nil, fb)
+	h.deps.Audit.Log(r.Context(), "feedback", fb.ID, "INSERT", nil, fb)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]any{"id": fb.ID, "ok": true})
@@ -161,9 +149,10 @@ func (h *FeedbackAPIHandler) addComment(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	ctxUser, _ := auth.GetUser(r.Context())
 	comment := &models.FeedbackComment{
 		FeedbackID: id,
-		UserID:     1, // admin user for API-posted comments
+		UserID:     ctxUser.ID,
 		CompanyID:  fb.CompanyID,
 		Message:    body.Message,
 		Internal:   body.Internal,

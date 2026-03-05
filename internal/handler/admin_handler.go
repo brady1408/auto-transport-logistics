@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
@@ -135,12 +136,19 @@ type adminTruckStore interface {
 	ListAll(ctx context.Context) ([]models.Truck, error)
 }
 
+type adminApiKeyStore interface {
+	List(ctx context.Context) ([]models.ApiKey, error)
+	Create(ctx context.Context, userID int, label, keyHash string) (*models.ApiKey, error)
+	Revoke(ctx context.Context, id int) error
+}
+
 type AdminHandler struct {
 	companyStore      adminCompanyStore
 	userStore         adminUserStore
 	subscriptionStore adminSubscriptionStore
 	migrationRunStore *store.MigrationRunStore
 	truckStore        adminTruckStore
+	apiKeyStore       adminApiKeyStore
 	river             *river.Client[pgx.Tx]
 	migrationsDir     string
 	deps              *Deps
@@ -152,6 +160,7 @@ func NewAdminHandler(
 	subscriptionStore adminSubscriptionStore,
 	migrationRunStore *store.MigrationRunStore,
 	truckStore adminTruckStore,
+	apiKeyStore adminApiKeyStore,
 	riverClient *river.Client[pgx.Tx],
 	migrationsDir string,
 	deps *Deps,
@@ -162,6 +171,7 @@ func NewAdminHandler(
 		subscriptionStore: subscriptionStore,
 		migrationRunStore: migrationRunStore,
 		truckStore:        truckStore,
+		apiKeyStore:       apiKeyStore,
 		river:             riverClient,
 		migrationsDir:     migrationsDir,
 		deps:              deps,
@@ -226,6 +236,9 @@ func (h *AdminHandler) RegisterAdmin(mux *http.ServeMux, mw func(http.Handler) h
 	mux.Handle("POST /admin/companies/{companyID}/users", wrap(h.adminCreateUser))
 	mux.Handle("GET /admin/companies/{companyID}/users/{id}/edit", wrap(h.adminEditUser))
 	mux.Handle("POST /admin/companies/{companyID}/users/{id}", wrap(h.adminUpdateUser))
+	mux.Handle("GET /admin/api-keys", wrap(h.listApiKeys))
+	mux.Handle("POST /admin/api-keys", wrap(h.createApiKey))
+	mux.Handle("POST /admin/api-keys/{id}/revoke", wrap(h.revokeApiKey))
 }
 
 // RegisterSettings registers company-level user management routes with the given middleware.
@@ -847,4 +860,51 @@ func (h *AdminHandler) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	h.deps.setFlash(w, "User updated successfully")
 	http.Redirect(w, r, basePath, http.StatusSeeOther)
+}
+
+func (h *AdminHandler) listApiKeys(w http.ResponseWriter, r *http.Request) {
+	pg := h.deps.pageContext(w, r)
+	keys, err := h.apiKeyStore.List(r.Context())
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+	h.deps.renderTempl(w, r, admin.ApiKeysPage(pg, keys, ""))
+}
+
+func (h *AdminHandler) createApiKey(w http.ResponseWriter, r *http.Request) {
+	pg := h.deps.pageContext(w, r)
+	label := strings.TrimSpace(r.FormValue("label"))
+	if label == "" {
+		h.deps.setFlash(w, "Label is required")
+		http.Redirect(w, r, "/admin/api-keys", http.StatusSeeOther)
+		return
+	}
+
+	raw, hash := auth.GenerateAPIKey()
+	if _, err := h.apiKeyStore.Create(r.Context(), 1, label, hash); err != nil {
+		serverError(w, err)
+		return
+	}
+
+	keys, err := h.apiKeyStore.List(r.Context())
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+	h.deps.renderTempl(w, r, admin.ApiKeysPage(pg, keys, raw))
+}
+
+func (h *AdminHandler) revokeApiKey(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "invalid ID", http.StatusBadRequest)
+		return
+	}
+	if err := h.apiKeyStore.Revoke(r.Context(), id); err != nil {
+		serverError(w, err)
+		return
+	}
+	h.deps.setFlash(w, "API key revoked")
+	http.Redirect(w, r, "/admin/api-keys", http.StatusSeeOther)
 }

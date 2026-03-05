@@ -1,12 +1,20 @@
 package middleware
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
 
 	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/atlinks/internal/models"
 )
+
+// ApiKeyLookup is the subset of ApiKeyStore used by RequireAPIKey.
+type ApiKeyLookup interface {
+	GetByKeyHash(ctx context.Context, hash string) (*models.ApiKey, error)
+	UpdateLastUsed(ctx context.Context, id int)
+}
 
 // wantsJSON returns true if the request prefers a JSON response (API clients, mobile apps).
 func wantsJSON(r *http.Request) bool {
@@ -90,30 +98,33 @@ func clearAuthCookie(w http.ResponseWriter, secure bool) {
 	})
 }
 
-func RequireAPIKey(apiKey string) func(http.Handler) http.Handler {
+func RequireAPIKey(store ApiKeyLookup) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
-			if apiKey == "" {
-				w.WriteHeader(http.StatusServiceUnavailable)
-				json.NewEncoder(w).Encode(map[string]string{"error": "API not configured"})
-				return
-			}
-
-			key := r.Header.Get("X-API-Key")
-			if key == "" || key != apiKey {
+			raw := r.Header.Get("X-API-Key")
+			if raw == "" {
 				w.WriteHeader(http.StatusUnauthorized)
-				json.NewEncoder(w).Encode(map[string]string{"error": "invalid or missing API key"})
+				json.NewEncoder(w).Encode(map[string]string{"error": "missing API key"})
 				return
 			}
 
-			// Inject synthetic super_admin context so store queries see all data
+			hash := auth.HashAPIKey(raw)
+			key, err := store.GetByKeyHash(r.Context(), hash)
+			if err != nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(w).Encode(map[string]string{"error": "invalid or inactive API key"})
+				return
+			}
+
+			go store.UpdateLastUsed(context.Background(), key.ID)
+
 			ctx := auth.SetUser(r.Context(), auth.ContextUser{
-				ID:        0,
-				Username:  "api",
+				ID:        key.UserID,
+				Username:  key.Username,
 				Role:      "super_admin",
-				CompanyID: 0,
+				CompanyID: key.CompanyID,
 			})
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

@@ -13,7 +13,6 @@ type Config struct {
 	ResendAPIKey  string
 	AppBaseURL    string
 	FromEmail     string
-	APIKey        string
 	UploadDir        string
 	QBOClientID      string
 	QBOClientSecret  string
@@ -32,7 +31,6 @@ func Load() (*Config, error) {
 		ResendAPIKey: getEnv("RESEND_API_KEY", ""),
 		AppBaseURL:   getEnv("APP_BASE_URL", "http://localhost:8080"),
 		FromEmail:    getEnv("FROM_EMAIL", "noreply@atlinks.app"),
-		APIKey:       getEnv("API_KEY", ""),
 		UploadDir:       getEnv("UPLOAD_DIR", "./data/uploads"),
 		QBOClientID:     getEnv("QBO_CLIENT_ID", ""),
 		QBOClientSecret: getEnv("QBO_CLIENT_SECRET", ""),

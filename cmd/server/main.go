@@ -130,6 +130,7 @@ func main() {
 		routeStores.subscriptionStore,
 		routeStores.migrationRunStore,
 		routeStores.truckStore,
+		routeStores.apiKeyStore,
 		riverClient,
 		cfg.MigrationsDir,
 		deps,
@@ -190,6 +191,7 @@ type riverStores struct {
 	subscriptionStore  *store.SubscriptionStore
 	activityStore      *store.ActivityStore
 	truckStore         *store.TruckStore
+	apiKeyStore        *store.ApiKeyStore
 	protectedMux       *http.ServeMux
 }
 
@@ -238,6 +240,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	attachmentStore := store.NewAttachmentStore(pool)
 	earningsAdjStore := store.NewEarningsAdjStore(pool)
 	activityStore := store.NewActivityStore(pool)
+	apiKeyStore := store.NewApiKeyStore(pool)
 
 	// Storage service
 	storageSvc, err := storage.NewService(cfg.UploadDir)
@@ -340,7 +343,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	apiMux := http.NewServeMux()
 	handler.NewFeedbackAPIHandler(feedbackStore, deps).Register(apiMux)
 	handler.NewActivityAPIHandler(activityStore).Register(apiMux)
-	apiKeyMiddleware := middleware.RequireAPIKey(cfg.APIKey)
+	apiKeyMiddleware := middleware.RequireAPIKey(apiKeyStore)
 	mux.Handle("/api/feedback", apiKeyMiddleware(apiMux))
 	mux.Handle("/api/feedback/", apiKeyMiddleware(apiMux))
 	mux.Handle("/api/activity", apiKeyMiddleware(apiMux))
@@ -386,6 +389,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 		subscriptionStore:  subscriptionStore,
 		activityStore:      activityStore,
 		truckStore:         truckStore,
+		apiKeyStore:        apiKeyStore,
 		protectedMux:       protectedMux,
 	}
 	return mux, loadboardSvc, loadboardStore, rs

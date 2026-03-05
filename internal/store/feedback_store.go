@@ -122,7 +122,7 @@ func (s *FeedbackStore) Create(ctx context.Context, fb *models.Feedback) error {
 		return err
 	}
 	fb.CompanyID = companyID
-	// company_id=0 means no company (API/system origin) — store as NULL to satisfy FK
+	// company_id=0 means no company (super_admin / system origin) — store as NULL
 	var companyIDArg any
 	if fb.CompanyID != 0 {
 		companyIDArg = fb.CompanyID
