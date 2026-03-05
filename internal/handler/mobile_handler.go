@@ -411,6 +411,7 @@ func (h *MobileHandler) listDamage(w http.ResponseWriter, r *http.Request) {
 }
 
 type createDamageRequest struct {
+	TripID          *int   `json:"trip_id,omitempty"`
 	DamageArea      string `json:"damage_area"`
 	DamageType      string `json:"damage_type"`
 	DamageSeverity  string `json:"damage_severity"`
@@ -439,6 +440,7 @@ func (h *MobileHandler) createDamage(w http.ResponseWriter, r *http.Request) {
 
 	d := &models.VehicleDamage{
 		VehicleID:       &vehicleID,
+		TripID:          req.TripID,
 		DamageArea:      strPtr(req.DamageArea),
 		DamageType:      strPtr(req.DamageType),
 		DamageSeverity:  strPtr(req.DamageSeverity),
