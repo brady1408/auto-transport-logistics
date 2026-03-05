@@ -79,7 +79,7 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 if [ "$SKIP_BUILD" = false ]; then
     BUILD_VERSION=$(git -C "$PROJECT_DIR" rev-parse --short HEAD 2>/dev/null || date +%s)
     echo "==> Building Docker image (version: $BUILD_VERSION)..."
-    docker build --build-arg "BUILD_VERSION=$BUILD_VERSION" -t "$IMAGE_NAME" "$PROJECT_DIR"
+    docker build --platform linux/amd64 --build-arg "BUILD_VERSION=$BUILD_VERSION" -t "$IMAGE_NAME" "$PROJECT_DIR"
 
     echo "==> Pushing image to registry..."
     docker push "$IMAGE_NAME"
