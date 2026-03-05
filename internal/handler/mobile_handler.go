@@ -56,6 +56,7 @@ type mobileOrderService interface {
 
 type mobileDamageStore interface {
 	ListByVehicle(ctx context.Context, vehicleID int) ([]models.VehicleDamage, error)
+	GetByID(ctx context.Context, id int) (*models.VehicleDamage, error)
 	Create(ctx context.Context, d *models.VehicleDamage) error
 }
 
@@ -599,6 +600,12 @@ func (h *MobileHandler) uploadDamagePhoto(w http.ResponseWriter, r *http.Request
 	user, ok := auth.GetUserFromRequest(r)
 	if !ok {
 		h.writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	// Verify the damage record exists and belongs to this company before accepting the file.
+	if _, err := h.damageStore.GetByID(r.Context(), damageID); err != nil {
+		h.writeError(w, http.StatusNotFound, "damage record not found")
 		return
 	}
 

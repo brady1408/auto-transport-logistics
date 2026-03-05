@@ -62,6 +62,11 @@ func (s *DamageStore) ListByVehicle(ctx context.Context, vehicleID int) ([]model
 // ListByTrip returns all damage records for a trip. It returns records directly
 // linked by trip_id (new) plus legacy records where the vehicle is on this trip
 // (trip_id IS NULL, vehicle linked via load_details).
+//
+// Note: the legacy fallback is intentionally broad — a vehicle that was on multiple
+// trips before trip_id tracking was added will have its pre-tracking damage appear
+// on every trip it was assigned to. This is acceptable until historical data is
+// backfilled or the legacy records age out.
 func (s *DamageStore) ListByTrip(ctx context.Context, tripID int) ([]models.VehicleDamage, error) {
 	companyID, err := auth.GetCompanyID(ctx)
 	if err != nil {
@@ -172,83 +177,6 @@ func (s *DamageStore) Delete(ctx context.Context, id int) error {
 		return fmt.Errorf("damage %d not found", id)
 	}
 	return nil
-}
-
-// DamageLabelMaps holds code→description maps for the three damage lookup tables.
-type DamageLabelMaps struct {
-	Areas      map[string]string
-	Types      map[string]string
-	Severities map[string]string
-}
-
-// Label resolves a code to its description, falling back to the raw code if not found.
-func (m DamageLabelMaps) Area(code *string) string {
-	if code == nil {
-		return ""
-	}
-	if desc, ok := m.Areas[*code]; ok {
-		return desc
-	}
-	return *code
-}
-
-func (m DamageLabelMaps) Type(code *string) string {
-	if code == nil {
-		return ""
-	}
-	if desc, ok := m.Types[*code]; ok {
-		return desc
-	}
-	return *code
-}
-
-func (m DamageLabelMaps) Severity(code *string) string {
-	if code == nil {
-		return ""
-	}
-	if desc, ok := m.Severities[*code]; ok {
-		return desc
-	}
-	return *code
-}
-
-// DamageLabelStore fetches human-readable labels for damage codes.
-type DamageLabelStore struct {
-	areas      *LookupStore
-	types      *LookupStore
-	severities *LookupStore
-}
-
-func NewDamageLabelStore(pool *pgxpool.Pool) (*DamageLabelStore, error) {
-	areas, err := NewLookupStore(pool, "damage_areas")
-	if err != nil {
-		return nil, err
-	}
-	types, err := NewLookupStore(pool, "damage_types")
-	if err != nil {
-		return nil, err
-	}
-	severities, err := NewLookupStore(pool, "damage_severities")
-	if err != nil {
-		return nil, err
-	}
-	return &DamageLabelStore{areas: areas, types: types, severities: severities}, nil
-}
-
-func (s *DamageLabelStore) Maps(ctx context.Context) (DamageLabelMaps, error) {
-	areas, err := s.areas.CodeMap(ctx)
-	if err != nil {
-		return DamageLabelMaps{}, fmt.Errorf("damage area labels: %w", err)
-	}
-	types, err := s.types.CodeMap(ctx)
-	if err != nil {
-		return DamageLabelMaps{}, fmt.Errorf("damage type labels: %w", err)
-	}
-	severities, err := s.severities.CodeMap(ctx)
-	if err != nil {
-		return DamageLabelMaps{}, fmt.Errorf("damage severity labels: %w", err)
-	}
-	return DamageLabelMaps{Areas: areas, Types: types, Severities: severities}, nil
 }
 
 // Note store

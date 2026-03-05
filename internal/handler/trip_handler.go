@@ -37,6 +37,7 @@ type tripService interface {
 
 type tripAttachmentStore interface {
 	ListByEntity(ctx context.Context, category string, entityID int) ([]models.Attachment, error)
+	ListByEntityIDs(ctx context.Context, category string, entityIDs []int) ([]models.Attachment, error)
 }
 
 type tripDamageStore interface {
@@ -68,7 +69,16 @@ func NewTripHandler(
 	damageLabelStore tripDamageLabelStore,
 	deps *Deps,
 ) *TripHandler {
-	return &TripHandler{store: store, loadStore: loadStore, vehStore: vehStore, tripSvc: tripSvc, attachmentStore: attachmentStore, damageStore: damageStore, damageLabelStore: damageLabelStore, deps: deps}
+	return &TripHandler{
+		store:            store,
+		loadStore:        loadStore,
+		vehStore:         vehStore,
+		tripSvc:          tripSvc,
+		attachmentStore:  attachmentStore,
+		damageStore:      damageStore,
+		damageLabelStore: damageLabelStore,
+		deps:             deps,
+	}
 }
 
 func (h *TripHandler) Register(mux *http.ServeMux) {
@@ -429,12 +439,42 @@ func (h *TripHandler) damageSection(w http.ResponseWriter, r *http.Request) {
 		log.Printf("trip damage section: load damage labels: %v", err)
 	}
 
-	// Index damage by vehicle_id for grouping.
+	// Collect all damage IDs and vehicle IDs for bulk attachment fetches.
+	damageIDs := make([]int, 0, len(damages))
 	damageByVehicle := make(map[int][]models.VehicleDamage)
 	for _, d := range damages {
+		damageIDs = append(damageIDs, d.ID)
 		if d.VehicleID != nil {
 			damageByVehicle[*d.VehicleID] = append(damageByVehicle[*d.VehicleID], d)
 		}
+	}
+
+	vehicleIDs := make([]int, 0, len(loads))
+	for _, ld := range loads {
+		if ld.VehicleID != nil {
+			vehicleIDs = append(vehicleIDs, *ld.VehicleID)
+		}
+	}
+
+	// Bulk-fetch all damage photos and inspection photos in two queries.
+	damagePhotos, err := h.attachmentStore.ListByEntityIDs(r.Context(), "vehicle_damage", damageIDs)
+	if err != nil {
+		log.Printf("trip damage section: bulk list damage photos for trip %d: %v", id, err)
+		damagePhotos = nil
+	}
+	photosByDamage := make(map[int][]models.Attachment)
+	for _, p := range damagePhotos {
+		photosByDamage[p.EntityID] = append(photosByDamage[p.EntityID], p)
+	}
+
+	inspectionPhotos, err := h.attachmentStore.ListByEntityIDs(r.Context(), "vehicle_inspection", vehicleIDs)
+	if err != nil {
+		log.Printf("trip damage section: bulk list inspection photos for trip %d: %v", id, err)
+		inspectionPhotos = nil
+	}
+	inspectionByVehicle := make(map[int][]models.Attachment)
+	for _, p := range inspectionPhotos {
+		inspectionByVehicle[p.EntityID] = append(inspectionByVehicle[p.EntityID], p)
 	}
 
 	// Build one group per vehicle in the load manifest.
@@ -445,37 +485,26 @@ func (h *TripHandler) damageSection(w http.ResponseWriter, r *http.Request) {
 		}
 		vehicleID := *ld.VehicleID
 
-		// Fetch damage-linked photos for each damage record on this vehicle.
 		vdamages := damageByVehicle[vehicleID]
 		damagesWithPhotos := make([]trips.DamageWithPhotos, 0, len(vdamages))
 		for _, d := range vdamages {
-			photos, err := h.attachmentStore.ListByEntity(r.Context(), "vehicle_damage", d.ID)
-			if err != nil {
-				log.Printf("trip damage section: list damage photos for damage %d: %v", d.ID, err)
-				photos = nil
-			}
 			damagesWithPhotos = append(damagesWithPhotos, trips.DamageWithPhotos{
 				Damage: d,
-				Photos: photos,
+				Photos: photosByDamage[d.ID],
 			})
 		}
 
-		// General vehicle inspection photos (not linked to a specific damage record).
-		inspectionPhotos, err := h.attachmentStore.ListByEntity(r.Context(), "vehicle_inspection", vehicleID)
-		if err != nil {
-			log.Printf("trip damage section: list inspection photos for vehicle %d: %v", vehicleID, err)
-			inspectionPhotos = nil
-		}
+		vInspectionPhotos := inspectionByVehicle[vehicleID]
 
 		// Skip vehicles with nothing to show.
-		if len(damagesWithPhotos) == 0 && len(inspectionPhotos) == 0 {
+		if len(damagesWithPhotos) == 0 && len(vInspectionPhotos) == 0 {
 			continue
 		}
 
 		groups = append(groups, trips.VehicleDamageGroup{
 			Load:              ld,
 			DamagesWithPhotos: damagesWithPhotos,
-			InspectionPhotos:  inspectionPhotos,
+			InspectionPhotos:  vInspectionPhotos,
 		})
 	}
 

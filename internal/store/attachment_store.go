@@ -45,6 +45,32 @@ func (s *AttachmentStore) GetByID(ctx context.Context, id int) (*models.Attachme
 	return &att, nil
 }
 
+// ListByEntityIDs fetches all attachments for a given category and set of entity IDs in one query.
+// The returned slice is unsorted; callers should group by EntityID as needed.
+func (s *AttachmentStore) ListByEntityIDs(ctx context.Context, category string, entityIDs []int) ([]models.Attachment, error) {
+	if len(entityIDs) == 0 {
+		return nil, nil
+	}
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	query := `SELECT id, company_id, category, entity_id, filename, storage_key, content_type, size_bytes, uploaded_by, created_at
+		FROM attachments
+		WHERE category = $1 AND entity_id = ANY($2) AND company_id = $3 AND deleted_at IS NULL
+		ORDER BY created_at ASC`
+	rows, err := s.pool.Query(ctx, query, category, entityIDs, companyID)
+	if err != nil {
+		return nil, fmt.Errorf("list attachments by entity IDs: %w", err)
+	}
+	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Attachment, error) {
+		var a models.Attachment
+		err := row.Scan(&a.ID, &a.CompanyID, &a.Category, &a.EntityID, &a.Filename,
+			&a.StorageKey, &a.ContentType, &a.SizeBytes, &a.UploadedBy, &a.CreatedAt)
+		return a, err
+	})
+}
+
 func (s *AttachmentStore) ListByEntity(ctx context.Context, category string, entityID int) ([]models.Attachment, error) {
 	companyID, err := auth.GetCompanyID(ctx)
 	if err != nil {
