@@ -42,9 +42,10 @@ server.tool(
       .describe("Category of the feedback"),
     message: z.string().min(1).describe("The feedback message or feature description"),
     page_url: z.string().optional().describe("Optional URL or context reference"),
+    company_id: z.number().int().default(2).describe("Company ID to associate with (default 2 = Atlas Transport LLC)"),
   },
-  async ({ category, message, page_url }) => {
-    const body = { category, message };
+  async ({ category, message, page_url, company_id }) => {
+    const body = { category, message, company_id };
     if (page_url) body.page_url = page_url;
 
     const data = await api("/api/feedback", {
