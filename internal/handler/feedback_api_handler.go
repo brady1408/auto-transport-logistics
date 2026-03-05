@@ -44,7 +44,7 @@ func (h *FeedbackAPIHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fb := &models.Feedback{
-		UserID:   0, // system/API origin
+		UserID:   1, // admin user for API-created items (matches addComment convention)
 		Category: body.Category,
 		Message:  body.Message,
 		PageURL:  body.PageURL,
