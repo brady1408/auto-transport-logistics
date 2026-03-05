@@ -308,7 +308,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	// Dispatch
 	handler.NewOrderHandler(orderStore, invoiceSvc, vehicleStore, attachmentStore, loadboardStore, deps).Register(protectedMux)
 	handler.NewVehicleHandler(vehicleStore, orderStore, orderSvc, deps).Register(protectedMux)
-	handler.NewTripHandler(tripStore, loadDetailStore, vehicleStore, tripSvc, attachmentStore, deps).Register(protectedMux)
+	handler.NewTripHandler(tripStore, loadDetailStore, vehicleStore, tripSvc, attachmentStore, damageStore, deps).Register(protectedMux)
 	handler.NewChargeHandler(chargeStore, deps).Register(protectedMux)
 	handler.NewDamageHandler(damageStore, deps).Register(protectedMux)
 	handler.NewNoteHandler(noteStore, deps).Register(protectedMux)

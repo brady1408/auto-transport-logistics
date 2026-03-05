@@ -39,12 +39,17 @@ type tripAttachmentStore interface {
 	ListByEntity(ctx context.Context, category string, entityID int) ([]models.Attachment, error)
 }
 
+type tripDamageStore interface {
+	ListByTrip(ctx context.Context, tripID int) ([]models.VehicleDamage, error)
+}
+
 type TripHandler struct {
 	store           tripStore
 	loadStore       tripLoadDetailStore
 	vehStore        tripVehicleStore
 	tripSvc         tripService
 	attachmentStore tripAttachmentStore
+	damageStore     tripDamageStore
 	deps            *Deps
 }
 
@@ -54,9 +59,10 @@ func NewTripHandler(
 	vehStore tripVehicleStore,
 	tripSvc tripService,
 	attachmentStore tripAttachmentStore,
+	damageStore tripDamageStore,
 	deps *Deps,
 ) *TripHandler {
-	return &TripHandler{store: store, loadStore: loadStore, vehStore: vehStore, tripSvc: tripSvc, attachmentStore: attachmentStore, deps: deps}
+	return &TripHandler{store: store, loadStore: loadStore, vehStore: vehStore, tripSvc: tripSvc, attachmentStore: attachmentStore, damageStore: damageStore, deps: deps}
 }
 
 func (h *TripHandler) Register(mux *http.ServeMux) {
@@ -75,6 +81,7 @@ func (h *TripHandler) Register(mux *http.ServeMux) {
 	// HTMX partials
 	mux.HandleFunc("GET /dispatch/trips/{id}/available-vehicles", h.availableVehicles)
 	mux.HandleFunc("GET /dispatch/trips/{id}/loads", h.loadManifest)
+	mux.HandleFunc("GET /dispatch/trips/{id}/damage", h.damageSection)
 }
 
 func (h *TripHandler) list(w http.ResponseWriter, r *http.Request) {
@@ -390,6 +397,57 @@ func (h *TripHandler) loadManifest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.renderTempl(w, r, trips.LoadTable(loads, tripID))
+}
+
+func (h *TripHandler) damageSection(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	loads, err := h.loadStore.ListByTripWithOrder(r.Context(), id)
+	if err != nil {
+		log.Printf("trip damage section: load manifest for trip %d: %v", id, err)
+		loads = nil
+	}
+
+	damages, err := h.damageStore.ListByTrip(r.Context(), id)
+	if err != nil {
+		log.Printf("trip damage section: list damage for trip %d: %v", id, err)
+		damages = nil
+	}
+
+	// Index damage by vehicle_id for grouping.
+	damageByVehicle := make(map[int][]models.VehicleDamage)
+	for _, d := range damages {
+		if d.VehicleID != nil {
+			damageByVehicle[*d.VehicleID] = append(damageByVehicle[*d.VehicleID], d)
+		}
+	}
+
+	// Build one group per vehicle in the load manifest.
+	groups := make([]trips.VehicleDamageGroup, 0, len(loads))
+	for _, ld := range loads {
+		if ld.VehicleID == nil {
+			continue
+		}
+		vehicleID := *ld.VehicleID
+
+		photos, err := h.attachmentStore.ListByEntity(r.Context(), "vehicle_inspection", vehicleID)
+		if err != nil {
+			log.Printf("trip damage section: list photos for vehicle %d: %v", vehicleID, err)
+			photos = nil
+		}
+
+		groups = append(groups, trips.VehicleDamageGroup{
+			Load:    ld,
+			Damages: damageByVehicle[vehicleID],
+			Photos:  photos,
+		})
+	}
+
+	h.deps.renderTempl(w, r, trips.DamageSection(groups))
 }
 
 func bindTripForm(r *http.Request) *models.Trip {
