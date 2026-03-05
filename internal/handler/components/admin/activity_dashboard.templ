@@ -8,11 +8,16 @@ import (
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ ActivityDashboardPage(pg components.PageContext, stats *models.ActivityStats, since time.Time) {
+templ ActivityDashboardPage(pg components.PageContext, stats *models.ActivityStats, since time.Time, hours int) {
 	@components.Layout(pg, "Activity - Admin") {
 		<div class="page-header">
 			<h2>Activity Dashboard</h2>
-			<span style="color:var(--gray-400);font-size:.85rem;">Last 24 hours</span>
+			<div style="display:flex;gap:.5rem;align-items:center">
+				<span style="color:var(--gray-400);font-size:.85rem;">Range:</span>
+				<a href="/admin/activity?range=24h" class={ "btn btn-sm", templ.KV("btn-primary", hours == 24) }>24h</a>
+				<a href="/admin/activity?range=7d" class={ "btn btn-sm", templ.KV("btn-primary", hours == 168) }>7d</a>
+				<a href="/admin/activity?range=30d" class={ "btn btn-sm", templ.KV("btn-primary", hours == 720) }>30d</a>
+			</div>
 		</div>
 		<!-- KPI cards -->
 		<div class="kpi-grid">

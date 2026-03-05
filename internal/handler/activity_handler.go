@@ -33,14 +33,21 @@ func (h *ActivityHandler) Register(mux *http.ServeMux, role func(http.Handler) h
 }
 
 func (h *ActivityHandler) dashboard(w http.ResponseWriter, r *http.Request) {
-	since := time.Now().Add(-24 * time.Hour)
+	hours := 24
+	switch r.URL.Query().Get("range") {
+	case "7d":
+		hours = 168
+	case "30d":
+		hours = 720
+	}
+	since := time.Now().Add(-time.Duration(hours) * time.Hour)
 	stats, err := h.store.GetStats(r.Context(), since)
 	if err != nil {
 		serverError(w, err)
 		return
 	}
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, admin.ActivityDashboardPage(pg, stats, since))
+	h.deps.renderTempl(w, r, admin.ActivityDashboardPage(pg, stats, since, hours))
 }
 
 func (h *ActivityHandler) userTimeline(w http.ResponseWriter, r *http.Request) {
