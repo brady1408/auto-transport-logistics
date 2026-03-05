@@ -33,6 +33,31 @@ const server = new McpServer({
 });
 
 server.tool(
+  "create_feedback",
+  "Create a new feedback item (feature request, bug report, or note)",
+  {
+    category: z
+      .enum(["bug", "feature", "question", "other"])
+      .default("feature")
+      .describe("Category of the feedback"),
+    message: z.string().min(1).describe("The feedback message or feature description"),
+    page_url: z.string().optional().describe("Optional URL or context reference"),
+  },
+  async ({ category, message, page_url }) => {
+    const body = { category, message };
+    if (page_url) body.page_url = page_url;
+
+    const data = await api("/api/feedback", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    return {
+      content: [{ type: "text", text: `Feedback #${data.id} created (${category}).` }],
+    };
+  }
+);
+
+server.tool(
   "list_feedback",
   "List feedback items with optional filters",
   {

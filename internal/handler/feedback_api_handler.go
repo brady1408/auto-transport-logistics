@@ -19,9 +19,45 @@ func NewFeedbackAPIHandler(s feedbackStore, deps *Deps) *FeedbackAPIHandler {
 
 func (h *FeedbackAPIHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/feedback", h.list)
+	mux.HandleFunc("POST /api/feedback", h.create)
 	mux.HandleFunc("GET /api/feedback/{id}", h.get)
 	mux.HandleFunc("POST /api/feedback/{id}/comments", h.addComment)
 	mux.HandleFunc("PATCH /api/feedback/{id}", h.updateStatus)
+}
+
+func (h *FeedbackAPIHandler) create(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Category string `json:"category"`
+		Message  string `json:"message"`
+		PageURL  string `json:"page_url"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "invalid JSON body")
+		return
+	}
+	if body.Message == "" {
+		writeJSONError(w, http.StatusBadRequest, "message is required")
+		return
+	}
+	if body.Category == "" {
+		body.Category = "other"
+	}
+
+	fb := &models.Feedback{
+		UserID:   0, // system/API origin
+		Category: body.Category,
+		Message:  body.Message,
+		PageURL:  body.PageURL,
+	}
+	if err := h.store.Create(r.Context(), fb); err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "failed to create feedback")
+		return
+	}
+
+	h.deps.Audit.Log(r.Context(), "feedback", fb.ID, "INSERT", nil, fb)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]any{"id": fb.ID, "ok": true})
 }
 
 func (h *FeedbackAPIHandler) list(w http.ResponseWriter, r *http.Request) {
