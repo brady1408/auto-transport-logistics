@@ -321,13 +321,15 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	notificationStore := store.NewNotificationStore(pool)
 	handler.NewNotificationHandler(notificationStore, deps).Register(protectedMux)
 
-	// Feedback API (API key auth, separate from JWT-protected routes)
-	feedbackAPIHandler := handler.NewFeedbackAPIHandler(feedbackStore, deps)
+	// API key-authenticated routes (feedback + activity)
 	apiMux := http.NewServeMux()
-	feedbackAPIHandler.Register(apiMux)
+	handler.NewFeedbackAPIHandler(feedbackStore, deps).Register(apiMux)
+	handler.NewActivityAPIHandler(activityStore).Register(apiMux)
 	apiKeyMiddleware := middleware.RequireAPIKey(cfg.APIKey)
 	mux.Handle("/api/feedback", apiKeyMiddleware(apiMux))
 	mux.Handle("/api/feedback/", apiKeyMiddleware(apiMux))
+	mux.Handle("/api/activity", apiKeyMiddleware(apiMux))
+	mux.Handle("/api/activity/", apiKeyMiddleware(apiMux))
 
 	// VIN Search + Reports
 	handler.NewVinSearchHandler(vehicleStore, deps).Register(protectedMux)
