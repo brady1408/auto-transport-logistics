@@ -34,6 +34,7 @@ type Trip struct {
 	Status           *string `json:"status,omitempty"`
 	EquipmentType    *string `json:"equipment_type,omitempty"`
 	Zone             *string `json:"zone,omitempty"`
+	Version          int       `json:"version"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
 }
@@ -72,6 +73,7 @@ type LoadDetail struct {
 	Status        *string    `json:"status,omitempty"`
 	LoadedDate    *time.Time `json:"loaded_date,omitempty"`
 	DeliveredDate *time.Time `json:"delivered_date,omitempty"`
+	Version       int        `json:"version"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
 }

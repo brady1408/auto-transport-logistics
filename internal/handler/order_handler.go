@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"errors"
+
 	"github.com/brady1408/atlinks/internal/handler/components/orders"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
@@ -59,6 +61,7 @@ func (h *OrderHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /dispatch/orders/{id}", h.update)
 	mux.HandleFunc("DELETE /dispatch/orders/{id}", h.delete)
 	mux.HandleFunc("POST /dispatch/orders/{id}/invoice", h.generateInvoice)
+	mux.HandleFunc("GET /dispatch/orders/{id}/counts", h.vehicleCounts)
 	mux.HandleFunc("GET /dispatch/waiting", h.waitingGrid)
 }
 
@@ -191,6 +194,18 @@ func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 	o.OrderNumber = old.OrderNumber // order_number is immutable
 
 	if err := h.store.Update(r.Context(), o); err != nil {
+		if errors.Is(err, store.ErrConflict) {
+			// Re-fetch the current version so the form has fresh data
+			current, fetchErr := h.store.GetByID(r.Context(), id)
+			if fetchErr != nil {
+				serverError(w, fetchErr)
+				return
+			}
+			pg := h.deps.pageContext(w, r)
+			h.deps.renderTempl(w, r, orders.FormPage(pg, current, false,
+				"This record was modified by another user. Your changes were NOT saved. The form now shows the latest data — please review and re-submit."))
+			return
+		}
 		pg := h.deps.pageContext(w, r)
 		log.Printf("update order: %v", err)
 		h.deps.renderTempl(w, r, orders.FormPage(pg, o, false, "Failed to update order"))
@@ -247,6 +262,22 @@ func (h *OrderHandler) generateInvoice(w http.ResponseWriter, r *http.Request) {
 	redirect(w, r, fmt.Sprintf("/accounting/invoices/%d", inv.ID))
 }
 
+func (h *OrderHandler) vehicleCounts(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	o, err := h.store.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Order not found", http.StatusNotFound)
+		return
+	}
+
+	h.deps.renderTempl(w, r, orders.VehicleCountsCard(o))
+}
+
 func (h *OrderHandler) waitingGrid(w http.ResponseWriter, r *http.Request) {
 	stateFilter := r.URL.Query().Get("state")
 	rows, err := h.waitingStore.WaitingGrid(r.Context(), stateFilter)
@@ -263,7 +294,13 @@ func (h *OrderHandler) waitingGrid(w http.ResponseWriter, r *http.Request) {
 }
 
 func bindOrderForm(r *http.Request) *models.Order {
+	version := formInt(r, "version")
+	var versionVal int
+	if version != nil {
+		versionVal = *version
+	}
 	o := &models.Order{
+		Version:      versionVal,
 		OrderNumber:  formStringRequired(r, "order_number"),
 		Active:       !formBool(r, "inactive"),
 		Zone:         formString(r, "zone"),

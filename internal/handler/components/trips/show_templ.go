@@ -349,7 +349,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" hx-trigger=\"vehicle-assigned from:body\" hx-swap=\"innerHTML\" style=\"margin-top:12px\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" hx-trigger=\"vehicle-assigned from:body, every 10s [document.visibilityState==='visible']\" hx-swap=\"innerHTML\" style=\"margin-top:12px\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -420,7 +420,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Expenses</h2><div id=\"expense-table\" hx-get=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\" hx-trigger=\"load, every 10s [document.visibilityState==='visible']\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Expenses</h2><div id=\"expense-table\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -433,7 +433,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Routes</h2><div id=\"route-table\" hx-get=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\" hx-trigger=\"load, every 10s [document.visibilityState==='visible']\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Routes</h2><div id=\"route-table\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -446,7 +446,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Damage &amp; Inspection Photos</h2><div id=\"damage-section\" hx-get=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" hx-trigger=\"load, every 10s [document.visibilityState==='visible']\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Damage &amp; Inspection Photos</h2><div id=\"damage-section\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -459,7 +459,7 @@ func ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadDe
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Attachments</h2><div class=\"card\" id=\"attachments-section\"><div class=\"card-body\"><div id=\"trip-attachments\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "\" hx-trigger=\"load, every 10s [document.visibilityState==='visible']\" hx-swap=\"innerHTML\"><p class=\"text-muted\">Loading...</p></div><h2 class=\"section-title\">Attachments</h2><div class=\"card\" id=\"attachments-section\"><div class=\"card-body\"><div id=\"trip-attachments\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -33,6 +33,7 @@ templ FormPage(pg components.PageContext, trip *models.Trip, isNew bool, errMsg 
 			}
 		>
 			@components.CSRFField(pg.CSRFToken)
+			<input type="hidden" name="version" value={ fmt.Sprintf("%d", trip.Version) }/>
 			<fieldset>
 				<legend>Trip Information</legend>
 				<div class="form-row">

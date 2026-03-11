@@ -20,14 +20,14 @@ func NewLoadDetailStore(pool *pgxpool.Pool) *LoadDetailStore {
 
 const loadDetailColumns = `id, company_id, trip_id, order_id, vehicle_id, vin, year, make, model, color,
 	weight, category, bay_number, status, loaded_date, delivered_date,
-	created_at, updated_at`
+	version, created_at, updated_at`
 
 func scanLoadDetail(row interface{ Scan(dest ...any) error }) (*models.LoadDetail, error) {
 	var ld models.LoadDetail
 	err := row.Scan(
 		&ld.ID, &ld.CompanyID, &ld.TripID, &ld.OrderID, &ld.VehicleID, &ld.VIN, &ld.Year, &ld.Make, &ld.Model, &ld.Color,
 		&ld.Weight, &ld.Category, &ld.BayNumber, &ld.Status, &ld.LoadedDate, &ld.DeliveredDate,
-		&ld.CreatedAt, &ld.UpdatedAt,
+		&ld.Version, &ld.CreatedAt, &ld.UpdatedAt,
 	)
 	return &ld, err
 }
@@ -71,7 +71,7 @@ func (s *LoadDetailStore) ListByTripWithOrder(ctx context.Context, tripID int) (
 			load_details.vehicle_id, load_details.vin, load_details.year, load_details.make, load_details.model, load_details.color,
 			load_details.weight, load_details.category, load_details.bay_number, load_details.status,
 			load_details.loaded_date, load_details.delivered_date,
-			load_details.created_at, load_details.updated_at,
+			load_details.version, load_details.created_at, load_details.updated_at,
 			COALESCE(o.order_number, '')
 		FROM load_details
 		LEFT JOIN orders o ON o.id = load_details.order_id
@@ -85,7 +85,7 @@ func (s *LoadDetailStore) ListByTripWithOrder(ctx context.Context, tripID int) (
 		err := row.Scan(
 			&item.ID, &item.CompanyID, &item.TripID, &item.OrderID, &item.VehicleID, &item.VIN, &item.Year, &item.Make, &item.Model, &item.Color,
 			&item.Weight, &item.Category, &item.BayNumber, &item.Status, &item.LoadedDate, &item.DeliveredDate,
-			&item.CreatedAt, &item.UpdatedAt,
+			&item.Version, &item.CreatedAt, &item.UpdatedAt,
 			&item.OrderNumber,
 		)
 		if err != nil {

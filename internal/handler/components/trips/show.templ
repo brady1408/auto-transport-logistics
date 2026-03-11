@@ -130,7 +130,7 @@ templ ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadD
 			<div
 				id="load-manifest"
 				hx-get={ fmt.Sprintf("/dispatch/trips/%d/loads", trip.ID) }
-				hx-trigger="vehicle-assigned from:body"
+				hx-trigger="vehicle-assigned from:body, every 10s [document.visibilityState==='visible']"
 				hx-swap="innerHTML"
 				style="margin-top:12px"
 			>
@@ -169,7 +169,7 @@ templ ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadD
 		<div
 			id="fuel-table"
 			hx-get={ fmt.Sprintf("/dispatch/trips/%d/fuel", trip.ID) }
-			hx-trigger="load"
+			hx-trigger="load, every 10s [document.visibilityState==='visible']"
 			hx-swap="innerHTML"
 		>
 			<p class="text-muted">Loading...</p>
@@ -178,7 +178,7 @@ templ ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadD
 		<div
 			id="expense-table"
 			hx-get={ fmt.Sprintf("/dispatch/trips/%d/expenses", trip.ID) }
-			hx-trigger="load"
+			hx-trigger="load, every 10s [document.visibilityState==='visible']"
 			hx-swap="innerHTML"
 		>
 			<p class="text-muted">Loading...</p>
@@ -187,7 +187,7 @@ templ ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadD
 		<div
 			id="route-table"
 			hx-get={ fmt.Sprintf("/dispatch/trips/%d/routes", trip.ID) }
-			hx-trigger="load"
+			hx-trigger="load, every 10s [document.visibilityState==='visible']"
 			hx-swap="innerHTML"
 		>
 			<p class="text-muted">Loading...</p>
@@ -196,7 +196,7 @@ templ ShowPage(pg components.PageContext, trip *models.Trip, loads []store.LoadD
 		<div
 			id="damage-section"
 			hx-get={ fmt.Sprintf("/dispatch/trips/%d/damage", trip.ID) }
-			hx-trigger="load"
+			hx-trigger="load, every 10s [document.visibilityState==='visible']"
 			hx-swap="innerHTML"
 		>
 			<p class="text-muted">Loading...</p>

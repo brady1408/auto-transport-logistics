@@ -6,9 +6,12 @@ import (
 	"log"
 	"net/http"
 
+	"errors"
+
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/handler/components/orders"
 	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/atlinks/internal/store"
 )
 
 type vehicleStore interface {
@@ -154,6 +157,18 @@ func (h *VehicleHandler) update(w http.ResponseWriter, r *http.Request) {
 	v.OrderID = old.OrderID
 
 	if err := h.store.Update(r.Context(), v); err != nil {
+		if errors.Is(err, store.ErrConflict) {
+			current, fetchErr := h.store.GetByID(r.Context(), id)
+			if fetchErr != nil {
+				serverError(w, fetchErr)
+				return
+			}
+			order, _ := h.orderStore.GetByID(r.Context(), current.OrderID)
+			pg := h.deps.pageContext(w, r)
+			h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, current, order, false,
+				"This record was modified by another user. Your changes were NOT saved. The form now shows the latest data — please review and re-submit."))
+			return
+		}
 		order, _ := h.orderStore.GetByID(r.Context(), v.OrderID)
 		pg := h.deps.pageContext(w, r)
 		log.Printf("update vehicle: %v", err)
@@ -270,7 +285,13 @@ func (h *VehicleHandler) renderVehicleRow(w http.ResponseWriter, r *http.Request
 }
 
 func bindVehicleForm(r *http.Request) *models.OrderVehicle {
+	version := formInt(r, "version")
+	var versionVal int
+	if version != nil {
+		versionVal = *version
+	}
 	return &models.OrderVehicle{
+		Version:           versionVal,
 		Active:            !formBool(r, "inactive"),
 		Status:            r.FormValue("status"),
 		VIN:               formString(r, "vin"),

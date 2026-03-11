@@ -25,7 +25,7 @@ const tripColumns = `id, company_id, load_number, active, truck_number, truck_id
 	driver_rate, driver_calc_type, driver_add_rate, driver_add_calc_type,
 	truck_rate, truck_calc_type,
 	comments, status, equipment_type, zone,
-	created_at, updated_at`
+	version, created_at, updated_at`
 
 func scanTrip(row interface{ Scan(dest ...any) error }) (*models.Trip, error) {
 	var t models.Trip
@@ -37,7 +37,7 @@ func scanTrip(row interface{ Scan(dest ...any) error }) (*models.Trip, error) {
 		&t.DriverRate, &t.DriverCalcType, &t.DriverAddRate, &t.DriverAddCalcType,
 		&t.TruckRate, &t.TruckCalcType,
 		&t.Comments, &t.Status, &t.EquipmentType, &t.Zone,
-		&t.CreatedAt, &t.UpdatedAt,
+		&t.Version, &t.CreatedAt, &t.UpdatedAt,
 	)
 	return &t, err
 }
@@ -183,8 +183,9 @@ func (s *TripStore) Update(ctx context.Context, t *models.Trip) error {
 			total_mileage=$14, total_fuel_gallons=$15, fuel_advance=$16, trip_advance=$17, tolls_advance=$18,
 			driver_rate=$19, driver_calc_type=$20, driver_add_rate=$21, driver_add_calc_type=$22,
 			truck_rate=$23, truck_calc_type=$24,
-			comments=$25, status=$26, equipment_type=$27, zone=$28
-		WHERE id=$29 AND company_id=$30 AND deleted_at IS NULL`,
+			comments=$25, status=$26, equipment_type=$27, zone=$28,
+			version = version + 1
+		WHERE id=$29 AND company_id=$30 AND version=$31 AND deleted_at IS NULL`,
 		t.Active, t.TruckNumber, t.TruckID, t.TrailerNumber,
 		t.Driver, t.Driver1ID, t.Driver2, t.Driver2ID,
 		t.TripDate, t.EstDeliverDate, t.DeliverDate, t.ArrivalDate, t.ReturnDate,
@@ -192,12 +193,19 @@ func (s *TripStore) Update(ctx context.Context, t *models.Trip) error {
 		t.DriverRate, t.DriverCalcType, t.DriverAddRate, t.DriverAddCalcType,
 		t.TruckRate, t.TruckCalcType,
 		t.Comments, t.Status, t.EquipmentType, t.Zone,
-		t.ID, companyID,
+		t.ID, companyID, t.Version,
 	)
 	if err != nil {
 		return fmt.Errorf("update trip %d: %w", t.ID, err)
 	}
 	if result.RowsAffected() == 0 {
+		var exists bool
+		_ = s.pool.QueryRow(ctx,
+			"SELECT EXISTS(SELECT 1 FROM trips WHERE id=$1 AND company_id=$2 AND deleted_at IS NULL)",
+			t.ID, companyID).Scan(&exists)
+		if exists {
+			return ErrConflict
+		}
 		return fmt.Errorf("trip %d not found", t.ID)
 	}
 	return nil

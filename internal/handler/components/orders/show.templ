@@ -78,18 +78,13 @@ templ ShowPage(pg components.PageContext, order *models.Order, atts []models.Att
 					</div>
 				</div>
 			</div>
-			<div class="card">
-				<div class="card-header">Vehicle Counts</div>
-				<div class="card-body">
-					<div class="count-grid">
-						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.VehicleCount) }</span><span class="count-label">Total</span></div>
-						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.WaitingCount) }</span><span class="count-label">Waiting</span></div>
-						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.ScheduledCount) }</span><span class="count-label">Scheduled</span></div>
-						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.LoadedCount) }</span><span class="count-label">Loaded</span></div>
-						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.DeliveredCount) }</span><span class="count-label">Delivered</span></div>
-						<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.ConfirmedCount) }</span><span class="count-label">Confirmed</span></div>
-					</div>
-				</div>
+			<div
+				id="vehicle-counts-card"
+				hx-get={ fmt.Sprintf("/dispatch/orders/%d/counts", order.ID) }
+				hx-trigger="every 10s [document.visibilityState==='visible']"
+				hx-swap="outerHTML"
+			>
+				@VehicleCountsCard(order)
 			</div>
 			<div class="card">
 				<div class="card-header">Bill-To</div>
@@ -154,7 +149,7 @@ templ ShowPage(pg components.PageContext, order *models.Order, atts []models.Att
 		<div
 			id="vehicle-table"
 			hx-get={ fmt.Sprintf("/dispatch/orders/%d/vehicles", order.ID) }
-			hx-trigger="load"
+			hx-trigger="load, every 10s [document.visibilityState==='visible']"
 			hx-swap="innerHTML"
 		>
 			<p class="text-muted">Loading vehicles...</p>
@@ -163,7 +158,7 @@ templ ShowPage(pg components.PageContext, order *models.Order, atts []models.Att
 		<div
 			id="charge-table"
 			hx-get={ fmt.Sprintf("/dispatch/orders/%d/charges", order.ID) }
-			hx-trigger="load"
+			hx-trigger="load, every 10s [document.visibilityState==='visible']"
 			hx-swap="innerHTML"
 		>
 			<p class="text-muted">Loading charges...</p>
@@ -249,4 +244,27 @@ templ subhaulStatusBadge(status string) {
 		default:
 			<span class="badge">{ status }</span>
 	}
+}
+
+templ VehicleCountsCard(order *models.Order) {
+	<div
+		id="vehicle-counts-card"
+		hx-get={ fmt.Sprintf("/dispatch/orders/%d/counts", order.ID) }
+		hx-trigger="every 10s [document.visibilityState==='visible']"
+		hx-swap="outerHTML"
+	>
+		<div class="card">
+			<div class="card-header">Vehicle Counts</div>
+			<div class="card-body">
+				<div class="count-grid">
+					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.VehicleCount) }</span><span class="count-label">Total</span></div>
+					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.WaitingCount) }</span><span class="count-label">Waiting</span></div>
+					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.ScheduledCount) }</span><span class="count-label">Scheduled</span></div>
+					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.LoadedCount) }</span><span class="count-label">Loaded</span></div>
+					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.DeliveredCount) }</span><span class="count-label">Delivered</span></div>
+					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.ConfirmedCount) }</span><span class="count-label">Confirmed</span></div>
+				</div>
+			</div>
+		</div>
+	</div>
 }

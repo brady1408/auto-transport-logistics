@@ -34,7 +34,7 @@ const orderColumns = `id, company_id, order_number, active, zone, dispatch_code,
 	create_date, original_create_date, edit_date, edit_by,
 	est_pickup_date, est_deliver_date,
 	equipment_type, tax_code, dim_weight,
-	created_at, updated_at`
+	version, created_at, updated_at`
 
 func scanOrder(row interface{ Scan(dest ...any) error }) (*models.Order, error) {
 	var o models.Order
@@ -55,7 +55,7 @@ func scanOrder(row interface{ Scan(dest ...any) error }) (*models.Order, error) 
 		&o.CreateDate, &o.OriginalCreateDate, &o.EditDate, &o.EditBy,
 		&o.EstPickupDate, &o.EstDeliverDate,
 		&o.EquipmentType, &o.TaxCode, &o.DimWeight,
-		&o.CreatedAt, &o.UpdatedAt,
+		&o.Version, &o.CreatedAt, &o.UpdatedAt,
 	)
 	return &o, err
 }
@@ -219,8 +219,9 @@ func (s *OrderStore) Update(ctx context.Context, o *models.Order) error {
 			other_charge=$44, discount=$45, discount_calc_type=$46, tax_rate=$47, tax=$48, total_charge=$49,
 			edit_date=$50, edit_by=$51,
 			est_pickup_date=$52, est_deliver_date=$53,
-			equipment_type=$54, tax_code=$55, dim_weight=$56
-		WHERE id=$57 AND company_id=$58 AND deleted_at IS NULL`,
+			equipment_type=$54, tax_code=$55, dim_weight=$56,
+			version = version + 1
+		WHERE id=$57 AND company_id=$58 AND version=$59 AND deleted_at IS NULL`,
 		o.Active, o.Zone, o.DispatchCode, o.BOLNumber,
 		o.BillCustomerID, o.BillCustomerNumber, o.BillCustomerName,
 		o.BillToAddress, o.BillToAddress2, o.BillToCity, o.BillToState, o.BillToZip,
@@ -235,12 +236,20 @@ func (s *OrderStore) Update(ctx context.Context, o *models.Order) error {
 		o.EditDate, o.EditBy,
 		o.EstPickupDate, o.EstDeliverDate,
 		o.EquipmentType, o.TaxCode, o.DimWeight,
-		o.ID, companyID,
+		o.ID, companyID, o.Version,
 	)
 	if err != nil {
 		return fmt.Errorf("update order %d: %w", o.ID, err)
 	}
 	if result.RowsAffected() == 0 {
+		// Check if the row exists to distinguish not-found from version conflict
+		var exists bool
+		_ = s.pool.QueryRow(ctx,
+			"SELECT EXISTS(SELECT 1 FROM orders WHERE id=$1 AND company_id=$2 AND deleted_at IS NULL)",
+			o.ID, companyID).Scan(&exists)
+		if exists {
+			return ErrConflict
+		}
 		return fmt.Errorf("order %d not found", o.ID)
 	}
 	return nil

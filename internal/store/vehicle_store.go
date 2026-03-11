@@ -27,7 +27,7 @@ const vehicleColumns = `id, company_id, order_id, active, vin, year, make, model
 	invoice_number, invoice_id,
 	lot, damage_code, pu_damage_code, do_damage_code, comments, rate_class,
 	dim_length, dim_width, dim_height, run_drive, operable,
-	created_at, updated_at`
+	version, created_at, updated_at`
 
 func scanVehicle(row interface{ Scan(dest ...any) error }) (*models.OrderVehicle, error) {
 	var v models.OrderVehicle
@@ -40,7 +40,7 @@ func scanVehicle(row interface{ Scan(dest ...any) error }) (*models.OrderVehicle
 		&v.InvoiceNumber, &v.InvoiceID,
 		&v.Lot, &v.DamageCode, &v.PUDamageCode, &v.DODamageCode, &v.Comments, &v.RateClass,
 		&v.DimLength, &v.DimWidth, &v.DimHeight, &v.RunDrive, &v.Operable,
-		&v.CreatedAt, &v.UpdatedAt,
+		&v.Version, &v.CreatedAt, &v.UpdatedAt,
 	)
 	return &v, err
 }
@@ -141,19 +141,27 @@ func (s *VehicleStore) Update(ctx context.Context, v *models.OrderVehicle) error
 			transport_amt=$10, transport_calc_type=$11, fuel_surcharge=$12, fuel_calc_type=$13,
 			other_charge=$14, discount=$15, discount_calc_type=$16, tax_rate=$17, tax=$18, total_charge=$19,
 			lot=$20, damage_code=$21, pu_damage_code=$22, do_damage_code=$23, comments=$24, rate_class=$25,
-			dim_length=$26, dim_width=$27, dim_height=$28, run_drive=$29, operable=$30
-		WHERE id=$31 AND company_id=$32 AND deleted_at IS NULL`,
+			dim_length=$26, dim_width=$27, dim_height=$28, run_drive=$29, operable=$30,
+			version = version + 1
+		WHERE id=$31 AND company_id=$32 AND version=$33 AND deleted_at IS NULL`,
 		v.Active, v.VIN, v.Year, v.Make, v.Model, v.Color, v.Weight, v.Category, v.BodyStyle,
 		v.TransportAmt, v.TransportCalcType, v.FuelSurcharge, v.FuelCalcType,
 		v.OtherCharge, v.Discount, v.DiscountCalcType, v.TaxRate, v.Tax, v.TotalCharge,
 		v.Lot, v.DamageCode, v.PUDamageCode, v.DODamageCode, v.Comments, v.RateClass,
 		v.DimLength, v.DimWidth, v.DimHeight, v.RunDrive, v.Operable,
-		v.ID, companyID,
+		v.ID, companyID, v.Version,
 	)
 	if err != nil {
 		return fmt.Errorf("update vehicle %d: %w", v.ID, err)
 	}
 	if result.RowsAffected() == 0 {
+		var exists bool
+		_ = s.pool.QueryRow(ctx,
+			"SELECT EXISTS(SELECT 1 FROM order_vehicles WHERE id=$1 AND company_id=$2 AND deleted_at IS NULL)",
+			v.ID, companyID).Scan(&exists)
+		if exists {
+			return ErrConflict
+		}
 		return fmt.Errorf("vehicle %d not found", v.ID)
 	}
 	return nil

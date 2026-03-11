@@ -51,6 +51,7 @@ type OrderVehicle struct {
 	DimHeight    *string `json:"dim_height,omitempty"`
 	RunDrive     bool    `json:"run_drive"`
 	Operable     bool    `json:"operable"`
+	Version      int       `json:"version"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }

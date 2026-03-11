@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -220,6 +221,17 @@ func (h *TripHandler) update(w http.ResponseWriter, r *http.Request) {
 	t.LoadNumber = old.LoadNumber // load_number is immutable
 
 	if err := h.store.Update(r.Context(), t); err != nil {
+		if errors.Is(err, store.ErrConflict) {
+			current, fetchErr := h.store.GetByID(r.Context(), id)
+			if fetchErr != nil {
+				serverError(w, fetchErr)
+				return
+			}
+			pg := h.deps.pageContext(w, r)
+			h.deps.renderTempl(w, r, trips.FormPage(pg, current, false,
+				"This record was modified by another user. Your changes were NOT saved. The form now shows the latest data — please review and re-submit."))
+			return
+		}
 		log.Printf("update trip: %v", err)
 		pg := h.deps.pageContext(w, r)
 		h.deps.renderTempl(w, r, trips.FormPage(pg, t, false, "Failed to update trip"))
@@ -512,7 +524,13 @@ func (h *TripHandler) damageSection(w http.ResponseWriter, r *http.Request) {
 }
 
 func bindTripForm(r *http.Request) *models.Trip {
+	version := formInt(r, "version")
+	var versionVal int
+	if version != nil {
+		versionVal = *version
+	}
 	return &models.Trip{
+		Version:           versionVal,
 		LoadNumber:        formStringRequired(r, "load_number"),
 		Active:            !formBool(r, "inactive"),
 		TruckNumber:       formString(r, "truck_number"),

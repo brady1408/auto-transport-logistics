@@ -1,0 +1,11 @@
+-- +goose Up
+ALTER TABLE orders ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE order_vehicles ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE trips ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE load_details ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
+
+-- +goose Down
+ALTER TABLE orders DROP COLUMN version;
+ALTER TABLE order_vehicles DROP COLUMN version;
+ALTER TABLE trips DROP COLUMN version;
+ALTER TABLE load_details DROP COLUMN version;
