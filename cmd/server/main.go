@@ -193,6 +193,8 @@ type riverStores struct {
 	activityStore      *store.ActivityStore
 	truckStore         *store.TruckStore
 	apiKeyStore        *store.ApiKeyStore
+	deviceCodeStore    *store.DeviceCodeStore
+	refreshTokenStore  *store.RefreshTokenStore
 	protectedMux       *http.ServeMux
 }
 
@@ -445,6 +447,8 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 		activityStore:      activityStore,
 		truckStore:         truckStore,
 		apiKeyStore:        apiKeyStore,
+		deviceCodeStore:    deviceCodeStore,
+		refreshTokenStore:  refreshTokenStore,
 		protectedMux:       protectedMux,
 	}
 	return mux, loadboardSvc, loadboardStore, rs
@@ -501,6 +505,12 @@ func initRiver(
 	}
 	river.AddWorker(workers, cleanupWorker)
 
+	oauthCleanupWorker := &worker.OAuthCleanupWorker{
+		DeviceCodeStore:   rs.deviceCodeStore,
+		RefreshTokenStore: rs.refreshTokenStore,
+	}
+	river.AddWorker(workers, oauthCleanupWorker)
+
 	riverClient, err := river.NewClient(riverpgxv5.New(pool), &river.Config{
 		Workers: workers,
 		Queues: map[string]river.QueueConfig{
@@ -515,6 +525,13 @@ func initRiver(
 					return worker.ActivityCleanupArgs{}, &river.InsertOpts{Queue: "activity"}
 				},
 				&river.PeriodicJobOpts{ID: "activity_cleanup", RunOnStart: false},
+			),
+			river.NewPeriodicJob(
+				oauthCleanupSchedule{},
+				func() (river.JobArgs, *river.InsertOpts) {
+					return worker.OAuthCleanupArgs{}, &river.InsertOpts{Queue: "activity"}
+				},
+				&river.PeriodicJobOpts{ID: "oauth_cleanup", RunOnStart: true},
 			),
 		},
 	})
@@ -696,4 +713,11 @@ type activityCleanupSchedule struct{}
 
 func (activityCleanupSchedule) Next(t time.Time) time.Time {
 	return t.Add(24 * time.Hour)
+}
+
+// oauthCleanupSchedule runs the OAuth token cleanup every 6 hours.
+type oauthCleanupSchedule struct{}
+
+func (oauthCleanupSchedule) Next(t time.Time) time.Time {
+	return t.Add(6 * time.Hour)
 }

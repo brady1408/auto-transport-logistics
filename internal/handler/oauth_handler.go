@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/handler/components"
 	"github.com/brady1408/atlinks/internal/handler/components/oauth"
+	"github.com/brady1408/atlinks/internal/middleware"
 	"github.com/brady1408/atlinks/internal/models"
 	"github.com/brady1408/atlinks/internal/store"
 )
@@ -44,14 +46,19 @@ func NewOAuthHandler(
 
 // RegisterPublic registers endpoints that don't require authentication.
 func (h *OAuthHandler) RegisterPublic(mux *http.ServeMux) {
-	mux.HandleFunc("POST /oauth/device", h.deviceRequest)
-	mux.HandleFunc("POST /oauth/token", h.tokenExchange)
+	deviceRL := middleware.RateLimitFunc(10, time.Minute)
+	tokenRL := middleware.RateLimitFunc(30, time.Minute)
+	mux.HandleFunc("POST /oauth/device", deviceRL(h.deviceRequest))
+	mux.HandleFunc("POST /oauth/token", tokenRL(h.tokenExchange))
+	mux.HandleFunc("POST /oauth/revoke", h.revokeToken)
 }
 
 // RegisterProtected registers endpoints that require the user to be logged in.
 func (h *OAuthHandler) RegisterProtected(mux *http.ServeMux) {
 	mux.HandleFunc("GET /oauth/device/verify", h.verifyForm)
 	mux.HandleFunc("POST /oauth/device/verify", h.verifySubmit)
+	mux.HandleFunc("GET /settings/sessions", h.listSessions)
+	mux.HandleFunc("POST /settings/sessions/revoke", h.revokeSession)
 }
 
 // POST /oauth/device — Client requests device_code + user_code
@@ -305,6 +312,63 @@ func (h *OAuthHandler) handleRefreshTokenGrant(w http.ResponseWriter, r *http.Re
 		"expires_in":    3600,
 		"refresh_token": newRaw,
 	})
+}
+
+// POST /oauth/revoke — RFC 7009 token revocation (always returns 200)
+func (h *OAuthHandler) revokeToken(w http.ResponseWriter, r *http.Request) {
+	rawToken := r.FormValue("token")
+	if rawToken != "" {
+		hash := store.HashRefreshToken(rawToken)
+		rt, err := h.refreshTokenStore.GetByHash(r.Context(), hash)
+		if err == nil {
+			_ = h.refreshTokenStore.Revoke(r.Context(), rt.ID)
+		}
+	}
+	oauthJSON(w, http.StatusOK, map[string]string{})
+}
+
+// GET /settings/sessions — List active sessions for current user
+func (h *OAuthHandler) listSessions(w http.ResponseWriter, r *http.Request) {
+	user, ok := auth.GetUserFromRequest(r)
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	tokens, err := h.refreshTokenStore.ListActiveByUser(r.Context(), user.ID)
+	if err != nil {
+		log.Printf("oauth: list sessions: %v", err)
+		tokens = nil
+	}
+
+	flashMsg := ""
+	if r.URL.Query().Get("revoked") == "1" {
+		flashMsg = "Session revoked successfully."
+	}
+
+	pg := h.deps.pageContext(w, r)
+	h.deps.renderTempl(w, r, oauth.SessionsPage(pg, tokens, flashMsg))
+}
+
+// POST /settings/sessions/revoke — Revoke a specific session
+func (h *OAuthHandler) revokeSession(w http.ResponseWriter, r *http.Request) {
+	user, ok := auth.GetUserFromRequest(r)
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	tokenID, err := strconv.Atoi(r.FormValue("token_id"))
+	if err != nil {
+		http.Redirect(w, r, "/settings/sessions", http.StatusSeeOther)
+		return
+	}
+
+	if err := h.refreshTokenStore.RevokeByIDAndUser(r.Context(), tokenID, user.ID); err != nil {
+		log.Printf("oauth: revoke session: %v", err)
+	}
+
+	http.Redirect(w, r, "/settings/sessions?revoked=1", http.StatusSeeOther)
 }
 
 func oauthJSON(w http.ResponseWriter, status int, v any) {

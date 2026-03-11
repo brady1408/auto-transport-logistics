@@ -79,6 +79,42 @@ func (s *RefreshTokenStore) RevokeAllForUser(ctx context.Context, userID int) er
 	return err
 }
 
+func (s *RefreshTokenStore) ListActiveByUser(ctx context.Context, userID int) ([]RefreshToken, error) {
+	rows, err := s.pool.Query(ctx,
+		`SELECT id, token_hash, user_id, client_id, expires_at, revoked_at, created_at
+		 FROM refresh_tokens
+		 WHERE user_id = $1 AND revoked_at IS NULL AND expires_at > NOW()
+		 ORDER BY created_at DESC`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list active refresh tokens: %w", err)
+	}
+	defer rows.Close()
+
+	var tokens []RefreshToken
+	for rows.Next() {
+		var rt RefreshToken
+		if err := rows.Scan(&rt.ID, &rt.TokenHash, &rt.UserID, &rt.ClientID,
+			&rt.ExpiresAt, &rt.RevokedAt, &rt.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan refresh token: %w", err)
+		}
+		tokens = append(tokens, rt)
+	}
+	return tokens, rows.Err()
+}
+
+func (s *RefreshTokenStore) RevokeByIDAndUser(ctx context.Context, id, userID int) error {
+	result, err := s.pool.Exec(ctx,
+		`UPDATE refresh_tokens SET revoked_at = NOW()
+		 WHERE id = $1 AND user_id = $2 AND revoked_at IS NULL`, id, userID)
+	if err != nil {
+		return fmt.Errorf("revoke refresh token: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("token not found or already revoked")
+	}
+	return nil
+}
+
 func (s *RefreshTokenStore) CleanupExpired(ctx context.Context) (int64, error) {
 	result, err := s.pool.Exec(ctx,
 		`DELETE FROM refresh_tokens WHERE expires_at < NOW() OR revoked_at IS NOT NULL`)

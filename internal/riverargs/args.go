@@ -58,3 +58,8 @@ func (MigrateArgs) Kind() string { return "mssql_migrate" }
 type ActivityCleanupArgs struct{}
 
 func (ActivityCleanupArgs) Kind() string { return "activity_cleanup" }
+
+// OAuthCleanupArgs is the job args type for periodic OAuth token cleanup.
+type OAuthCleanupArgs struct{}
+
+func (OAuthCleanupArgs) Kind() string { return "oauth_cleanup" }
