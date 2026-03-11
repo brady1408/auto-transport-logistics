@@ -1,0 +1,132 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service InvoiceService {
+  rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse);
+  rpc GetInvoice(GetInvoiceRequest) returns (GetInvoiceResponse);
+  rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse);
+  rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse);
+  rpc DeleteInvoice(DeleteInvoiceRequest) returns (DeleteInvoiceResponse);
+  rpc ListInvoiceDetails(ListInvoiceDetailsRequest) returns (ListInvoiceDetailsResponse);
+  rpc GenerateInvoice(GenerateInvoiceRequest) returns (GenerateInvoiceResponse);
+  rpc VoidInvoice(VoidInvoiceRequest) returns (VoidInvoiceResponse);
+  rpc PostInvoices(PostInvoicesRequest) returns (PostInvoicesResponse);
+}
+
+message Invoice {
+  int32 id = 1;
+  string invoice_number = 2;
+  bool active = 3;
+  optional int32 customer_id = 4;
+  optional string customer_number = 5;
+  optional string customer_name = 6;
+  optional int32 order_id = 7;
+  optional string order_number = 8;
+  optional string invoice_date = 9;
+  optional string due_date = 10;
+  optional string terms = 11;
+  optional string tax_code = 12;
+  optional string subtotal = 13;
+  optional string tax = 14;
+  optional string total_amount = 15;
+  optional string amount_paid = 16;
+  optional string balance = 17;
+  optional string status = 18;
+  optional string comments = 19;
+  optional string bill_to_name = 20;
+  optional string bill_to_address = 21;
+  optional string bill_to_address2 = 22;
+  optional string bill_to_city = 23;
+  optional string bill_to_state = 24;
+  optional string bill_to_zip = 25;
+  optional string posted_at = 26;
+  optional string posted_by = 27;
+  string created_at = 28;
+  string updated_at = 29;
+}
+
+message InvoiceDetail {
+  int32 id = 1;
+  int32 invoice_id = 2;
+  optional int32 order_id = 3;
+  optional int32 vehicle_id = 4;
+  optional string vin = 5;
+  optional string year = 6;
+  optional string make = 7;
+  optional string model = 8;
+  optional string description = 9;
+  optional int32 qty = 10;
+  optional string rate = 11;
+  optional string amount = 12;
+  bool taxable = 13;
+  optional string item_code = 14;
+  string created_at = 15;
+  string updated_at = 16;
+}
+
+message ListInvoicesRequest {
+  PaginationRequest pagination = 1;
+  optional string search = 2;
+  optional int32 customer_id = 3;
+  optional string status = 4;
+  optional string date_from = 5;
+  optional string date_to = 6;
+}
+
+message ListInvoicesResponse {
+  repeated Invoice invoices = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetInvoiceRequest { int32 id = 1; }
+message GetInvoiceResponse { Invoice invoice = 1; }
+
+message CreateInvoiceRequest {
+  optional int32 customer_id = 1;
+  optional int32 order_id = 2;
+  optional string invoice_date = 3;
+  optional string due_date = 4;
+  optional string terms = 5;
+  optional string tax_code = 6;
+  optional string comments = 7;
+}
+message CreateInvoiceResponse { Invoice invoice = 1; }
+
+message UpdateInvoiceRequest {
+  int32 id = 1;
+  optional int32 customer_id = 2;
+  optional int32 order_id = 3;
+  optional string invoice_date = 4;
+  optional string due_date = 5;
+  optional string terms = 6;
+  optional string tax_code = 7;
+  optional string subtotal = 8;
+  optional string tax = 9;
+  optional string total_amount = 10;
+  optional string comments = 11;
+  optional string status = 12;
+}
+message UpdateInvoiceResponse { Invoice invoice = 1; }
+
+message DeleteInvoiceRequest { int32 id = 1; }
+message DeleteInvoiceResponse { bool success = 1; }
+
+message ListInvoiceDetailsRequest { int32 invoice_id = 1; }
+message ListInvoiceDetailsResponse { repeated InvoiceDetail details = 1; }
+
+message GenerateInvoiceRequest { int32 order_id = 1; }
+message GenerateInvoiceResponse { Invoice invoice = 1; }
+
+message VoidInvoiceRequest { int32 invoice_id = 1; }
+message VoidInvoiceResponse { bool success = 1; }
+
+message PostInvoicesRequest {
+  string date_from = 1;
+  string date_to = 2;
+}
+message PostInvoicesResponse { int32 count = 1; }

@@ -1,0 +1,123 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service EarningsService {
+  rpc ListDriverEarnings(ListDriverEarningsRequest) returns (ListDriverEarningsResponse);
+  rpc GetDriverEarnings(GetDriverEarningsRequest) returns (GetDriverEarningsResponse);
+  rpc CreateDriverEarnings(CreateDriverEarningsRequest) returns (CreateDriverEarningsResponse);
+  rpc UpdateDriverEarnings(UpdateDriverEarningsRequest) returns (UpdateDriverEarningsResponse);
+  rpc DeleteDriverEarnings(DeleteDriverEarningsRequest) returns (DeleteDriverEarningsResponse);
+
+  rpc ListTruckEarnings(ListTruckEarningsRequest) returns (ListTruckEarningsResponse);
+  rpc GetTruckEarnings(GetTruckEarningsRequest) returns (GetTruckEarningsResponse);
+  rpc CreateTruckEarnings(CreateTruckEarningsRequest) returns (CreateTruckEarningsResponse);
+  rpc UpdateTruckEarnings(UpdateTruckEarningsRequest) returns (UpdateTruckEarningsResponse);
+  rpc DeleteTruckEarnings(DeleteTruckEarningsRequest) returns (DeleteTruckEarningsResponse);
+}
+
+message DriverEarningsAdj {
+  int32 id = 1;
+  int32 employee_id = 2;
+  optional string employee_name = 3;
+  optional string adj_date = 4;
+  optional string description = 5;
+  optional string adj_type = 6;
+  optional string amount = 7;
+  optional string reference = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message TruckEarningsAdj {
+  int32 id = 1;
+  int32 truck_id = 2;
+  optional string truck_number = 3;
+  optional string adj_date = 4;
+  optional string description = 5;
+  optional string adj_type = 6;
+  optional string amount = 7;
+  optional string reference = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message ListDriverEarningsRequest {
+  PaginationRequest pagination = 1;
+  optional int32 employee_id = 2;
+  optional string date_from = 3;
+  optional string date_to = 4;
+}
+message ListDriverEarningsResponse {
+  repeated DriverEarningsAdj items = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetDriverEarningsRequest { int32 id = 1; }
+message GetDriverEarningsResponse { DriverEarningsAdj item = 1; }
+
+message CreateDriverEarningsRequest {
+  int32 employee_id = 1;
+  optional string adj_date = 2;
+  optional string description = 3;
+  optional string adj_type = 4;
+  optional string amount = 5;
+  optional string reference = 6;
+}
+message CreateDriverEarningsResponse { DriverEarningsAdj item = 1; }
+
+message UpdateDriverEarningsRequest {
+  int32 id = 1;
+  int32 employee_id = 2;
+  optional string adj_date = 3;
+  optional string description = 4;
+  optional string adj_type = 5;
+  optional string amount = 6;
+  optional string reference = 7;
+}
+message UpdateDriverEarningsResponse { DriverEarningsAdj item = 1; }
+
+message DeleteDriverEarningsRequest { int32 id = 1; }
+message DeleteDriverEarningsResponse { bool success = 1; }
+
+message ListTruckEarningsRequest {
+  PaginationRequest pagination = 1;
+  optional int32 truck_id = 2;
+  optional string date_from = 3;
+  optional string date_to = 4;
+}
+message ListTruckEarningsResponse {
+  repeated TruckEarningsAdj items = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetTruckEarningsRequest { int32 id = 1; }
+message GetTruckEarningsResponse { TruckEarningsAdj item = 1; }
+
+message CreateTruckEarningsRequest {
+  int32 truck_id = 1;
+  optional string adj_date = 2;
+  optional string description = 3;
+  optional string adj_type = 4;
+  optional string amount = 5;
+  optional string reference = 6;
+}
+message CreateTruckEarningsResponse { TruckEarningsAdj item = 1; }
+
+message UpdateTruckEarningsRequest {
+  int32 id = 1;
+  int32 truck_id = 2;
+  optional string adj_date = 3;
+  optional string description = 4;
+  optional string adj_type = 5;
+  optional string amount = 6;
+  optional string reference = 7;
+}
+message UpdateTruckEarningsResponse { TruckEarningsAdj item = 1; }
+
+message DeleteTruckEarningsRequest { int32 id = 1; }
+message DeleteTruckEarningsResponse { bool success = 1; }

@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+service ZoneService {
+  rpc ListZones(ListZonesRequest) returns (ListZonesResponse);
+  rpc GetZone(GetZoneRequest) returns (GetZoneResponse);
+  rpc CreateZone(CreateZoneRequest) returns (CreateZoneResponse);
+  rpc UpdateZone(UpdateZoneRequest) returns (UpdateZoneResponse);
+  rpc DeleteZone(DeleteZoneRequest) returns (DeleteZoneResponse);
+
+  rpc ListZonePricing(ListZonePricingRequest) returns (ListZonePricingResponse);
+  rpc GetZonePricing(GetZonePricingRequest) returns (GetZonePricingResponse);
+  rpc CreateZonePricing(CreateZonePricingRequest) returns (CreateZonePricingResponse);
+  rpc UpdateZonePricing(UpdateZonePricingRequest) returns (UpdateZonePricingResponse);
+  rpc DeleteZonePricing(DeleteZonePricingRequest) returns (DeleteZonePricingResponse);
+}
+
+message Zone {
+  int32 id = 1;
+  string zone = 2;
+  optional string description = 3;
+  optional string region = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message ZonePricing {
+  int32 id = 1;
+  string zone_a = 2;
+  string zone_b = 3;
+  optional string description = 4;
+  optional string amount = 5;
+  optional int32 miles = 6;
+  optional int32 transport_days = 7;
+  optional string ship_to = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+// Zone CRUD
+message ListZonesRequest {}
+message ListZonesResponse { repeated Zone zones = 1; }
+message GetZoneRequest { int32 id = 1; }
+message GetZoneResponse { Zone zone = 1; }
+message CreateZoneRequest {
+  string zone = 1;
+  optional string description = 2;
+  optional string region = 3;
+}
+message CreateZoneResponse { Zone zone = 1; }
+message UpdateZoneRequest {
+  int32 id = 1;
+  string zone = 2;
+  optional string description = 3;
+  optional string region = 4;
+}
+message UpdateZoneResponse { Zone zone = 1; }
+message DeleteZoneRequest { int32 id = 1; }
+message DeleteZoneResponse { bool success = 1; }
+
+// ZonePricing CRUD
+message ListZonePricingRequest {}
+message ListZonePricingResponse { repeated ZonePricing items = 1; }
+message GetZonePricingRequest { int32 id = 1; }
+message GetZonePricingResponse { ZonePricing item = 1; }
+message CreateZonePricingRequest {
+  string zone_a = 1;
+  string zone_b = 2;
+  optional string description = 3;
+  optional string amount = 4;
+  optional int32 miles = 5;
+  optional int32 transport_days = 6;
+  optional string ship_to = 7;
+}
+message CreateZonePricingResponse { ZonePricing item = 1; }
+message UpdateZonePricingRequest {
+  int32 id = 1;
+  string zone_a = 2;
+  string zone_b = 3;
+  optional string description = 4;
+  optional string amount = 5;
+  optional int32 miles = 6;
+  optional int32 transport_days = 7;
+  optional string ship_to = 8;
+}
+message UpdateZonePricingResponse { ZonePricing item = 1; }
+message DeleteZonePricingRequest { int32 id = 1; }
+message DeleteZonePricingResponse { bool success = 1; }

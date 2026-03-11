@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+service ChargeService {
+  rpc ListCharges(ListChargesRequest) returns (ListChargesResponse);
+  rpc GetCharge(GetChargeRequest) returns (GetChargeResponse);
+  rpc CreateCharge(CreateChargeRequest) returns (CreateChargeResponse);
+  rpc UpdateCharge(UpdateChargeRequest) returns (UpdateChargeResponse);
+  rpc DeleteCharge(DeleteChargeRequest) returns (DeleteChargeResponse);
+}
+
+message OrderCharge {
+  int32 id = 1;
+  int32 order_id = 2;
+  optional int32 vehicle_id = 3;
+  optional int32 trip_id = 4;
+  optional string description = 5;
+  optional string amount = 6;
+  optional string item_code = 7;
+  optional int32 qty = 8;
+  optional string rate = 9;
+  optional string calc_type = 10;
+  bool taxable = 11;
+  bool billable = 12;
+  bool ap_payable = 13;
+  string created_at = 14;
+  string updated_at = 15;
+}
+
+message ListChargesRequest { int32 order_id = 1; }
+message ListChargesResponse { repeated OrderCharge charges = 1; }
+message GetChargeRequest { int32 id = 1; }
+message GetChargeResponse { OrderCharge charge = 1; }
+
+message CreateChargeRequest {
+  int32 order_id = 1;
+  optional int32 vehicle_id = 2;
+  optional int32 trip_id = 3;
+  optional string description = 4;
+  optional string amount = 5;
+  optional string item_code = 6;
+  optional int32 qty = 7;
+  optional string rate = 8;
+  optional string calc_type = 9;
+  bool taxable = 10;
+  bool billable = 11;
+  bool ap_payable = 12;
+}
+message CreateChargeResponse { OrderCharge charge = 1; }
+
+message UpdateChargeRequest {
+  int32 id = 1;
+  int32 order_id = 2;
+  optional int32 vehicle_id = 3;
+  optional int32 trip_id = 4;
+  optional string description = 5;
+  optional string amount = 6;
+  optional string item_code = 7;
+  optional int32 qty = 8;
+  optional string rate = 9;
+  optional string calc_type = 10;
+  bool taxable = 11;
+  bool billable = 12;
+  bool ap_payable = 13;
+}
+message UpdateChargeResponse { OrderCharge charge = 1; }
+
+message DeleteChargeRequest { int32 id = 1; }
+message DeleteChargeResponse { bool success = 1; }

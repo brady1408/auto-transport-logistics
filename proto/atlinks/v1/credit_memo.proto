@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service CreditMemoService {
+  rpc ListCreditMemos(ListCreditMemosRequest) returns (ListCreditMemosResponse);
+  rpc GetCreditMemo(GetCreditMemoRequest) returns (GetCreditMemoResponse);
+  rpc CreateCreditMemo(CreateCreditMemoRequest) returns (CreateCreditMemoResponse);
+  rpc UpdateCreditMemo(UpdateCreditMemoRequest) returns (UpdateCreditMemoResponse);
+  rpc DeleteCreditMemo(DeleteCreditMemoRequest) returns (DeleteCreditMemoResponse);
+}
+
+message CreditMemo {
+  int32 id = 1;
+  string credit_number = 2;
+  optional int32 customer_id = 3;
+  optional string customer_number = 4;
+  optional string customer_name = 5;
+  optional int32 invoice_id = 6;
+  optional string invoice_number = 7;
+  optional string credit_date = 8;
+  optional string amount = 9;
+  optional string reason = 10;
+  optional string status = 11;
+  optional string created_by = 12;
+  optional string comments = 13;
+  string created_at = 14;
+  string updated_at = 15;
+}
+
+message ListCreditMemosRequest {
+  PaginationRequest pagination = 1;
+  optional string search = 2;
+  optional int32 customer_id = 3;
+  optional string status = 4;
+}
+
+message ListCreditMemosResponse {
+  repeated CreditMemo credit_memos = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetCreditMemoRequest { int32 id = 1; }
+message GetCreditMemoResponse { CreditMemo credit_memo = 1; }
+
+message CreateCreditMemoRequest {
+  optional int32 customer_id = 1;
+  optional int32 invoice_id = 2;
+  optional string credit_date = 3;
+  optional string amount = 4;
+  optional string reason = 5;
+  optional string status = 6;
+  optional string comments = 7;
+}
+message CreateCreditMemoResponse { CreditMemo credit_memo = 1; }
+
+message UpdateCreditMemoRequest {
+  int32 id = 1;
+  optional int32 customer_id = 2;
+  optional int32 invoice_id = 3;
+  optional string credit_date = 4;
+  optional string amount = 5;
+  optional string reason = 6;
+  optional string status = 7;
+  optional string comments = 8;
+}
+message UpdateCreditMemoResponse { CreditMemo credit_memo = 1; }
+
+message DeleteCreditMemoRequest { int32 id = 1; }
+message DeleteCreditMemoResponse { bool success = 1; }

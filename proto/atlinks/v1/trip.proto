@@ -1,0 +1,313 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service TripService {
+  // Trip CRUD
+  rpc ListTrips(ListTripsRequest) returns (ListTripsResponse);
+  rpc GetTrip(GetTripRequest) returns (GetTripResponse);
+  rpc CreateTrip(CreateTripRequest) returns (CreateTripResponse);
+  rpc UpdateTrip(UpdateTripRequest) returns (UpdateTripResponse);
+  rpc DeleteTrip(DeleteTripRequest) returns (DeleteTripResponse);
+
+  // Load Details
+  rpc ListLoadDetails(ListLoadDetailsRequest) returns (ListLoadDetailsResponse);
+  rpc AssignVehicleToTrip(AssignVehicleToTripRequest) returns (AssignVehicleToTripResponse);
+  rpc UnassignVehicle(UnassignVehicleRequest) returns (UnassignVehicleResponse);
+  rpc AssignAllFromOrder(AssignAllFromOrderRequest) returns (AssignAllFromOrderResponse);
+
+  // Trip Fuel
+  rpc ListTripFuel(ListTripFuelRequest) returns (ListTripFuelResponse);
+  rpc CreateTripFuel(CreateTripFuelRequest) returns (CreateTripFuelResponse);
+  rpc UpdateTripFuel(UpdateTripFuelRequest) returns (UpdateTripFuelResponse);
+  rpc DeleteTripFuel(DeleteTripFuelRequest) returns (DeleteTripFuelResponse);
+
+  // Trip Expenses
+  rpc ListTripExpenses(ListTripExpensesRequest) returns (ListTripExpensesResponse);
+  rpc CreateTripExpense(CreateTripExpenseRequest) returns (CreateTripExpenseResponse);
+  rpc UpdateTripExpense(UpdateTripExpenseRequest) returns (UpdateTripExpenseResponse);
+  rpc DeleteTripExpense(DeleteTripExpenseRequest) returns (DeleteTripExpenseResponse);
+
+  // Trip Routes
+  rpc ListTripRoutes(ListTripRoutesRequest) returns (ListTripRoutesResponse);
+  rpc CreateTripRoute(CreateTripRouteRequest) returns (CreateTripRouteResponse);
+  rpc UpdateTripRoute(UpdateTripRouteRequest) returns (UpdateTripRouteResponse);
+  rpc DeleteTripRoute(DeleteTripRouteRequest) returns (DeleteTripRouteResponse);
+}
+
+// --- Trip ---
+message Trip {
+  int32 id = 1;
+  string load_number = 2;
+  bool active = 3;
+  optional string truck_number = 4;
+  optional int32 truck_id = 5;
+  optional string trailer_number = 6;
+  optional string driver = 7;
+  optional int32 driver1_id = 8;
+  optional string driver2 = 9;
+  optional int32 driver2_id = 10;
+  optional string trip_date = 11;
+  optional string est_deliver_date = 12;
+  optional string deliver_date = 13;
+  optional string arrival_date = 14;
+  optional string return_date = 15;
+  optional string total_mileage = 16;
+  optional string total_fuel_gallons = 17;
+  optional string fuel_advance = 18;
+  optional string trip_advance = 19;
+  optional string tolls_advance = 20;
+  optional string driver_rate = 21;
+  optional string driver_calc_type = 22;
+  optional string driver_add_rate = 23;
+  optional string driver_add_calc_type = 24;
+  optional string truck_rate = 25;
+  optional string truck_calc_type = 26;
+  optional string comments = 27;
+  optional string status = 28;
+  optional string equipment_type = 29;
+  optional string zone = 30;
+  string created_at = 31;
+  string updated_at = 32;
+}
+
+message ListTripsRequest {
+  PaginationRequest pagination = 1;
+  optional string search = 2;
+  optional string active = 3;
+  optional string date_from = 4;
+  optional string date_to = 5;
+  optional string truck_number = 6;
+}
+
+message ListTripsResponse {
+  repeated Trip trips = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetTripRequest { int32 id = 1; }
+message GetTripResponse { Trip trip = 1; }
+
+message CreateTripRequest {
+  optional string truck_number = 1;
+  optional int32 truck_id = 2;
+  optional string trailer_number = 3;
+  optional string driver = 4;
+  optional int32 driver1_id = 5;
+  optional string driver2 = 6;
+  optional int32 driver2_id = 7;
+  optional string trip_date = 8;
+  optional string est_deliver_date = 9;
+  optional string driver_rate = 10;
+  optional string driver_calc_type = 11;
+  optional string truck_rate = 12;
+  optional string truck_calc_type = 13;
+  optional string comments = 14;
+  optional string equipment_type = 15;
+  optional string zone = 16;
+  bool active = 17;
+}
+message CreateTripResponse { Trip trip = 1; }
+
+message UpdateTripRequest {
+  int32 id = 1;
+  optional string truck_number = 2;
+  optional int32 truck_id = 3;
+  optional string trailer_number = 4;
+  optional string driver = 5;
+  optional int32 driver1_id = 6;
+  optional string driver2 = 7;
+  optional int32 driver2_id = 8;
+  optional string trip_date = 9;
+  optional string est_deliver_date = 10;
+  optional string deliver_date = 11;
+  optional string arrival_date = 12;
+  optional string return_date = 13;
+  optional string total_mileage = 14;
+  optional string total_fuel_gallons = 15;
+  optional string fuel_advance = 16;
+  optional string trip_advance = 17;
+  optional string tolls_advance = 18;
+  optional string driver_rate = 19;
+  optional string driver_calc_type = 20;
+  optional string driver_add_rate = 21;
+  optional string driver_add_calc_type = 22;
+  optional string truck_rate = 23;
+  optional string truck_calc_type = 24;
+  optional string comments = 25;
+  optional string status = 26;
+  optional string equipment_type = 27;
+  optional string zone = 28;
+  bool active = 29;
+}
+message UpdateTripResponse { Trip trip = 1; }
+
+message DeleteTripRequest { int32 id = 1; }
+message DeleteTripResponse { bool success = 1; }
+
+// --- Load Details ---
+message LoadDetail {
+  int32 id = 1;
+  int32 trip_id = 2;
+  int32 order_id = 3;
+  int32 vehicle_id = 4;
+  optional string vin = 5;
+  optional string year = 6;
+  optional string make = 7;
+  optional string model = 8;
+  optional string color = 9;
+  optional int32 weight = 10;
+  optional string category = 11;
+  optional string bay_number = 12;
+  optional string status = 13;
+  optional string loaded_date = 14;
+  optional string delivered_date = 15;
+  string created_at = 16;
+  string updated_at = 17;
+}
+
+message ListLoadDetailsRequest { int32 trip_id = 1; }
+message ListLoadDetailsResponse { repeated LoadDetail details = 1; }
+
+message AssignVehicleToTripRequest {
+  int32 trip_id = 1;
+  int32 vehicle_id = 2;
+  optional string bay_number = 3;
+}
+message AssignVehicleToTripResponse { bool success = 1; }
+
+message UnassignVehicleRequest { int32 load_detail_id = 1; }
+message UnassignVehicleResponse { bool success = 1; }
+
+message AssignAllFromOrderRequest {
+  int32 trip_id = 1;
+  int32 order_id = 2;
+}
+message AssignAllFromOrderResponse { int32 count = 1; }
+
+// --- Trip Fuel ---
+message TripFuel {
+  int32 id = 1;
+  int32 trip_id = 2;
+  optional string loaded_miles = 3;
+  optional string truck_number = 4;
+  optional string state = 5;
+  optional string mileage = 6;
+  optional string gallons = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message ListTripFuelRequest { int32 trip_id = 1; }
+message ListTripFuelResponse { repeated TripFuel items = 1; }
+
+message CreateTripFuelRequest {
+  int32 trip_id = 1;
+  optional string loaded_miles = 2;
+  optional string truck_number = 3;
+  optional string state = 4;
+  optional string mileage = 5;
+  optional string gallons = 6;
+}
+message CreateTripFuelResponse { TripFuel item = 1; }
+
+message UpdateTripFuelRequest {
+  int32 id = 1;
+  int32 trip_id = 2;
+  optional string loaded_miles = 3;
+  optional string truck_number = 4;
+  optional string state = 5;
+  optional string mileage = 6;
+  optional string gallons = 7;
+}
+message UpdateTripFuelResponse { TripFuel item = 1; }
+
+message DeleteTripFuelRequest { int32 id = 1; }
+message DeleteTripFuelResponse { bool success = 1; }
+
+// --- Trip Expenses ---
+message TripExpense {
+  int32 id = 1;
+  int32 trip_id = 2;
+  optional string description = 3;
+  optional string amount = 4;
+  optional string expense_date = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+message ListTripExpensesRequest { int32 trip_id = 1; }
+message ListTripExpensesResponse { repeated TripExpense items = 1; }
+
+message CreateTripExpenseRequest {
+  int32 trip_id = 1;
+  optional string description = 2;
+  optional string amount = 3;
+  optional string expense_date = 4;
+}
+message CreateTripExpenseResponse { TripExpense item = 1; }
+
+message UpdateTripExpenseRequest {
+  int32 id = 1;
+  int32 trip_id = 2;
+  optional string description = 3;
+  optional string amount = 4;
+  optional string expense_date = 5;
+}
+message UpdateTripExpenseResponse { TripExpense item = 1; }
+
+message DeleteTripExpenseRequest { int32 id = 1; }
+message DeleteTripExpenseResponse { bool success = 1; }
+
+// --- Trip Routes ---
+message TripRoute {
+  int32 id = 1;
+  int32 trip_id = 2;
+  optional int32 sequence = 3;
+  optional int32 customer_id = 4;
+  optional string customer_name = 5;
+  optional string city = 6;
+  optional string state = 7;
+  optional string stop_type = 8;
+  optional string miles = 9;
+  optional string est_arrival = 10;
+  string created_at = 11;
+  string updated_at = 12;
+}
+
+message ListTripRoutesRequest { int32 trip_id = 1; }
+message ListTripRoutesResponse { repeated TripRoute items = 1; }
+
+message CreateTripRouteRequest {
+  int32 trip_id = 1;
+  optional int32 sequence = 2;
+  optional int32 customer_id = 3;
+  optional string customer_name = 4;
+  optional string city = 5;
+  optional string state = 6;
+  optional string stop_type = 7;
+  optional string miles = 8;
+  optional string est_arrival = 9;
+}
+message CreateTripRouteResponse { TripRoute item = 1; }
+
+message UpdateTripRouteRequest {
+  int32 id = 1;
+  int32 trip_id = 2;
+  optional int32 sequence = 3;
+  optional int32 customer_id = 4;
+  optional string customer_name = 5;
+  optional string city = 6;
+  optional string state = 7;
+  optional string stop_type = 8;
+  optional string miles = 9;
+  optional string est_arrival = 10;
+}
+message UpdateTripRouteResponse { TripRoute item = 1; }
+
+message DeleteTripRouteRequest { int32 id = 1; }
+message DeleteTripRouteResponse { bool success = 1; }

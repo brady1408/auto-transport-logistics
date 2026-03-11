@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service EmployeeService {
+  rpc ListEmployees(ListEmployeesRequest) returns (ListEmployeesResponse);
+  rpc GetEmployee(GetEmployeeRequest) returns (GetEmployeeResponse);
+  rpc CreateEmployee(CreateEmployeeRequest) returns (CreateEmployeeResponse);
+  rpc UpdateEmployee(UpdateEmployeeRequest) returns (UpdateEmployeeResponse);
+  rpc DeleteEmployee(DeleteEmployeeRequest) returns (DeleteEmployeeResponse);
+}
+
+message Employee {
+  int32 id = 1;
+  string name = 2;
+  optional string address = 3;
+  optional string address2 = 4;
+  optional string city = 5;
+  optional string state = 6;
+  optional string zip = 7;
+  optional string phone = 8;
+  optional string rate = 9;
+  optional string rate_calc_type = 10;
+  bool active = 11;
+  bool is_driver = 12;
+  bool is_sales = 13;
+  optional string emp_id_number = 14;
+  optional string employment_date = 15;
+  optional string termination_date = 16;
+  optional string emergency_contact = 17;
+  optional string emergency_phone = 18;
+  optional string drivers_license_number = 19;
+  optional string drivers_license_state = 20;
+  bool copy_of_cdl = 21;
+  optional string cdl_exp = 22;
+  bool copy_of_med_cert = 23;
+  optional string med_cert_exp = 24;
+  bool dot_application = 25;
+  optional string dot_application_exp = 26;
+  optional string reserve = 27;
+  optional string add_rate = 28;
+  optional string add_rate_calc_type = 29;
+  optional string username = 30;
+  string created_at = 31;
+  string updated_at = 32;
+}
+
+message ListEmployeesRequest {
+  PaginationRequest pagination = 1;
+  optional string search = 2;
+  optional string active = 3;
+  optional string is_driver = 4;
+}
+
+message ListEmployeesResponse {
+  repeated Employee employees = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetEmployeeRequest {
+  int32 id = 1;
+}
+
+message GetEmployeeResponse {
+  Employee employee = 1;
+}
+
+message CreateEmployeeRequest {
+  string name = 1;
+  optional string address = 2;
+  optional string address2 = 3;
+  optional string city = 4;
+  optional string state = 5;
+  optional string zip = 6;
+  optional string phone = 7;
+  optional string rate = 8;
+  optional string rate_calc_type = 9;
+  bool active = 10;
+  bool is_driver = 11;
+  bool is_sales = 12;
+  optional string emp_id_number = 13;
+  optional string employment_date = 14;
+  optional string emergency_contact = 15;
+  optional string emergency_phone = 16;
+  optional string drivers_license_number = 17;
+  optional string drivers_license_state = 18;
+}
+
+message CreateEmployeeResponse {
+  Employee employee = 1;
+}
+
+message UpdateEmployeeRequest {
+  int32 id = 1;
+  string name = 2;
+  optional string address = 3;
+  optional string address2 = 4;
+  optional string city = 5;
+  optional string state = 6;
+  optional string zip = 7;
+  optional string phone = 8;
+  optional string rate = 9;
+  optional string rate_calc_type = 10;
+  bool active = 11;
+  bool is_driver = 12;
+  bool is_sales = 13;
+  optional string emp_id_number = 14;
+  optional string employment_date = 15;
+  optional string termination_date = 16;
+  optional string emergency_contact = 17;
+  optional string emergency_phone = 18;
+  optional string drivers_license_number = 19;
+  optional string drivers_license_state = 20;
+}
+
+message UpdateEmployeeResponse {
+  Employee employee = 1;
+}
+
+message DeleteEmployeeRequest {
+  int32 id = 1;
+}
+
+message DeleteEmployeeResponse {
+  bool success = 1;
+}

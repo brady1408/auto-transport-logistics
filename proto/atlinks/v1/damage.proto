@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+service DamageService {
+  rpc ListDamagesByVehicle(ListDamagesByVehicleRequest) returns (ListDamagesResponse);
+  rpc ListDamagesByTrip(ListDamagesByTripRequest) returns (ListDamagesResponse);
+  rpc GetDamage(GetDamageRequest) returns (GetDamageResponse);
+  rpc CreateDamage(CreateDamageRequest) returns (CreateDamageResponse);
+  rpc UpdateDamage(UpdateDamageRequest) returns (UpdateDamageResponse);
+  rpc DeleteDamage(DeleteDamageRequest) returns (DeleteDamageResponse);
+
+  rpc ListNotesByVehicle(ListNotesByVehicleRequest) returns (ListNotesResponse);
+  rpc CreateNote(CreateNoteRequest) returns (CreateNoteResponse);
+  rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse);
+}
+
+message VehicleDamage {
+  int32 id = 1;
+  int32 order_id = 2;
+  int32 vehicle_id = 3;
+  optional int32 trip_id = 4;
+  optional string vin = 5;
+  optional string damage_area = 6;
+  optional string damage_type = 7;
+  optional string damage_severity = 8;
+  optional string description = 9;
+  optional string inspection_point = 10;
+  optional string inspected_by = 11;
+  optional string inspection_date = 12;
+  optional string claim_amount = 13;
+  optional string claim_status = 14;
+  string created_at = 15;
+  string updated_at = 16;
+}
+
+message VehicleNote {
+  int32 id = 1;
+  int32 vehicle_id = 2;
+  optional string note_date = 3;
+  optional string description = 4;
+  optional string comment = 5;
+  optional string created_by = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message ListDamagesByVehicleRequest { int32 vehicle_id = 1; }
+message ListDamagesByTripRequest { int32 trip_id = 1; }
+message ListDamagesResponse { repeated VehicleDamage damages = 1; }
+
+message GetDamageRequest { int32 id = 1; }
+message GetDamageResponse { VehicleDamage damage = 1; }
+
+message CreateDamageRequest {
+  int32 order_id = 1;
+  int32 vehicle_id = 2;
+  optional int32 trip_id = 3;
+  optional string vin = 4;
+  optional string damage_area = 5;
+  optional string damage_type = 6;
+  optional string damage_severity = 7;
+  optional string description = 8;
+  optional string inspection_point = 9;
+  optional string inspected_by = 10;
+  optional string inspection_date = 11;
+  optional string claim_amount = 12;
+  optional string claim_status = 13;
+}
+message CreateDamageResponse { VehicleDamage damage = 1; }
+
+message UpdateDamageRequest {
+  int32 id = 1;
+  int32 order_id = 2;
+  int32 vehicle_id = 3;
+  optional int32 trip_id = 4;
+  optional string vin = 5;
+  optional string damage_area = 6;
+  optional string damage_type = 7;
+  optional string damage_severity = 8;
+  optional string description = 9;
+  optional string inspection_point = 10;
+  optional string inspected_by = 11;
+  optional string inspection_date = 12;
+  optional string claim_amount = 13;
+  optional string claim_status = 14;
+}
+message UpdateDamageResponse { VehicleDamage damage = 1; }
+
+message DeleteDamageRequest { int32 id = 1; }
+message DeleteDamageResponse { bool success = 1; }
+
+message ListNotesByVehicleRequest { int32 vehicle_id = 1; }
+message ListNotesResponse { repeated VehicleNote notes = 1; }
+
+message CreateNoteRequest {
+  int32 vehicle_id = 1;
+  optional string note_date = 2;
+  optional string description = 3;
+  optional string comment = 4;
+}
+message CreateNoteResponse { VehicleNote note = 1; }
+
+message DeleteNoteRequest { int32 id = 1; }
+message DeleteNoteResponse { bool success = 1; }

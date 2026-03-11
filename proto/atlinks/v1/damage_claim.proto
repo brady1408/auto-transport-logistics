@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service DamageClaimService {
+  rpc ListDamageClaims(ListDamageClaimsRequest) returns (ListDamageClaimsResponse);
+  rpc GetDamageClaim(GetDamageClaimRequest) returns (GetDamageClaimResponse);
+  rpc CreateDamageClaim(CreateDamageClaimRequest) returns (CreateDamageClaimResponse);
+  rpc UpdateDamageClaim(UpdateDamageClaimRequest) returns (UpdateDamageClaimResponse);
+  rpc DeleteDamageClaim(DeleteDamageClaimRequest) returns (DeleteDamageClaimResponse);
+}
+
+message DamageClaim {
+  int32 id = 1;
+  string claim_number = 2;
+  optional int32 order_id = 3;
+  optional int32 vehicle_id = 4;
+  optional int32 trip_id = 5;
+  optional string vin = 6;
+  optional string claim_date = 7;
+  optional string claim_amount = 8;
+  optional string paid_amount = 9;
+  optional string status = 10;
+  optional string description = 11;
+  optional string insurance_claim = 12;
+  optional string insurance_claim_number = 13;
+  optional string resolution = 14;
+  optional string resolved_date = 15;
+  string created_at = 16;
+  string updated_at = 17;
+}
+
+message ListDamageClaimsRequest {
+  PaginationRequest pagination = 1;
+  optional string search = 2;
+  optional string status = 3;
+}
+
+message ListDamageClaimsResponse {
+  repeated DamageClaim claims = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetDamageClaimRequest { int32 id = 1; }
+message GetDamageClaimResponse { DamageClaim claim = 1; }
+
+message CreateDamageClaimRequest {
+  optional int32 order_id = 1;
+  optional int32 vehicle_id = 2;
+  optional int32 trip_id = 3;
+  optional string vin = 4;
+  optional string claim_date = 5;
+  optional string claim_amount = 6;
+  optional string status = 7;
+  optional string description = 8;
+  optional string insurance_claim = 9;
+  optional string insurance_claim_number = 10;
+}
+message CreateDamageClaimResponse { DamageClaim claim = 1; }
+
+message UpdateDamageClaimRequest {
+  int32 id = 1;
+  optional int32 order_id = 2;
+  optional int32 vehicle_id = 3;
+  optional int32 trip_id = 4;
+  optional string vin = 5;
+  optional string claim_date = 6;
+  optional string claim_amount = 7;
+  optional string paid_amount = 8;
+  optional string status = 9;
+  optional string description = 10;
+  optional string insurance_claim = 11;
+  optional string insurance_claim_number = 12;
+  optional string resolution = 13;
+  optional string resolved_date = 14;
+}
+message UpdateDamageClaimResponse { DamageClaim claim = 1; }
+
+message DeleteDamageClaimRequest { int32 id = 1; }
+message DeleteDamageClaimResponse { bool success = 1; }

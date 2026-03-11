@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service FeedbackService {
+  rpc ListFeedback(ListFeedbackRequest) returns (ListFeedbackResponse);
+  rpc GetFeedback(GetFeedbackRequest) returns (GetFeedbackResponse);
+  rpc CreateFeedback(CreateFeedbackRequest) returns (CreateFeedbackResponse);
+  rpc UpdateFeedbackStatus(UpdateFeedbackStatusRequest) returns (UpdateFeedbackStatusResponse);
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
+  rpc AddComment(AddCommentRequest) returns (AddCommentResponse);
+}
+
+message Feedback {
+  int32 id = 1;
+  int32 user_id = 2;
+  string username = 3;
+  string page_url = 4;
+  string category = 5;
+  string message = 6;
+  string status = 7;
+  optional string company_name = 8;
+  int32 comment_count = 9;
+  string created_at = 10;
+  string updated_at = 11;
+}
+
+message FeedbackComment {
+  int32 id = 1;
+  int32 feedback_id = 2;
+  int32 user_id = 3;
+  string username = 4;
+  string user_role = 5;
+  string message = 6;
+  bool internal = 7;
+  string created_at = 8;
+}
+
+message ListFeedbackRequest {
+  PaginationRequest pagination = 1;
+  optional string status = 2;
+  optional string category = 3;
+}
+
+message ListFeedbackResponse {
+  repeated Feedback items = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetFeedbackRequest {
+  int32 id = 1;
+}
+
+message GetFeedbackResponse {
+  Feedback feedback = 1;
+  repeated FeedbackComment comments = 2;
+}
+
+message CreateFeedbackRequest {
+  string message = 1;
+  optional string category = 2;
+  optional string page_url = 3;
+}
+
+message CreateFeedbackResponse {
+  Feedback feedback = 1;
+}
+
+message UpdateFeedbackStatusRequest {
+  int32 id = 1;
+  string status = 2;
+}
+
+message UpdateFeedbackStatusResponse {
+  Feedback feedback = 1;
+}
+
+message ListCommentsRequest {
+  int32 feedback_id = 1;
+  bool include_internal = 2;
+}
+
+message ListCommentsResponse {
+  repeated FeedbackComment comments = 1;
+}
+
+message AddCommentRequest {
+  int32 feedback_id = 1;
+  string message = 2;
+  bool internal = 3;
+}
+
+message AddCommentResponse {
+  FeedbackComment comment = 1;
+}

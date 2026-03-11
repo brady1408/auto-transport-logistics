@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service TruckService {
+  rpc ListTrucks(ListTrucksRequest) returns (ListTrucksResponse);
+  rpc GetTruck(GetTruckRequest) returns (GetTruckResponse);
+  rpc CreateTruck(CreateTruckRequest) returns (CreateTruckResponse);
+  rpc UpdateTruck(UpdateTruckRequest) returns (UpdateTruckResponse);
+  rpc DeleteTruck(DeleteTruckRequest) returns (DeleteTruckResponse);
+}
+
+message Truck {
+  int32 id = 1;
+  string truck_number = 2;
+  optional string truck_make = 3;
+  optional string truck_model = 4;
+  optional string truck_year = 5;
+  optional string trailer_number = 6;
+  optional string trailer_make = 7;
+  optional string trailer_model = 8;
+  optional string trailer_year = 9;
+  optional string driver1 = 10;
+  optional string driver2 = 11;
+  optional string truck_rate = 12;
+  optional string truck_calc_type = 13;
+  bool active = 14;
+  bool leased_truck = 15;
+  optional string class = 16;
+  optional string fleet_number = 17;
+  optional string truck_license = 18;
+  optional string truck_license_exp = 19;
+  optional string insurance_exp_date = 20;
+  optional string insurance_coverage_amt = 21;
+  optional string cargo_coverage_amt = 22;
+  optional int32 tare_weight = 23;
+  bool we_pay_driver = 24;
+  bool straps = 25;
+  bool exclude_fuel = 26;
+  string created_at = 27;
+  string updated_at = 28;
+}
+
+message ListTrucksRequest {
+  PaginationRequest pagination = 1;
+  optional string search = 2;
+  optional string active = 3;
+  optional string leased_truck = 4;
+  optional string class = 5;
+}
+
+message ListTrucksResponse {
+  repeated Truck trucks = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetTruckRequest {
+  int32 id = 1;
+}
+
+message GetTruckResponse {
+  Truck truck = 1;
+}
+
+message CreateTruckRequest {
+  string truck_number = 1;
+  optional string truck_make = 2;
+  optional string truck_model = 3;
+  optional string truck_year = 4;
+  optional string trailer_number = 5;
+  optional string driver1 = 6;
+  optional string driver2 = 7;
+  optional string truck_rate = 8;
+  optional string truck_calc_type = 9;
+  bool active = 10;
+  bool leased_truck = 11;
+  optional string class = 12;
+  optional string fleet_number = 13;
+  optional string truck_license = 14;
+  bool we_pay_driver = 15;
+  bool straps = 16;
+  bool exclude_fuel = 17;
+}
+
+message CreateTruckResponse {
+  Truck truck = 1;
+}
+
+message UpdateTruckRequest {
+  int32 id = 1;
+  string truck_number = 2;
+  optional string truck_make = 3;
+  optional string truck_model = 4;
+  optional string truck_year = 5;
+  optional string trailer_number = 6;
+  optional string driver1 = 7;
+  optional string driver2 = 8;
+  optional string truck_rate = 9;
+  optional string truck_calc_type = 10;
+  bool active = 11;
+  bool leased_truck = 12;
+  optional string class = 13;
+  optional string fleet_number = 14;
+  optional string truck_license = 15;
+  bool we_pay_driver = 16;
+  bool straps = 17;
+  bool exclude_fuel = 18;
+}
+
+message UpdateTruckResponse {
+  Truck truck = 1;
+}
+
+message DeleteTruckRequest {
+  int32 id = 1;
+}
+
+message DeleteTruckResponse {
+  bool success = 1;
+}

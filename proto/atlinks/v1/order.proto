@@ -1,0 +1,241 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service OrderService {
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc UpdateOrder(UpdateOrderRequest) returns (UpdateOrderResponse);
+  rpc DeleteOrder(DeleteOrderRequest) returns (DeleteOrderResponse);
+}
+
+message Order {
+  int32 id = 1;
+  string order_number = 2;
+  bool active = 3;
+  optional string zone = 4;
+  optional string dispatch_code = 5;
+  optional string bol_number = 6;
+  optional int32 bill_customer_id = 7;
+  optional string bill_customer_number = 8;
+  optional string bill_customer_name = 9;
+  optional string bill_to_address = 10;
+  optional string bill_to_address2 = 11;
+  optional string bill_to_city = 12;
+  optional string bill_to_state = 13;
+  optional string bill_to_zip = 14;
+  optional int32 load_customer_id = 15;
+  optional string load_customer_number = 16;
+  optional string load_customer_name = 17;
+  optional string load_contact = 18;
+  optional string load_phone = 19;
+  optional string load_address = 20;
+  optional string load_address2 = 21;
+  optional string load_city = 22;
+  optional string load_state = 23;
+  optional string load_zip = 24;
+  optional int32 drop_customer_id = 25;
+  optional string drop_customer_number = 26;
+  optional string drop_customer_name = 27;
+  optional string drop_contact = 28;
+  optional string drop_phone = 29;
+  optional string drop_address = 30;
+  optional string drop_address2 = 31;
+  optional string drop_city = 32;
+  optional string drop_state = 33;
+  optional string drop_zip = 34;
+  optional string reference_number = 35;
+  optional string po_number = 36;
+  optional string sales_rep1 = 37;
+  optional string sales_rep2 = 38;
+  optional string comments = 39;
+  optional string pu_instructions = 40;
+  optional string do_instructions = 41;
+  optional string transport_amt = 42;
+  optional string transport_calc_type = 43;
+  optional string fuel_surcharge = 44;
+  optional string fuel_calc_type = 45;
+  optional string other_charge = 46;
+  optional string discount = 47;
+  optional string discount_calc_type = 48;
+  optional string tax_rate = 49;
+  optional string tax = 50;
+  optional string total_charge = 51;
+  int32 vehicle_count = 52;
+  int32 loaded_count = 53;
+  int32 delivered_count = 54;
+  int32 confirmed_count = 55;
+  int32 scheduled_count = 56;
+  int32 invoiced_count = 57;
+  int32 waiting_count = 58;
+  int32 staging_count = 59;
+  optional string create_date = 60;
+  optional string est_pickup_date = 61;
+  optional string est_deliver_date = 62;
+  optional string equipment_type = 63;
+  optional string tax_code = 64;
+  optional int32 dim_weight = 65;
+  string created_at = 66;
+  string updated_at = 67;
+}
+
+message ListOrdersRequest {
+  PaginationRequest pagination = 1;
+  optional string search = 2;
+  optional string zone = 3;
+  optional string dispatch_code = 4;
+  optional string active = 5;
+  optional string status = 6;
+  optional string date_from = 7;
+  optional string date_to = 8;
+}
+
+message ListOrdersResponse {
+  repeated Order orders = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetOrderRequest {
+  int32 id = 1;
+}
+
+message GetOrderResponse {
+  Order order = 1;
+}
+
+message CreateOrderRequest {
+  optional string order_number = 1;
+  bool active = 2;
+  optional string zone = 3;
+  optional string dispatch_code = 4;
+  optional string bol_number = 5;
+  optional int32 bill_customer_id = 6;
+  optional string bill_customer_number = 7;
+  optional string bill_customer_name = 8;
+  optional string bill_to_address = 9;
+  optional string bill_to_address2 = 10;
+  optional string bill_to_city = 11;
+  optional string bill_to_state = 12;
+  optional string bill_to_zip = 13;
+  optional int32 load_customer_id = 14;
+  optional string load_customer_number = 15;
+  optional string load_customer_name = 16;
+  optional string load_contact = 17;
+  optional string load_phone = 18;
+  optional string load_address = 19;
+  optional string load_address2 = 20;
+  optional string load_city = 21;
+  optional string load_state = 22;
+  optional string load_zip = 23;
+  optional int32 drop_customer_id = 24;
+  optional string drop_customer_number = 25;
+  optional string drop_customer_name = 26;
+  optional string drop_contact = 27;
+  optional string drop_phone = 28;
+  optional string drop_address = 29;
+  optional string drop_address2 = 30;
+  optional string drop_city = 31;
+  optional string drop_state = 32;
+  optional string drop_zip = 33;
+  optional string reference_number = 34;
+  optional string po_number = 35;
+  optional string sales_rep1 = 36;
+  optional string sales_rep2 = 37;
+  optional string comments = 38;
+  optional string pu_instructions = 39;
+  optional string do_instructions = 40;
+  optional string transport_amt = 41;
+  optional string transport_calc_type = 42;
+  optional string fuel_surcharge = 43;
+  optional string fuel_calc_type = 44;
+  optional string other_charge = 45;
+  optional string discount = 46;
+  optional string discount_calc_type = 47;
+  optional string tax_rate = 48;
+  optional string tax = 49;
+  optional string total_charge = 50;
+  optional string est_pickup_date = 51;
+  optional string est_deliver_date = 52;
+  optional string equipment_type = 53;
+  optional string tax_code = 54;
+  optional int32 dim_weight = 55;
+}
+
+message CreateOrderResponse {
+  Order order = 1;
+}
+
+message UpdateOrderRequest {
+  int32 id = 1;
+  bool active = 2;
+  optional string zone = 3;
+  optional string dispatch_code = 4;
+  optional string bol_number = 5;
+  optional int32 bill_customer_id = 6;
+  optional string bill_customer_number = 7;
+  optional string bill_customer_name = 8;
+  optional string bill_to_address = 9;
+  optional string bill_to_address2 = 10;
+  optional string bill_to_city = 11;
+  optional string bill_to_state = 12;
+  optional string bill_to_zip = 13;
+  optional int32 load_customer_id = 14;
+  optional string load_customer_number = 15;
+  optional string load_customer_name = 16;
+  optional string load_contact = 17;
+  optional string load_phone = 18;
+  optional string load_address = 19;
+  optional string load_address2 = 20;
+  optional string load_city = 21;
+  optional string load_state = 22;
+  optional string load_zip = 23;
+  optional int32 drop_customer_id = 24;
+  optional string drop_customer_number = 25;
+  optional string drop_customer_name = 26;
+  optional string drop_contact = 27;
+  optional string drop_phone = 28;
+  optional string drop_address = 29;
+  optional string drop_address2 = 30;
+  optional string drop_city = 31;
+  optional string drop_state = 32;
+  optional string drop_zip = 33;
+  optional string reference_number = 34;
+  optional string po_number = 35;
+  optional string sales_rep1 = 36;
+  optional string sales_rep2 = 37;
+  optional string comments = 38;
+  optional string pu_instructions = 39;
+  optional string do_instructions = 40;
+  optional string transport_amt = 41;
+  optional string transport_calc_type = 42;
+  optional string fuel_surcharge = 43;
+  optional string fuel_calc_type = 44;
+  optional string other_charge = 45;
+  optional string discount = 46;
+  optional string discount_calc_type = 47;
+  optional string tax_rate = 48;
+  optional string tax = 49;
+  optional string total_charge = 50;
+  optional string est_pickup_date = 51;
+  optional string est_deliver_date = 52;
+  optional string equipment_type = 53;
+  optional string tax_code = 54;
+  optional int32 dim_weight = 55;
+}
+
+message UpdateOrderResponse {
+  Order order = 1;
+}
+
+message DeleteOrderRequest {
+  int32 id = 1;
+}
+
+message DeleteOrderResponse {
+  bool success = 1;
+}

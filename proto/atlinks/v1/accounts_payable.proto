@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service APService {
+  rpc ListAP(ListAPRequest) returns (ListAPResponse);
+  rpc GetAP(GetAPRequest) returns (GetAPResponse);
+  rpc CreateAP(CreateAPRequest) returns (CreateAPResponse);
+  rpc UpdateAP(UpdateAPRequest) returns (UpdateAPResponse);
+  rpc DeleteAP(DeleteAPRequest) returns (DeleteAPResponse);
+}
+
+message AccountsPayable {
+  int32 id = 1;
+  optional int32 trip_id = 2;
+  optional int32 employee_id = 3;
+  optional int32 truck_id = 4;
+  optional string vendor_name = 5;
+  optional string payable_date = 6;
+  optional string amount = 7;
+  optional string paid_amount = 8;
+  optional string status = 9;
+  optional string description = 10;
+  optional string check_number = 11;
+  optional string check_date = 12;
+  optional string comments = 13;
+  string created_at = 14;
+  string updated_at = 15;
+}
+
+message ListAPRequest {
+  PaginationRequest pagination = 1;
+  optional string search = 2;
+  optional string status = 3;
+  optional int32 employee_id = 4;
+  optional int32 truck_id = 5;
+}
+
+message ListAPResponse {
+  repeated AccountsPayable items = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetAPRequest { int32 id = 1; }
+message GetAPResponse { AccountsPayable item = 1; }
+
+message CreateAPRequest {
+  optional int32 trip_id = 1;
+  optional int32 employee_id = 2;
+  optional int32 truck_id = 3;
+  optional string vendor_name = 4;
+  optional string payable_date = 5;
+  optional string amount = 6;
+  optional string status = 7;
+  optional string description = 8;
+  optional string comments = 9;
+}
+message CreateAPResponse { AccountsPayable item = 1; }
+
+message UpdateAPRequest {
+  int32 id = 1;
+  optional int32 trip_id = 2;
+  optional int32 employee_id = 3;
+  optional int32 truck_id = 4;
+  optional string vendor_name = 5;
+  optional string payable_date = 6;
+  optional string amount = 7;
+  optional string paid_amount = 8;
+  optional string status = 9;
+  optional string description = 10;
+  optional string check_number = 11;
+  optional string check_date = 12;
+  optional string comments = 13;
+}
+message UpdateAPResponse { AccountsPayable item = 1; }
+
+message DeleteAPRequest { int32 id = 1; }
+message DeleteAPResponse { bool success = 1; }

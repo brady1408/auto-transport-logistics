@@ -1,0 +1,167 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service CustomerService {
+  rpc ListCustomers(ListCustomersRequest) returns (ListCustomersResponse);
+  rpc GetCustomer(GetCustomerRequest) returns (GetCustomerResponse);
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse);
+  rpc UpdateCustomer(UpdateCustomerRequest) returns (UpdateCustomerResponse);
+  rpc DeleteCustomer(DeleteCustomerRequest) returns (DeleteCustomerResponse);
+}
+
+message Customer {
+  int32 id = 1;
+  string name = 2;
+  optional string number = 3;
+  optional string address = 4;
+  optional string address2 = 5;
+  optional string city = 6;
+  optional string state = 7;
+  optional string zip = 8;
+  optional string phone = 9;
+  optional string mobile = 10;
+  optional string fax = 11;
+  optional string contact = 12;
+  optional string zone = 13;
+  optional string type = 14;
+  bool cod = 15;
+  bool inactive = 16;
+  optional string credit_limit = 17;
+  optional string credit_terms = 18;
+  bool combine_inv_det_line = 19;
+  optional string fuel_surcharge = 20;
+  optional string splc = 21;
+  optional string rate_class = 22;
+  optional string route_code = 23;
+  optional string comments = 24;
+  optional string do_instructions = 25;
+  optional string pu_instructions = 26;
+  optional string fuel_calc_type = 27;
+  optional string sales_rep = 28;
+  optional string sales_date = 29;
+  optional string revenue_class = 30;
+  optional string terms = 31;
+  optional string tax_code = 32;
+  optional string location_type = 33;
+  optional string discount = 34;
+  optional string discount_calc_type = 35;
+  string created_at = 36;
+  string updated_at = 37;
+}
+
+message ListCustomersRequest {
+  PaginationRequest pagination = 1;
+  optional string search = 2;
+  optional string type = 3;
+  optional string zone = 4;
+  optional string active = 5;
+}
+
+message ListCustomersResponse {
+  repeated Customer customers = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetCustomerRequest {
+  int32 id = 1;
+}
+
+message GetCustomerResponse {
+  Customer customer = 1;
+}
+
+message CreateCustomerRequest {
+  string name = 1;
+  optional string number = 2;
+  optional string address = 3;
+  optional string address2 = 4;
+  optional string city = 5;
+  optional string state = 6;
+  optional string zip = 7;
+  optional string phone = 8;
+  optional string mobile = 9;
+  optional string fax = 10;
+  optional string contact = 11;
+  optional string zone = 12;
+  optional string type = 13;
+  bool cod = 14;
+  bool inactive = 15;
+  optional string credit_limit = 16;
+  optional string credit_terms = 17;
+  bool combine_inv_det_line = 18;
+  optional string fuel_surcharge = 19;
+  optional string splc = 20;
+  optional string rate_class = 21;
+  optional string route_code = 22;
+  optional string comments = 23;
+  optional string do_instructions = 24;
+  optional string pu_instructions = 25;
+  optional string fuel_calc_type = 26;
+  optional string sales_rep = 27;
+  optional string sales_date = 28;
+  optional string revenue_class = 29;
+  optional string terms = 30;
+  optional string tax_code = 31;
+  optional string location_type = 32;
+  optional string discount = 33;
+  optional string discount_calc_type = 34;
+}
+
+message CreateCustomerResponse {
+  Customer customer = 1;
+}
+
+message UpdateCustomerRequest {
+  int32 id = 1;
+  string name = 2;
+  optional string number = 3;
+  optional string address = 4;
+  optional string address2 = 5;
+  optional string city = 6;
+  optional string state = 7;
+  optional string zip = 8;
+  optional string phone = 9;
+  optional string mobile = 10;
+  optional string fax = 11;
+  optional string contact = 12;
+  optional string zone = 13;
+  optional string type = 14;
+  bool cod = 15;
+  bool inactive = 16;
+  optional string credit_limit = 17;
+  optional string credit_terms = 18;
+  bool combine_inv_det_line = 19;
+  optional string fuel_surcharge = 20;
+  optional string splc = 21;
+  optional string rate_class = 22;
+  optional string route_code = 23;
+  optional string comments = 24;
+  optional string do_instructions = 25;
+  optional string pu_instructions = 26;
+  optional string fuel_calc_type = 27;
+  optional string sales_rep = 28;
+  optional string sales_date = 29;
+  optional string revenue_class = 30;
+  optional string terms = 31;
+  optional string tax_code = 32;
+  optional string location_type = 33;
+  optional string discount = 34;
+  optional string discount_calc_type = 35;
+}
+
+message UpdateCustomerResponse {
+  Customer customer = 1;
+}
+
+message DeleteCustomerRequest {
+  int32 id = 1;
+}
+
+message DeleteCustomerResponse {
+  bool success = 1;
+}

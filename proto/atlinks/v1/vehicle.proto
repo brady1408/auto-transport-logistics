@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+service VehicleService {
+  rpc ListVehicles(ListVehiclesRequest) returns (ListVehiclesResponse);
+  rpc GetVehicle(GetVehicleRequest) returns (GetVehicleResponse);
+  rpc CreateVehicle(CreateVehicleRequest) returns (CreateVehicleResponse);
+  rpc UpdateVehicle(UpdateVehicleRequest) returns (UpdateVehicleResponse);
+  rpc DeleteVehicle(DeleteVehicleRequest) returns (DeleteVehicleResponse);
+  rpc UpdateVehicleStatus(UpdateVehicleStatusRequest) returns (UpdateVehicleStatusResponse);
+}
+
+message Vehicle {
+  int32 id = 1;
+  int32 order_id = 2;
+  bool active = 3;
+  optional string vin = 4;
+  optional string year = 5;
+  optional string make = 6;
+  optional string model = 7;
+  optional string color = 8;
+  optional int32 weight = 9;
+  optional string category = 10;
+  optional string body_style = 11;
+  string status = 12;
+  optional int32 trip_id = 13;
+  optional string load_number = 14;
+  optional string bay_number = 15;
+  optional string transport_amt = 16;
+  optional string transport_calc_type = 17;
+  optional string fuel_surcharge = 18;
+  optional string fuel_calc_type = 19;
+  optional string other_charge = 20;
+  optional string discount = 21;
+  optional string discount_calc_type = 22;
+  optional string tax_rate = 23;
+  optional string tax = 24;
+  optional string total_charge = 25;
+  optional string scheduled_date = 26;
+  optional string loaded_date = 27;
+  optional string delivered_date = 28;
+  optional string confirmed_date = 29;
+  optional string confirmed_by = 30;
+  optional string invoice_number = 31;
+  optional int32 invoice_id = 32;
+  optional string lot = 33;
+  optional string damage_code = 34;
+  optional string pu_damage_code = 35;
+  optional string do_damage_code = 36;
+  optional string comments = 37;
+  optional string rate_class = 38;
+  optional string dim_length = 39;
+  optional string dim_width = 40;
+  optional string dim_height = 41;
+  bool run_drive = 42;
+  bool operable = 43;
+  string created_at = 44;
+  string updated_at = 45;
+}
+
+message ListVehiclesRequest {
+  int32 order_id = 1;
+}
+
+message ListVehiclesResponse {
+  repeated Vehicle vehicles = 1;
+}
+
+message GetVehicleRequest {
+  int32 id = 1;
+}
+
+message GetVehicleResponse {
+  Vehicle vehicle = 1;
+}
+
+message CreateVehicleRequest {
+  int32 order_id = 1;
+  bool active = 2;
+  optional string vin = 3;
+  optional string year = 4;
+  optional string make = 5;
+  optional string model = 6;
+  optional string color = 7;
+  optional int32 weight = 8;
+  optional string category = 9;
+  optional string body_style = 10;
+  optional string transport_amt = 11;
+  optional string transport_calc_type = 12;
+  optional string fuel_surcharge = 13;
+  optional string fuel_calc_type = 14;
+  optional string other_charge = 15;
+  optional string discount = 16;
+  optional string discount_calc_type = 17;
+  optional string tax_rate = 18;
+  optional string tax = 19;
+  optional string total_charge = 20;
+  optional string lot = 21;
+  optional string comments = 22;
+  optional string rate_class = 23;
+  optional string dim_length = 24;
+  optional string dim_width = 25;
+  optional string dim_height = 26;
+  bool run_drive = 27;
+  bool operable = 28;
+}
+
+message CreateVehicleResponse {
+  Vehicle vehicle = 1;
+}
+
+message UpdateVehicleRequest {
+  int32 id = 1;
+  bool active = 2;
+  optional string vin = 3;
+  optional string year = 4;
+  optional string make = 5;
+  optional string model = 6;
+  optional string color = 7;
+  optional int32 weight = 8;
+  optional string category = 9;
+  optional string body_style = 10;
+  optional string transport_amt = 11;
+  optional string transport_calc_type = 12;
+  optional string fuel_surcharge = 13;
+  optional string fuel_calc_type = 14;
+  optional string other_charge = 15;
+  optional string discount = 16;
+  optional string discount_calc_type = 17;
+  optional string tax_rate = 18;
+  optional string tax = 19;
+  optional string total_charge = 20;
+  optional string lot = 21;
+  optional string comments = 22;
+  optional string rate_class = 23;
+  optional string dim_length = 24;
+  optional string dim_width = 25;
+  optional string dim_height = 26;
+  bool run_drive = 27;
+  bool operable = 28;
+}
+
+message UpdateVehicleResponse {
+  Vehicle vehicle = 1;
+}
+
+message DeleteVehicleRequest {
+  int32 id = 1;
+}
+
+message DeleteVehicleResponse {
+  bool success = 1;
+}
+
+message UpdateVehicleStatusRequest {
+  int32 id = 1;
+  string status = 2;
+}
+
+message UpdateVehicleStatusResponse {
+  Vehicle vehicle = 1;
+}

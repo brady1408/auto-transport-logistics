@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service VendorService {
+  rpc ListVendors(ListVendorsRequest) returns (ListVendorsResponse);
+  rpc GetVendor(GetVendorRequest) returns (GetVendorResponse);
+  rpc CreateVendor(CreateVendorRequest) returns (CreateVendorResponse);
+  rpc UpdateVendor(UpdateVendorRequest) returns (UpdateVendorResponse);
+  rpc DeleteVendor(DeleteVendorRequest) returns (DeleteVendorResponse);
+}
+
+message Vendor {
+  int32 id = 1;
+  string name = 2;
+  optional string address = 3;
+  optional string address2 = 4;
+  optional string city = 5;
+  optional string state = 6;
+  optional string zip = 7;
+  optional string phone = 8;
+  optional string fax = 9;
+  optional string contact = 10;
+  optional string terms = 11;
+  optional string tax_id = 12;
+  string created_at = 13;
+  string updated_at = 14;
+}
+
+message ListVendorsRequest {
+  PaginationRequest pagination = 1;
+  optional string search = 2;
+}
+
+message ListVendorsResponse {
+  repeated Vendor vendors = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetVendorRequest {
+  int32 id = 1;
+}
+
+message GetVendorResponse {
+  Vendor vendor = 1;
+}
+
+message CreateVendorRequest {
+  string name = 1;
+  optional string address = 2;
+  optional string address2 = 3;
+  optional string city = 4;
+  optional string state = 5;
+  optional string zip = 6;
+  optional string phone = 7;
+  optional string fax = 8;
+  optional string contact = 9;
+  optional string terms = 10;
+  optional string tax_id = 11;
+}
+
+message CreateVendorResponse {
+  Vendor vendor = 1;
+}
+
+message UpdateVendorRequest {
+  int32 id = 1;
+  string name = 2;
+  optional string address = 3;
+  optional string address2 = 4;
+  optional string city = 5;
+  optional string state = 6;
+  optional string zip = 7;
+  optional string phone = 8;
+  optional string fax = 9;
+  optional string contact = 10;
+  optional string terms = 11;
+  optional string tax_id = 12;
+}
+
+message UpdateVendorResponse {
+  Vendor vendor = 1;
+}
+
+message DeleteVendorRequest {
+  int32 id = 1;
+}
+
+message DeleteVendorResponse {
+  bool success = 1;
+}

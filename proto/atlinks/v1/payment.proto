@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+import "atlinks/v1/common.proto";
+
+service PaymentService {
+  rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse);
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+  rpc UpdatePayment(UpdatePaymentRequest) returns (UpdatePaymentResponse);
+  rpc DeletePayment(DeletePaymentRequest) returns (DeletePaymentResponse);
+  rpc ListPaymentDetails(ListPaymentDetailsRequest) returns (ListPaymentDetailsResponse);
+  rpc ApplyPayment(ApplyPaymentRequest) returns (ApplyPaymentResponse);
+  rpc UnapplyPayment(UnapplyPaymentRequest) returns (UnapplyPaymentResponse);
+  rpc PostPayments(PostPaymentsRequest) returns (PostPaymentsResponse);
+}
+
+message Payment {
+  int32 id = 1;
+  optional int32 customer_id = 2;
+  optional string customer_number = 3;
+  optional string customer_name = 4;
+  optional string payment_date = 5;
+  optional string check_number = 6;
+  optional string amount = 7;
+  optional string applied_amount = 8;
+  optional string unapplied_amount = 9;
+  optional string payment_method = 10;
+  optional string comments = 11;
+  optional string created_by = 12;
+  optional string posted_at = 13;
+  optional string posted_by = 14;
+  string created_at = 15;
+  string updated_at = 16;
+}
+
+message PaymentDetail {
+  int32 id = 1;
+  int32 payment_id = 2;
+  optional int32 invoice_id = 3;
+  optional string invoice_number = 4;
+  optional string amount = 5;
+  optional string discount_amount = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message ListPaymentsRequest {
+  PaginationRequest pagination = 1;
+  optional string search = 2;
+  optional int32 customer_id = 3;
+  optional string date_from = 4;
+  optional string date_to = 5;
+}
+
+message ListPaymentsResponse {
+  repeated Payment payments = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetPaymentRequest { int32 id = 1; }
+message GetPaymentResponse { Payment payment = 1; }
+
+message CreatePaymentRequest {
+  optional int32 customer_id = 1;
+  optional string payment_date = 2;
+  optional string check_number = 3;
+  optional string amount = 4;
+  optional string payment_method = 5;
+  optional string comments = 6;
+}
+message CreatePaymentResponse { Payment payment = 1; }
+
+message UpdatePaymentRequest {
+  int32 id = 1;
+  optional int32 customer_id = 2;
+  optional string payment_date = 3;
+  optional string check_number = 4;
+  optional string amount = 5;
+  optional string payment_method = 6;
+  optional string comments = 7;
+}
+message UpdatePaymentResponse { Payment payment = 1; }
+
+message DeletePaymentRequest { int32 id = 1; }
+message DeletePaymentResponse { bool success = 1; }
+
+message ListPaymentDetailsRequest { int32 payment_id = 1; }
+message ListPaymentDetailsResponse { repeated PaymentDetail details = 1; }
+
+message ApplyPaymentRequest {
+  int32 payment_id = 1;
+  int32 invoice_id = 2;
+  string amount = 3;
+  optional string discount = 4;
+}
+message ApplyPaymentResponse { bool success = 1; }
+
+message UnapplyPaymentRequest { int32 payment_detail_id = 1; }
+message UnapplyPaymentResponse { bool success = 1; }
+
+message PostPaymentsRequest {
+  string date_from = 1;
+  string date_to = 2;
+}
+message PostPaymentsResponse { int32 count = 1; }

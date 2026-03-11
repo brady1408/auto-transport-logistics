@@ -17,6 +17,7 @@ import (
 	"github.com/brady1408/atlinks/internal/audit"
 	"github.com/brady1408/atlinks/internal/auth"
 	"github.com/brady1408/atlinks/internal/config"
+	crpc "github.com/brady1408/atlinks/internal/connectrpc"
 	"github.com/brady1408/atlinks/internal/database"
 	"github.com/brady1408/atlinks/internal/email"
 	"github.com/brady1408/atlinks/internal/geocode"
@@ -288,15 +289,19 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewZoneHandler(zoneStore, zonePricingStore, deps).Register(protectedMux)
 	handler.NewCompanyHandler(companyStore, deps).Register(protectedMux)
 
-	handler.NewVendorHandler(store.NewVendorStore(pool), deps).Register(protectedMux)
+	vendorStore := store.NewVendorStore(pool)
+	handler.NewVendorHandler(vendorStore, deps).Register(protectedMux)
 
 	// Lookup tables
-	registerLookups(protectedMux, pool, deps)
+	lookupStoresMap := registerLookups(protectedMux, pool, deps)
 
 	// Terms, Tax Codes, Items
-	handler.NewTermsHandler(store.NewTermsStore(pool), deps).Register(protectedMux)
-	handler.NewTaxCodeHandler(store.NewTaxCodeStore(pool), deps).Register(protectedMux)
-	handler.NewItemHandler(store.NewItemStore(pool), deps).Register(protectedMux)
+	termsStore := store.NewTermsStore(pool)
+	taxCodeStore := store.NewTaxCodeStore(pool)
+	itemStore := store.NewItemStore(pool)
+	handler.NewTermsHandler(termsStore, deps).Register(protectedMux)
+	handler.NewTaxCodeHandler(taxCodeStore, deps).Register(protectedMux)
+	handler.NewItemHandler(itemStore, deps).Register(protectedMux)
 
 	// Loadboard (gated to Pro+)
 	loadboardStore := store.NewLoadboardStore(pool)
@@ -379,6 +384,52 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 
 	migrationRunStore := store.NewMigrationRunStore(pool)
 	subscriptionStore := store.NewSubscriptionStore(pool)
+
+	// Mount Connect-RPC services (API-only, auth via interceptor — no CSRF)
+	crpc.Mount(mux, crpc.MountConfig{
+		JWT:                deps.JWT,
+		Audit:              deps.Audit,
+		CustomerStore:      customerStore,
+		OrderStore:         orderStore,
+		VehicleStore:       vehicleStore,
+		FeedbackStore:      feedbackStore,
+		EmployeeStore:      employeeStore,
+		TruckStore:         truckStore,
+		VendorStore:        vendorStore,
+		ZoneStore:          zoneStore,
+		ZonePricingStore:   zonePricingStore,
+		ChargeStore:        chargeStore,
+		DamageStore:        damageStore,
+		NoteStore:          noteStore,
+		DamageClaimStore:   damageClaimStore,
+		CreditMemoStore:    creditMemoStore,
+		TripStore:          tripStore,
+		LoadDetailStore:    loadDetailStore,
+		TripFuelStore:      fuelStore,
+		TripExpenseStore:   expenseStore,
+		TripRouteStore:     routeStore,
+		InvoiceStore:       invoiceStore,
+		InvoiceDetailStore: invoiceDetailStore,
+		PaymentStore:       paymentStore,
+		PaymentDetailStore: paymentDetailStore,
+		APStore:            apStore,
+		EarningsAdjStore:   earningsAdjStore,
+		LookupStores:       lookupStoresMap,
+		TermsStore:         termsStore,
+		TaxCodeStore:       taxCodeStore,
+		ItemStore:          itemStore,
+		OrderSvc:           orderSvc,
+		TripSvc:            tripSvc,
+		InvoiceSvc:         invoiceSvc,
+		PaymentSvc:         paymentSvc,
+	})
+
+	// OAuth2 Device Code Flow
+	deviceCodeStore := store.NewDeviceCodeStore(pool)
+	refreshTokenStore := store.NewRefreshTokenStore(pool)
+	oauthHandler := handler.NewOAuthHandler(deviceCodeStore, refreshTokenStore, userStore, deps.JWT, deps)
+	oauthHandler.RegisterPublic(mux)
+	oauthHandler.RegisterProtected(protectedMux)
 
 	rs := riverStores{
 		customerStore:      customerStore,
@@ -498,7 +549,7 @@ func initRiverUI(ctx context.Context, riverClient *river.Client[pgx.Tx], prefix 
 	return h, nil
 }
 
-func registerLookups(mux *http.ServeMux, pool *pgxpool.Pool, deps *handler.Deps) {
+func registerLookups(mux *http.ServeMux, pool *pgxpool.Pool, deps *handler.Deps) map[string]*store.LookupStore {
 	lookups := []struct{ table, path, title string }{
 		{"dispatch_codes", "/global/dispatch-codes", "Dispatch Codes"},
 		{"damage_areas", "/global/damage-areas", "Damage Areas"},
@@ -514,13 +565,16 @@ func registerLookups(mux *http.ServeMux, pool *pgxpool.Pool, deps *handler.Deps)
 		{"field_codes_4", "/global/field-codes-4", "Field Codes 4"},
 		{"field_codes_5", "/global/field-codes-5", "Field Codes 5"},
 	}
+	storeMap := make(map[string]*store.LookupStore, len(lookups))
 	for _, l := range lookups {
 		ls, err := store.NewLookupStore(pool, l.table)
 		if err != nil {
 			log.Fatalf("lookup store %s: %v", l.table, err)
 		}
+		storeMap[l.table] = ls
 		handler.NewLookupHandler(deps, ls, l.path, l.title).Register(mux)
 	}
+	return storeMap
 }
 
 func runServer(cfg *config.Config, handler http.Handler, ctx context.Context, riverClient *river.Client[pgx.Tx]) {

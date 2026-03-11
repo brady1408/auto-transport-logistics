@@ -1,0 +1,203 @@
+syntax = "proto3";
+
+package atlinks.v1;
+
+option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+
+service LookupService {
+  // Dispatch Codes
+  rpc ListDispatchCodes(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateDispatchCode(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateDispatchCode(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteDispatchCode(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  // Equipment Types
+  rpc ListEquipmentTypes(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateEquipmentType(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateEquipmentType(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteEquipmentType(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  // Hold Codes
+  rpc ListHoldCodes(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateHoldCode(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateHoldCode(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteHoldCode(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  // Declination Codes
+  rpc ListDeclinationCodes(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateDeclinationCode(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateDeclinationCode(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteDeclinationCode(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  // Regions
+  rpc ListRegions(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateRegion(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateRegion(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteRegion(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  // Damage Areas
+  rpc ListDamageAreas(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateDamageArea(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateDamageArea(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteDamageArea(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  // Damage Types
+  rpc ListDamageTypes(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateDamageType(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateDamageType(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteDamageType(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  // Damage Severities
+  rpc ListDamageSeverities(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateDamageSeverity(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateDamageSeverity(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteDamageSeverity(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  // Field Codes 1-5
+  rpc ListFieldCodes1(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateFieldCode1(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateFieldCode1(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteFieldCode1(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  rpc ListFieldCodes2(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateFieldCode2(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateFieldCode2(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteFieldCode2(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  rpc ListFieldCodes3(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateFieldCode3(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateFieldCode3(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteFieldCode3(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  rpc ListFieldCodes4(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateFieldCode4(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateFieldCode4(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteFieldCode4(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  rpc ListFieldCodes5(ListLookupRequest) returns (ListLookupResponse);
+  rpc CreateFieldCode5(CreateLookupRequest) returns (CreateLookupResponse);
+  rpc UpdateFieldCode5(UpdateLookupRequest) returns (UpdateLookupResponse);
+  rpc DeleteFieldCode5(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  // Terms
+  rpc ListTerms(ListLookupRequest) returns (ListTermsResponse);
+  rpc CreateTerm(CreateTermRequest) returns (CreateTermResponse);
+  rpc UpdateTerm(UpdateTermRequest) returns (UpdateTermResponse);
+  rpc DeleteTerm(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  // Tax Codes
+  rpc ListTaxCodes(ListLookupRequest) returns (ListTaxCodesResponse);
+  rpc CreateTaxCode(CreateTaxCodeRequest) returns (CreateTaxCodeResponse);
+  rpc UpdateTaxCode(UpdateTaxCodeRequest) returns (UpdateTaxCodeResponse);
+  rpc DeleteTaxCode(DeleteLookupRequest) returns (DeleteLookupResponse);
+
+  // Items
+  rpc ListItems(ListLookupRequest) returns (ListItemsResponse);
+  rpc CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
+  rpc DeleteItem(DeleteLookupRequest) returns (DeleteLookupResponse);
+}
+
+// Generic lookup messages
+message LookupItem {
+  int32 id = 1;
+  string code = 2;
+  string description = 3;
+}
+
+message ListLookupRequest {}
+message ListLookupResponse { repeated LookupItem items = 1; }
+
+message CreateLookupRequest {
+  string code = 1;
+  string description = 2;
+}
+message CreateLookupResponse { LookupItem item = 1; }
+
+message UpdateLookupRequest {
+  int32 id = 1;
+  string code = 2;
+  string description = 3;
+}
+message UpdateLookupResponse { bool success = 1; }
+
+message DeleteLookupRequest { int32 id = 1; }
+message DeleteLookupResponse { bool success = 1; }
+
+// Terms
+message TermItem {
+  int32 id = 1;
+  string term = 2;
+  string description = 3;
+  optional int32 days = 4;
+}
+
+message ListTermsResponse { repeated TermItem items = 1; }
+
+message CreateTermRequest {
+  string term = 1;
+  string description = 2;
+  optional int32 days = 3;
+}
+message CreateTermResponse { TermItem item = 1; }
+
+message UpdateTermRequest {
+  int32 id = 1;
+  string term = 2;
+  string description = 3;
+  optional int32 days = 4;
+}
+message UpdateTermResponse { bool success = 1; }
+
+// Tax Codes
+message TaxCodeItem {
+  int32 id = 1;
+  string code = 2;
+  string description = 3;
+  optional string rate = 4;
+}
+
+message ListTaxCodesResponse { repeated TaxCodeItem items = 1; }
+
+message CreateTaxCodeRequest {
+  string code = 1;
+  string description = 2;
+  optional string rate = 3;
+}
+message CreateTaxCodeResponse { TaxCodeItem item = 1; }
+
+message UpdateTaxCodeRequest {
+  int32 id = 1;
+  string code = 2;
+  string description = 3;
+  optional string rate = 4;
+}
+message UpdateTaxCodeResponse { bool success = 1; }
+
+// Items
+message ItemRecord {
+  int32 id = 1;
+  string item = 2;
+  string description = 3;
+  optional string default_amount = 4;
+  optional string calc_type = 5;
+}
+
+message ListItemsResponse { repeated ItemRecord items = 1; }
+
+message CreateItemRequest {
+  string item = 1;
+  string description = 2;
+  optional string default_amount = 3;
+  optional string calc_type = 4;
+}
+message CreateItemResponse { ItemRecord item = 1; }
+
+message UpdateItemRequest {
+  int32 id = 1;
+  string item = 2;
+  string description = 3;
+  optional string default_amount = 4;
+  optional string calc_type = 5;
+}
+message UpdateItemResponse { bool success = 1; }
