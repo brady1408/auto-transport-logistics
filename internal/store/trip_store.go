@@ -11,11 +11,12 @@ import (
 )
 
 type TripStore struct {
-	pool *pgxpool.Pool
+	pool     *pgxpool.Pool
+	seqStore *SequenceStore
 }
 
-func NewTripStore(pool *pgxpool.Pool) *TripStore {
-	return &TripStore{pool: pool}
+func NewTripStore(pool *pgxpool.Pool, seqStore *SequenceStore) *TripStore {
+	return &TripStore{pool: pool, seqStore: seqStore}
 }
 
 var tripSortConfig = SortConfig{
@@ -391,36 +392,11 @@ func (s *TripStore) DriverSettlement(ctx context.Context, employeeID int, dateFr
 	return items, nil
 }
 
-// NextLoadNumber returns the next load number within a short-lived advisory-locked
-// transaction to prevent race conditions with concurrent inserts.
+// NextLoadNumber returns the next load number, atomically incrementing via company_sequences.
 func (s *TripStore) NextLoadNumber(ctx context.Context) (string, error) {
-	companyID, err := auth.GetCompanyID(ctx)
-	if err != nil {
-		return "", err
-	}
-	tx, err := s.pool.Begin(ctx)
-	if err != nil {
-		return "", fmt.Errorf("begin tx for next load number: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	// Advisory lock keyed on company_id + 2 to avoid collision with order lock
-	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1, 2)`, companyID); err != nil {
-		return "", fmt.Errorf("advisory lock for next load number: %w", err)
-	}
-
-	// Intentionally scans all trips including soft-deleted to prevent load number reuse.
-	var next int
-	err = tx.QueryRow(ctx,
-		`SELECT COALESCE(MAX(load_number::int), 0) + 1 FROM trips WHERE load_number ~ '^\d+$' AND company_id = $1`,
-		companyID,
-	).Scan(&next)
+	val, err := s.seqStore.NextVal(ctx, "load_number")
 	if err != nil {
 		return "", fmt.Errorf("next load number: %w", err)
 	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return "", fmt.Errorf("commit next load number: %w", err)
-	}
-	return fmt.Sprintf("%06d", next), nil
+	return fmt.Sprintf("%06d", val), nil
 }
