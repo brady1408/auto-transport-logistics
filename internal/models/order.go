@@ -94,6 +94,8 @@ type OrderFilter struct {
 	Status       string // "uninvoiced_delivered", ""
 	DateFrom     string
 	DateTo       string
+	SortBy       string
+	SortDir      string
 	Page         int
 	PageSize     int
 }

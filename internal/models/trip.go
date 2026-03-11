@@ -45,6 +45,8 @@ type TripFilter struct {
 	DateFrom    string
 	DateTo      string
 	TruckNumber string
+	SortBy      string
+	SortDir     string
 	Page        int
 	PageSize    int
 }

@@ -7,17 +7,17 @@ import (
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ Table(result models.TripListResult) {
+templ Table(result models.TripListResult, filter models.TripFilter) {
 	<div class="table-container">
 		<table>
 			<thead>
 				<tr>
-					<th>Load #</th>
-					<th>Truck</th>
-					<th>Driver</th>
-					<th>Trip Date</th>
+					@components.SortHeader("Load #", "load_number", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
+					@components.SortHeader("Truck", "truck_number", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
+					@components.SortHeader("Driver", "driver", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
+					@components.SortHeader("Trip Date", "trip_date", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
 					<th>Zone</th>
-					<th>Status</th>
+					@components.SortHeader("Status", "status", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
 					<th class="text-right">Actions</th>
 				</tr>
 			</thead>

@@ -7,19 +7,19 @@ import (
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ Table(result models.OrderListResult) {
+templ Table(result models.OrderListResult, filter models.OrderFilter) {
 	<div class="table-container">
 		<table>
 			<thead>
 				<tr>
-					<th>Order #</th>
-					<th>Bill Customer</th>
+					@components.SortHeader("Order #", "order_number", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
+					@components.SortHeader("Bill Customer", "bill_customer_name", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
 					<th>Load Customer</th>
 					<th>Drop Customer</th>
-					<th>Zone</th>
+					@components.SortHeader("Zone", "zone", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
 					<th class="text-center">Vehicles</th>
-					<th>Status</th>
-					<th>Create Date</th>
+					@components.SortHeader("Status", "dispatch_code", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
+					@components.SortHeader("Create Date", "create_date", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
 					<th class="text-right">Actions</th>
 				</tr>
 			</thead>

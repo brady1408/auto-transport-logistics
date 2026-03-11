@@ -42,6 +42,8 @@ type PaymentFilter struct {
 	CustomerID string
 	DateFrom   string
 	DateTo     string
+	SortBy     string
+	SortDir    string
 	Page       int
 	PageSize   int
 }

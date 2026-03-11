@@ -21,6 +21,17 @@ func NewPaymentStore(pool *pgxpool.Pool) *PaymentStore {
 	return &PaymentStore{pool: pool}
 }
 
+var paymentSortConfig = SortConfig{
+	Allowed: map[string]string{
+		"id":            "id",
+		"payment_date":  "payment_date",
+		"customer_name": "customer_name",
+		"amount":        "amount",
+	},
+	DefaultCol: "id",
+	DefaultDir: "DESC",
+}
+
 const paymentColumns = `id, company_id, customer_id, customer_number, customer_name,
 	payment_date, check_number, amount, applied_amount, unapplied_amount,
 	payment_method, comments, created_by, posted_at, posted_by, qbo_payment_id, qbo_sync_token, qbo_synced_at, created_at, updated_at`
@@ -71,8 +82,11 @@ func (s *PaymentStore) List(ctx context.Context, f models.PaymentFilter) (*model
 		return nil, fmt.Errorf("count payments: %w", err)
 	}
 
-	query := fmt.Sprintf("SELECT %s FROM payments %s ORDER BY id DESC %s",
-		paymentColumns, qb.Where(), qb.Paginate(f.PageSize, f.Page))
+	var col string
+	f.SortBy, col, f.SortDir = ValidateSort(paymentSortConfig, f.SortBy, f.SortDir)
+
+	query := fmt.Sprintf("SELECT %s FROM payments %s %s %s",
+		paymentColumns, qb.Where(), OrderByClause(col, f.SortDir), qb.Paginate(f.PageSize, f.Page))
 
 	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {

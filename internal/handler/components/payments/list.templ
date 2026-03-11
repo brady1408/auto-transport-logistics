@@ -49,9 +49,11 @@ templ ListPage(pg components.PageContext, result models.PaymentListResult, filte
 					hx-push-url="true"
 				/>
 			</div>
+			<input type="hidden" name="sort_by" value={ filter.SortBy }/>
+			<input type="hidden" name="sort_dir" value={ filter.SortDir }/>
 		</div>
 		<div id="payment-table">
-			@Table(result)
+			@Table(result, filter)
 		</div>
 	}
 }

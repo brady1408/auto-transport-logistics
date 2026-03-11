@@ -1,0 +1,58 @@
+package components
+
+import "fmt"
+
+func sortVals(column, currentSort, currentDir string) string {
+	dir := "ASC"
+	if column == currentSort && currentDir == "ASC" {
+		dir = "DESC"
+	}
+	return fmt.Sprintf(`{"sort_by":"%s","sort_dir":"%s","page":"1"}`, column, dir)
+}
+
+func sortArrow(column, currentSort, currentDir string) string {
+	if column != currentSort {
+		return " ▲" // faint idle arrow (rendered via CSS opacity)
+	}
+	if currentDir == "DESC" {
+		return " ▼"
+	}
+	return " ▲"
+}
+
+func sortClass(column, currentSort string) string {
+	if column == currentSort {
+		return "sortable sorted"
+	}
+	return "sortable"
+}
+
+templ SortHeader(label, column, currentSort, currentDir, baseURL, targetID string) {
+	<th
+		class={ sortClass(column, currentSort) }
+		hx-get={ baseURL }
+		hx-target={ targetID }
+		hx-include=".filter-bar [name]"
+		hx-push-url="true"
+		hx-vals={ sortVals(column, currentSort, currentDir) }
+		style="cursor:pointer; user-select:none;"
+	>
+		{ label }
+		<span class="sort-arrow">{ sortArrow(column, currentSort, currentDir) }</span>
+	</th>
+}
+
+templ SortHeaderRight(label, column, currentSort, currentDir, baseURL, targetID string) {
+	<th
+		class={ sortClass(column, currentSort) + " text-right" }
+		hx-get={ baseURL }
+		hx-target={ targetID }
+		hx-include=".filter-bar [name]"
+		hx-push-url="true"
+		hx-vals={ sortVals(column, currentSort, currentDir) }
+		style="cursor:pointer; user-select:none;"
+	>
+		{ label }
+		<span class="sort-arrow">{ sortArrow(column, currentSort, currentDir) }</span>
+	</th>
+}

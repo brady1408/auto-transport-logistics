@@ -7,17 +7,17 @@ import (
 	"github.com/brady1408/atlinks/internal/models"
 )
 
-templ Table(result models.PaymentListResult) {
+templ Table(result models.PaymentListResult, filter models.PaymentFilter) {
 	<div class="table-container">
 		<table>
 			<thead>
 				<tr>
-					<th>ID</th>
-					<th>Customer</th>
-					<th>Date</th>
+					@components.SortHeader("ID", "id", filter.SortBy, filter.SortDir, "/accounting/payments", "#payment-table")
+					@components.SortHeader("Customer", "customer_name", filter.SortBy, filter.SortDir, "/accounting/payments", "#payment-table")
+					@components.SortHeader("Date", "payment_date", filter.SortBy, filter.SortDir, "/accounting/payments", "#payment-table")
 					<th>Check #</th>
 					<th>Method</th>
-					<th class="text-right">Amount</th>
+					@components.SortHeaderRight("Amount", "amount", filter.SortBy, filter.SortDir, "/accounting/payments", "#payment-table")
 					<th class="text-right">Applied</th>
 					<th class="text-right">Unapplied</th>
 					<th class="text-right">Actions</th>

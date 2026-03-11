@@ -18,6 +18,18 @@ func NewOrderStore(pool *pgxpool.Pool) *OrderStore {
 	return &OrderStore{pool: pool}
 }
 
+var orderSortConfig = SortConfig{
+	Allowed: map[string]string{
+		"order_number":      "order_number",
+		"bill_customer_name": "bill_customer_name",
+		"zone":              "zone",
+		"dispatch_code":     "dispatch_code",
+		"create_date":       "create_date",
+	},
+	DefaultCol: "order_number",
+	DefaultDir: "DESC",
+}
+
 const orderColumns = `id, company_id, order_number, active, zone, dispatch_code, bol_number,
 	bill_customer_id, bill_customer_number, bill_customer_name,
 	bill_to_address, bill_to_address2, bill_to_city, bill_to_state, bill_to_zip,
@@ -110,9 +122,13 @@ func (s *OrderStore) List(ctx context.Context, f models.OrderFilter) (*models.Or
 		return nil, fmt.Errorf("count orders: %w", err)
 	}
 
+	// Sort
+	var col string
+	f.SortBy, col, f.SortDir = ValidateSort(orderSortConfig, f.SortBy, f.SortDir)
+
 	// Fetch
-	query := fmt.Sprintf("SELECT %s FROM orders %s ORDER BY order_number DESC %s",
-		orderColumns, qb.Where(), qb.Paginate(f.PageSize, f.Page))
+	query := fmt.Sprintf("SELECT %s FROM orders %s %s %s",
+		orderColumns, qb.Where(), OrderByClause(col, f.SortDir), qb.Paginate(f.PageSize, f.Page))
 
 	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {

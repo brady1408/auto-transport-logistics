@@ -74,6 +74,8 @@ func (h *OrderHandler) list(w http.ResponseWriter, r *http.Request) {
 		Status:       r.URL.Query().Get("status"),
 		DateFrom:     r.URL.Query().Get("date_from"),
 		DateTo:       r.URL.Query().Get("date_to"),
+		SortBy:       r.URL.Query().Get("sort_by"),
+		SortDir:      r.URL.Query().Get("sort_dir"),
 		Page:         intParam(r, "page", 1),
 		PageSize:     25,
 	}
@@ -85,7 +87,7 @@ func (h *OrderHandler) list(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if isHTMX(r) {
-		h.deps.renderTempl(w, r, orders.Table(*result))
+		h.deps.renderTempl(w, r, orders.Table(*result, filter))
 		return
 	}
 	pg := h.deps.pageContext(w, r)

@@ -22,6 +22,18 @@ func NewInvoiceStore(pool *pgxpool.Pool) *InvoiceStore {
 	return &InvoiceStore{pool: pool}
 }
 
+var invoiceSortConfig = SortConfig{
+	Allowed: map[string]string{
+		"invoice_number": "invoice_number",
+		"customer_name":  "customer_name",
+		"invoice_date":   "invoice_date",
+		"total_amount":   "total_amount",
+		"status":         "status",
+	},
+	DefaultCol: "invoice_number",
+	DefaultDir: "DESC",
+}
+
 const invoiceColumns = `id, company_id, invoice_number, active, customer_id, customer_number, customer_name,
 	order_id, order_number, invoice_date, due_date, terms, tax_code,
 	subtotal, tax, total_amount, amount_paid, balance, status,
@@ -80,8 +92,11 @@ func (s *InvoiceStore) List(ctx context.Context, f models.InvoiceFilter) (*model
 		return nil, fmt.Errorf("count invoices: %w", err)
 	}
 
-	query := fmt.Sprintf("SELECT %s FROM invoices %s ORDER BY invoice_number DESC %s",
-		invoiceColumns, qb.Where(), qb.Paginate(f.PageSize, f.Page))
+	var col string
+	f.SortBy, col, f.SortDir = ValidateSort(invoiceSortConfig, f.SortBy, f.SortDir)
+
+	query := fmt.Sprintf("SELECT %s FROM invoices %s %s %s",
+		invoiceColumns, qb.Where(), OrderByClause(col, f.SortDir), qb.Paginate(f.PageSize, f.Page))
 
 	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {

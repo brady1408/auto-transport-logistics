@@ -559,6 +559,12 @@ legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-70
 .leaflet-popup-content { font-family: inherit; font-size: 13px; line-height: 1.5; }
 .leaflet-popup-content a { color: var(--primary); font-weight: 600; }
 
+/* Sortable column headers */
+.sortable { cursor: pointer; user-select: none; }
+.sortable:hover { color: var(--primary); background: var(--gray-100); }
+.sort-arrow { font-size: 10px; opacity: 0.3; }
+.sorted .sort-arrow { opacity: 1; color: var(--primary); }
+
 /* Alpine x-cloak */
 [x-cloak] { display: none !important; }
 

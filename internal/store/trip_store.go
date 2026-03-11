@@ -18,6 +18,18 @@ func NewTripStore(pool *pgxpool.Pool) *TripStore {
 	return &TripStore{pool: pool}
 }
 
+var tripSortConfig = SortConfig{
+	Allowed: map[string]string{
+		"load_number":  "load_number",
+		"truck_number": "truck_number",
+		"driver":       "driver",
+		"trip_date":    "trip_date",
+		"status":       "status",
+	},
+	DefaultCol: "load_number",
+	DefaultDir: "DESC",
+}
+
 const tripColumns = `id, company_id, load_number, active, truck_number, truck_id, trailer_number,
 	driver, driver1_id, driver2, driver2_id,
 	trip_date, est_deliver_date, deliver_date, arrival_date, return_date,
@@ -85,8 +97,11 @@ func (s *TripStore) List(ctx context.Context, f models.TripFilter) (*models.Trip
 		return nil, fmt.Errorf("count trips: %w", err)
 	}
 
-	query := fmt.Sprintf("SELECT %s FROM trips %s ORDER BY load_number DESC %s",
-		tripColumns, qb.Where(), qb.Paginate(f.PageSize, f.Page))
+	var col string
+	f.SortBy, col, f.SortDir = ValidateSort(tripSortConfig, f.SortBy, f.SortDir)
+
+	query := fmt.Sprintf("SELECT %s FROM trips %s %s %s",
+		tripColumns, qb.Where(), OrderByClause(col, f.SortDir), qb.Paginate(f.PageSize, f.Page))
 
 	rows, err := s.pool.Query(ctx, query, qb.Args()...)
 	if err != nil {
