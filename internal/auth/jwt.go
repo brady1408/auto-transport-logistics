@@ -24,13 +24,17 @@ func NewJWTService(secret string) *JWTService {
 }
 
 func (s *JWTService) GenerateToken(userID int, username, role string, companyID int) (string, error) {
+	return s.GenerateTokenWithExpiry(userID, username, role, companyID, 24*time.Hour)
+}
+
+func (s *JWTService) GenerateTokenWithExpiry(userID int, username, role string, companyID int, expiry time.Duration) (string, error) {
 	claims := Claims{
 		UserID:    userID,
 		Username:  username,
 		Role:      role,
 		CompanyID: companyID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiry)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}

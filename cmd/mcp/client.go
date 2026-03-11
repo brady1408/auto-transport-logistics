@@ -117,8 +117,33 @@ func connectErr(err error) string {
 	if err == nil {
 		return ""
 	}
-	if ce, ok := err.(*connect.Error); ok {
-		return ce.Message()
+	ce, ok := err.(*connect.Error)
+	if !ok {
+		return err.Error()
 	}
-	return err.Error()
+	msg := ce.Message()
+	switch ce.Code() {
+	case connect.CodeNotFound:
+		return "not found: " + msg
+	case connect.CodeAlreadyExists:
+		return "already exists: " + msg
+	case connect.CodeInvalidArgument:
+		return "invalid input: " + msg
+	case connect.CodePermissionDenied:
+		return "permission denied: " + msg
+	case connect.CodeUnauthenticated:
+		return "not authenticated — try re-running 'mcp login'"
+	case connect.CodeFailedPrecondition:
+		return "cannot perform this action: " + msg
+	case connect.CodeAborted:
+		return "conflict (record was modified by another user): " + msg
+	case connect.CodeResourceExhausted:
+		return "rate limit exceeded — try again shortly"
+	case connect.CodeUnavailable:
+		return "server unavailable — check your connection or try again"
+	case connect.CodeDeadlineExceeded:
+		return "request timed out — try again"
+	default:
+		return msg
+	}
 }

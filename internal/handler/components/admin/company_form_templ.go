@@ -93,7 +93,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, " <form method=\"POST\" action=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, " <form method=\"POST\" enctype=\"multipart/form-data\" action=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -105,7 +105,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				return fmt.Sprintf("/admin/companies/%d", company.ID)
 			}()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 45, Col: 8}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 46, Col: 8}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -153,7 +153,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				return ""
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 62, Col: 10}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 63, Col: 10}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -171,7 +171,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 68, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 69, Col: 37}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
@@ -216,7 +216,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				return ""
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 82, Col: 10}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 83, Col: 10}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -234,7 +234,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 91, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 92, Col: 37}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -295,7 +295,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				return ""
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 121, Col: 10}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 122, Col: 10}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -313,7 +313,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var16 string
 				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 126, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 127, Col: 37}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
@@ -358,7 +358,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				return ""
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 140, Col: 10}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 141, Col: 10}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -376,7 +376,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var20 string
 				templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 145, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 146, Col: 37}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 				if templ_7745c5c3_Err != nil {
@@ -421,7 +421,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				return ""
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 161, Col: 10}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 162, Col: 10}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
@@ -439,7 +439,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var24 string
 				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 166, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 167, Col: 37}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 				if templ_7745c5c3_Err != nil {
@@ -484,7 +484,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				return ""
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 180, Col: 10}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 181, Col: 10}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -502,7 +502,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var28 string
 				templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 187, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 188, Col: 37}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 				if templ_7745c5c3_Err != nil {
@@ -547,7 +547,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				return ""
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 201, Col: 10}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 202, Col: 10}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 			if templ_7745c5c3_Err != nil {
@@ -565,7 +565,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var32 string
 				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 207, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 208, Col: 37}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 				if templ_7745c5c3_Err != nil {
@@ -610,7 +610,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				return ""
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 223, Col: 10}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 224, Col: 10}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 			if templ_7745c5c3_Err != nil {
@@ -628,7 +628,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var36 string
 				templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 228, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 229, Col: 37}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 				if templ_7745c5c3_Err != nil {
@@ -673,7 +673,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				return ""
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 242, Col: 10}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 243, Col: 10}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 			if templ_7745c5c3_Err != nil {
@@ -691,7 +691,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var40 string
 				templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 247, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 248, Col: 37}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 				if templ_7745c5c3_Err != nil {
@@ -736,7 +736,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var43 string
 				templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.SCAC))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 258, Col: 45}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 259, Col: 45}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 				if templ_7745c5c3_Err != nil {
@@ -754,7 +754,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 					var templ_7745c5c3_Var44 string
 					templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 263, Col: 38}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 264, Col: 38}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 					if templ_7745c5c3_Err != nil {
@@ -794,7 +794,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var47 string
 				templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.FederalID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 271, Col: 50}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 272, Col: 50}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 				if templ_7745c5c3_Err != nil {
@@ -812,7 +812,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 					var templ_7745c5c3_Var48 string
 					templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 275, Col: 38}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 276, Col: 38}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 					if templ_7745c5c3_Err != nil {
@@ -852,7 +852,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var51 string
 				templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.MCNumber))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 283, Col: 49}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 284, Col: 49}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var51))
 				if templ_7745c5c3_Err != nil {
@@ -870,7 +870,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 					var templ_7745c5c3_Var52 string
 					templ_7745c5c3_Var52, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 287, Col: 38}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 288, Col: 38}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var52))
 					if templ_7745c5c3_Err != nil {
@@ -910,7 +910,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var55 string
 				templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.DOTNumber))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 297, Col: 50}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 298, Col: 50}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var55))
 				if templ_7745c5c3_Err != nil {
@@ -928,7 +928,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 					var templ_7745c5c3_Var56 string
 					templ_7745c5c3_Var56, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 301, Col: 38}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 302, Col: 38}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var56))
 					if templ_7745c5c3_Err != nil {
@@ -968,7 +968,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				var templ_7745c5c3_Var59 string
 				templ_7745c5c3_Var59, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(company.SPLC))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 309, Col: 45}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 310, Col: 45}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var59))
 				if templ_7745c5c3_Err != nil {
@@ -986,7 +986,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 					var templ_7745c5c3_Var60 string
 					templ_7745c5c3_Var60, templ_7745c5c3_Err = templ.JoinStringErrs(fe)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 313, Col: 38}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/admin/company_form.templ`, Line: 314, Col: 38}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var60))
 					if templ_7745c5c3_Err != nil {
@@ -1108,7 +1108,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 119, "<div class=\"form-actions\"><button type=\"submit\" class=\"btn btn-primary\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 119, "<h3 style=\"margin-top:1.5rem; margin-bottom:0.5rem;\">Legacy Data Import</h3><div class=\"form-row\"><div class=\"form-group\"><label for=\"backup\">MSSQL Backup (.bak) — optional</label> <input type=\"file\" id=\"backup\" name=\"backup\" accept=\".bak\" class=\"form-control\"> <small>Upload a .bak file to import legacy data into this company after saving.</small></div></div><div class=\"form-actions\"><button type=\"submit\" class=\"btn btn-primary\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

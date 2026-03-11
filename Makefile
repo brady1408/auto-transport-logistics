@@ -1,4 +1,4 @@
-.PHONY: build run dev migrate-up migrate-down test generate
+.PHONY: build run dev migrate-up migrate-down test test-e2e generate proto proto-lint build-mcp
 
 generate:
 	templ generate
@@ -20,3 +20,15 @@ migrate-down:
 
 test:
 	go test ./...
+
+test-e2e:
+	npx playwright test
+
+proto-lint:
+	buf lint
+
+proto: proto-lint
+	buf generate
+
+build-mcp:
+	go build -o bin/atlinks-mcp ./cmd/mcp

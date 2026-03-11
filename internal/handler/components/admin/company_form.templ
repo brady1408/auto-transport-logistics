@@ -36,6 +36,7 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew 
 		}
 		<form
 			method="POST"
+			enctype="multipart/form-data"
 			action={
 				templ.SafeURL(func() string {
 					if isNew {
@@ -355,6 +356,14 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew 
 					</div>
 				</div>
 			}
+			<h3 style="margin-top:1.5rem; margin-bottom:0.5rem;">Legacy Data Import</h3>
+			<div class="form-row">
+				<div class="form-group">
+					<label for="backup">MSSQL Backup (.bak) — optional</label>
+					<input type="file" id="backup" name="backup" accept=".bak" class="form-control"/>
+					<small>Upload a .bak file to import legacy data into this company after saving.</small>
+				</div>
+			</div>
 			<div class="form-actions">
 				<button type="submit" class="btn btn-primary">
 					if isNew {

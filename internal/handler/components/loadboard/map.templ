@@ -87,7 +87,14 @@ templ ViewTabs(result models.LoadboardListResult) {
 			<button class="view-tab" :class="view === 'list' && 'active'" @click="view = 'list'">List</button>
 			<button class="view-tab" :class="view === 'map' && 'active'" @click="showMap()">Map</button>
 		</div>
-		<div x-show="view === 'list'" id="loadboard-table">
+		<div
+			x-show="view === 'list'" id="loadboard-table"
+			hx-get="/loadboard"
+			hx-trigger="every 10s [document.visibilityState==='visible']"
+			hx-target="#loadboard-table"
+			hx-select="#loadboard-table"
+			hx-swap="outerHTML"
+		>
 			@Table(result)
 		</div>
 		<div x-show="view === 'map'" x-cloak>

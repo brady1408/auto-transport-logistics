@@ -18,6 +18,9 @@ func NewService(pool *pgxpool.Pool) *Service {
 }
 
 func (s *Service) Log(ctx context.Context, tableName string, recordID int, action string, oldValues, newValues any) {
+	if s == nil || s.pool == nil {
+		return // no-op when used without a real database (e.g. tests)
+	}
 	user, _ := auth.GetUser(ctx)
 
 	var oldJSON, newJSON []byte

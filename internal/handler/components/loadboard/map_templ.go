@@ -62,7 +62,7 @@ func ViewTabs(result models.LoadboardListResult) templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div x-data=\"loadboardMap()\"><div class=\"view-tabs\"><button class=\"view-tab\" :class=\"view === 'list' && 'active'\" @click=\"view = 'list'\">List</button> <button class=\"view-tab\" :class=\"view === 'map' && 'active'\" @click=\"showMap()\">Map</button></div><div x-show=\"view === 'list'\" id=\"loadboard-table\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div x-data=\"loadboardMap()\"><div class=\"view-tabs\"><button class=\"view-tab\" :class=\"view === 'list' && 'active'\" @click=\"view = 'list'\">List</button> <button class=\"view-tab\" :class=\"view === 'map' && 'active'\" @click=\"showMap()\">Map</button></div><div x-show=\"view === 'list'\" id=\"loadboard-table\" hx-get=\"/loadboard\" hx-trigger=\"every 10s [document.visibilityState==='visible']\" hx-target=\"#loadboard-table\" hx-select=\"#loadboard-table\" hx-swap=\"outerHTML\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -85,9 +85,11 @@ func main() {
 		"atlinks",
 		"1.0.0",
 		server.WithToolCapabilities(false),
+		server.WithResourceCapabilities(false, false),
 	)
 
 	registerAllTools(s, client)
+	registerResources(s, client)
 
 	if err := server.ServeStdio(s); err != nil {
 		fmt.Fprintf(os.Stderr, "MCP server error: %v\n", err)

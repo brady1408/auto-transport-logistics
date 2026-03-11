@@ -1,0 +1,55 @@
+package oauth
+
+import "github.com/brady1408/atlinks/internal/handler/components"
+
+templ DeviceVerifyPage(brand components.Brand, csrfToken string, errMsg string, successMsg string, prefillCode string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>Authorize Device - { brand.Name }</title>
+			<link rel="icon" type="image/svg+xml" href={ brand.FaviconFile }/>
+			<link rel="stylesheet" href={ components.AssetVersion("/static/css/app.css") }/>
+		</head>
+		<body class="login-body">
+			<div class="login-container">
+				<div class="login-card">
+					<h1 class="login-title">Authorize Device</h1>
+					<p class="login-subtitle">Enter the code shown on your device to grant access.</p>
+					if errMsg != "" {
+						<div class="alert alert-danger">{ errMsg }</div>
+					}
+					if successMsg != "" {
+						<div class="alert alert-success">{ successMsg }</div>
+					} else {
+						<form method="POST" action="/oauth/device/verify">
+							<input type="hidden" name="csrf_token" value={ csrfToken }/>
+							<div class="form-group">
+								<label for="user_code">Device Code</label>
+								<input
+									type="text"
+									id="user_code"
+									name="user_code"
+									class="form-control"
+									placeholder="XXXX-XXXX"
+									value={ prefillCode }
+									required
+									autofocus
+									style="text-align: center; font-size: 1.5rem; letter-spacing: 0.2em; text-transform: uppercase;"
+								/>
+							</div>
+							<div style="display: flex; gap: 0.5rem;">
+								<button type="submit" name="action" value="approve" class="btn btn-primary" style="flex: 1;">Approve</button>
+								<button type="submit" name="action" value="deny" class="btn btn-secondary" style="flex: 1;">Deny</button>
+							</div>
+						</form>
+					}
+					<p style="text-align: center; margin-top: 1rem;">
+						<a href="/" style="font-size: 0.9rem;">Back to Dashboard</a>
+					</p>
+				</div>
+			</div>
+		</body>
+	</html>
+}
