@@ -293,7 +293,7 @@ func (s *OrderStore) NextOrderNumber(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("next order number: %w", err)
 	}
-	return fmt.Sprintf("%06d", val), nil
+	return fmt.Sprintf("ORD-%06d", val), nil
 }
 
 // UpdateCounts updates the denormalized vehicle status counts on an order.

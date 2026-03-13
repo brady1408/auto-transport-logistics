@@ -398,5 +398,5 @@ func (s *TripStore) NextLoadNumber(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("next load number: %w", err)
 	}
-	return fmt.Sprintf("%06d", val), nil
+	return fmt.Sprintf("TRP-%06d", val), nil
 }
