@@ -18,7 +18,7 @@ message Order {
   int32 id = 1;
   string order_number = 2;
   bool active = 3;
-  optional string zone = 4;
+  optional string origin_zone = 4;
   optional string dispatch_code = 5;
   optional string bol_number = 6;
   optional int32 bill_customer_id = 7;
@@ -82,17 +82,19 @@ message Order {
   optional int32 dim_weight = 65;
   string created_at = 66;
   string updated_at = 67;
+  optional string destination_zone = 68;
 }
 
 message ListOrdersRequest {
   PaginationRequest pagination = 1;
   optional string search = 2;
-  optional string zone = 3;
+  optional string origin_zone = 3;
   optional string dispatch_code = 4;
   optional string active = 5;
   optional string status = 6;
   optional string date_from = 7;
   optional string date_to = 8;
+  optional string destination_zone = 9;
 }
 
 message ListOrdersResponse {
@@ -111,7 +113,7 @@ message GetOrderResponse {
 message CreateOrderRequest {
   optional string order_number = 1;
   bool active = 2;
-  optional string zone = 3;
+  optional string origin_zone = 3;
   optional string dispatch_code = 4;
   optional string bol_number = 5;
   optional int32 bill_customer_id = 6;
@@ -164,6 +166,7 @@ message CreateOrderRequest {
   optional string equipment_type = 53;
   optional string tax_code = 54;
   optional int32 dim_weight = 55;
+  optional string destination_zone = 56;
 }
 
 message CreateOrderResponse {
@@ -173,7 +176,7 @@ message CreateOrderResponse {
 message UpdateOrderRequest {
   int32 id = 1;
   bool active = 2;
-  optional string zone = 3;
+  optional string origin_zone = 3;
   optional string dispatch_code = 4;
   optional string bol_number = 5;
   optional int32 bill_customer_id = 6;
@@ -226,6 +229,7 @@ message UpdateOrderRequest {
   optional string equipment_type = 53;
   optional string tax_code = 54;
   optional int32 dim_weight = 55;
+  optional string destination_zone = 56;
 }
 
 message UpdateOrderResponse {

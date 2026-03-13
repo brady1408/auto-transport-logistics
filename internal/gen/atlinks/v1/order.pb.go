@@ -26,7 +26,7 @@ type Order struct {
 	Id                 int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	OrderNumber        string                 `protobuf:"bytes,2,opt,name=order_number,json=orderNumber,proto3" json:"order_number,omitempty"`
 	Active             bool                   `protobuf:"varint,3,opt,name=active,proto3" json:"active,omitempty"`
-	Zone               *string                `protobuf:"bytes,4,opt,name=zone,proto3,oneof" json:"zone,omitempty"`
+	OriginZone         *string                `protobuf:"bytes,4,opt,name=origin_zone,json=originZone,proto3,oneof" json:"origin_zone,omitempty"`
 	DispatchCode       *string                `protobuf:"bytes,5,opt,name=dispatch_code,json=dispatchCode,proto3,oneof" json:"dispatch_code,omitempty"`
 	BolNumber          *string                `protobuf:"bytes,6,opt,name=bol_number,json=bolNumber,proto3,oneof" json:"bol_number,omitempty"`
 	BillCustomerId     *int32                 `protobuf:"varint,7,opt,name=bill_customer_id,json=billCustomerId,proto3,oneof" json:"bill_customer_id,omitempty"`
@@ -90,6 +90,7 @@ type Order struct {
 	DimWeight          *int32                 `protobuf:"varint,65,opt,name=dim_weight,json=dimWeight,proto3,oneof" json:"dim_weight,omitempty"`
 	CreatedAt          string                 `protobuf:"bytes,66,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt          string                 `protobuf:"bytes,67,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	DestinationZone    *string                `protobuf:"bytes,68,opt,name=destination_zone,json=destinationZone,proto3,oneof" json:"destination_zone,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -145,9 +146,9 @@ func (x *Order) GetActive() bool {
 	return false
 }
 
-func (x *Order) GetZone() string {
-	if x != nil && x.Zone != nil {
-		return *x.Zone
+func (x *Order) GetOriginZone() string {
+	if x != nil && x.OriginZone != nil {
+		return *x.OriginZone
 	}
 	return ""
 }
@@ -593,18 +594,26 @@ func (x *Order) GetUpdatedAt() string {
 	return ""
 }
 
+func (x *Order) GetDestinationZone() string {
+	if x != nil && x.DestinationZone != nil {
+		return *x.DestinationZone
+	}
+	return ""
+}
+
 type ListOrdersRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pagination    *PaginationRequest     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	Search        *string                `protobuf:"bytes,2,opt,name=search,proto3,oneof" json:"search,omitempty"`
-	Zone          *string                `protobuf:"bytes,3,opt,name=zone,proto3,oneof" json:"zone,omitempty"`
-	DispatchCode  *string                `protobuf:"bytes,4,opt,name=dispatch_code,json=dispatchCode,proto3,oneof" json:"dispatch_code,omitempty"`
-	Active        *string                `protobuf:"bytes,5,opt,name=active,proto3,oneof" json:"active,omitempty"`
-	Status        *string                `protobuf:"bytes,6,opt,name=status,proto3,oneof" json:"status,omitempty"`
-	DateFrom      *string                `protobuf:"bytes,7,opt,name=date_from,json=dateFrom,proto3,oneof" json:"date_from,omitempty"`
-	DateTo        *string                `protobuf:"bytes,8,opt,name=date_to,json=dateTo,proto3,oneof" json:"date_to,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Pagination      *PaginationRequest     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Search          *string                `protobuf:"bytes,2,opt,name=search,proto3,oneof" json:"search,omitempty"`
+	OriginZone      *string                `protobuf:"bytes,3,opt,name=origin_zone,json=originZone,proto3,oneof" json:"origin_zone,omitempty"`
+	DispatchCode    *string                `protobuf:"bytes,4,opt,name=dispatch_code,json=dispatchCode,proto3,oneof" json:"dispatch_code,omitempty"`
+	Active          *string                `protobuf:"bytes,5,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Status          *string                `protobuf:"bytes,6,opt,name=status,proto3,oneof" json:"status,omitempty"`
+	DateFrom        *string                `protobuf:"bytes,7,opt,name=date_from,json=dateFrom,proto3,oneof" json:"date_from,omitempty"`
+	DateTo          *string                `protobuf:"bytes,8,opt,name=date_to,json=dateTo,proto3,oneof" json:"date_to,omitempty"`
+	DestinationZone *string                `protobuf:"bytes,9,opt,name=destination_zone,json=destinationZone,proto3,oneof" json:"destination_zone,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ListOrdersRequest) Reset() {
@@ -651,9 +660,9 @@ func (x *ListOrdersRequest) GetSearch() string {
 	return ""
 }
 
-func (x *ListOrdersRequest) GetZone() string {
-	if x != nil && x.Zone != nil {
-		return *x.Zone
+func (x *ListOrdersRequest) GetOriginZone() string {
+	if x != nil && x.OriginZone != nil {
+		return *x.OriginZone
 	}
 	return ""
 }
@@ -689,6 +698,13 @@ func (x *ListOrdersRequest) GetDateFrom() string {
 func (x *ListOrdersRequest) GetDateTo() string {
 	if x != nil && x.DateTo != nil {
 		return *x.DateTo
+	}
+	return ""
+}
+
+func (x *ListOrdersRequest) GetDestinationZone() string {
+	if x != nil && x.DestinationZone != nil {
+		return *x.DestinationZone
 	}
 	return ""
 }
@@ -837,7 +853,7 @@ type CreateOrderRequest struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	OrderNumber        *string                `protobuf:"bytes,1,opt,name=order_number,json=orderNumber,proto3,oneof" json:"order_number,omitempty"`
 	Active             bool                   `protobuf:"varint,2,opt,name=active,proto3" json:"active,omitempty"`
-	Zone               *string                `protobuf:"bytes,3,opt,name=zone,proto3,oneof" json:"zone,omitempty"`
+	OriginZone         *string                `protobuf:"bytes,3,opt,name=origin_zone,json=originZone,proto3,oneof" json:"origin_zone,omitempty"`
 	DispatchCode       *string                `protobuf:"bytes,4,opt,name=dispatch_code,json=dispatchCode,proto3,oneof" json:"dispatch_code,omitempty"`
 	BolNumber          *string                `protobuf:"bytes,5,opt,name=bol_number,json=bolNumber,proto3,oneof" json:"bol_number,omitempty"`
 	BillCustomerId     *int32                 `protobuf:"varint,6,opt,name=bill_customer_id,json=billCustomerId,proto3,oneof" json:"bill_customer_id,omitempty"`
@@ -890,6 +906,7 @@ type CreateOrderRequest struct {
 	EquipmentType      *string                `protobuf:"bytes,53,opt,name=equipment_type,json=equipmentType,proto3,oneof" json:"equipment_type,omitempty"`
 	TaxCode            *string                `protobuf:"bytes,54,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
 	DimWeight          *int32                 `protobuf:"varint,55,opt,name=dim_weight,json=dimWeight,proto3,oneof" json:"dim_weight,omitempty"`
+	DestinationZone    *string                `protobuf:"bytes,56,opt,name=destination_zone,json=destinationZone,proto3,oneof" json:"destination_zone,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -938,9 +955,9 @@ func (x *CreateOrderRequest) GetActive() bool {
 	return false
 }
 
-func (x *CreateOrderRequest) GetZone() string {
-	if x != nil && x.Zone != nil {
-		return *x.Zone
+func (x *CreateOrderRequest) GetOriginZone() string {
+	if x != nil && x.OriginZone != nil {
+		return *x.OriginZone
 	}
 	return ""
 }
@@ -1309,6 +1326,13 @@ func (x *CreateOrderRequest) GetDimWeight() int32 {
 	return 0
 }
 
+func (x *CreateOrderRequest) GetDestinationZone() string {
+	if x != nil && x.DestinationZone != nil {
+		return *x.DestinationZone
+	}
+	return ""
+}
+
 type CreateOrderResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Order         *Order                 `protobuf:"bytes,1,opt,name=order,proto3" json:"order,omitempty"`
@@ -1357,7 +1381,7 @@ type UpdateOrderRequest struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	Id                 int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Active             bool                   `protobuf:"varint,2,opt,name=active,proto3" json:"active,omitempty"`
-	Zone               *string                `protobuf:"bytes,3,opt,name=zone,proto3,oneof" json:"zone,omitempty"`
+	OriginZone         *string                `protobuf:"bytes,3,opt,name=origin_zone,json=originZone,proto3,oneof" json:"origin_zone,omitempty"`
 	DispatchCode       *string                `protobuf:"bytes,4,opt,name=dispatch_code,json=dispatchCode,proto3,oneof" json:"dispatch_code,omitempty"`
 	BolNumber          *string                `protobuf:"bytes,5,opt,name=bol_number,json=bolNumber,proto3,oneof" json:"bol_number,omitempty"`
 	BillCustomerId     *int32                 `protobuf:"varint,6,opt,name=bill_customer_id,json=billCustomerId,proto3,oneof" json:"bill_customer_id,omitempty"`
@@ -1410,6 +1434,7 @@ type UpdateOrderRequest struct {
 	EquipmentType      *string                `protobuf:"bytes,53,opt,name=equipment_type,json=equipmentType,proto3,oneof" json:"equipment_type,omitempty"`
 	TaxCode            *string                `protobuf:"bytes,54,opt,name=tax_code,json=taxCode,proto3,oneof" json:"tax_code,omitempty"`
 	DimWeight          *int32                 `protobuf:"varint,55,opt,name=dim_weight,json=dimWeight,proto3,oneof" json:"dim_weight,omitempty"`
+	DestinationZone    *string                `protobuf:"bytes,56,opt,name=destination_zone,json=destinationZone,proto3,oneof" json:"destination_zone,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -1458,9 +1483,9 @@ func (x *UpdateOrderRequest) GetActive() bool {
 	return false
 }
 
-func (x *UpdateOrderRequest) GetZone() string {
-	if x != nil && x.Zone != nil {
-		return *x.Zone
+func (x *UpdateOrderRequest) GetOriginZone() string {
+	if x != nil && x.OriginZone != nil {
+		return *x.OriginZone
 	}
 	return ""
 }
@@ -1829,6 +1854,13 @@ func (x *UpdateOrderRequest) GetDimWeight() int32 {
 	return 0
 }
 
+func (x *UpdateOrderRequest) GetDestinationZone() string {
+	if x != nil && x.DestinationZone != nil {
+		return *x.DestinationZone
+	}
+	return ""
+}
+
 type UpdateOrderResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Order         *Order                 `protobuf:"bytes,1,opt,name=order,proto3" json:"order,omitempty"`
@@ -1966,12 +1998,13 @@ var File_atlinks_v1_order_proto protoreflect.FileDescriptor
 const file_atlinks_v1_order_proto_rawDesc = "" +
 	"\n" +
 	"\x16atlinks/v1/order.proto\x12\n" +
-	"atlinks.v1\x1a\x17atlinks/v1/common.proto\"\xa1\x1c\n" +
+	"atlinks.v1\x1a\x17atlinks/v1/common.proto\"\xfa\x1c\n" +
 	"\x05Order\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12!\n" +
 	"\forder_number\x18\x02 \x01(\tR\vorderNumber\x12\x16\n" +
-	"\x06active\x18\x03 \x01(\bR\x06active\x12\x17\n" +
-	"\x04zone\x18\x04 \x01(\tH\x00R\x04zone\x88\x01\x01\x12(\n" +
+	"\x06active\x18\x03 \x01(\bR\x06active\x12$\n" +
+	"\vorigin_zone\x18\x04 \x01(\tH\x00R\n" +
+	"originZone\x88\x01\x01\x12(\n" +
 	"\rdispatch_code\x18\x05 \x01(\tH\x01R\fdispatchCode\x88\x01\x01\x12\"\n" +
 	"\n" +
 	"bol_number\x18\x06 \x01(\tH\x02R\tbolNumber\x88\x01\x01\x12-\n" +
@@ -2048,8 +2081,9 @@ const file_atlinks_v1_order_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18B \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18C \x01(\tR\tupdatedAtB\a\n" +
-	"\x05_zoneB\x10\n" +
+	"updated_at\x18C \x01(\tR\tupdatedAt\x12.\n" +
+	"\x10destination_zone\x18D \x01(\tH6R\x0fdestinationZone\x88\x01\x01B\x0e\n" +
+	"\f_origin_zoneB\x10\n" +
 	"\x0e_dispatch_codeB\r\n" +
 	"\v_bol_numberB\x13\n" +
 	"\x11_bill_customer_idB\x17\n" +
@@ -2105,27 +2139,31 @@ const file_atlinks_v1_order_proto_rawDesc = "" +
 	"\x11_est_deliver_dateB\x11\n" +
 	"\x0f_equipment_typeB\v\n" +
 	"\t_tax_codeB\r\n" +
-	"\v_dim_weight\"\x82\x03\n" +
+	"\v_dim_weightB\x13\n" +
+	"\x11_destination_zone\"\xdb\x03\n" +
 	"\x11ListOrdersRequest\x12=\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x1d.atlinks.v1.PaginationRequestR\n" +
 	"pagination\x12\x1b\n" +
-	"\x06search\x18\x02 \x01(\tH\x00R\x06search\x88\x01\x01\x12\x17\n" +
-	"\x04zone\x18\x03 \x01(\tH\x01R\x04zone\x88\x01\x01\x12(\n" +
+	"\x06search\x18\x02 \x01(\tH\x00R\x06search\x88\x01\x01\x12$\n" +
+	"\vorigin_zone\x18\x03 \x01(\tH\x01R\n" +
+	"originZone\x88\x01\x01\x12(\n" +
 	"\rdispatch_code\x18\x04 \x01(\tH\x02R\fdispatchCode\x88\x01\x01\x12\x1b\n" +
 	"\x06active\x18\x05 \x01(\tH\x03R\x06active\x88\x01\x01\x12\x1b\n" +
 	"\x06status\x18\x06 \x01(\tH\x04R\x06status\x88\x01\x01\x12 \n" +
 	"\tdate_from\x18\a \x01(\tH\x05R\bdateFrom\x88\x01\x01\x12\x1c\n" +
-	"\adate_to\x18\b \x01(\tH\x06R\x06dateTo\x88\x01\x01B\t\n" +
-	"\a_searchB\a\n" +
-	"\x05_zoneB\x10\n" +
+	"\adate_to\x18\b \x01(\tH\x06R\x06dateTo\x88\x01\x01\x12.\n" +
+	"\x10destination_zone\x18\t \x01(\tH\aR\x0fdestinationZone\x88\x01\x01B\t\n" +
+	"\a_searchB\x0e\n" +
+	"\f_origin_zoneB\x10\n" +
 	"\x0e_dispatch_codeB\t\n" +
 	"\a_activeB\t\n" +
 	"\a_statusB\f\n" +
 	"\n" +
 	"_date_fromB\n" +
 	"\n" +
-	"\b_date_to\"\x7f\n" +
+	"\b_date_toB\x13\n" +
+	"\x11_destination_zone\"\x7f\n" +
 	"\x12ListOrdersResponse\x12)\n" +
 	"\x06orders\x18\x01 \x03(\v2\x11.atlinks.v1.OrderR\x06orders\x12>\n" +
 	"\n" +
@@ -2134,11 +2172,12 @@ const file_atlinks_v1_order_proto_rawDesc = "" +
 	"\x0fGetOrderRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\";\n" +
 	"\x10GetOrderResponse\x12'\n" +
-	"\x05order\x18\x01 \x01(\v2\x11.atlinks.v1.OrderR\x05order\"\x8c\x19\n" +
+	"\x05order\x18\x01 \x01(\v2\x11.atlinks.v1.OrderR\x05order\"\xe5\x19\n" +
 	"\x12CreateOrderRequest\x12&\n" +
 	"\forder_number\x18\x01 \x01(\tH\x00R\vorderNumber\x88\x01\x01\x12\x16\n" +
-	"\x06active\x18\x02 \x01(\bR\x06active\x12\x17\n" +
-	"\x04zone\x18\x03 \x01(\tH\x01R\x04zone\x88\x01\x01\x12(\n" +
+	"\x06active\x18\x02 \x01(\bR\x06active\x12$\n" +
+	"\vorigin_zone\x18\x03 \x01(\tH\x01R\n" +
+	"originZone\x88\x01\x01\x12(\n" +
 	"\rdispatch_code\x18\x04 \x01(\tH\x02R\fdispatchCode\x88\x01\x01\x12\"\n" +
 	"\n" +
 	"bol_number\x18\x05 \x01(\tH\x03R\tbolNumber\x88\x01\x01\x12-\n" +
@@ -2201,9 +2240,10 @@ const file_atlinks_v1_order_proto_rawDesc = "" +
 	"\x0eequipment_type\x185 \x01(\tH3R\requipmentType\x88\x01\x01\x12\x1e\n" +
 	"\btax_code\x186 \x01(\tH4R\ataxCode\x88\x01\x01\x12\"\n" +
 	"\n" +
-	"dim_weight\x187 \x01(\x05H5R\tdimWeight\x88\x01\x01B\x0f\n" +
-	"\r_order_numberB\a\n" +
-	"\x05_zoneB\x10\n" +
+	"dim_weight\x187 \x01(\x05H5R\tdimWeight\x88\x01\x01\x12.\n" +
+	"\x10destination_zone\x188 \x01(\tH6R\x0fdestinationZone\x88\x01\x01B\x0f\n" +
+	"\r_order_numberB\x0e\n" +
+	"\f_origin_zoneB\x10\n" +
 	"\x0e_dispatch_codeB\r\n" +
 	"\v_bol_numberB\x13\n" +
 	"\x11_bill_customer_idB\x17\n" +
@@ -2258,13 +2298,15 @@ const file_atlinks_v1_order_proto_rawDesc = "" +
 	"\x11_est_deliver_dateB\x11\n" +
 	"\x0f_equipment_typeB\v\n" +
 	"\t_tax_codeB\r\n" +
-	"\v_dim_weight\">\n" +
+	"\v_dim_weightB\x13\n" +
+	"\x11_destination_zone\">\n" +
 	"\x13CreateOrderResponse\x12'\n" +
-	"\x05order\x18\x01 \x01(\v2\x11.atlinks.v1.OrderR\x05order\"\xe3\x18\n" +
+	"\x05order\x18\x01 \x01(\v2\x11.atlinks.v1.OrderR\x05order\"\xbc\x19\n" +
 	"\x12UpdateOrderRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x16\n" +
-	"\x06active\x18\x02 \x01(\bR\x06active\x12\x17\n" +
-	"\x04zone\x18\x03 \x01(\tH\x00R\x04zone\x88\x01\x01\x12(\n" +
+	"\x06active\x18\x02 \x01(\bR\x06active\x12$\n" +
+	"\vorigin_zone\x18\x03 \x01(\tH\x00R\n" +
+	"originZone\x88\x01\x01\x12(\n" +
 	"\rdispatch_code\x18\x04 \x01(\tH\x01R\fdispatchCode\x88\x01\x01\x12\"\n" +
 	"\n" +
 	"bol_number\x18\x05 \x01(\tH\x02R\tbolNumber\x88\x01\x01\x12-\n" +
@@ -2327,8 +2369,9 @@ const file_atlinks_v1_order_proto_rawDesc = "" +
 	"\x0eequipment_type\x185 \x01(\tH2R\requipmentType\x88\x01\x01\x12\x1e\n" +
 	"\btax_code\x186 \x01(\tH3R\ataxCode\x88\x01\x01\x12\"\n" +
 	"\n" +
-	"dim_weight\x187 \x01(\x05H4R\tdimWeight\x88\x01\x01B\a\n" +
-	"\x05_zoneB\x10\n" +
+	"dim_weight\x187 \x01(\x05H4R\tdimWeight\x88\x01\x01\x12.\n" +
+	"\x10destination_zone\x188 \x01(\tH5R\x0fdestinationZone\x88\x01\x01B\x0e\n" +
+	"\f_origin_zoneB\x10\n" +
 	"\x0e_dispatch_codeB\r\n" +
 	"\v_bol_numberB\x13\n" +
 	"\x11_bill_customer_idB\x17\n" +
@@ -2383,7 +2426,8 @@ const file_atlinks_v1_order_proto_rawDesc = "" +
 	"\x11_est_deliver_dateB\x11\n" +
 	"\x0f_equipment_typeB\v\n" +
 	"\t_tax_codeB\r\n" +
-	"\v_dim_weight\">\n" +
+	"\v_dim_weightB\x13\n" +
+	"\x11_destination_zone\">\n" +
 	"\x13UpdateOrderResponse\x12'\n" +
 	"\x05order\x18\x01 \x01(\v2\x11.atlinks.v1.OrderR\x05order\"$\n" +
 	"\x12DeleteOrderRequest\x12\x0e\n" +
