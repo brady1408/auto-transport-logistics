@@ -128,8 +128,8 @@ Returns the zone pricing record matching the origin/destination pair, or `pgx.Er
 
 ### New endpoint
 
-- `GET /api/zone-pricing/lookup?origin={zone_a}&destination={zone_b}`
-- Returns `{ "amount": "150.0000", "miles": 525, "transport_days": 2 }` or 404
+- `GET /api/zone-pricing/lookup?origin_zone={zone_a}&destination_zone={zone_b}`
+- Returns a rate hint HTML partial, or 204 No Content if no match
 - Used by HTMX on the order form for the rate hint
 - Optionally exposed as a Connect-RPC method for MCP
 
