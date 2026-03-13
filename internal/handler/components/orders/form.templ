@@ -196,6 +196,29 @@ templ FormPage(pg components.PageContext, order *models.Order, isNew bool, errMs
 	}
 }
 
+templ FormPageWithZoneConfirm(pg components.PageContext, order *models.Order, vehicleCount int, newRate string, oldOriginZone string, oldDestZone string) {
+	@components.Layout(pg, "Edit Order: " + order.OrderNumber + " - ATLinks") {
+		<div class="page-header">
+			<h1>Edit Order: { order.OrderNumber }</h1>
+			<a href="/dispatch/orders" class="btn">Back to List</a>
+		</div>
+		<div class="alert alert-warning">
+			<p>{ fmt.Sprintf("Zone rate changed to $%s. Update %d existing vehicle(s)?", newRate, vehicleCount) }</p>
+			<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", order.ID)) } style="display:inline;">
+				@components.CSRFField(pg.CSRFToken)
+				<input type="hidden" name="_method" value="PUT"/>
+				<input type="hidden" name="version" value={ fmt.Sprintf("%d", order.Version) }/>
+				<input type="hidden" name="old_origin_zone" value={ oldOriginZone }/>
+				<input type="hidden" name="old_destination_zone" value={ oldDestZone }/>
+				<input type="hidden" name="origin_zone" value={ components.Deref(order.OriginZone) }/>
+				<input type="hidden" name="destination_zone" value={ components.Deref(order.DestinationZone) }/>
+				<button type="submit" name="update_vehicles" value="yes" class="btn btn-primary btn-sm">Yes, update vehicles</button>
+				<button type="submit" name="update_vehicles" value="no" class="btn btn-secondary btn-sm">No, keep existing</button>
+			</form>
+		</div>
+	}
+}
+
 templ customerFieldset(legend string, prefix string, customerID *int, customerNumber *string, customerName *string, address *string, address2 *string, city *string, state *string, zip *string, contact *string, phone *string) {
 	<fieldset>
 		<legend>{ legend }</legend>

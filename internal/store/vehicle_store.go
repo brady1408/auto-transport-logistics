@@ -618,3 +618,16 @@ func (s *VehicleStore) WaitingGrid(ctx context.Context, state string) ([]Waiting
 	}
 	return result, rows.Err()
 }
+
+// UpdateTransportAmtByRate updates transport_amt on vehicles matching the old rate to the new rate.
+func (s *VehicleStore) UpdateTransportAmtByRate(ctx context.Context, orderID int, oldAmt, newAmt *string) error {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = s.pool.Exec(ctx,
+		`UPDATE order_vehicles SET transport_amt = $1
+		 WHERE order_id = $2 AND company_id = $3 AND transport_amt = $4 AND deleted_at IS NULL`,
+		newAmt, orderID, companyID, oldAmt)
+	return err
+}

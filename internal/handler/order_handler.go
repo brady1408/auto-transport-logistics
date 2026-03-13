@@ -39,17 +39,28 @@ type loadboardSubhaulStore interface {
 	ListActiveClaimsForOrder(ctx context.Context, orderID int) ([]models.LoadboardClaim, error)
 }
 
-type OrderHandler struct {
-	store           orderStore
-	invoiceSvc      orderInvoiceService
-	waitingStore    waitingGridStore
-	attachmentStore orderAttachmentStore
-	loadboardStore  loadboardSubhaulStore
-	deps            *Deps
+type orderZonePricingStore interface {
+	GetByZones(ctx context.Context, zoneA, zoneB string) (*models.ZonePricing, error)
 }
 
-func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, waitingStore waitingGridStore, attachmentStore orderAttachmentStore, loadboardStore loadboardSubhaulStore, deps *Deps) *OrderHandler {
-	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, waitingStore: waitingStore, attachmentStore: attachmentStore, loadboardStore: loadboardStore, deps: deps}
+type orderVehicleStore interface {
+	ListByOrder(ctx context.Context, orderID int) ([]models.OrderVehicle, error)
+	UpdateTransportAmtByRate(ctx context.Context, orderID int, oldAmt, newAmt *string) error
+}
+
+type OrderHandler struct {
+	store             orderStore
+	invoiceSvc        orderInvoiceService
+	waitingStore      waitingGridStore
+	attachmentStore   orderAttachmentStore
+	loadboardStore    loadboardSubhaulStore
+	zonePricingStore  orderZonePricingStore
+	vehicleStore      orderVehicleStore
+	deps              *Deps
+}
+
+func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, waitingStore waitingGridStore, attachmentStore orderAttachmentStore, loadboardStore loadboardSubhaulStore, zonePricingStore orderZonePricingStore, vehicleStore orderVehicleStore, deps *Deps) *OrderHandler {
+	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, waitingStore: waitingStore, attachmentStore: attachmentStore, loadboardStore: loadboardStore, zonePricingStore: zonePricingStore, vehicleStore: vehicleStore, deps: deps}
 }
 
 func (h *OrderHandler) Register(mux *http.ServeMux) {
@@ -195,6 +206,29 @@ func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 	o.ID = id
 	o.OrderNumber = old.OrderNumber // order_number is immutable
 
+	// Check if user is responding to a zone change confirmation
+	updateVehicles := r.FormValue("update_vehicles")
+	if updateVehicles == "yes" {
+		// Update vehicles matching old rate to new rate
+		oldOrigin := r.FormValue("old_origin_zone")
+		oldDest := r.FormValue("old_destination_zone")
+		if oldOrigin != "" && oldDest != "" && o.OriginZone != nil && o.DestinationZone != nil {
+			oldZP, _ := h.zonePricingStore.GetByZones(r.Context(), oldOrigin, oldDest)
+			newZP, _ := h.zonePricingStore.GetByZones(r.Context(), *o.OriginZone, *o.DestinationZone)
+			if oldZP != nil && newZP != nil {
+				_ = h.vehicleStore.UpdateTransportAmtByRate(r.Context(), id, oldZP.Amount, newZP.Amount)
+			}
+		}
+		h.deps.setFlash(w, "Order updated and vehicle pricing refreshed")
+		redirect(w, r, fmt.Sprintf("/dispatch/orders/%d", id))
+		return
+	}
+	if updateVehicles == "no" {
+		h.deps.setFlash(w, "Order updated successfully")
+		redirect(w, r, fmt.Sprintf("/dispatch/orders/%d", id))
+		return
+	}
+
 	if err := h.store.Update(r.Context(), o); err != nil {
 		if errors.Is(err, store.ErrConflict) {
 			// Re-fetch the current version so the form has fresh data
@@ -215,8 +249,23 @@ func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.deps.Audit.Log(r.Context(), "orders", o.ID, "UPDATE", old, o)
-	h.deps.setFlash(w, "Order updated successfully")
 
+	// Detect zone change — if zones changed and vehicles exist, prompt
+	zoneChanged := derefStr(old.OriginZone) != derefStr(o.OriginZone) ||
+		derefStr(old.DestinationZone) != derefStr(o.DestinationZone)
+	if zoneChanged && o.OriginZone != nil && o.DestinationZone != nil {
+		vehicles, _ := h.vehicleStore.ListByOrder(r.Context(), id)
+		newZP, _ := h.zonePricingStore.GetByZones(r.Context(), *o.OriginZone, *o.DestinationZone)
+		if len(vehicles) > 0 && newZP != nil && newZP.Amount != nil {
+			// Re-render form with confirmation banner
+			saved, _ := h.store.GetByID(r.Context(), id)
+			pg := h.deps.pageContext(w, r)
+			h.deps.renderTempl(w, r, orders.FormPageWithZoneConfirm(pg, saved, len(vehicles), *newZP.Amount, derefStr(old.OriginZone), derefStr(old.DestinationZone)))
+			return
+		}
+	}
+
+	h.deps.setFlash(w, "Order updated successfully")
 	redirect(w, r, "/dispatch/orders")
 }
 
