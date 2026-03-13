@@ -209,3 +209,22 @@ func (s *ZonePricingStore) Delete(ctx context.Context, id int) error {
 	}
 	return nil
 }
+
+// GetByZones returns zone pricing for the given origin/destination zone pair.
+func (s *ZonePricingStore) GetByZones(ctx context.Context, zoneA, zoneB string) (*models.ZonePricing, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var zp models.ZonePricing
+	err = s.pool.QueryRow(ctx,
+		`SELECT id, company_id, legacy_id, zone_a, zone_b, description, amount, miles, transport_days, ship_to, created_at, updated_at
+		 FROM zone_pricing WHERE company_id = $1 AND zone_a = $2 AND zone_b = $3 AND deleted_at IS NULL`,
+		companyID, zoneA, zoneB,
+	).Scan(&zp.ID, &zp.CompanyID, &zp.LegacyID, &zp.ZoneA, &zp.ZoneB, &zp.Description,
+		&zp.Amount, &zp.Miles, &zp.TransportDays, &zp.ShipTo, &zp.CreatedAt, &zp.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("get zone pricing by zones %s→%s: %w", zoneA, zoneB, err)
+	}
+	return &zp, nil
+}
