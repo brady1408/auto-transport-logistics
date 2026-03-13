@@ -50,12 +50,25 @@ templ FormPage(pg components.PageContext, order *models.Order, isNew bool, errMs
 					</div>
 					<div class="form-group">
 						<label for="origin_zone">Origin Zone</label>
-						<input type="text" id="origin_zone" name="origin_zone" class="form-control" value={ components.Deref(order.OriginZone) } maxlength="20"/>
+						<input type="text" id="origin_zone" name="origin_zone" class="form-control"
+							value={ components.Deref(order.OriginZone) } maxlength="20"
+							hx-get="/api/zone-pricing/lookup"
+							hx-trigger="change delay:300ms"
+							hx-target="#rate-hint"
+							hx-include="#destination_zone"
+						/>
 					</div>
 					<div class="form-group">
 						<label for="destination_zone">Dest Zone</label>
-						<input type="text" id="destination_zone" name="destination_zone" class="form-control" value={ components.Deref(order.DestinationZone) } maxlength="20"/>
+						<input type="text" id="destination_zone" name="destination_zone" class="form-control"
+							value={ components.Deref(order.DestinationZone) } maxlength="20"
+							hx-get="/api/zone-pricing/lookup"
+							hx-trigger="change delay:300ms"
+							hx-target="#rate-hint"
+							hx-include="#origin_zone"
+						/>
 					</div>
+					<div id="rate-hint"></div>
 					<div class="form-group">
 						<label for="dispatch_code">Dispatch Code</label>
 						<input type="text" id="dispatch_code" name="dispatch_code" class="form-control" value={ components.Deref(order.DispatchCode) } maxlength="10"/>
