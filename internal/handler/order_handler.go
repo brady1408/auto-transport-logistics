@@ -70,6 +70,7 @@ func (h *OrderHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /dispatch/orders/{id}", h.show)
 	mux.HandleFunc("GET /dispatch/orders/{id}/edit", h.editForm)
 	mux.HandleFunc("PUT /dispatch/orders/{id}", h.update)
+	mux.HandleFunc("POST /dispatch/orders/{id}/zone-confirm", h.zoneConfirm)
 	mux.HandleFunc("DELETE /dispatch/orders/{id}", h.delete)
 	mux.HandleFunc("POST /dispatch/orders/{id}/invoice", h.generateInvoice)
 	mux.HandleFunc("GET /dispatch/orders/{id}/counts", h.vehicleCounts)
@@ -206,29 +207,6 @@ func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 	o.ID = id
 	o.OrderNumber = old.OrderNumber // order_number is immutable
 
-	// Check if user is responding to a zone change confirmation
-	updateVehicles := r.FormValue("update_vehicles")
-	if updateVehicles == "yes" {
-		// Update vehicles matching old rate to new rate
-		oldOrigin := r.FormValue("old_origin_zone")
-		oldDest := r.FormValue("old_destination_zone")
-		if oldOrigin != "" && oldDest != "" && o.OriginZone != nil && o.DestinationZone != nil {
-			oldZP, _ := h.zonePricingStore.GetByZones(r.Context(), oldOrigin, oldDest)
-			newZP, _ := h.zonePricingStore.GetByZones(r.Context(), *o.OriginZone, *o.DestinationZone)
-			if oldZP != nil && newZP != nil {
-				_ = h.vehicleStore.UpdateTransportAmtByRate(r.Context(), id, oldZP.Amount, newZP.Amount)
-			}
-		}
-		h.deps.setFlash(w, "Order updated and vehicle pricing refreshed")
-		redirect(w, r, fmt.Sprintf("/dispatch/orders/%d", id))
-		return
-	}
-	if updateVehicles == "no" {
-		h.deps.setFlash(w, "Order updated successfully")
-		redirect(w, r, fmt.Sprintf("/dispatch/orders/%d", id))
-		return
-	}
-
 	if err := h.store.Update(r.Context(), o); err != nil {
 		if errors.Is(err, store.ErrConflict) {
 			// Re-fetch the current version so the form has fresh data
@@ -267,6 +245,33 @@ func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 
 	h.deps.setFlash(w, "Order updated successfully")
 	redirect(w, r, "/dispatch/orders")
+}
+
+func (h *OrderHandler) zoneConfirm(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	updateVehicles := r.FormValue("update_vehicles")
+	if updateVehicles == "yes" {
+		oldOrigin := r.FormValue("old_origin_zone")
+		oldDest := r.FormValue("old_destination_zone")
+		newOrigin := r.FormValue("origin_zone")
+		newDest := r.FormValue("destination_zone")
+		if oldOrigin != "" && oldDest != "" && newOrigin != "" && newDest != "" {
+			oldZP, _ := h.zonePricingStore.GetByZones(r.Context(), oldOrigin, oldDest)
+			newZP, _ := h.zonePricingStore.GetByZones(r.Context(), newOrigin, newDest)
+			if oldZP != nil && newZP != nil {
+				_ = h.vehicleStore.UpdateTransportAmtByRate(r.Context(), id, oldZP.Amount, newZP.Amount)
+			}
+		}
+		h.deps.setFlash(w, "Order updated and vehicle pricing refreshed")
+	} else {
+		h.deps.setFlash(w, "Order updated successfully")
+	}
+	redirect(w, r, fmt.Sprintf("/dispatch/orders/%d", id))
 }
 
 func (h *OrderHandler) delete(w http.ResponseWriter, r *http.Request) {
