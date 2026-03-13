@@ -104,15 +104,15 @@ func DeliveryReceipt(order *models.Order, vehicles []models.OrderVehicle) templ.
 				return templ_7745c5c3_Err
 			}
 		}
-		if order.Zone != nil {
+		if order.OriginZone != nil {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div><span class=\"label\">Zone:</span> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.Zone))
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(order.OriginZone))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/reports/delivery_receipt.templ`, Line: 57, Col: 75}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/reports/delivery_receipt.templ`, Line: 57, Col: 81}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {

@@ -31,7 +31,7 @@ templ Table(result models.OrderListResult, filter models.OrderFilter) {
 							<td>{ components.Deref(o.BillCustomerName) }</td>
 							<td>{ components.Deref(o.LoadCustomerName) }</td>
 							<td>{ components.Deref(o.DropCustomerName) }</td>
-							<td>{ components.Deref(o.Zone) }</td>
+							<td>{ components.Deref(o.OriginZone) }</td>
 							<td class="text-center">
 								if o.VehicleCount > 0 {
 									<span class="badge badge-active">{ fmt.Sprintf("%d", o.VehicleCount) }</span>

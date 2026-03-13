@@ -117,11 +117,11 @@ func OrderStatusPage(pg components.PageContext, rows []store.OrderStatusRow, dat
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					if row.Zone != "" {
+					if row.OriginZone != "" {
 						var templ_7745c5c3_Var7 string
-						templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(row.Zone)
+						templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(row.OriginZone)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/reports/order_status.templ`, Line: 53, Col: 20}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/reports/order_status.templ`, Line: 53, Col: 26}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 						if templ_7745c5c3_Err != nil {

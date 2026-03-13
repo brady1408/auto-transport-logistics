@@ -53,8 +53,8 @@ templ DeliveryReceipt(order *models.Order, vehicles []models.OrderVehicle) {
 						if order.CreateDate != nil {
 							<div><span class="label">Date:</span> { order.CreateDate.Format("01/02/2006") }</div>
 						}
-						if order.Zone != nil {
-							<div><span class="label">Zone:</span> { components.Deref(order.Zone) }</div>
+						if order.OriginZone != nil {
+							<div><span class="label">Zone:</span> { components.Deref(order.OriginZone) }</div>
 						}
 					</div>
 				</div>

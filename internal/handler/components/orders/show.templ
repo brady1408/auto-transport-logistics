@@ -45,8 +45,12 @@ templ ShowPage(pg components.PageContext, order *models.Order, atts []models.Att
 						</span>
 					</div>
 					<div class="detail-row">
-						<span class="detail-label">Zone:</span>
-						<span>{ components.Deref(order.Zone) }</span>
+						<span class="detail-label">Origin Zone:</span>
+						<span>{ components.Deref(order.OriginZone) }</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Dest Zone:</span>
+						<span>{ components.Deref(order.DestinationZone) }</span>
 					</div>
 					<div class="detail-row">
 						<span class="detail-label">Dispatch Code:</span>

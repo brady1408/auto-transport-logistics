@@ -144,9 +144,9 @@ func Table(result models.OrderListResult, filter models.OrderFilter) templ.Compo
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 string
-				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(o.Zone))
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(o.OriginZone))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/table.templ`, Line: 34, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/table.templ`, Line: 34, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {

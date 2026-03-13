@@ -49,8 +49,8 @@ templ OrderStatusPage(pg components.PageContext, rows []store.OrderStatusRow, da
 									}
 								</td>
 								<td>
-									if row.Zone != "" {
-										{ row.Zone }
+									if row.OriginZone != "" {
+										{ row.OriginZone }
 									} else {
 										<span class="text-muted">(none)</span>
 									}
