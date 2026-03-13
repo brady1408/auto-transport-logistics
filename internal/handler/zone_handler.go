@@ -19,6 +19,7 @@ type zoneStore interface {
 type zonePricingStore interface {
 	List(ctx context.Context) ([]models.ZonePricing, error)
 	GetByID(ctx context.Context, id int) (*models.ZonePricing, error)
+	GetByZones(ctx context.Context, zoneA, zoneB string) (*models.ZonePricing, error)
 	Create(ctx context.Context, zp *models.ZonePricing) error
 	Update(ctx context.Context, zp *models.ZonePricing) error
 	Delete(ctx context.Context, id int) error
@@ -43,6 +44,7 @@ func (h *ZoneHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /global/zone-pricing", h.pricingCreate)
 	mux.HandleFunc("PUT /global/zone-pricing/{id}", h.pricingUpdate)
 	mux.HandleFunc("DELETE /global/zone-pricing/{id}", h.pricingDelete)
+	mux.HandleFunc("GET /api/zone-pricing/lookup", h.pricingLookup)
 }
 
 func (h *ZoneHandler) list(w http.ResponseWriter, r *http.Request) {
@@ -217,4 +219,19 @@ func (h *ZoneHandler) pricingDelete(w http.ResponseWriter, r *http.Request) {
 	h.deps.setFlash(w, "Zone pricing deleted")
 
 	redirectBack(w, r, "/global/zone-pricing")
+}
+
+func (h *ZoneHandler) pricingLookup(w http.ResponseWriter, r *http.Request) {
+	origin := r.URL.Query().Get("origin_zone")
+	destination := r.URL.Query().Get("destination_zone")
+	if origin == "" || destination == "" {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	zp, err := h.pricing.GetByZones(r.Context(), origin, destination)
+	if err != nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	h.deps.renderTempl(w, r, zones.RateHint(zp))
 }

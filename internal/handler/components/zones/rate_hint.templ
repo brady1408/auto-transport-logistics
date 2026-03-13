@@ -1,0 +1,12 @@
+package zones
+
+import (
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+)
+
+templ RateHint(zp *models.ZonePricing) {
+	if zp != nil && zp.Amount != nil {
+		<span class="rate-hint">Zone rate: ${ components.Deref(zp.Amount) }</span>
+	}
+}
