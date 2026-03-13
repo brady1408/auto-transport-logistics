@@ -15,7 +15,8 @@ func registerOrderTools(register toolRegister, client *atlClient) {
 	register(mcp.NewTool("list_orders",
 		mcp.WithDescription("List orders with optional filters. Returns paginated results."),
 		mcp.WithString("search", mcp.Description("Search by order number or customer name")),
-		mcp.WithString("zone", mcp.Description("Filter by zone")),
+		mcp.WithString("origin_zone", mcp.Description("Filter by origin zone")),
+		mcp.WithString("destination_zone", mcp.Description("Filter by destination zone")),
 		mcp.WithString("dispatch_code", mcp.Description("Filter by dispatch code")),
 		mcp.WithString("active", mcp.Description("Filter: 'active', 'inactive', or '' (default: all)")),
 		mcp.WithString("status", mcp.Description("Filter: 'uninvoiced_delivered' for orders with delivered vehicles not yet invoiced")),
@@ -31,8 +32,9 @@ func registerOrderTools(register toolRegister, client *atlClient) {
 				PageSize: int32(argInt(args, "page_size", 25)),
 			},
 			Search:       argStrPtr(args, "search"),
-			Zone:         argStrPtr(args, "zone"),
-			DispatchCode: argStrPtr(args, "dispatch_code"),
+			OriginZone:      argStrPtr(args, "origin_zone"),
+			DestinationZone: argStrPtr(args, "destination_zone"),
+			DispatchCode:    argStrPtr(args, "dispatch_code"),
 			Active:       argStrPtr(args, "active"),
 			Status:       argStrPtr(args, "status"),
 			DateFrom:     argStrPtr(args, "date_from"),
@@ -62,7 +64,8 @@ func registerOrderTools(register toolRegister, client *atlClient) {
 		mcp.WithDescription("Create a new order. Order number is auto-generated if not provided. Set active=true for new orders."),
 		mcp.WithString("order_number", mcp.Description("Order number (auto-generated if empty)")),
 		mcp.WithBoolean("active", mcp.Description("Whether order is active (default: true)"), mcp.DefaultBool(true)),
-		mcp.WithString("zone", mcp.Description("Zone")),
+		mcp.WithString("origin_zone", mcp.Description("Origin zone")),
+		mcp.WithString("destination_zone", mcp.Description("Destination zone")),
 		mcp.WithString("dispatch_code", mcp.Description("Dispatch code")),
 		mcp.WithNumber("bill_customer_id", mcp.Description("Bill-to customer ID")),
 		mcp.WithString("bill_customer_name", mcp.Description("Bill-to customer name")),
@@ -86,7 +89,8 @@ func registerOrderTools(register toolRegister, client *atlClient) {
 		resp, err := client.orders.CreateOrder(ctx, connect.NewRequest(&pb.CreateOrderRequest{
 			OrderNumber:      argStrPtr(args, "order_number"),
 			Active:           active,
-			Zone:             argStrPtr(args, "zone"),
+			OriginZone:       argStrPtr(args, "origin_zone"),
+			DestinationZone:  argStrPtr(args, "destination_zone"),
 			DispatchCode:     argStrPtr(args, "dispatch_code"),
 			BillCustomerId:   argI32Ptr(args, "bill_customer_id"),
 			BillCustomerName: argStrPtr(args, "bill_customer_name"),
@@ -110,7 +114,8 @@ func registerOrderTools(register toolRegister, client *atlClient) {
 		mcp.WithDescription("Update an existing order. ID is required."),
 		mcp.WithNumber("id", mcp.Required(), mcp.Description("Order ID")),
 		mcp.WithBoolean("active", mcp.Description("Whether order is active")),
-		mcp.WithString("zone", mcp.Description("Zone")),
+		mcp.WithString("origin_zone", mcp.Description("Origin zone")),
+		mcp.WithString("destination_zone", mcp.Description("Destination zone")),
 		mcp.WithString("dispatch_code", mcp.Description("Dispatch code")),
 		mcp.WithNumber("bill_customer_id", mcp.Description("Bill-to customer ID")),
 		mcp.WithString("bill_customer_name", mcp.Description("Bill-to customer name")),
@@ -124,7 +129,8 @@ func registerOrderTools(register toolRegister, client *atlClient) {
 		resp, err := client.orders.UpdateOrder(ctx, connect.NewRequest(&pb.UpdateOrderRequest{
 			Id:               int32(argInt(args, "id", 0)),
 			Active:           argBool(args, "active"),
-			Zone:             argStrPtr(args, "zone"),
+			OriginZone:       argStrPtr(args, "origin_zone"),
+			DestinationZone:  argStrPtr(args, "destination_zone"),
 			DispatchCode:     argStrPtr(args, "dispatch_code"),
 			BillCustomerId:   argI32Ptr(args, "bill_customer_id"),
 			BillCustomerName: argStrPtr(args, "bill_customer_name"),
@@ -181,8 +187,11 @@ func formatOrder(o *pb.Order) string {
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("Order #%d — %s\n", o.Id, o.OrderNumber))
 	sb.WriteString(fmt.Sprintf("  Active: %v\n", o.Active))
-	if o.Zone != nil {
-		sb.WriteString(fmt.Sprintf("  Origin Zone: %s\n", *o.Zone))
+	if o.OriginZone != nil {
+		sb.WriteString(fmt.Sprintf("  Origin Zone: %s\n", *o.OriginZone))
+	}
+	if o.DestinationZone != nil {
+		sb.WriteString(fmt.Sprintf("  Destination Zone: %s\n", *o.DestinationZone))
 	}
 	if o.DispatchCode != nil {
 		sb.WriteString(fmt.Sprintf("  Dispatch: %s\n", *o.DispatchCode))
