@@ -46,6 +46,7 @@ type customerSearchResult struct {
 	Zip     *string `json:"zip"`
 	Contact *string `json:"contact"`
 	Phone   *string `json:"phone"`
+	Zone    *string `json:"zone"`
 }
 
 func (h *APIHandler) customerSearch(w http.ResponseWriter, r *http.Request) {
@@ -74,6 +75,7 @@ func (h *APIHandler) customerSearch(w http.ResponseWriter, r *http.Request) {
 			Zip:     c.Zip,
 			Contact: c.Contact,
 			Phone:   c.Phone,
+			Zone:    c.Zone,
 		})
 	}
 

@@ -348,6 +348,22 @@ function orderForm() {
             if (contactField) contactField.value = customer.contact || '';
             let phoneField = document.getElementById(prefix + '_phone');
             if (phoneField) phoneField.value = customer.phone || '';
+            // Auto-fill zone from customer
+            if (customer.zone) {
+                if (prefix === 'load') {
+                    let ozField = document.getElementById('origin_zone');
+                    if (ozField) {
+                        ozField.value = customer.zone;
+                        ozField.dispatchEvent(new Event('change', {bubbles: true}));
+                    }
+                } else if (prefix === 'drop') {
+                    let dzField = document.getElementById('destination_zone');
+                    if (dzField) {
+                        dzField.value = customer.zone;
+                        dzField.dispatchEvent(new Event('change', {bubbles: true}));
+                    }
+                }
+            }
         }
     }
 }
