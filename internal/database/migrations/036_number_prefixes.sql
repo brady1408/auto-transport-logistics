@@ -1,5 +1,12 @@
 -- +goose Up
 
+-- Widen columns to accommodate prefixes
+ALTER TABLE orders ALTER COLUMN order_number TYPE VARCHAR(20);
+ALTER TABLE invoices ALTER COLUMN order_number TYPE VARCHAR(20);
+ALTER TABLE trips ALTER COLUMN load_number TYPE VARCHAR(20);
+ALTER TABLE order_vehicles ALTER COLUMN load_number TYPE VARCHAR(20);
+ALTER TABLE load_details ALTER COLUMN load_number TYPE VARCHAR(20);
+
 -- Add prefixes to existing order numbers (ORD-)
 UPDATE orders SET order_number = 'ORD-' || order_number
 WHERE order_number NOT LIKE 'ORD-%';
