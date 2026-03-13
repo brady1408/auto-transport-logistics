@@ -31,4 +31,4 @@ proto: proto-lint
 	buf generate
 
 build-mcp:
-	go build -o bin/atlinks-mcp ./cmd/mcp
+	go build -o bin/atlinks-mcp ./cmd/atlinks-mcp
