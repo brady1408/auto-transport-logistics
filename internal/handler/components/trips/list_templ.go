@@ -141,7 +141,7 @@ func ListPage(pg components.PageContext, result models.TripListResult, filter mo
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"></div><div id=\"trip-table\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"></div><div id=\"trip-table\" hx-get=\"/dispatch/trips\" hx-trigger=\"every 10s [document.visibilityState==='visible']\" hx-include=\".filter-bar [name]\" hx-swap=\"innerHTML\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

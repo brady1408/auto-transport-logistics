@@ -27,7 +27,7 @@ var orderSortConfig = SortConfig{
 		"dispatch_code":     "dispatch_code",
 		"create_date":       "create_date",
 	},
-	DefaultCol: "order_number",
+	DefaultCol: "create_date",
 	DefaultDir: "DESC",
 }
 

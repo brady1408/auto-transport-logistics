@@ -141,7 +141,7 @@ func ListPage(pg components.PageContext, result models.OrderListResult, filter m
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"></div><div id=\"order-table\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"></div><div id=\"order-table\" hx-get=\"/dispatch/orders\" hx-trigger=\"every 10s [document.visibilityState==='visible']\" hx-include=\".filter-bar [name]\" hx-swap=\"innerHTML\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -67,7 +67,13 @@ templ ListPage(pg components.PageContext, result models.TripListResult, filter m
 			<input type="hidden" name="sort_by" value={ filter.SortBy }/>
 			<input type="hidden" name="sort_dir" value={ filter.SortDir }/>
 		</div>
-		<div id="trip-table">
+		<div
+			id="trip-table"
+			hx-get="/dispatch/trips"
+			hx-trigger="every 10s [document.visibilityState==='visible']"
+			hx-include=".filter-bar [name]"
+			hx-swap="innerHTML"
+		>
 			@Table(result, filter)
 		</div>
 	}

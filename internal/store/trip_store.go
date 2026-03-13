@@ -27,7 +27,7 @@ var tripSortConfig = SortConfig{
 		"trip_date":    "trip_date",
 		"status":       "status",
 	},
-	DefaultCol: "load_number",
+	DefaultCol: "trip_date",
 	DefaultDir: "DESC",
 }
 
