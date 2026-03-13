@@ -84,8 +84,8 @@ func main() {
 	s := server.NewMCPServer(
 		"atlinks",
 		"1.0.0",
-		server.WithToolCapabilities(false),
-		server.WithResourceCapabilities(false, false),
+		server.WithToolCapabilities(true),
+		server.WithResourceCapabilities(true, false),
 	)
 
 	registerAllTools(s, client)
