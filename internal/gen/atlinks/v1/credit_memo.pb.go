@@ -868,7 +868,7 @@ const file_atlinks_v1_credit_memo_proto_rawDesc = "" +
 	"\rGetCreditMemo\x12 .atlinks.v1.GetCreditMemoRequest\x1a!.atlinks.v1.GetCreditMemoResponse\x12]\n" +
 	"\x10CreateCreditMemo\x12#.atlinks.v1.CreateCreditMemoRequest\x1a$.atlinks.v1.CreateCreditMemoResponse\x12]\n" +
 	"\x10UpdateCreditMemo\x12#.atlinks.v1.UpdateCreditMemoRequest\x1a$.atlinks.v1.UpdateCreditMemoResponse\x12]\n" +
-	"\x10DeleteCreditMemo\x12#.atlinks.v1.DeleteCreditMemoRequest\x1a$.atlinks.v1.DeleteCreditMemoResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\x10DeleteCreditMemo\x12#.atlinks.v1.DeleteCreditMemoRequest\x1a$.atlinks.v1.DeleteCreditMemoResponseBQZOgithub.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_credit_memo_proto_rawDescOnce sync.Once

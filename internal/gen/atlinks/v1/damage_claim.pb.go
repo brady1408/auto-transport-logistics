@@ -971,7 +971,7 @@ const file_atlinks_v1_damage_claim_proto_rawDesc = "" +
 	"\x0eGetDamageClaim\x12!.atlinks.v1.GetDamageClaimRequest\x1a\".atlinks.v1.GetDamageClaimResponse\x12`\n" +
 	"\x11CreateDamageClaim\x12$.atlinks.v1.CreateDamageClaimRequest\x1a%.atlinks.v1.CreateDamageClaimResponse\x12`\n" +
 	"\x11UpdateDamageClaim\x12$.atlinks.v1.UpdateDamageClaimRequest\x1a%.atlinks.v1.UpdateDamageClaimResponse\x12`\n" +
-	"\x11DeleteDamageClaim\x12$.atlinks.v1.DeleteDamageClaimRequest\x1a%.atlinks.v1.DeleteDamageClaimResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\x11DeleteDamageClaim\x12$.atlinks.v1.DeleteDamageClaimRequest\x1a%.atlinks.v1.DeleteDamageClaimResponseBQZOgithub.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_damage_claim_proto_rawDescOnce sync.Once

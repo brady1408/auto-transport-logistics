@@ -1250,7 +1250,7 @@ const file_atlinks_v1_employee_proto_rawDesc = "" +
 	"\vGetEmployee\x12\x1e.atlinks.v1.GetEmployeeRequest\x1a\x1f.atlinks.v1.GetEmployeeResponse\x12W\n" +
 	"\x0eCreateEmployee\x12!.atlinks.v1.CreateEmployeeRequest\x1a\".atlinks.v1.CreateEmployeeResponse\x12W\n" +
 	"\x0eUpdateEmployee\x12!.atlinks.v1.UpdateEmployeeRequest\x1a\".atlinks.v1.UpdateEmployeeResponse\x12W\n" +
-	"\x0eDeleteEmployee\x12!.atlinks.v1.DeleteEmployeeRequest\x1a\".atlinks.v1.DeleteEmployeeResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\x0eDeleteEmployee\x12!.atlinks.v1.DeleteEmployeeRequest\x1a\".atlinks.v1.DeleteEmployeeResponseBQZOgithub.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_employee_proto_rawDescOnce sync.Once

@@ -908,7 +908,7 @@ const file_atlinks_v1_vendor_proto_rawDesc = "" +
 	"\tGetVendor\x12\x1c.atlinks.v1.GetVendorRequest\x1a\x1d.atlinks.v1.GetVendorResponse\x12Q\n" +
 	"\fCreateVendor\x12\x1f.atlinks.v1.CreateVendorRequest\x1a .atlinks.v1.CreateVendorResponse\x12Q\n" +
 	"\fUpdateVendor\x12\x1f.atlinks.v1.UpdateVendorRequest\x1a .atlinks.v1.UpdateVendorResponse\x12Q\n" +
-	"\fDeleteVendor\x12\x1f.atlinks.v1.DeleteVendorRequest\x1a .atlinks.v1.DeleteVendorResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\fDeleteVendor\x12\x1f.atlinks.v1.DeleteVendorRequest\x1a .atlinks.v1.DeleteVendorResponseBQZOgithub.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_vendor_proto_rawDescOnce sync.Once

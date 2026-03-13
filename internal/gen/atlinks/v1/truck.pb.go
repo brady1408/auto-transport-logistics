@@ -1201,7 +1201,7 @@ const file_atlinks_v1_truck_proto_rawDesc = "" +
 	"\bGetTruck\x12\x1b.atlinks.v1.GetTruckRequest\x1a\x1c.atlinks.v1.GetTruckResponse\x12N\n" +
 	"\vCreateTruck\x12\x1e.atlinks.v1.CreateTruckRequest\x1a\x1f.atlinks.v1.CreateTruckResponse\x12N\n" +
 	"\vUpdateTruck\x12\x1e.atlinks.v1.UpdateTruckRequest\x1a\x1f.atlinks.v1.UpdateTruckResponse\x12N\n" +
-	"\vDeleteTruck\x12\x1e.atlinks.v1.DeleteTruckRequest\x1a\x1f.atlinks.v1.DeleteTruckResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\vDeleteTruck\x12\x1e.atlinks.v1.DeleteTruckRequest\x1a\x1f.atlinks.v1.DeleteTruckResponseBQZOgithub.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_truck_proto_rawDescOnce sync.Once

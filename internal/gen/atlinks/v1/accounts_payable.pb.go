@@ -950,7 +950,7 @@ const file_atlinks_v1_accounts_payable_proto_rawDesc = "" +
 	"\x05GetAP\x12\x18.atlinks.v1.GetAPRequest\x1a\x19.atlinks.v1.GetAPResponse\x12E\n" +
 	"\bCreateAP\x12\x1b.atlinks.v1.CreateAPRequest\x1a\x1c.atlinks.v1.CreateAPResponse\x12E\n" +
 	"\bUpdateAP\x12\x1b.atlinks.v1.UpdateAPRequest\x1a\x1c.atlinks.v1.UpdateAPResponse\x12E\n" +
-	"\bDeleteAP\x12\x1b.atlinks.v1.DeleteAPRequest\x1a\x1c.atlinks.v1.DeleteAPResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\bDeleteAP\x12\x1b.atlinks.v1.DeleteAPRequest\x1a\x1c.atlinks.v1.DeleteAPResponseBQZOgithub.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_accounts_payable_proto_rawDescOnce sync.Once

@@ -1639,7 +1639,7 @@ const file_atlinks_v1_lookup_proto_rawDesc = "" +
 	"\n" +
 	"UpdateItem\x12\x1d.atlinks.v1.UpdateItemRequest\x1a\x1e.atlinks.v1.UpdateItemResponse\x12O\n" +
 	"\n" +
-	"DeleteItem\x12\x1f.atlinks.v1.DeleteLookupRequest\x1a .atlinks.v1.DeleteLookupResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"DeleteItem\x12\x1f.atlinks.v1.DeleteLookupRequest\x1a .atlinks.v1.DeleteLookupResponseBQZOgithub.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_lookup_proto_rawDescOnce sync.Once

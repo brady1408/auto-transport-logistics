@@ -1547,7 +1547,7 @@ const file_atlinks_v1_earnings_proto_rawDesc = "" +
 	"\x10GetTruckEarnings\x12#.atlinks.v1.GetTruckEarningsRequest\x1a$.atlinks.v1.GetTruckEarningsResponse\x12f\n" +
 	"\x13CreateTruckEarnings\x12&.atlinks.v1.CreateTruckEarningsRequest\x1a'.atlinks.v1.CreateTruckEarningsResponse\x12f\n" +
 	"\x13UpdateTruckEarnings\x12&.atlinks.v1.UpdateTruckEarningsRequest\x1a'.atlinks.v1.UpdateTruckEarningsResponse\x12f\n" +
-	"\x13DeleteTruckEarnings\x12&.atlinks.v1.DeleteTruckEarningsRequest\x1a'.atlinks.v1.DeleteTruckEarningsResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\x13DeleteTruckEarnings\x12&.atlinks.v1.DeleteTruckEarningsRequest\x1a'.atlinks.v1.DeleteTruckEarningsResponseBQZOgithub.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_earnings_proto_rawDescOnce sync.Once

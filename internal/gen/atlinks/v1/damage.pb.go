@@ -1433,7 +1433,7 @@ const file_atlinks_v1_damage_proto_rawDesc = "" +
 	"\n" +
 	"CreateNote\x12\x1d.atlinks.v1.CreateNoteRequest\x1a\x1e.atlinks.v1.CreateNoteResponse\x12K\n" +
 	"\n" +
-	"DeleteNote\x12\x1d.atlinks.v1.DeleteNoteRequest\x1a\x1e.atlinks.v1.DeleteNoteResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"DeleteNote\x12\x1d.atlinks.v1.DeleteNoteRequest\x1a\x1e.atlinks.v1.DeleteNoteResponseBQZOgithub.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_damage_proto_rawDescOnce sync.Once

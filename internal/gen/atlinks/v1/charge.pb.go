@@ -915,7 +915,7 @@ const file_atlinks_v1_charge_proto_rawDesc = "" +
 	"\tGetCharge\x12\x1c.atlinks.v1.GetChargeRequest\x1a\x1d.atlinks.v1.GetChargeResponse\x12Q\n" +
 	"\fCreateCharge\x12\x1f.atlinks.v1.CreateChargeRequest\x1a .atlinks.v1.CreateChargeResponse\x12Q\n" +
 	"\fUpdateCharge\x12\x1f.atlinks.v1.UpdateChargeRequest\x1a .atlinks.v1.UpdateChargeResponse\x12Q\n" +
-	"\fDeleteCharge\x12\x1f.atlinks.v1.DeleteChargeRequest\x1a .atlinks.v1.DeleteChargeResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\fDeleteCharge\x12\x1f.atlinks.v1.DeleteChargeRequest\x1a .atlinks.v1.DeleteChargeResponseBQZOgithub.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_charge_proto_rawDescOnce sync.Once

@@ -1353,7 +1353,7 @@ const file_atlinks_v1_zone_proto_rawDesc = "" +
 	"\x0eGetZonePricing\x12!.atlinks.v1.GetZonePricingRequest\x1a\".atlinks.v1.GetZonePricingResponse\x12`\n" +
 	"\x11CreateZonePricing\x12$.atlinks.v1.CreateZonePricingRequest\x1a%.atlinks.v1.CreateZonePricingResponse\x12`\n" +
 	"\x11UpdateZonePricing\x12$.atlinks.v1.UpdateZonePricingRequest\x1a%.atlinks.v1.UpdateZonePricingResponse\x12`\n" +
-	"\x11DeleteZonePricing\x12$.atlinks.v1.DeleteZonePricingRequest\x1a%.atlinks.v1.DeleteZonePricingResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\x11DeleteZonePricing\x12$.atlinks.v1.DeleteZonePricingRequest\x1a%.atlinks.v1.DeleteZonePricingResponseBQZOgithub.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_zone_proto_rawDescOnce sync.Once
