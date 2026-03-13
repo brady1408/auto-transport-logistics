@@ -31,15 +31,20 @@ type vehicleOrderService interface {
 	RevertVehicleStatus(ctx context.Context, vehicleID int) error
 }
 
-type VehicleHandler struct {
-	store      vehicleStore
-	orderStore vehicleOrderStore
-	orderSvc   vehicleOrderService
-	deps       *Deps
+type vehicleZonePricingStore interface {
+	GetByZones(ctx context.Context, zoneA, zoneB string) (*models.ZonePricing, error)
 }
 
-func NewVehicleHandler(store vehicleStore, orderStore vehicleOrderStore, orderSvc vehicleOrderService, deps *Deps) *VehicleHandler {
-	return &VehicleHandler{store: store, orderStore: orderStore, orderSvc: orderSvc, deps: deps}
+type VehicleHandler struct {
+	store             vehicleStore
+	orderStore        vehicleOrderStore
+	orderSvc          vehicleOrderService
+	zonePricingStore  vehicleZonePricingStore
+	deps              *Deps
+}
+
+func NewVehicleHandler(store vehicleStore, orderStore vehicleOrderStore, orderSvc vehicleOrderService, zonePricingStore vehicleZonePricingStore, deps *Deps) *VehicleHandler {
+	return &VehicleHandler{store: store, orderStore: orderStore, orderSvc: orderSvc, zonePricingStore: zonePricingStore, deps: deps}
 }
 
 func (h *VehicleHandler) Register(mux *http.ServeMux) {
@@ -89,8 +94,18 @@ func (h *VehicleHandler) newForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	v := &models.OrderVehicle{OrderID: orderID, Active: true, Status: "Inbound", Operable: true}
+
+	// Auto-populate transport_amt from zone pricing
+	if order.OriginZone != nil && order.DestinationZone != nil {
+		zp, err := h.zonePricingStore.GetByZones(r.Context(), *order.OriginZone, *order.DestinationZone)
+		if err == nil && zp.Amount != nil {
+			v.TransportAmt = zp.Amount
+		}
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, &models.OrderVehicle{OrderID: orderID, Active: true, Status: "Inbound", Operable: true}, order, true, ""))
+	h.deps.renderTempl(w, r, orders.VehicleFormPage(pg, v, order, true, ""))
 }
 
 func (h *VehicleHandler) create(w http.ResponseWriter, r *http.Request) {
