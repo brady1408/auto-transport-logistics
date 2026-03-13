@@ -214,7 +214,7 @@ func (h *DamageClaimHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "damage_claims", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Damage claim deleted")
 
-	redirect(w, r, "/accounting/damage-claims")
+	redirectBack(w, r, "/accounting/damage-claims")
 }
 
 func bindDamageClaimForm(r *http.Request) *models.DamageClaim {

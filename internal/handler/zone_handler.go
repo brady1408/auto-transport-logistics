@@ -124,7 +124,7 @@ func (h *ZoneHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "zones", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Zone deleted")
 
-	redirect(w, r, "/global/zones")
+	redirectBack(w, r, "/global/zones")
 }
 
 // Zone Pricing
@@ -216,5 +216,5 @@ func (h *ZoneHandler) pricingDelete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "zone_pricing", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Zone pricing deleted")
 
-	redirect(w, r, "/global/zone-pricing")
+	redirectBack(w, r, "/global/zone-pricing")
 }

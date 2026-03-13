@@ -154,7 +154,7 @@ func (h *TruckHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "trucks", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Truck deleted")
 
-	redirect(w, r, "/global/trucks")
+	redirectBack(w, r, "/global/trucks")
 }
 
 func bindTruckForm(r *http.Request) *models.Truck {

@@ -171,7 +171,7 @@ func (h *AccountsPayableHandler) delete(w http.ResponseWriter, r *http.Request) 
 	h.deps.Audit.Log(r.Context(), "accounts_payable", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "AP record deleted")
 
-	redirect(w, r, "/accounting/ap")
+	redirectBack(w, r, "/accounting/ap")
 }
 
 func bindAPForm(r *http.Request) *models.AccountsPayable {

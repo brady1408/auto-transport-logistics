@@ -153,7 +153,7 @@ func (h *EmployeeHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "employees", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Employee deleted")
 
-	redirect(w, r, "/global/employees")
+	redirectBack(w, r, "/global/employees")
 }
 
 func bindEmployeeForm(r *http.Request) *models.Employee {

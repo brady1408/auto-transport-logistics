@@ -266,7 +266,7 @@ func (h *InvoiceHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "invoices", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Invoice deleted")
 
-	redirect(w, r, "/accounting/invoices")
+	redirectBack(w, r, "/accounting/invoices")
 }
 
 func (h *InvoiceHandler) void(w http.ResponseWriter, r *http.Request) {

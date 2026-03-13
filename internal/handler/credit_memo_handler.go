@@ -185,7 +185,7 @@ func (h *CreditMemoHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "credit_memos", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Credit memo deleted")
 
-	redirect(w, r, "/accounting/credit-memos")
+	redirectBack(w, r, "/accounting/credit-memos")
 }
 
 func bindCreditMemoForm(r *http.Request) *models.CreditMemo {

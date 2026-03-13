@@ -124,5 +124,5 @@ func (h *LookupHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), h.store.TableName(), id, "DELETE", old, nil)
 	h.deps.setFlash(w, h.title+" entry deleted")
 
-	redirect(w, r, h.basePath)
+	redirectBack(w, r, h.basePath)
 }

@@ -241,7 +241,7 @@ func (h *OrderHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "orders", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Order deleted")
 
-	redirect(w, r, "/dispatch/orders")
+	redirectBack(w, r, "/dispatch/orders")
 }
 
 func (h *OrderHandler) generateInvoice(w http.ResponseWriter, r *http.Request) {

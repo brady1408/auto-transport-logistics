@@ -224,6 +224,18 @@ func redirect(w http.ResponseWriter, r *http.Request, url string) {
 	http.Redirect(w, r, url, http.StatusSeeOther)
 }
 
+// redirectBack redirects to the Referer URL if it shares the same host (preserving sort/filter
+// query params), otherwise falls back to the given URL.
+func redirectBack(w http.ResponseWriter, r *http.Request, fallback string) {
+	if ref := r.Referer(); ref != "" {
+		if u, err := url.Parse(ref); err == nil && (u.Host == "" || u.Host == r.Host) {
+			redirect(w, r, u.RequestURI())
+			return
+		}
+	}
+	redirect(w, r, fallback)
+}
+
 // serverError logs the full error server-side and returns a generic message to the client.
 func serverError(w http.ResponseWriter, err error) {
 	log.Printf("server error: %v", err)

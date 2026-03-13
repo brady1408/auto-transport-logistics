@@ -138,7 +138,7 @@ func (h *VendorHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 	h.deps.Audit.Log(r.Context(), "vendors", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Vendor deleted")
-	redirect(w, r, "/global/vendors")
+	redirectBack(w, r, "/global/vendors")
 }
 
 func bindVendorForm(r *http.Request) *models.Vendor {

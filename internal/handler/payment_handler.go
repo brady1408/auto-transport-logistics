@@ -230,7 +230,7 @@ func (h *PaymentHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "payments", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Payment deleted")
 
-	redirect(w, r, "/accounting/payments")
+	redirectBack(w, r, "/accounting/payments")
 }
 
 func (h *PaymentHandler) apply(w http.ResponseWriter, r *http.Request) {

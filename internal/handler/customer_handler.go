@@ -161,7 +161,7 @@ func (h *CustomerHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "customers", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Customer deleted")
 
-	redirect(w, r, "/global/customers")
+	redirectBack(w, r, "/global/customers")
 }
 
 func bindCustomerForm(r *http.Request) *models.Customer {

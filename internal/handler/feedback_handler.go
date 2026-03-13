@@ -288,7 +288,7 @@ func (h *FeedbackHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "feedback", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Feedback deleted")
 
-	redirect(w, r, "/feedback")
+	redirectBack(w, r, "/feedback")
 }
 
 func (h *FeedbackHandler) addComment(w http.ResponseWriter, r *http.Request) {

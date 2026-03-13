@@ -79,7 +79,7 @@ func (h *TermsHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "terms", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Term deleted")
 
-	redirect(w, r, "/global/terms")
+	redirectBack(w, r, "/global/terms")
 }
 
 // Tax Codes Handler
@@ -155,7 +155,7 @@ func (h *TaxCodeHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "tax_codes", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Tax code deleted")
 
-	redirect(w, r, "/global/tax-codes")
+	redirectBack(w, r, "/global/tax-codes")
 }
 
 // Items Handler
@@ -232,5 +232,5 @@ func (h *ItemHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "items", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Item deleted")
 
-	redirect(w, r, "/global/items")
+	redirectBack(w, r, "/global/items")
 }

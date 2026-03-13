@@ -209,7 +209,7 @@ func (h *EarningsAdjHandler) deleteDriver(w http.ResponseWriter, r *http.Request
 
 	h.deps.Audit.Log(r.Context(), "driver_earnings_adjustments", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Driver adjustment deleted")
-	redirect(w, r, "/accounting/driver-adjustments")
+	redirectBack(w, r, "/accounting/driver-adjustments")
 }
 
 // ---------------------------------------------------------------------------
@@ -374,7 +374,7 @@ func (h *EarningsAdjHandler) deleteTruck(w http.ResponseWriter, r *http.Request)
 
 	h.deps.Audit.Log(r.Context(), "truck_earnings_adjustments", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Truck adjustment deleted")
-	redirect(w, r, "/accounting/truck-adjustments")
+	redirectBack(w, r, "/accounting/truck-adjustments")
 }
 
 // validateAmount returns an error message if s is not a valid non-negative decimal.

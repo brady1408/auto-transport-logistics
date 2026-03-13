@@ -267,7 +267,7 @@ func (h *TripHandler) delete(w http.ResponseWriter, r *http.Request) {
 	h.deps.Audit.Log(r.Context(), "trips", id, "DELETE", old, nil)
 	h.deps.setFlash(w, "Trip deleted")
 
-	redirect(w, r, "/dispatch/trips")
+	redirectBack(w, r, "/dispatch/trips")
 }
 
 func (h *TripHandler) assignVehicle(w http.ResponseWriter, r *http.Request) {
