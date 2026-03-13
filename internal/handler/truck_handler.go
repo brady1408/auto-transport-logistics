@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/brady1408/atlinks/internal/handler/components/trucks"
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/trucks"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 type truckStore interface {

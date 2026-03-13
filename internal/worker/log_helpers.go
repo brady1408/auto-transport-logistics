@@ -3,8 +3,8 @@ package worker
 import (
 	"context"
 
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
 func logFail(ctx context.Context, s *store.QBOStore, companyID int, entityType string, entityID int, action string, err error) {

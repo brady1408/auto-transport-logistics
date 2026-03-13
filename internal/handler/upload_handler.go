@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/brady1408/atlinks/internal/auth"
-	"github.com/brady1408/atlinks/internal/handler/components/admin"
-	"github.com/brady1408/atlinks/internal/handler/components/attachments"
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/storage"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/admin"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/attachments"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/storage"
 )
 
 var allowedImageTypes = map[string]bool{

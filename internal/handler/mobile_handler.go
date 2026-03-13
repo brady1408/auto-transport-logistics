@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/brady1408/atlinks/internal/auth"
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/storage"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/storage"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
 // MobileHandler serves JSON API endpoints for the driver mobile app.

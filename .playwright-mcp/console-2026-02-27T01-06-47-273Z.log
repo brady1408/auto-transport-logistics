@@ -1,0 +1,1 @@
+[   37005ms] [ERROR] Pattern attribute value [a-z0-9-]+ is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[a-z0-9-]+/v: Invalid character class @ https://atlinks.app/admin/companies/3/edit:0

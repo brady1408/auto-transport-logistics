@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
 )
 
 // RequireRole returns middleware that restricts access to users with one of the given roles.

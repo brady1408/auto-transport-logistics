@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

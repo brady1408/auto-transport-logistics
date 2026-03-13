@@ -14,10 +14,10 @@ import (
 
 	"github.com/a-h/templ"
 
-	"github.com/brady1408/atlinks/internal/audit"
-	"github.com/brady1408/atlinks/internal/auth"
-	"github.com/brady1408/atlinks/internal/handler/components"
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/audit"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 // depsCompanyStore is the subset of CompanyStore used by Deps for company name lookups.

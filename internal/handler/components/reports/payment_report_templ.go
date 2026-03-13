@@ -11,8 +11,8 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"fmt"
 
-	"github.com/brady1408/atlinks/internal/handler/components"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
 func PaymentReportPage(pg components.PageContext, rows []store.PaymentReportRow, dateFrom string, dateTo string) templ.Component {

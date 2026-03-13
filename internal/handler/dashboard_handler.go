@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/brady1408/atlinks/internal/handler/components/pages"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/pages"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
 type dashboardOrderStore interface {

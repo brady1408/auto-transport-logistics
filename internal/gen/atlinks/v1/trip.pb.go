@@ -3861,7 +3861,7 @@ const file_atlinks_v1_trip_proto_rawDesc = "" +
 	"\x0eListTripRoutes\x12!.atlinks.v1.ListTripRoutesRequest\x1a\".atlinks.v1.ListTripRoutesResponse\x12Z\n" +
 	"\x0fCreateTripRoute\x12\".atlinks.v1.CreateTripRouteRequest\x1a#.atlinks.v1.CreateTripRouteResponse\x12Z\n" +
 	"\x0fUpdateTripRoute\x12\".atlinks.v1.UpdateTripRouteRequest\x1a#.atlinks.v1.UpdateTripRouteResponse\x12Z\n" +
-	"\x0fDeleteTripRoute\x12\".atlinks.v1.DeleteTripRouteRequest\x1a#.atlinks.v1.DeleteTripRouteResponseB@Z>github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\x0fDeleteTripRoute\x12\".atlinks.v1.DeleteTripRouteRequest\x1a#.atlinks.v1.DeleteTripRouteResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_trip_proto_rawDescOnce sync.Once

@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/brady1408/atlinks/internal/audit"
-	pb "github.com/brady1408/atlinks/internal/gen/atlinks/v1"
-	"github.com/brady1408/atlinks/internal/gen/atlinks/v1/atlinkspbconnect"
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/service"
+	"github.com/brady1408/auto-transport-logistics/internal/audit"
+	pb "github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1"
+	"github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1/atlinkspbconnect"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/service"
 )
 
 type tripStoreI interface {

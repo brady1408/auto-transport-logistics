@@ -937,7 +937,7 @@ const file_atlinks_v1_feedback_proto_rawDesc = "" +
 	"\x14UpdateFeedbackStatus\x12'.atlinks.v1.UpdateFeedbackStatusRequest\x1a(.atlinks.v1.UpdateFeedbackStatusResponse\x12Q\n" +
 	"\fListComments\x12\x1f.atlinks.v1.ListCommentsRequest\x1a .atlinks.v1.ListCommentsResponse\x12K\n" +
 	"\n" +
-	"AddComment\x12\x1d.atlinks.v1.AddCommentRequest\x1a\x1e.atlinks.v1.AddCommentResponseB@Z>github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"AddComment\x12\x1d.atlinks.v1.AddCommentRequest\x1a\x1e.atlinks.v1.AddCommentResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_feedback_proto_rawDescOnce sync.Once

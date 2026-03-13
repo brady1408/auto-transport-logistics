@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"connectrpc.com/connect"
-	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
 )
 
 // AuthInterceptor validates Bearer JWT tokens and populates auth.ContextUser.

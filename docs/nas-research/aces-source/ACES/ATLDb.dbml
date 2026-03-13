@@ -1,0 +1,663 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Database Name="ATLinksTemp" Class="ATLDbDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="AppSettings" ConnectionString="Data Source=odyssey\sqlexpress;Initial Catalog=ATLinksTemp;Persist Security Info=True;User ID=sa" SettingsObjectName="ATLNetwork.EDI.ACES.Properties.Settings" SettingsPropertyName="ATLinksTempConnectionString2" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.C00" Member="C00s">
+    <Type Name="C00">
+      <Column Name="C00Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Address1" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="Address2" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="City" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="State" Type="System.String" DbType="VarChar(2)" CanBeNull="true" />
+      <Column Name="Zip" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Phone" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Fax" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="TollFree" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="StartD00Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="StartA00Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="LogoFile" Type="System.String" DbType="VarChar(60)" CanBeNull="true" />
+      <Column Name="InvLogoXPos" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="InvLogoYPos" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="InvLogoWidth" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="InvLogoHeight" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AgingPeriod1" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AgingPeriod2" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AgingPeriod3" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AgingPeriod4" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ReceivablesA70Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="RevenueA70Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="CheckingA70Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AccountingType" Type="System.Char" DbType="VarChar(1)" CanBeNull="true" />
+      <Column Name="InvReflectsOrder" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="QBDescriptionItem" Type="System.String" DbType="VarChar(15)" CanBeNull="true" />
+      <Column Name="QBTransportItem" Type="System.String" DbType="VarChar(15)" CanBeNull="true" />
+      <Column Name="QBFuelItem" Type="System.String" DbType="VarChar(15)" CanBeNull="true" />
+      <Column Name="QBOtherChargeItem" Type="System.String" DbType="VarChar(15)" CanBeNull="true" />
+      <Column Name="QBClassName" Type="System.String" DbType="VarChar(40)" CanBeNull="true" />
+      <Column Name="TripComments" Type="System.String" DbType="VarChar(2000)" CanBeNull="true" />
+      <Column Name="TripCommentHeader" Type="System.String" DbType="VarChar(60)" CanBeNull="true" />
+      <Column Name="DeliveryCommentFooter1" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="DeliveryCommentFooter2" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="DeliveryCommentFooter3" Type="System.String" DbType="VarChar(1000)" CanBeNull="true" />
+      <Column Name="InvCommentFooter" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="PastDueStamp" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="GreyShading" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="QualcommPath" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="CheckCredit" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="AFEBasePath" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="DupVINAction" Type="System.Char" DbType="VarChar(1)" CanBeNull="true" />
+      <Column Name="ExpWarnDays" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="DriverWarnDays" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ReqCompOdometer" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="ReqLeaseOdometer" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="DeliveryPriceDefault" Type="System.String" DbType="VarChar(3)" CanBeNull="true" />
+      <Column Name="DTConnectString" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="ATConnectString" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="LinkId" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="ReqZones" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="OrderWarnDays" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="TripWarnDays" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="PrintFilePath" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="GSTNumber" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="GSTRate" Type="System.Decimal" DbType="Decimal(5,2)" CanBeNull="true" />
+      <Column Name="QBSubClass" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="SCAC" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DefaultBrokerCalcType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DefaultFuelCalcType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DefaultUnitCalcType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="QBBrokerItem" Type="System.String" DbType="VarChar(15)" CanBeNull="true" />
+      <Column Name="SeperateBroker" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="DeliveryInvDate" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="InsuranceWarnDays" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="UpdateRequest" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="UpdateDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="AddDCToInvClass" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="QCCompanyNumber" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="QCMacroNumber" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="FieldCode1Prompt" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="FieldCode2Prompt" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="FieldCode3Prompt" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="FieldCode4Prompt" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="FieldCode5Prompt" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Period1BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period1EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period1Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period2BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period2EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period2Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period3BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period3EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period3Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period4BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period4EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period4Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period5BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period5EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period5Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period6BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period6EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period6Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period7BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period7EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period7Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period8BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period8EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period8Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period9BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period9EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period9Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period10BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period10EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period10Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period11BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period11EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period11Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period12BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period12EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period12Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Period13BegDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period13EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Period13Closed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="DefaultD20TripToID" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="SetTripDetHdrToID" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="DefaultHdrToPU" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="DefaultPrinterDialog" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="RateConfFooter" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="SuspectD30Dates" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="AdjustEqualLoadDrop" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ImageServer" Type="System.String" DbType="VarChar(60)" CanBeNull="true" />
+      <Column Name="ImageDatabase" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="ImageUserId" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="ImagePassword" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="UpdateMobileTerms" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="HondaBillCustNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="FordBillCustNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="AdvanceFuelItem" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="AdvanceCashItem" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="QBARAccount" Type="System.String" DbType="VarChar(159)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.D00" Member="D00s">
+    <Type Name="D00">
+      <Column Name="D00Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="E80Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="LocalPUG50Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="LocalPUVendor" Type="System.String" DbType="VarChar(32)" CanBeNull="true" />
+      <Column Name="PUStageG00Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="PUStageCust" Type="System.String" DbType="VarChar(32)" CanBeNull="true" />
+      <Column Name="PUStageCustNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="PUStageZone" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="PUStageAddr1" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="PUStageAddr2" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="PUStageCity" Type="System.String" DbType="VarChar(25)" CanBeNull="true" />
+      <Column Name="PUStageState" Type="System.String" DbType="VarChar(2)" CanBeNull="true" />
+      <Column Name="PUStageZip" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="PUStagePhone" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="PUStageFax" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="PUStageContact" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="PUStageAmount" Type="System.Decimal" DbType="Decimal(7,2)" CanBeNull="true" />
+      <Column Name="PUStageDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="PUAmountIsAdditional" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="LPUInSettlements" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="LocalDOG50Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="LocalDOVendor" Type="System.String" DbType="VarChar(32)" CanBeNull="true" />
+      <Column Name="DOStageG00Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="DOStageCust" Type="System.String" DbType="VarChar(32)" CanBeNull="true" />
+      <Column Name="DOStageCustNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DOStageZone" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DOStageAddr1" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="DOStageAddr2" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="DOStageCity" Type="System.String" DbType="VarChar(25)" CanBeNull="true" />
+      <Column Name="DOStageState" Type="System.String" DbType="VarChar(2)" CanBeNull="true" />
+      <Column Name="DOStageZip" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DOStagePhone" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DOStageFax" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DOStageContact" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="DOStageAmount" Type="System.Decimal" DbType="Decimal(7,2)" CanBeNull="true" />
+      <Column Name="DOStageDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="DOAmountIsAdditional" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="LDOInSettlements" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="LocalDispatch" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="E10Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="PONumber" Type="System.String" DbType="VarChar(15)" CanBeNull="true" />
+      <Column Name="BillG00id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="BillCustNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="BillCust" Type="System.String" DbType="VarChar(32)" CanBeNull="true" />
+      <Column Name="BillAddr1" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="BillAddr2" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="BillCity" Type="System.String" DbType="VarChar(25)" CanBeNull="true" />
+      <Column Name="BillState" Type="System.String" DbType="VarChar(2)" CanBeNull="true" />
+      <Column Name="BillZip" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="BillPhone" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="BillZone" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="LoadG00id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="LoadCustNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="LoadCust" Type="System.String" DbType="VarChar(32)" CanBeNull="true" />
+      <Column Name="LoadAddr1" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="LoadAddr2" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="LoadCity" Type="System.String" DbType="VarChar(25)" CanBeNull="true" />
+      <Column Name="LoadState" Type="System.String" DbType="VarChar(2)" CanBeNull="true" />
+      <Column Name="LoadZip" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="LoadPhone" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="LoadMobile" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="LoadZone" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="OrderDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="DropG00id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="DropCustNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DropCust" Type="System.String" DbType="VarChar(32)" CanBeNull="true" />
+      <Column Name="DropAddr1" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="DropAddr2" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="DropCity" Type="System.String" DbType="VarChar(25)" CanBeNull="true" />
+      <Column Name="DropState" Type="System.String" DbType="VarChar(2)" CanBeNull="true" />
+      <Column Name="DropZip" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DropPhone" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DropMobile" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DropZone" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="UnitCount" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="UnitAmount" Type="System.Decimal" DbType="Decimal(9,4)" CanBeNull="true" />
+      <Column Name="DOInstructions" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="LoadContact" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="DropContact" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="BillContact" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="TotalAmount" Type="System.Decimal" DbType="Decimal(9,2)" CanBeNull="true" />
+      <Column Name="TotalOtherCharges" Type="System.Decimal" DbType="Decimal(9,2)" CanBeNull="true" />
+      <Column Name="FuelSurcharge" Type="System.Decimal" DbType="Decimal(7,4)" CanBeNull="true" />
+      <Column Name="D10Waiting" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="D10Scheduled" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Terms" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="NoInvoice" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Broker" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="BrokG50Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="BrokerAmt" Type="System.Decimal" DbType="Decimal(7,2)" CanBeNull="true" />
+      <Column Name="BrokerCalcType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="BrokerInSettlements" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="BrokerInSplits" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Exported" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="LinkCodeFrom" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="LinkCodeTo" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="MfgCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="OrigSPLC" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DestSPLC" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="LockNameLookup" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Active" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="CreatedBy" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="CreatedTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="UpdatedBy" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="UpdatedTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="LinkIdIn" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="LinkIdOut" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Urgent" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="LinkResponse" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="TypeCode" Type="System.String" DbType="VarChar(4)" CanBeNull="true" />
+      <Column Name="DispatchNotes" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="UnitCalcType" Type="System.String" DbType="VarChar(8)" CanBeNull="true" />
+      <Column Name="AvailableDateString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="RequiredDateString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="BillRefInfo" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="GSTApplies" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="LocationCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="BrokerA50Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="CreateBrokerAP" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="FuelCalcType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DropShip" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="LinkD00Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="DispatchCode" Type="System.String" DbType="VarChar(3)" CanBeNull="true" />
+      <Column Name="OrderReference" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="LoadContact2" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="LoadPhone2" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="LoadMobile2" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DropContact2" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="DropPhone2" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DropMobile2" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="BillFax" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="SalesRep" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="Class" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="TaxCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="SPLCIndicator" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="PUInstructions" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="CommissionInSettlements" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="CommissionInSplits" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.D10" Member="D10s">
+    <Type Name="D10">
+      <Column Name="D00Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="D10Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="D20Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="D30Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="D40Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="PD40Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="A00Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="LineNumber" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="UnitID" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="Year" Type="System.String" DbType="VarChar(4)" CanBeNull="true" />
+      <Column Name="Make" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="Model" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="Color" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="VIN" Type="System.String" DbType="VarChar(17)" CanBeNull="true" />
+      <Column Name="ReverseVIN" Type="System.String" DbType="VarChar(17)" CanBeNull="true" />
+      <Column Name="TransportAmount" Type="System.Decimal" DbType="Decimal(9,4)" CanBeNull="true" />
+      <Column Name="Status" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="CurrentLocation" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DropLocation" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Pulled" Type="System.String" DbType="VarChar(1)" CanBeNull="true" />
+      <Column Name="InvoiceNumber" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="EDISent" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="EDILoadTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="EDIDropTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="CreatedBy" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="CreatedTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="UpdatedBy" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="UpdatedTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="OrigRouteCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DestRouteCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="LinkD30Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AuthorizationCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="Sold" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="BayTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="PickupBy" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="PickupTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="E85IdPickup" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="NoFuel" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="SF1" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="RailId" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="VesselId" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="SF2" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="LinkD10Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Options" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="COPAC2AD10Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="FuelSurcharge" Type="System.Decimal" DbType="Decimal(7,4)" CanBeNull="true" />
+      <Column Name="FuelCalcType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="COPAC1CDTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="RemittanceAmt" Type="System.Decimal" DbType="Decimal(7,2)" CanBeNull="true" />
+      <Column Name="ExceptionCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="ChargeCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="LoadType" Type="System.String" DbType="VarChar(1)" CanBeNull="true" />
+      <Column Name="LicensePlateNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.X00" Member="X00s">
+    <Type Name="X00">
+      <Column Name="X00Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="SystemName" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="Description" Type="System.String" DbType="VarChar(60)" CanBeNull="true" />
+      <Column Name="DataFormatType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="ConnectName" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="CatalystFriendly" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="DICN" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="FileSerialNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DnServerName" Type="System.String" DbType="VarChar(60)" CanBeNull="true" />
+      <Column Name="DnFTPInitCmd" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DnUserId" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DnPassword" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DnPath" Type="System.String" DbType="VarChar(40)" CanBeNull="true" />
+      <Column Name="DnFileName" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DownloadData" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="DnDataTransferType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="DnCertificateName" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="DnCertificateStoreName" Type="System.String" DbType="VarChar(60)" CanBeNull="true" />
+      <Column Name="DnCertificatePassword" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DnSecurityType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="UpServerName" Type="System.String" DbType="VarChar(60)" CanBeNull="true" />
+      <Column Name="UpFTPInitCmd" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="UpUserId" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="UpPassword" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="UpPath" Type="System.String" DbType="VarChar(40)" CanBeNull="true" />
+      <Column Name="UpFileName" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="UploadData" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="UpDataTransferType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="UpCertificateName" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="UpCertificateStoreName" Type="System.String" DbType="VarChar(60)" CanBeNull="true" />
+      <Column Name="UpCertificatePassword" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="UpSecurityType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="UpActive" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="DnActive" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.X01" Member="X01s">
+    <Type Name="X01">
+      <Column Name="X01Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="X00Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="MfgCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="LocationCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="CompanyName" Type="System.String" DbType="VarChar(40)" CanBeNull="true" />
+      <Column Name="CarrierNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="CarrierName" Type="System.String" DbType="VarChar(40)" CanBeNull="true" />
+      <Column Name="CarrierCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="VPCCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="OriginCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="LoadCust" Type="System.String" DbType="VarChar(32)" CanBeNull="true" />
+      <Column Name="BillCust" Type="System.String" DbType="VarChar(32)" CanBeNull="true" />
+      <Column Name="OrderAppendDays" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="DispatchCode" Type="System.String" DbType="VarChar(3)" CanBeNull="true" />
+      <Column Name="MfgFileId" Type="System.String" DbType="VarChar(4)" CanBeNull="true" />
+      <Column Name="SenderId" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="OLLocCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="ReceiverId" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="RecoverVIN" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="UTCOffset" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="MfgLocCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="SiteId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.X85" Member="X85s">
+    <Type Name="X85">
+      <Column Name="X85Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="X01Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="X10Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="D00Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="D10Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="D20Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="D30Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="EDISet" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="EventNumber" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Processed" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="OrigSPLC" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="FileName" Type="System.String" DbType="VarChar(12)" CanBeNull="true" />
+      <Column Name="ReleaseTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="ConnectName" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DataFormatType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Event" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="ProcessedTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="SF1" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DTS1" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="UpFileName" Type="System.String" DbType="VarChar(60)" CanBeNull="true" />
+      <Column Name="A40Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="RecordTypeSent" Type="System.String" DbType="VarChar(4)" CanBeNull="true" />
+      <Column Name="D33Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="D34Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.vw_edi_aces_r41" Member="vw_edi_aces_r41s">
+    <Type Name="vw_edi_aces_r41">
+      <Column Name="X85Id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="MFGCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="VPCCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="X00Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="SenderId" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="D20Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="VIN" Type="System.String" DbType="VarChar(17)" CanBeNull="true" />
+      <Column Name="LoadTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="StatusDateTime" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Delivery_Status_Code" Type="System.String" DbType="VarChar(3)" CanBeNull="true" />
+      <Column Name="SPLC_Zip_Code" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="OriginCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DropCustNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="AuthorizationCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="SPLC_Transmission_Flag" Type="System.Char" DbType="VarChar(1) NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.vw_edi_aces_r92" Member="vw_edi_aces_r92s">
+    <Type Name="vw_edi_aces_r92">
+      <Column Name="X85Id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="X00Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="SenderId" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="MfgCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="VPCCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="InvoiceNumber" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="VIN" Type="System.String" DbType="VarChar(17)" CanBeNull="true" />
+      <Column Name="InvoiceDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="CarrierCode" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="OriginCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="DropCustNumber" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="TransportAmount" Type="System.Decimal" DbType="Decimal(9,4)" CanBeNull="true" />
+      <Column Name="DropTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="AuthorizationCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.vw_edi_aces_conversion" Member="vw_edi_aces_conversions">
+    <Type Name="vw_edi_aces_conversion">
+      <Column Name="X85ID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="bill_of_lading" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="VIN" Type="System.String" DbType="VarChar(17)" CanBeNull="true" />
+      <Column Name="status_date" Type="System.String" DbType="VarChar(8)" CanBeNull="true" />
+      <Column Name="status_time" Type="System.String" DbType="VarChar(6)" CanBeNull="true" />
+      <Column Name="delivery_status_code" Type="System.String" DbType="VarChar(3)" CanBeNull="true" />
+      <Column Name="ramp_code" Type="System.String" DbType="VarChar(32)" CanBeNull="true" />
+      <Column Name="destination_code" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="shipment_authorization_code" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="last_updated_datetime" Type="System.String" DbType="VarChar(14)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.G00" Member="G00s">
+    <Type Name="G00">
+      <Column Name="G00Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Number" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="COD" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Inactive" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="Name" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="Address" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="Address2" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="City" Type="System.String" DbType="VarChar(25)" CanBeNull="true" />
+      <Column Name="State" Type="System.String" DbType="VarChar(2)" CanBeNull="true" />
+      <Column Name="Zip" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Phone" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Mobile" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Pager" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Fax" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Data" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Contact" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="Zone" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="Type" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="CreditLimit" Type="System.Decimal" DbType="Decimal(7,2)" CanBeNull="true" />
+      <Column Name="CreditTerms" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="QBListId" Type="System.String" DbType="VarChar(36)" CanBeNull="true" />
+      <Column Name="CombineInvDetLine" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="FuelSurcharge" Type="System.Decimal" DbType="Decimal(4,2)" CanBeNull="true" />
+      <Column Name="SPLC" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="RateClass" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="RouteCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="PrevSPLC" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="Comments" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="DOInstructions" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="FuelCalcType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="SalesRep" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="SalesDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="RevenueClass" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="Terms" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="TaxCode" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="PUInstructions" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="LocationType" Type="System.Char" DbType="VarChar(1)" CanBeNull="true" />
+      <Column Name="SpecialInstructions" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ACES_G92" Member="ACES_G92s">
+    <Type Name="ACES_G92">
+      <Column Name="ACES_G92Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="InvoiceNumber" Type="System.String" DbType="VarChar(15)" CanBeNull="true" />
+      <Column Name="InvoiceDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="VIN" Type="System.String" DbType="VarChar(17)" CanBeNull="true" />
+      <Column Name="AccountNumber" Type="System.String" DbType="VarChar(4)" CanBeNull="true" />
+      <Column Name="DamageCode" Type="System.String" DbType="VarChar(6)" CanBeNull="true" />
+      <Column Name="AccessoryCode" Type="System.String" DbType="VarChar(4)" CanBeNull="true" />
+      <Column Name="InvoiceAmt" Type="System.Decimal" DbType="Decimal(9,2)" CanBeNull="true" />
+      <Column Name="AuditReportCode" Type="System.String" DbType="VarChar(4)" CanBeNull="true" />
+      <Column Name="VoucherNumber" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ApprovedAmt" Type="System.Decimal" DbType="Decimal(9,2)" CanBeNull="true" />
+      <Column Name="DisapprovedAmt" Type="System.Decimal" DbType="Decimal(9,2)" CanBeNull="true" />
+      <Column Name="ContractRate" Type="System.Decimal" DbType="Decimal(9,2)" CanBeNull="true" />
+      <Column Name="AllocationDealer" Type="System.String" DbType="VarChar(7)" CanBeNull="true" />
+      <Column Name="LastStatusCode" Type="System.String" DbType="VarChar(3)" CanBeNull="true" />
+      <Column Name="CreatedTimeString" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="EDIFileName" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="ResponseFlag" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ACES_G50" Member="ACES_G50s">
+    <Type Name="ACES_G50">
+      <Column Name="ACES_G50Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="FileName" Type="System.String" DbType="VarChar(12)" CanBeNull="true" />
+      <Column Name="ICLErrorCode" Type="System.String" DbType="VarChar(3)" CanBeNull="true" />
+      <Column Name="ICLErrorCodeDesc" Type="System.String" DbType="VarChar(37)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ACES_G51" Member="ACES_G51s">
+    <Type Name="ACES_G51">
+      <Column Name="ACES_G51Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="FileName" Type="System.String" DbType="VarChar(12)" CanBeNull="true" />
+      <Column Name="SortCode" Type="System.String" DbType="VarChar(3)" CanBeNull="true" />
+      <Column Name="FileLine" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="FilePosition" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ACES_ErrorCode" Type="System.String" DbType="VarChar(3)" CanBeNull="true" />
+      <Column Name="ACES_ErrorCodeDesc" Type="System.String" DbType="VarChar(37)" CanBeNull="true" />
+      <Column Name="ACES_ErrorDetail" Type="System.String" DbType="VarChar(45)" CanBeNull="true" />
+      <Column Name="VIN" Type="System.String" DbType="VarChar(17)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ACES_G96" Member="ACES_G96s">
+    <Type Name="ACES_G96">
+      <Column Name="ACES_G96Id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="glovis_voucher_num" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="payee_dir_num" Type="System.String" DbType="VarChar(5)" CanBeNull="true" />
+      <Column Name="check_date_time" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="check_num" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="check_amt" Type="System.Decimal" DbType="Decimal(7,2)" CanBeNull="true" />
+      <Column Name="voucher_amt" Type="System.Decimal" DbType="Decimal(7,2)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.D11" Member="D11s">
+    <Type Name="D11">
+      <Column Name="D11Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="D10Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="NoteDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="Description" Type="System.String" DbType="VarChar(40)" CanBeNull="true" />
+      <Column Name="Comment" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="CreatedBy" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Error" Member="Errors">
+    <Type Name="Error">
+      <Column Name="ErrorId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="X85Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="D10Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="System" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="EdiSet" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Column Name="ErrorDateTime" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="VIN" Type="System.String" DbType="VarChar(17)" CanBeNull="true" />
+      <Column Name="Code" Type="System.String" DbType="VarChar(25)" CanBeNull="true" />
+      <Column Name="Message" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="Description" Type="System.String" DbType="Text" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="Detail" Type="System.String" DbType="VarChar(2000)" CanBeNull="true" />
+      <Column Name="FilePath" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="Active" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Function Name="dbo.sp_decode_vin" Method="sp_decode_vin">
+    <Parameter Name="vin" Type="System.String" DbType="VarChar(17)" />
+    <Parameter Name="year" Type="System.String" DbType="VarChar(4)" Direction="InOut" />
+    <Parameter Name="make" Type="System.String" DbType="VarChar(20)" Direction="InOut" />
+    <Parameter Name="model" Type="System.String" DbType="VarChar(30)" Direction="InOut" />
+    <Parameter Name="options" Type="System.String" DbType="VarChar(100)" Direction="InOut" />
+    <Return Type="System.Int32" />
+  </Function>
+  <Function Name="dbo.sp_edi_d10_insert" Method="sp_edi_d10_insert">
+    <Parameter Name="D00Id" Parameter="d00Id" Type="System.Int32" DbType="Int" />
+    <Parameter Name="UnitId" Parameter="unitId" Type="System.String" DbType="VarChar(30)" />
+    <Parameter Name="BayTimeString" Parameter="bayTimeString" Type="System.DateTime" DbType="DateTime" />
+    <Parameter Name="VIN" Parameter="vIN" Type="System.String" DbType="VarChar(17)" />
+    <Parameter Name="Status" Parameter="status" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="CreatedBy" Parameter="createdBy" Type="System.String" DbType="VarChar(20)" />
+    <Parameter Name="CreatedTimeString" Parameter="createdTimeString" Type="System.DateTime" DbType="DateTime" />
+    <Parameter Name="SF1" Parameter="sF1" Type="System.String" DbType="VarChar(20)" />
+    <Parameter Name="SF2" Parameter="sF2" Type="System.String" DbType="VarChar(20)" />
+    <Return Type="System.Int32" />
+  </Function>
+  <Function Name="dbo.sp_price_vin" Method="sp_price_vin">
+    <Parameter Name="d10Id" Type="System.Int32" DbType="Int" />
+    <Parameter Name="returnRate" Type="System.Decimal" DbType="Decimal" Direction="InOut" />
+    <Parameter Name="fuelSurcharge" Type="System.Decimal" DbType="Decimal" Direction="InOut" />
+    <Parameter Name="fuelCalcType" Type="System.String" DbType="VarChar(10)" Direction="InOut" />
+    <Return Type="System.Int32" />
+  </Function>
+  <Function Name="dbo.sp_insert_g00" Method="sp_insert_g00">
+    <Parameter Name="name" Type="System.String" DbType="VarChar(30)" />
+    <Parameter Name="number" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="address" Type="System.String" DbType="VarChar(30)" />
+    <Parameter Name="address2" Type="System.String" DbType="VarChar(30)" />
+    <Parameter Name="city" Type="System.String" DbType="VarChar(25)" />
+    <Parameter Name="state" Type="System.String" DbType="VarChar(20)" />
+    <Parameter Name="zipcode" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="phone" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="fax" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="zone" Type="System.String" DbType="VarChar(20)" />
+    <Parameter Name="type" Type="System.String" DbType="VarChar(10)" />
+    <Return Type="System.Int32" />
+  </Function>
+  <Function Name="dbo.sp_edi_D00_Insert" Method="sp_edi_D00_Insert">
+    <Parameter Name="D00Id" Parameter="d00Id" Type="System.Int32" DbType="Int" Direction="InOut" />
+    <Parameter Name="OrderDate" Parameter="orderDate" Type="System.DateTime" DbType="DateTime" />
+    <Parameter Name="UnitCount" Parameter="unitCount" Type="System.Int32" DbType="Int" />
+    <Parameter Name="MFGCode" Parameter="mFGCode" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="LockNameLookup" Parameter="lockNameLookup" Type="System.Byte" DbType="TinyInt" />
+    <Parameter Name="Active" Parameter="active" Type="System.Byte" DbType="TinyInt" />
+    <Parameter Name="CreatedBy" Parameter="createdBy" Type="System.String" DbType="VarChar(20)" />
+    <Parameter Name="CreatedTimeString" Parameter="createdTimeString" Type="System.DateTime" DbType="DateTime" />
+    <Parameter Name="LocationCode" Parameter="locationCode" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="DispatchCode" Parameter="dispatchCode" Type="System.String" DbType="VarChar(3)" />
+    <Parameter Name="RampCode" Parameter="rampCode" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="LoadCustNum" Parameter="loadCustNum" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="DropCustNum" Parameter="dropCustNum" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="BillCustNum" Parameter="billCustNum" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="Type" Parameter="type" Type="System.String" DbType="VarChar(10)" />
+    <Return Type="System.Int32" />
+  </Function>
+</Database>

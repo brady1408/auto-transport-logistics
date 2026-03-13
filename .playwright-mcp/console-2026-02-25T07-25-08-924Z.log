@@ -1,0 +1,64 @@
+[      68ms] [WARNING] Alpine Expression Error: view is not defined
+
+Expression: "view === 'list' && 'active'"
+
+ JSHandle@node @ https://atlinks.app/static/js/alpine.min.js?v=8db119b:0
+[      69ms] [WARNING] Alpine Expression Error: view is not defined
+
+Expression: "view === 'map' && 'active'"
+
+ JSHandle@node @ https://atlinks.app/static/js/alpine.min.js?v=8db119b:0
+[      69ms] [WARNING] Alpine Expression Error: view is not defined
+
+Expression: "view === 'list'"
+
+ JSHandle@node @ https://atlinks.app/static/js/alpine.min.js?v=8db119b:0
+[      69ms] [WARNING] Alpine Expression Error: view is not defined
+
+Expression: "view === 'map'"
+
+ JSHandle@node @ https://atlinks.app/static/js/alpine.min.js?v=8db119b:0
+[      90ms] ReferenceError: view is not defined
+    at [Alpine] view === 'list' && 'active' (eval at <anonymous> (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:665), <anonymous>:3:32)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:1068
+    at or (https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:4957)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:33747
+    at r (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:18580)
+    at Object.rn [as effect] (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:18368)
+    at N (https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:398)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:511
+    at vn (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:33741)
+    at r (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:2323)
+[      91ms] ReferenceError: view is not defined
+    at [Alpine] view === 'map' && 'active' (eval at <anonymous> (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:665), <anonymous>:3:32)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:1068
+    at or (https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:4957)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:33747
+    at r (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:18580)
+    at Object.rn [as effect] (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:18368)
+    at N (https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:398)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:511
+    at vn (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:33741)
+    at r (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:2323)
+[      92ms] ReferenceError: view is not defined
+    at [Alpine] view === 'list' (eval at <anonymous> (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:665), <anonymous>:3:32)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:1068
+    at or (https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:4957)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:35180
+    at r (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:18580)
+    at Object.rn [as effect] (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:18368)
+    at N (https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:398)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:511
+    at Function.<anonymous> (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:35174)
+    at r (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:2323)
+[      92ms] ReferenceError: view is not defined
+    at [Alpine] view === 'map' (eval at <anonymous> (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:665), <anonymous>:3:32)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:1068
+    at or (https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:4957)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:35180
+    at r (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:18580)
+    at Object.rn [as effect] (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:18368)
+    at N (https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:398)
+    at https://atlinks.app/static/js/alpine.min.js?v=8db119b:1:511
+    at Function.<anonymous> (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:35174)
+    at r (https://atlinks.app/static/js/alpine.min.js?v=8db119b:5:2323)

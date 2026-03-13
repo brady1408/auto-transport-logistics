@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"connectrpc.com/connect"
-	"github.com/brady1408/atlinks/internal/audit"
-	"github.com/brady1408/atlinks/internal/auth"
-	"github.com/brady1408/atlinks/internal/gen/atlinks/v1/atlinkspbconnect"
-	"github.com/brady1408/atlinks/internal/service"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/audit"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1/atlinkspbconnect"
+	"github.com/brady1408/auto-transport-logistics/internal/service"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
 // MountConfig holds all dependencies for Connect-RPC service handlers.

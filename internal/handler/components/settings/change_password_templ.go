@@ -8,7 +8,7 @@ package settings
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/brady1408/atlinks/internal/handler/components"
+import "github.com/brady1408/auto-transport-logistics/internal/handler/components"
 
 func ChangePasswordPage(pg components.PageContext, errMsg string, successMsg string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/brady1408/atlinks/internal/riverargs"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/riverargs"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 	"github.com/riverqueue/river"
 )
 

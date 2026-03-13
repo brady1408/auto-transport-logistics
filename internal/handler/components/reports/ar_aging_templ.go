@@ -9,8 +9,8 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/brady1408/atlinks/internal/handler/components"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
 func ArAgingPage(pg components.PageContext, rows []store.ArAgingRow) templ.Component {

@@ -1,0 +1,106 @@
+<h2>Sort Header Style</h2>
+<p class="subtitle">How should sortable column headers look and behave? Click to select your preference.</p>
+
+<style>
+  .demo-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 1rem; font-size: 13px; }
+  .demo-table th { padding: 8px 12px; text-align: left; font-size: 12px; font-weight: 600; color: #4b5563; background: #f9fafb; border-bottom: 2px solid #e5e7eb; white-space: nowrap; }
+  .demo-table td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; color: #374151; }
+  .demo-table tr:last-child td { border-bottom: none; }
+
+  /* Style A: Subtle arrow next to text */
+  .style-a th.sortable { cursor: pointer; user-select: none; }
+  .style-a th.sortable:hover { color: #2563eb; }
+  .style-a .sort-arrow { font-size: 10px; margin-left: 4px; opacity: 0.3; }
+  .style-a th.sorted .sort-arrow { opacity: 1; color: #2563eb; }
+  .style-a th.sortable:hover .sort-arrow { opacity: 0.6; }
+
+  /* Style B: Underline active column */
+  .style-b th.sortable { cursor: pointer; user-select: none; position: relative; }
+  .style-b th.sortable:hover { color: #2563eb; }
+  .style-b th.sorted { color: #2563eb; border-bottom: 2px solid #2563eb; }
+  .style-b .sort-indicator { font-size: 10px; margin-left: 4px; }
+
+  /* Style C: Background highlight */
+  .style-c th.sortable { cursor: pointer; user-select: none; }
+  .style-c th.sortable:hover { background: #e5e7eb; }
+  .style-c th.sorted { background: #dbeafe; color: #1d4ed8; }
+  .style-c .sort-indicator { font-size: 10px; margin-left: 4px; }
+  .style-c td.sorted-col { background: #f0f7ff; }
+</style>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>A: Subtle Arrows</h3>
+      <p>Small arrow indicators appear on hover, active sort column arrow turns blue. Minimal visual impact.</p>
+      <div style="margin-top: 12px; overflow-x: auto;">
+        <table class="demo-table style-a">
+          <thead>
+            <tr>
+              <th class="sortable sorted">Order # <span class="sort-arrow">&#9660;</span></th>
+              <th class="sortable">Bill Customer <span class="sort-arrow">&#9650;</span></th>
+              <th class="sortable">Zone <span class="sort-arrow">&#9650;</span></th>
+              <th>Vehicles</th>
+              <th class="sortable">Create Date <span class="sort-arrow">&#9650;</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>ORD-1042</td><td>SE Auto Auction</td><td>East</td><td>10</td><td>Mar 11, 2026</td></tr>
+            <tr><td>ORD-1041</td><td>SpiderTransport</td><td>West</td><td>5</td><td>Mar 10, 2026</td></tr>
+            <tr><td>ORD-1040</td><td>Atlas Transport</td><td>East</td><td>8</td><td>Mar 9, 2026</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>B: Blue Underline + Arrow</h3>
+      <p>Active sort column gets a blue bottom border and blue text. Clear visual indicator of which column is sorted.</p>
+      <div style="margin-top: 12px; overflow-x: auto;">
+        <table class="demo-table style-b">
+          <thead>
+            <tr>
+              <th class="sortable sorted">Order # <span class="sort-indicator">&#9660;</span></th>
+              <th class="sortable">Bill Customer</th>
+              <th class="sortable">Zone</th>
+              <th>Vehicles</th>
+              <th class="sortable">Create Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>ORD-1042</td><td>SE Auto Auction</td><td>East</td><td>10</td><td>Mar 11, 2026</td></tr>
+            <tr><td>ORD-1041</td><td>SpiderTransport</td><td>West</td><td>5</td><td>Mar 10, 2026</td></tr>
+            <tr><td>ORD-1040</td><td>Atlas Transport</td><td>East</td><td>8</td><td>Mar 9, 2026</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>C: Column Highlight</h3>
+      <p>Active sort column header AND its data cells get a light blue background. Strong visual cue showing exactly what's sorted.</p>
+      <div style="margin-top: 12px; overflow-x: auto;">
+        <table class="demo-table style-c">
+          <thead>
+            <tr>
+              <th class="sortable sorted">Order # <span class="sort-indicator">&#9660;</span></th>
+              <th class="sortable">Bill Customer</th>
+              <th class="sortable">Zone</th>
+              <th>Vehicles</th>
+              <th class="sortable">Create Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="sorted-col">ORD-1042</td><td>SE Auto Auction</td><td>East</td><td>10</td><td>Mar 11, 2026</td></tr>
+            <tr><td class="sorted-col">ORD-1041</td><td>SpiderTransport</td><td>West</td><td>5</td><td>Mar 10, 2026</td></tr>
+            <tr><td class="sorted-col">ORD-1040</td><td>Atlas Transport</td><td>East</td><td>8</td><td>Mar 9, 2026</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

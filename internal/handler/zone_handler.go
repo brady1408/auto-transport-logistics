@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/brady1408/atlinks/internal/handler/components/zones"
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/zones"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 type zoneStore interface {

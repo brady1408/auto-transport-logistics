@@ -9,7 +9,7 @@ import (
 	"time"
 
 	_ "github.com/denisenkom/go-mssqldb"
-	"github.com/brady1408/atlinks/internal/migration"
+	"github.com/brady1408/auto-transport-logistics/internal/migration"
 	"github.com/jackc/pgx/v5"
 )
 

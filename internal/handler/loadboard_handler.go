@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/brady1408/atlinks/internal/auth"
-	"github.com/brady1408/atlinks/internal/handler/components/loadboard"
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/service"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/loadboard"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/service"
 )
 
 type loadboardStoreInterface interface {

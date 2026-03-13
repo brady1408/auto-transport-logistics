@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 // MessageSection renders the full messages card with the message list and send form.

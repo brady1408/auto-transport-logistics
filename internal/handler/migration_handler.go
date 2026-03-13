@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"strconv"
 
-	migcomp "github.com/brady1408/atlinks/internal/handler/components/migration"
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/riverargs"
-	"github.com/brady1408/atlinks/internal/store"
+	migcomp "github.com/brady1408/auto-transport-logistics/internal/handler/components/migration"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/riverargs"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 )

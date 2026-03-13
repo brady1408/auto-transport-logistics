@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brady1408/atlinks/internal/auth"
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
 // ActivityTracker returns middleware that records each HTTP request to the activity_log table.

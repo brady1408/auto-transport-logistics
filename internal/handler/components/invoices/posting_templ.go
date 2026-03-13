@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
-	"github.com/brady1408/atlinks/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
 )
 
 func PostingPage(pg components.PageContext, invCount int, payCount int, errMsg string) templ.Component {

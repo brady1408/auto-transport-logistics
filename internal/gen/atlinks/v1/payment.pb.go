@@ -1393,7 +1393,7 @@ const file_atlinks_v1_payment_proto_rawDesc = "" +
 	"\x12ListPaymentDetails\x12%.atlinks.v1.ListPaymentDetailsRequest\x1a&.atlinks.v1.ListPaymentDetailsResponse\x12Q\n" +
 	"\fApplyPayment\x12\x1f.atlinks.v1.ApplyPaymentRequest\x1a .atlinks.v1.ApplyPaymentResponse\x12W\n" +
 	"\x0eUnapplyPayment\x12!.atlinks.v1.UnapplyPaymentRequest\x1a\".atlinks.v1.UnapplyPaymentResponse\x12Q\n" +
-	"\fPostPayments\x12\x1f.atlinks.v1.PostPaymentsRequest\x1a .atlinks.v1.PostPaymentsResponseB@Z>github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\fPostPayments\x12\x1f.atlinks.v1.PostPaymentsRequest\x1a .atlinks.v1.PostPaymentsResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_payment_proto_rawDescOnce sync.Once

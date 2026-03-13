@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 // MapCustomer converts an ATLinks Customer to a QBO Customer request.

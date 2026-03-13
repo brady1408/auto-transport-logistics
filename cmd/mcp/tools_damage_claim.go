@@ -8,7 +8,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/mark3labs/mcp-go/mcp"
 
-	pb "github.com/brady1408/atlinks/internal/gen/atlinks/v1"
+	pb "github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1"
 )
 
 func registerDamageClaimTools(register toolRegister, client *atlClient) {

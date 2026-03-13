@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package atlinks.v1;
 
-option go_package = "github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspb";
+option go_package = "github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspb";
 
 service LookupService {
   // Dispatch Codes

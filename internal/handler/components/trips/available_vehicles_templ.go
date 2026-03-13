@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"fmt"
 
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
 func AvailableVehicles(vehicles []store.UnassignedVehicleRow, tripID int, search string, totalCount int, page int, totalPages int, pageSize int) templ.Component {

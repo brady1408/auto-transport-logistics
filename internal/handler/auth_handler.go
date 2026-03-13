@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brady1408/atlinks/internal/auth"
-	"github.com/brady1408/atlinks/internal/email"
-	"github.com/brady1408/atlinks/internal/handler/components"
-	"github.com/brady1408/atlinks/internal/handler/components/authpages"
-	"github.com/brady1408/atlinks/internal/middleware"
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/email"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/authpages"
+	"github.com/brady1408/auto-transport-logistics/internal/middleware"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
 type authUserStore interface {

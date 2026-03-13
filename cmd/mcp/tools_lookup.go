@@ -8,8 +8,8 @@ import (
 	"connectrpc.com/connect"
 	"github.com/mark3labs/mcp-go/mcp"
 
-	pb "github.com/brady1408/atlinks/internal/gen/atlinks/v1"
-	"github.com/brady1408/atlinks/internal/gen/atlinks/v1/atlinkspbconnect"
+	pb "github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1"
+	"github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1/atlinkspbconnect"
 )
 
 func registerLookupTools(register toolRegister, client *atlClient) {

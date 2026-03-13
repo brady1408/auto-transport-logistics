@@ -1634,7 +1634,7 @@ const file_atlinks_v1_customer_proto_rawDesc = "" +
 	"\vGetCustomer\x12\x1e.atlinks.v1.GetCustomerRequest\x1a\x1f.atlinks.v1.GetCustomerResponse\x12W\n" +
 	"\x0eCreateCustomer\x12!.atlinks.v1.CreateCustomerRequest\x1a\".atlinks.v1.CreateCustomerResponse\x12W\n" +
 	"\x0eUpdateCustomer\x12!.atlinks.v1.UpdateCustomerRequest\x1a\".atlinks.v1.UpdateCustomerResponse\x12W\n" +
-	"\x0eDeleteCustomer\x12!.atlinks.v1.DeleteCustomerRequest\x1a\".atlinks.v1.DeleteCustomerResponseB@Z>github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\x0eDeleteCustomer\x12!.atlinks.v1.DeleteCustomerRequest\x1a\".atlinks.v1.DeleteCustomerResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_customer_proto_rawDescOnce sync.Once

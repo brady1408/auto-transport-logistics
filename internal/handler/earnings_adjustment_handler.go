@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/brady1408/atlinks/internal/handler/components/earnings"
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/earnings"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
 type earningsEmployeeStore interface {

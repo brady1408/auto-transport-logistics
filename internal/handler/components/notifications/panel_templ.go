@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 func relativeTime(t time.Time) string {

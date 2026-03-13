@@ -2396,7 +2396,7 @@ const file_atlinks_v1_order_proto_rawDesc = "" +
 	"\bGetOrder\x12\x1b.atlinks.v1.GetOrderRequest\x1a\x1c.atlinks.v1.GetOrderResponse\x12N\n" +
 	"\vCreateOrder\x12\x1e.atlinks.v1.CreateOrderRequest\x1a\x1f.atlinks.v1.CreateOrderResponse\x12N\n" +
 	"\vUpdateOrder\x12\x1e.atlinks.v1.UpdateOrderRequest\x1a\x1f.atlinks.v1.UpdateOrderResponse\x12N\n" +
-	"\vDeleteOrder\x12\x1e.atlinks.v1.DeleteOrderRequest\x1a\x1f.atlinks.v1.DeleteOrderResponseB@Z>github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\vDeleteOrder\x12\x1e.atlinks.v1.DeleteOrderRequest\x1a\x1f.atlinks.v1.DeleteOrderResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_order_proto_rawDescOnce sync.Once

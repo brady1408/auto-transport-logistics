@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 	"golang.org/x/oauth2"
 )
 

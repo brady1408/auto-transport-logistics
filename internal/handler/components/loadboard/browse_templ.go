@@ -9,8 +9,8 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/brady1408/atlinks/internal/handler/components"
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 func BrowsePage(pg components.PageContext, result models.LoadboardListResult, filter models.LoadboardFilter) templ.Component {

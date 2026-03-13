@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/brady1408/atlinks/internal/handler/components/damageclaims"
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/storage"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/damageclaims"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/storage"
 )
 
 type damageClaimStore interface {

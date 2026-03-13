@@ -9,10 +9,10 @@ import (
 	"time"
 
 	_ "github.com/denisenkom/go-mssqldb"
-	"github.com/brady1408/atlinks/internal/migration"
-	"github.com/brady1408/atlinks/internal/models"
-	"github.com/brady1408/atlinks/internal/riverargs"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/migration"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/riverargs"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
 )

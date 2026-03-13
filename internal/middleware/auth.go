@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/brady1408/atlinks/internal/auth"
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 // ApiKeyLookup is the subset of ApiKeyStore used by RequireAPIKey.

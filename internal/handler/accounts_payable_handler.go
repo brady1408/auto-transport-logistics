@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	apcomp "github.com/brady1408/atlinks/internal/handler/components/ap"
-	"github.com/brady1408/atlinks/internal/models"
+	apcomp "github.com/brady1408/auto-transport-logistics/internal/handler/components/ap"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 type accountsPayableStore interface {

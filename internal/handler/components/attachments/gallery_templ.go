@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"fmt"
 
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 func AttachmentGallery(atts []models.Attachment, category string, entityID int) templ.Component {

@@ -1,0 +1,6 @@
+Questions for eHub Call:
+
+Is WSDL available for services?
+
+Transport-level secuirty (SSL) or Message-level security? Both?
+

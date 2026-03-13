@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/brady1408/atlinks/internal/auth"
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
 )
 
 func TestRequireAuthRedirectsWithNoCookie(t *testing.T) {

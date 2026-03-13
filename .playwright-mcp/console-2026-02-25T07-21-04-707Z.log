@@ -1,0 +1,2 @@
+[  210176ms] [ERROR] Failed to load resource: the server responded with a status of 530 () @ https://atlinks.app/notifications/count:0
+[  210177ms] [ERROR] Response Status Error Code 530 from /notifications/count @ https://atlinks.app/static/js/htmx.min.js?v=8db119b:0

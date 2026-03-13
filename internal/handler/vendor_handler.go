@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/brady1408/atlinks/internal/handler/components/vendors"
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/vendors"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 type vendorStore interface {

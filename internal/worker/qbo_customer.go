@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/brady1408/atlinks/internal/qbo"
-	"github.com/brady1408/atlinks/internal/riverargs"
-	"github.com/brady1408/atlinks/internal/store"
+	"github.com/brady1408/auto-transport-logistics/internal/qbo"
+	"github.com/brady1408/auto-transport-logistics/internal/riverargs"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"golang.org/x/oauth2"

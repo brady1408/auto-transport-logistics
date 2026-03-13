@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/brady1408/atlinks/internal/handler/components"
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 func ApiKeysPage(pg components.PageContext, keys []models.ApiKey, newRawKey string) templ.Component {

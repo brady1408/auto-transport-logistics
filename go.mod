@@ -1,4 +1,4 @@
-module github.com/brady1408/atlinks
+module github.com/brady1408/auto-transport-logistics
 
 go 1.25.5
 

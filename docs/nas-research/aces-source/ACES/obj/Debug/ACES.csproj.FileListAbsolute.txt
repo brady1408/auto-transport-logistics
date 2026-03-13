@@ -1,0 +1,9 @@
+D:\Projects\ACES\ACES\bin\Debug\ACES.exe.config
+D:\Projects\ACES\ACES\bin\Debug\ACES.exe
+D:\Projects\ACES\ACES\bin\Debug\ACES.pdb
+D:\Projects\ACES\ACES\obj\Debug\ResolveAssemblyReference.cache
+D:\Projects\ACES\ACES\obj\Debug\ATLNetwork.EDI.ACES.ACESMainForm.resources
+D:\Projects\ACES\ACES\obj\Debug\ATLNetwork.EDI.ACES.Properties.Resources.resources
+D:\Projects\ACES\ACES\obj\Debug\ACES.csproj.GenerateResource.Cache
+D:\Projects\ACES\ACES\obj\Debug\ACES.exe
+D:\Projects\ACES\ACES\obj\Debug\ACES.pdb

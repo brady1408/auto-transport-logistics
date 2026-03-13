@@ -1650,7 +1650,7 @@ const file_atlinks_v1_invoice_proto_rawDesc = "" +
 	"\x12ListInvoiceDetails\x12%.atlinks.v1.ListInvoiceDetailsRequest\x1a&.atlinks.v1.ListInvoiceDetailsResponse\x12Z\n" +
 	"\x0fGenerateInvoice\x12\".atlinks.v1.GenerateInvoiceRequest\x1a#.atlinks.v1.GenerateInvoiceResponse\x12N\n" +
 	"\vVoidInvoice\x12\x1e.atlinks.v1.VoidInvoiceRequest\x1a\x1f.atlinks.v1.VoidInvoiceResponse\x12Q\n" +
-	"\fPostInvoices\x12\x1f.atlinks.v1.PostInvoicesRequest\x1a .atlinks.v1.PostInvoicesResponseB@Z>github.com/brady1408/atlinks/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
+	"\fPostInvoices\x12\x1f.atlinks.v1.PostInvoicesRequest\x1a .atlinks.v1.PostInvoicesResponseB@Z>github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1;atlinkspbb\x06proto3"
 
 var (
 	file_atlinks_v1_invoice_proto_rawDescOnce sync.Once

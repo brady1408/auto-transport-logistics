@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/brady1408/atlinks/internal/handler/components/employees"
-	"github.com/brady1408/atlinks/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/employees"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 type employeeStore interface {

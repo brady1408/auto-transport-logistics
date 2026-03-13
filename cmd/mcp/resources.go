@@ -9,7 +9,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 
-	pb "github.com/brady1408/atlinks/internal/gen/atlinks/v1"
+	pb "github.com/brady1408/auto-transport-logistics/internal/gen/atlinks/v1"
 )
 
 func registerResources(s *server.MCPServer, client *atlClient) {
