@@ -7,7 +7,8 @@ type Order struct {
 	CompanyID   int    `json:"company_id"`
 	OrderNumber string `json:"order_number"`
 	Active      bool   `json:"active"`
-	Zone        *string `json:"zone,omitempty"`
+	OriginZone      *string `json:"origin_zone,omitempty"`
+	DestinationZone *string `json:"destination_zone,omitempty"`
 	DispatchCode *string `json:"dispatch_code,omitempty"`
 	BOLNumber   *string `json:"bol_number,omitempty"`
 	// Bill-to customer
@@ -88,7 +89,8 @@ type Order struct {
 
 type OrderFilter struct {
 	Search       string
-	Zone         string
+	OriginZone   string
+	DestinationZone string
 	DispatchCode string
 	Active       string // "active", "inactive", ""
 	Status       string // "uninvoiced_delivered", ""

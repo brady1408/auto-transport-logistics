@@ -252,7 +252,7 @@ func orderToProto(o *models.Order) *pb.Order {
 		Id:                 int32(o.ID),
 		OrderNumber:        o.OrderNumber,
 		Active:             o.Active,
-		Zone:               sp(o.Zone),
+		Zone:               sp(o.OriginZone),
 		DispatchCode:       sp(o.DispatchCode),
 		BolNumber:          sp(o.BOLNumber),
 		BillCustomerId:     ip(o.BillCustomerID),
@@ -329,7 +329,7 @@ func protoToOrderFilter(msg *pb.ListOrdersRequest) models.OrderFilter {
 		f.Search = *msg.Search
 	}
 	if msg.Zone != nil {
-		f.Zone = *msg.Zone
+		f.OriginZone = *msg.Zone
 	}
 	if msg.DispatchCode != nil {
 		f.DispatchCode = *msg.DispatchCode
@@ -352,7 +352,7 @@ func protoToOrderFilter(msg *pb.ListOrdersRequest) models.OrderFilter {
 func createOrderReqToModel(msg *pb.CreateOrderRequest) *models.Order {
 	o := &models.Order{
 		Active:            msg.Active,
-		Zone:              sp(msg.Zone),
+		OriginZone:        sp(msg.Zone),
 		DispatchCode:      sp(msg.DispatchCode),
 		BOLNumber:         sp(msg.BolNumber),
 		BillCustomerID:    i32p(msg.BillCustomerId),
@@ -420,7 +420,7 @@ func updateOrderReqToModel(msg *pb.UpdateOrderRequest) *models.Order {
 	return &models.Order{
 		ID:                 int(msg.Id),
 		Active:             msg.Active,
-		Zone:               sp(msg.Zone),
+		OriginZone:         sp(msg.Zone),
 		DispatchCode:       sp(msg.DispatchCode),
 		BOLNumber:          sp(msg.BolNumber),
 		BillCustomerID:     i32p(msg.BillCustomerId),

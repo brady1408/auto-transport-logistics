@@ -23,7 +23,7 @@ var orderSortConfig = SortConfig{
 	Allowed: map[string]string{
 		"order_number":      "order_number",
 		"bill_customer_name": "bill_customer_name",
-		"zone":              "zone",
+		"zone":              "origin_zone",
 		"dispatch_code":     "dispatch_code",
 		"create_date":       "create_date",
 	},
@@ -31,7 +31,7 @@ var orderSortConfig = SortConfig{
 	DefaultDir: "DESC",
 }
 
-const orderColumns = `id, company_id, order_number, active, zone, dispatch_code, bol_number,
+const orderColumns = `id, company_id, order_number, active, origin_zone, destination_zone, dispatch_code, bol_number,
 	bill_customer_id, bill_customer_number, bill_customer_name,
 	bill_to_address, bill_to_address2, bill_to_city, bill_to_state, bill_to_zip,
 	load_customer_id, load_customer_number, load_customer_name,
@@ -52,7 +52,7 @@ const orderColumns = `id, company_id, order_number, active, zone, dispatch_code,
 func scanOrder(row interface{ Scan(dest ...any) error }) (*models.Order, error) {
 	var o models.Order
 	err := row.Scan(
-		&o.ID, &o.CompanyID, &o.OrderNumber, &o.Active, &o.Zone, &o.DispatchCode, &o.BOLNumber,
+		&o.ID, &o.CompanyID, &o.OrderNumber, &o.Active, &o.OriginZone, &o.DestinationZone, &o.DispatchCode, &o.BOLNumber,
 		&o.BillCustomerID, &o.BillCustomerNumber, &o.BillCustomerName,
 		&o.BillToAddress, &o.BillToAddress2, &o.BillToCity, &o.BillToState, &o.BillToZip,
 		&o.LoadCustomerID, &o.LoadCustomerNumber, &o.LoadCustomerName,
@@ -95,8 +95,11 @@ func (s *OrderStore) List(ctx context.Context, f models.OrderFilter) (*models.Or
 		qb.Add("(order_number ILIKE ? OR bill_customer_name ILIKE ? OR load_customer_name ILIKE ? OR drop_customer_name ILIKE ?)",
 			search, search, search, search)
 	}
-	if f.Zone != "" {
-		qb.Add("zone = ?", f.Zone)
+	if f.OriginZone != "" {
+		qb.Add("origin_zone = ?", f.OriginZone)
+	}
+	if f.DestinationZone != "" {
+		qb.Add("destination_zone = ?", f.DestinationZone)
 	}
 	if f.DispatchCode != "" {
 		qb.Add("dispatch_code = ?", f.DispatchCode)
@@ -175,7 +178,7 @@ func (s *OrderStore) Create(ctx context.Context, o *models.Order) error {
 	o.CompanyID = companyID
 	err = s.pool.QueryRow(ctx,
 		`INSERT INTO orders (
-			company_id, order_number, active, zone, dispatch_code, bol_number,
+			company_id, order_number, active, origin_zone, destination_zone, dispatch_code, bol_number,
 			bill_customer_id, bill_customer_number, bill_customer_name,
 			bill_to_address, bill_to_address2, bill_to_city, bill_to_state, bill_to_zip,
 			load_customer_id, load_customer_number, load_customer_name,
@@ -192,10 +195,10 @@ func (s *OrderStore) Create(ctx context.Context, o *models.Order) error {
 		) VALUES (
 			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
 			$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,
-			$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60
+			$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60,$61
 		) RETURNING id, created_at, updated_at`,
 		o.CompanyID,
-		o.OrderNumber, o.Active, o.Zone, o.DispatchCode, o.BOLNumber,
+		o.OrderNumber, o.Active, o.OriginZone, o.DestinationZone, o.DispatchCode, o.BOLNumber,
 		o.BillCustomerID, o.BillCustomerNumber, o.BillCustomerName,
 		o.BillToAddress, o.BillToAddress2, o.BillToCity, o.BillToState, o.BillToZip,
 		o.LoadCustomerID, o.LoadCustomerNumber, o.LoadCustomerName,
@@ -223,23 +226,23 @@ func (s *OrderStore) Update(ctx context.Context, o *models.Order) error {
 	}
 	result, err := s.pool.Exec(ctx,
 		`UPDATE orders SET
-			active=$1, zone=$2, dispatch_code=$3, bol_number=$4,
-			bill_customer_id=$5, bill_customer_number=$6, bill_customer_name=$7,
-			bill_to_address=$8, bill_to_address2=$9, bill_to_city=$10, bill_to_state=$11, bill_to_zip=$12,
-			load_customer_id=$13, load_customer_number=$14, load_customer_name=$15,
-			load_contact=$16, load_phone=$17, load_address=$18, load_address2=$19, load_city=$20, load_state=$21, load_zip=$22,
-			drop_customer_id=$23, drop_customer_number=$24, drop_customer_name=$25,
-			drop_contact=$26, drop_phone=$27, drop_address=$28, drop_address2=$29, drop_city=$30, drop_state=$31, drop_zip=$32,
-			reference_number=$33, po_number=$34, sales_rep1=$35, sales_rep2=$36,
-			comments=$37, pu_instructions=$38, do_instructions=$39,
-			transport_amt=$40, transport_calc_type=$41, fuel_surcharge=$42, fuel_calc_type=$43,
-			other_charge=$44, discount=$45, discount_calc_type=$46, tax_rate=$47, tax=$48, total_charge=$49,
-			edit_date=$50, edit_by=$51,
-			est_pickup_date=$52, est_deliver_date=$53,
-			equipment_type=$54, tax_code=$55, dim_weight=$56,
+			active=$1, origin_zone=$2, destination_zone=$3, dispatch_code=$4, bol_number=$5,
+			bill_customer_id=$6, bill_customer_number=$7, bill_customer_name=$8,
+			bill_to_address=$9, bill_to_address2=$10, bill_to_city=$11, bill_to_state=$12, bill_to_zip=$13,
+			load_customer_id=$14, load_customer_number=$15, load_customer_name=$16,
+			load_contact=$17, load_phone=$18, load_address=$19, load_address2=$20, load_city=$21, load_state=$22, load_zip=$23,
+			drop_customer_id=$24, drop_customer_number=$25, drop_customer_name=$26,
+			drop_contact=$27, drop_phone=$28, drop_address=$29, drop_address2=$30, drop_city=$31, drop_state=$32, drop_zip=$33,
+			reference_number=$34, po_number=$35, sales_rep1=$36, sales_rep2=$37,
+			comments=$38, pu_instructions=$39, do_instructions=$40,
+			transport_amt=$41, transport_calc_type=$42, fuel_surcharge=$43, fuel_calc_type=$44,
+			other_charge=$45, discount=$46, discount_calc_type=$47, tax_rate=$48, tax=$49, total_charge=$50,
+			edit_date=$51, edit_by=$52,
+			est_pickup_date=$53, est_deliver_date=$54,
+			equipment_type=$55, tax_code=$56, dim_weight=$57,
 			version = version + 1
-		WHERE id=$57 AND company_id=$58 AND version=$59 AND deleted_at IS NULL`,
-		o.Active, o.Zone, o.DispatchCode, o.BOLNumber,
+		WHERE id=$58 AND company_id=$59 AND version=$60 AND deleted_at IS NULL`,
+		o.Active, o.OriginZone, o.DestinationZone, o.DispatchCode, o.BOLNumber,
 		o.BillCustomerID, o.BillCustomerNumber, o.BillCustomerName,
 		o.BillToAddress, o.BillToAddress2, o.BillToCity, o.BillToState, o.BillToZip,
 		o.LoadCustomerID, o.LoadCustomerNumber, o.LoadCustomerName,
@@ -348,7 +351,7 @@ func (s *OrderStore) DashboardCounts(ctx context.Context) (OrderDashboardCounts,
 // StatusSummary returns order counts grouped by dispatch_code for a date range.
 type OrderStatusRow struct {
 	DispatchCode string
-	Zone         string
+	OriginZone   string
 	Count        int
 }
 
@@ -369,9 +372,9 @@ func (s *OrderStore) StatusSummary(ctx context.Context, dateFrom, dateTo string)
 		qb.Add("create_date <= ?", dateTo)
 	}
 
-	query := fmt.Sprintf(`SELECT COALESCE(dispatch_code, ''), COALESCE(zone, ''), COUNT(*)
+	query := fmt.Sprintf(`SELECT COALESCE(dispatch_code, ''), COALESCE(origin_zone, ''), COUNT(*)
 		FROM orders %s
-		GROUP BY dispatch_code, zone
+		GROUP BY dispatch_code, origin_zone
 		ORDER BY COUNT(*) DESC`, qb.Where())
 
 	rows, err := s.pool.Query(ctx, query, qb.Args()...)
@@ -380,7 +383,7 @@ func (s *OrderStore) StatusSummary(ctx context.Context, dateFrom, dateTo string)
 	}
 	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (OrderStatusRow, error) {
 		var r OrderStatusRow
-		if err := row.Scan(&r.DispatchCode, &r.Zone, &r.Count); err != nil {
+		if err := row.Scan(&r.DispatchCode, &r.OriginZone, &r.Count); err != nil {
 			return OrderStatusRow{}, err
 		}
 		return r, nil

@@ -260,7 +260,7 @@ func (h *ReportHandler) orderStatusCSV(w http.ResponseWriter, r *http.Request) {
 	headers := []string{"Dispatch Code", "Zone", "Count"}
 	var csvRows [][]string
 	for _, row := range rows {
-		csvRows = append(csvRows, []string{row.DispatchCode, row.Zone, fmt.Sprintf("%d", row.Count)})
+		csvRows = append(csvRows, []string{row.DispatchCode, row.OriginZone, fmt.Sprintf("%d", row.Count)})
 	}
 
 	writeCSV(w, "order_status.csv", headers, csvRows)

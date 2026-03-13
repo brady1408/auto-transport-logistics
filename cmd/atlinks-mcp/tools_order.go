@@ -182,7 +182,7 @@ func formatOrder(o *pb.Order) string {
 	sb.WriteString(fmt.Sprintf("Order #%d — %s\n", o.Id, o.OrderNumber))
 	sb.WriteString(fmt.Sprintf("  Active: %v\n", o.Active))
 	if o.Zone != nil {
-		sb.WriteString(fmt.Sprintf("  Zone: %s\n", *o.Zone))
+		sb.WriteString(fmt.Sprintf("  Origin Zone: %s\n", *o.Zone))
 	}
 	if o.DispatchCode != nil {
 		sb.WriteString(fmt.Sprintf("  Dispatch: %s\n", *o.DispatchCode))

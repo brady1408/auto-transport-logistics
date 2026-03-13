@@ -68,7 +68,7 @@ func (h *OrderHandler) Register(mux *http.ServeMux) {
 func (h *OrderHandler) list(w http.ResponseWriter, r *http.Request) {
 	filter := models.OrderFilter{
 		Search:       r.URL.Query().Get("search"),
-		Zone:         r.URL.Query().Get("zone"),
+		OriginZone:   r.URL.Query().Get("zone"),
 		DispatchCode: r.URL.Query().Get("dispatch_code"),
 		Active:       r.URL.Query().Get("active"),
 		Status:       r.URL.Query().Get("status"),
@@ -305,7 +305,8 @@ func bindOrderForm(r *http.Request) *models.Order {
 		Version:      versionVal,
 		OrderNumber:  formStringRequired(r, "order_number"),
 		Active:       !formBool(r, "inactive"),
-		Zone:         formString(r, "zone"),
+		OriginZone:      formString(r, "origin_zone"),
+		DestinationZone: formString(r, "destination_zone"),
 		DispatchCode: formString(r, "dispatch_code"),
 		BOLNumber:    formString(r, "bol_number"),
 		// Bill-to
