@@ -153,21 +153,23 @@ templ LoginPage(brand components.Brand, companyName string, loginAction string, 
 								<div class="alert alert-danger">{ registerError }</div>
 							}
 							<form method="POST" action="/register">
-								<div class="form-group">
-									<label for="invite_code">Invite Code *</label>
-									<input
-										type="text"
-										id="invite_code"
-										name="invite_code"
-										class={ "form-control" + fieldErrorClass(registerFieldErrors, "invite_code") }
-										value={ formVal(registerForm, "invite_code") }
-										required
-									/>
-									if registerFieldErrors != nil && registerFieldErrors["invite_code"] != "" {
-										<small class="field-error">{ registerFieldErrors["invite_code"] }</small>
-									}
-								</div>
-								<hr class="form-divider"/>
+								if !brand.OpenRegistration {
+									<div class="form-group">
+										<label for="invite_code">Invite Code *</label>
+										<input
+											type="text"
+											id="invite_code"
+											name="invite_code"
+											class={ "form-control" + fieldErrorClass(registerFieldErrors, "invite_code") }
+											value={ formVal(registerForm, "invite_code") }
+											required
+										/>
+										if registerFieldErrors != nil && registerFieldErrors["invite_code"] != "" {
+											<small class="field-error">{ registerFieldErrors["invite_code"] }</small>
+										}
+									</div>
+									<hr class="form-divider"/>
+								}
 								<div class="form-group">
 									<label for="company_name">Company Name *</label>
 									<input

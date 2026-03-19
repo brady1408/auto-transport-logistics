@@ -245,13 +245,16 @@ func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		"email":        emailAddr,
 	}
 
+	brand := components.BrandFromHost(r.Host)
 	errs := make(map[string]string)
 
-	// Validate invite code
-	if inviteCode == "" {
-		errs["invite_code"] = "Invite code is required"
-	} else if inviteCode != h.inviteCode {
-		errs["invite_code"] = "Invalid invite code"
+	// Validate invite code (skip for open-registration domains)
+	if !brand.OpenRegistration {
+		if inviteCode == "" {
+			errs["invite_code"] = "Invite code is required"
+		} else if inviteCode != h.inviteCode {
+			errs["invite_code"] = "Invalid invite code"
+		}
 	}
 
 	// Validate company name
@@ -297,7 +300,6 @@ func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	brand := components.BrandFromHost(r.Host)
 	if len(errs) > 0 {
 		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "register", "", "", "", "", "", formData, errs))
 		return

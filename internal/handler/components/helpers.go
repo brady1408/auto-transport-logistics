@@ -12,9 +12,10 @@ import (
 
 // Brand holds white-label display values resolved from the incoming host.
 type Brand struct {
-	Name        string // Short product name, e.g. "ATLinks" or "Atlas"
-	Tagline     string // Subtitle shown on login page
-	FaviconFile string // Path to favicon SVG
+	Name             string // Short product name, e.g. "ATLinks" or "Atlas"
+	Tagline          string // Subtitle shown on login page
+	FaviconFile      string // Path to favicon SVG
+	OpenRegistration bool   // If true, no invite code required to register
 }
 
 // BrandFromHost resolves the Brand for a given Host header value.
@@ -25,9 +26,10 @@ func BrandFromHost(host string) Brand {
 	}
 	if host == "atlascloud.app" {
 		return Brand{
-			Name:        "Atlas",
-			Tagline:     "Auto Transport Logistics Administration System",
-			FaviconFile: "/static/favicon-ac.svg",
+			Name:             "Atlas",
+			Tagline:          "Auto Transport Logistics Administration System",
+			FaviconFile:      "/static/favicon-ac.svg",
+			OpenRegistration: true,
 		}
 	}
 	return Brand{
