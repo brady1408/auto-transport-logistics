@@ -25,6 +25,16 @@ func wantsJSON(r *http.Request) bool {
 
 const CookieName = "atlinks_token"
 
+// unauthRedirect returns the redirect path for unauthenticated users.
+// Atlas Cloud visitors see the landing page; others go to login.
+func unauthRedirect(r *http.Request) string {
+	host := strings.Split(r.Host, ":")[0]
+	if host == "atlascloud.app" {
+		return "/landing"
+	}
+	return "/login"
+}
+
 func RequireAuth(jwt *auth.JWTService, secure bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +55,7 @@ func RequireAuth(jwt *auth.JWTService, secure bool) func(http.Handler) http.Hand
 					json.NewEncoder(w).Encode(map[string]string{"error": "authentication required"})
 					return
 				}
-				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				http.Redirect(w, r, unauthRedirect(r), http.StatusSeeOther)
 				return
 			}
 
@@ -58,7 +68,7 @@ func RequireAuth(jwt *auth.JWTService, secure bool) func(http.Handler) http.Hand
 					return
 				}
 				clearAuthCookie(w, secure)
-				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				http.Redirect(w, r, unauthRedirect(r), http.StatusSeeOther)
 				return
 			}
 
@@ -71,7 +81,7 @@ func RequireAuth(jwt *auth.JWTService, secure bool) func(http.Handler) http.Hand
 					return
 				}
 				clearAuthCookie(w, secure)
-				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				http.Redirect(w, r, unauthRedirect(r), http.StatusSeeOther)
 				return
 			}
 

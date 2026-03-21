@@ -265,6 +265,9 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	pendingRegStore := store.NewPendingRegistrationStore(pool)
 	authSubStore := store.NewSubscriptionStore(pool)
 
+	// Landing page (public)
+	handler.NewLandingHandler(deps).Register(mux)
+
 	// Auth routes (public)
 	authHandler := handler.NewAuthHandler(userStore, companyStore, authSubStore, cfg.InviteCode, deps, emailSvc, resetTokenStore, pendingRegStore, cfg.AppBaseURL)
 	authHandler.Register(mux)
