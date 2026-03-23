@@ -48,7 +48,7 @@ func (h *LandingHandler) show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LandingHandler) handleContact(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
+	if err := r.ParseMultipartForm(1 << 20); err != nil {
 		http.Error(w, "Invalid form", http.StatusBadRequest)
 		return
 	}
