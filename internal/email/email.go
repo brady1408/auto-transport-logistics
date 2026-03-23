@@ -51,6 +51,41 @@ func (s *Service) SendVerification(to, companyName, verifyURL string) error {
 	return s.send(to, "ATLinks - Verify Your Email", body)
 }
 
+func (s *Service) SendContactConfirmation(to, name string) error {
+	body := fmt.Sprintf(`<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+  <h2>We Got Your Message</h2>
+  <p>Hi <strong>%s</strong>,</p>
+  <p>Thanks for reaching out! We've received your inquiry about Atlas Cloud and a member of our team will get back to you shortly.</p>
+  <p style="font-size: 13px; color: #666; margin-top: 30px;">In the meantime, feel free to explore our platform at <a href="https://atlascloud.app" style="color: #2563eb;">atlascloud.app</a>.</p>
+</div>`, html.EscapeString(name))
+
+	return s.send(to, "Atlas Cloud - We Received Your Inquiry", body)
+}
+
+func (s *Service) SendContactNotification(name, contactEmail, phone, company, message string) error {
+	phoneLine := ""
+	if phone != "" {
+		phoneLine = fmt.Sprintf(`<p><strong>Phone:</strong> %s</p>`, html.EscapeString(phone))
+	}
+	companyLine := ""
+	if company != "" {
+		companyLine = fmt.Sprintf(`<p><strong>Company:</strong> %s</p>`, html.EscapeString(company))
+	}
+	messageLine := ""
+	if message != "" {
+		messageLine = fmt.Sprintf(`<p><strong>Message:</strong> %s</p>`, html.EscapeString(message))
+	}
+
+	body := fmt.Sprintf(`<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+  <h2>New Contact Inquiry</h2>
+  <p><strong>Name:</strong> %s</p>
+  <p><strong>Email:</strong> %s</p>
+  %s%s%s
+</div>`, html.EscapeString(name), html.EscapeString(contactEmail), phoneLine, companyLine, messageLine)
+
+	return s.send(s.fromEmail, "Atlas Cloud - New Contact Inquiry from "+name, body)
+}
+
 func (s *Service) send(to, subject, html string) error {
 	if !s.Enabled() {
 		return fmt.Errorf("email service not configured (no RESEND_API_KEY)")

@@ -433,7 +433,40 @@ func pricingCardEnterprise() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</ul><a href=\"mailto:support@atlinks.app\" class=\"block text-center bg-surface-container-high text-slate-900 px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-surface-container transition-all\">Contact Us</a></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</ul><button onclick=\"document.getElementById('contact-modal').classList.remove('hidden')\" class=\"block w-full text-center bg-surface-container-high text-slate-900 px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-surface-container transition-all cursor-pointer\">Contact Us</button></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = contactModal().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func contactModal() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var16 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var16 == nil {
+			templ_7745c5c3_Var16 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<div id=\"contact-modal\" class=\"hidden fixed inset-0 z-[100] flex items-center justify-center p-4\"><!-- Backdrop --><div class=\"absolute inset-0 bg-black/50 backdrop-blur-sm\" onclick=\"document.getElementById('contact-modal').classList.add('hidden')\"></div><!-- Modal --><div class=\"relative bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-md p-8\"><button onclick=\"document.getElementById('contact-modal').classList.add('hidden')\" class=\"absolute top-4 right-4 text-on-surface-variant hover:text-on-surface transition-colors\"><span class=\"material-symbols-outlined\">close</span></button><h3 class=\"text-2xl font-extrabold text-slate-900 mb-2\">Get in Touch</h3><p class=\"text-sm text-secondary mb-6\">Tell us about your operation and we'll reach out to discuss how Atlas Cloud can help.</p><div id=\"contact-form-container\"><form id=\"contact-form\" onsubmit=\"submitContactForm(event)\" class=\"space-y-4\"><div><label class=\"block text-xs font-semibold text-on-surface-variant mb-1\" for=\"contact-name\">Name *</label> <input type=\"text\" id=\"contact-name\" name=\"name\" required class=\"w-full px-3 py-2.5 rounded-lg border border-outline-variant/30 bg-surface text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary\" placeholder=\"Your name\"></div><div><label class=\"block text-xs font-semibold text-on-surface-variant mb-1\" for=\"contact-email\">Email *</label> <input type=\"email\" id=\"contact-email\" name=\"email\" required class=\"w-full px-3 py-2.5 rounded-lg border border-outline-variant/30 bg-surface text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary\" placeholder=\"you@company.com\"></div><div><label class=\"block text-xs font-semibold text-on-surface-variant mb-1\" for=\"contact-phone\">Phone</label> <input type=\"tel\" id=\"contact-phone\" name=\"phone\" class=\"w-full px-3 py-2.5 rounded-lg border border-outline-variant/30 bg-surface text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary\" placeholder=\"(555) 123-4567\"></div><div><label class=\"block text-xs font-semibold text-on-surface-variant mb-1\" for=\"contact-company\">Company</label> <input type=\"text\" id=\"contact-company\" name=\"company\" class=\"w-full px-3 py-2.5 rounded-lg border border-outline-variant/30 bg-surface text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary\" placeholder=\"Your company name\"></div><div><label class=\"block text-xs font-semibold text-on-surface-variant mb-1\" for=\"contact-message\">Message</label> <textarea id=\"contact-message\" name=\"message\" rows=\"3\" class=\"w-full px-3 py-2.5 rounded-lg border border-outline-variant/30 bg-surface text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none\" placeholder=\"Tell us about your fleet size, current tools, or what you're looking for...\"></textarea></div><button type=\"submit\" id=\"contact-submit\" class=\"w-full bg-primary text-on-primary px-6 py-3.5 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-black/5\">Send Message</button></form></div></div></div><script>\n\t\tfunction submitContactForm(e) {\n\t\t\te.preventDefault();\n\t\t\tvar btn = document.getElementById('contact-submit');\n\t\t\tbtn.disabled = true;\n\t\t\tbtn.textContent = 'Sending...';\n\t\t\tvar form = document.getElementById('contact-form');\n\t\t\tfetch('/contact', {\n\t\t\t\tmethod: 'POST',\n\t\t\t\tbody: new FormData(form)\n\t\t\t}).then(function(resp) {\n\t\t\t\treturn resp.text();\n\t\t\t}).then(function(html) {\n\t\t\t\tdocument.getElementById('contact-form-container').innerHTML = html;\n\t\t\t}).catch(function() {\n\t\t\t\tbtn.disabled = false;\n\t\t\t\tbtn.textContent = 'Send Message';\n\t\t\t\talert('Something went wrong. Please try again.');\n\t\t\t});\n\t\t}\n\t</script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -457,25 +490,25 @@ func pricingFeature(name string) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var16 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var16 == nil {
-			templ_7745c5c3_Var16 = templ.NopComponent
+		templ_7745c5c3_Var17 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var17 == nil {
+			templ_7745c5c3_Var17 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<li class=\"flex items-start gap-3 text-sm text-on-surface-variant\"><span class=\"material-symbols-outlined text-on-tertiary-container mt-0.5\" style=\"font-size:18px;\">check_circle</span> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<li class=\"flex items-start gap-3 text-sm text-on-surface-variant\"><span class=\"material-symbols-outlined text-on-tertiary-container mt-0.5\" style=\"font-size:18px;\">check_circle</span> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var17 string
-		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(name)
+		var templ_7745c5c3_Var18 string
+		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 419, Col: 8}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 483, Col: 8}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
