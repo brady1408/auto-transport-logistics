@@ -92,7 +92,23 @@ func LandingPage(brand components.Brand) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div></section><!-- Feature Highlights --><section class=\"py-24 px-6 space-y-32\"><!-- Order Management --><div class=\"max-w-screen-2xl mx-auto flex flex-col lg:flex-row items-center gap-16\"><div class=\"flex-1 space-y-6\"><span class=\"text-on-tertiary-container font-black text-xs tracking-widest uppercase\">Dispatch</span><h2 class=\"text-4xl font-extrabold tracking-tight\">Order Management</h2><p class=\"text-lg text-secondary leading-relaxed\">Create orders with bill-to, load-at, and drop-at customers. Track vehicle counts, zone assignments, and status from entry through delivery — all in one view.</p><ul class=\"space-y-3\"><li class=\"flex items-center gap-3 text-on-surface-variant font-medium\"><span class=\"material-symbols-outlined text-on-tertiary-container\">check_circle</span> Three-customer order model</li><li class=\"flex items-center gap-3 text-on-surface-variant font-medium\"><span class=\"material-symbols-outlined text-on-tertiary-container\">check_circle</span> Automatic VIN decode via NHTSA</li></ul></div><div class=\"flex-1 w-full h-[400px] bg-surface-container-high rounded-2xl overflow-hidden shadow-inner flex items-center justify-center p-8\"><img alt=\"Orders Management\" class=\"w-full h-full object-cover rounded-xl shadow-2xl\" src=\"/static/img/orders.png\"></div></div><!-- QuickBooks Integration --><div class=\"max-w-screen-2xl mx-auto flex flex-col lg:flex-row-reverse items-center gap-16\"><div class=\"flex-1 space-y-6\"><span class=\"text-on-tertiary-container font-black text-xs tracking-widest uppercase\">Integration</span><h2 class=\"text-4xl font-extrabold tracking-tight\">QuickBooks Integration</h2><p class=\"text-lg text-secondary leading-relaxed\">Native two-way sync for customers, invoices, and payments. Eliminate double entry and keep your accounting accurate without manual data transfer.</p><div class=\"p-6 bg-surface-container-low rounded-xl inline-flex items-center gap-6 border border-outline-variant/20\"><span class=\"font-black text-xl text-slate-800\">Atlas Cloud</span> <span class=\"material-symbols-outlined text-slate-400\">sync</span> <span class=\"font-bold text-xl text-[#2CA01C]\">QuickBooks</span></div></div><div class=\"flex-1 w-full h-[400px] bg-surface-container-high rounded-2xl overflow-hidden shadow-inner flex items-center justify-center p-8\"><img alt=\"Accounting Integration\" class=\"w-full h-full object-cover rounded-xl shadow-2xl\" src=\"/static/img/qbo-integration.png\"></div></div><!-- Trips & Dispatch --><div class=\"max-w-screen-2xl mx-auto flex flex-col lg:flex-row items-center gap-16\"><div class=\"flex-1 space-y-6\"><span class=\"text-on-tertiary-container font-black text-xs tracking-widest uppercase\">Trips</span><h2 class=\"text-4xl font-extrabold tracking-tight\">Dispatch & Load Planning</h2><p class=\"text-lg text-secondary leading-relaxed\">Assign drivers and trucks to trips across your zones. Track loads from scheduled through delivered with full visibility into your fleet operations.</p><ul class=\"space-y-3\"><li class=\"flex items-center gap-3 text-on-surface-variant font-medium\"><span class=\"material-symbols-outlined text-on-tertiary-container\">check_circle</span> Driver and truck assignment</li><li class=\"flex items-center gap-3 text-on-surface-variant font-medium\"><span class=\"material-symbols-outlined text-on-tertiary-container\">check_circle</span> Zone-based load planning</li></ul></div><div class=\"flex-1 w-full h-[400px] bg-surface-container-high rounded-2xl overflow-hidden shadow-inner flex items-center justify-center p-8\"><img alt=\"Trips and Dispatch\" class=\"w-full h-full object-cover rounded-xl shadow-2xl\" src=\"/static/img/trips.png\"></div></div><!-- Works Everywhere --><div class=\"max-w-screen-2xl mx-auto flex flex-col lg:flex-row items-center gap-16\"><div class=\"flex-1 space-y-6\"><span class=\"text-on-tertiary-container font-black text-xs tracking-widest uppercase\">Universal Access</span><h2 class=\"text-4xl font-extrabold tracking-tight\">Works Everywhere</h2><p class=\"text-lg text-secondary leading-relaxed\">A modern web app engineered for high performance on desktop, tablet, and phone. No installations, no updates, no legacy friction.</p><div class=\"flex gap-4\"><span class=\"material-symbols-outlined text-3xl\">desktop_windows</span> <span class=\"material-symbols-outlined text-3xl\">tablet_mac</span> <span class=\"material-symbols-outlined text-3xl\">smartphone</span></div></div></div></section><!-- Final CTA --><section class=\"py-24 px-6\"><div class=\"max-w-4xl mx-auto bg-primary rounded-3xl p-12 md:p-20 text-center relative overflow-hidden shadow-2xl\"><div class=\"absolute -top-24 -left-24 w-64 h-64 bg-primary-container/30 rounded-full blur-3xl\"></div><div class=\"absolute -bottom-24 -right-24 w-64 h-64 bg-on-tertiary-container/20 rounded-full blur-3xl\"></div><h2 class=\"text-3xl md:text-5xl font-extrabold text-on-primary mb-8 relative z-10 leading-tight\">Ready to modernize your transport operation?</h2><div class=\"relative z-10\"><a href=\"/register\" class=\"inline-block bg-surface text-primary px-10 py-5 rounded-xl font-extrabold text-lg hover:bg-primary-fixed hover:text-primary-container transition-all shadow-xl active:scale-95\">Get Started Free</a><p class=\"mt-6 text-primary-fixed-dim/70 text-sm font-medium\">No credit card required. Instant activation.</p></div></div></section></main><!-- Footer --><footer class=\"w-full py-12 px-6 md:px-24 flex flex-col items-center justify-center text-center bg-slate-100\"><div class=\"text-lg font-black text-slate-900 mb-6\">Atlas Cloud</div><div class=\"flex flex-wrap justify-center gap-8 mb-8\"><a class=\"text-xs tracking-wide uppercase font-medium text-slate-500 hover:text-slate-800 underline decoration-1 underline-offset-4 transition-all\" href=\"#features\">Features</a> <a class=\"text-xs tracking-wide uppercase font-medium text-slate-500 hover:text-slate-800 underline decoration-1 underline-offset-4 transition-all\" href=\"#pricing\">Pricing</a> <a class=\"text-xs tracking-wide uppercase font-medium text-slate-500 hover:text-slate-800 underline decoration-1 underline-offset-4 transition-all\" href=\"/login\">Login</a> <a class=\"text-xs tracking-wide uppercase font-medium text-slate-500 hover:text-slate-800 underline decoration-1 underline-offset-4 transition-all\" href=\"/terms\">Terms of Service</a> <a class=\"text-xs tracking-wide uppercase font-medium text-slate-500 hover:text-slate-800 underline decoration-1 underline-offset-4 transition-all\" href=\"/privacy\">Privacy Policy</a></div><div class=\"bg-slate-200 h-px w-full my-8\"></div><div class=\"text-[10px] text-slate-400 font-bold tracking-[0.2em] uppercase\">&copy; 2025 Atlas Cloud. All rights reserved.</div></footer></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div></section><!-- Feature Highlights --><section class=\"py-24 px-6 space-y-32\"><!-- Order Management --><div class=\"max-w-screen-2xl mx-auto flex flex-col lg:flex-row items-center gap-16\"><div class=\"flex-1 space-y-6\"><span class=\"text-on-tertiary-container font-black text-xs tracking-widest uppercase\">Dispatch</span><h2 class=\"text-4xl font-extrabold tracking-tight\">Order Management</h2><p class=\"text-lg text-secondary leading-relaxed\">Create orders with bill-to, load-at, and drop-at customers. Track vehicle counts, zone assignments, and status from entry through delivery — all in one view.</p><ul class=\"space-y-3\"><li class=\"flex items-center gap-3 text-on-surface-variant font-medium\"><span class=\"material-symbols-outlined text-on-tertiary-container\">check_circle</span> Three-customer order model</li><li class=\"flex items-center gap-3 text-on-surface-variant font-medium\"><span class=\"material-symbols-outlined text-on-tertiary-container\">check_circle</span> Automatic VIN decode via NHTSA</li></ul></div><div class=\"flex-1 w-full h-[400px] bg-surface-container-high rounded-2xl overflow-hidden shadow-inner flex items-center justify-center p-8\"><img alt=\"Orders Management\" class=\"w-full h-full object-cover rounded-xl shadow-2xl\" src=\"/static/img/orders.png\"></div></div><!-- QuickBooks Integration --><div class=\"max-w-screen-2xl mx-auto flex flex-col lg:flex-row-reverse items-center gap-16\"><div class=\"flex-1 space-y-6\"><span class=\"text-on-tertiary-container font-black text-xs tracking-widest uppercase\">Integration</span><h2 class=\"text-4xl font-extrabold tracking-tight\">QuickBooks Integration</h2><p class=\"text-lg text-secondary leading-relaxed\">Native two-way sync for customers, invoices, and payments. Eliminate double entry and keep your accounting accurate without manual data transfer.</p><div class=\"p-6 bg-surface-container-low rounded-xl inline-flex items-center gap-6 border border-outline-variant/20\"><span class=\"font-black text-xl text-slate-800\">Atlas Cloud</span> <span class=\"material-symbols-outlined text-slate-400\">sync</span> <span class=\"font-bold text-xl text-[#2CA01C]\">QuickBooks</span></div></div><div class=\"flex-1 w-full h-[400px] bg-surface-container-high rounded-2xl overflow-hidden shadow-inner flex items-center justify-center p-8\"><img alt=\"Accounting Integration\" class=\"w-full h-full object-cover rounded-xl shadow-2xl\" src=\"/static/img/qbo-integration.png\"></div></div><!-- Trips & Dispatch --><div class=\"max-w-screen-2xl mx-auto flex flex-col lg:flex-row items-center gap-16\"><div class=\"flex-1 space-y-6\"><span class=\"text-on-tertiary-container font-black text-xs tracking-widest uppercase\">Trips</span><h2 class=\"text-4xl font-extrabold tracking-tight\">Dispatch & Load Planning</h2><p class=\"text-lg text-secondary leading-relaxed\">Assign drivers and trucks to trips across your zones. Track loads from scheduled through delivered with full visibility into your fleet operations.</p><ul class=\"space-y-3\"><li class=\"flex items-center gap-3 text-on-surface-variant font-medium\"><span class=\"material-symbols-outlined text-on-tertiary-container\">check_circle</span> Driver and truck assignment</li><li class=\"flex items-center gap-3 text-on-surface-variant font-medium\"><span class=\"material-symbols-outlined text-on-tertiary-container\">check_circle</span> Zone-based load planning</li></ul></div><div class=\"flex-1 w-full h-[400px] bg-surface-container-high rounded-2xl overflow-hidden shadow-inner flex items-center justify-center p-8\"><img alt=\"Trips and Dispatch\" class=\"w-full h-full object-cover rounded-xl shadow-2xl\" src=\"/static/img/trips.png\"></div></div><!-- Works Everywhere --><div class=\"max-w-screen-2xl mx-auto flex flex-col lg:flex-row items-center gap-16\"><div class=\"flex-1 space-y-6\"><span class=\"text-on-tertiary-container font-black text-xs tracking-widest uppercase\">Universal Access</span><h2 class=\"text-4xl font-extrabold tracking-tight\">Works Everywhere</h2><p class=\"text-lg text-secondary leading-relaxed\">A modern web app engineered for high performance on desktop, tablet, and phone. No installations, no updates, no legacy friction.</p><div class=\"flex gap-4\"><span class=\"material-symbols-outlined text-3xl\">desktop_windows</span> <span class=\"material-symbols-outlined text-3xl\">tablet_mac</span> <span class=\"material-symbols-outlined text-3xl\">smartphone</span></div></div></div></section><!-- Pricing Section --><section id=\"pricing\" class=\"py-24 px-6 bg-surface-container-low\"><div class=\"max-w-screen-xl mx-auto\"><div class=\"text-center mb-16\"><h2 class=\"text-4xl font-extrabold tracking-tight text-slate-900 mb-4\">Simple, Transparent Pricing</h2><p class=\"text-secondary max-w-xl mx-auto font-medium\">Start small, scale as you grow. No contracts. Cancel anytime.</p></div><div class=\"grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingCardBasic().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingCardPro().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingCardEnterprise().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><!-- Band pricing note --><div class=\"max-w-3xl mx-auto mt-12 bg-surface-container-lowest rounded-xl border border-outline-variant/20 p-6\"><h4 class=\"text-sm font-bold text-slate-900 mb-4 text-center\">Growing team? We scale with you.</h4><div class=\"grid grid-cols-1 md:grid-cols-3 gap-4 text-center text-sm\"><div><p class=\"text-on-surface-variant font-medium mb-1\">1–3 users</p><p class=\"text-slate-900 font-bold\">Included</p></div><div><p class=\"text-on-surface-variant font-medium mb-1\">4–10 users</p><p class=\"text-slate-900 font-bold\">Basic $69 · Pro $109</p></div><div><p class=\"text-on-surface-variant font-medium mb-1\">11+ users</p><p class=\"text-slate-900 font-bold\">+$9/user · +$14/user</p></div></div></div></div></section><!-- Final CTA --><section class=\"py-24 px-6\"><div class=\"max-w-4xl mx-auto bg-primary rounded-3xl p-12 md:p-20 text-center relative overflow-hidden shadow-2xl\"><div class=\"absolute -top-24 -left-24 w-64 h-64 bg-primary-container/30 rounded-full blur-3xl\"></div><div class=\"absolute -bottom-24 -right-24 w-64 h-64 bg-on-tertiary-container/20 rounded-full blur-3xl\"></div><h2 class=\"text-3xl md:text-5xl font-extrabold text-on-primary mb-8 relative z-10 leading-tight\">Ready to modernize your transport operation?</h2><div class=\"relative z-10\"><a href=\"/register\" class=\"inline-block bg-surface text-primary px-10 py-5 rounded-xl font-extrabold text-lg hover:bg-primary-fixed hover:text-primary-container transition-all shadow-xl active:scale-95\">Get Started Free</a><p class=\"mt-6 text-primary-fixed-dim/70 text-sm font-medium\">No credit card required. Instant activation.</p></div></div></section></main><!-- Footer --><footer class=\"w-full py-12 px-6 md:px-24 flex flex-col items-center justify-center text-center bg-slate-100\"><div class=\"text-lg font-black text-slate-900 mb-6\">Atlas Cloud</div><div class=\"flex flex-wrap justify-center gap-8 mb-8\"><a class=\"text-xs tracking-wide uppercase font-medium text-slate-500 hover:text-slate-800 underline decoration-1 underline-offset-4 transition-all\" href=\"#features\">Features</a> <a class=\"text-xs tracking-wide uppercase font-medium text-slate-500 hover:text-slate-800 underline decoration-1 underline-offset-4 transition-all\" href=\"#pricing\">Pricing</a> <a class=\"text-xs tracking-wide uppercase font-medium text-slate-500 hover:text-slate-800 underline decoration-1 underline-offset-4 transition-all\" href=\"/login\">Login</a> <a class=\"text-xs tracking-wide uppercase font-medium text-slate-500 hover:text-slate-800 underline decoration-1 underline-offset-4 transition-all\" href=\"/terms\">Terms of Service</a> <a class=\"text-xs tracking-wide uppercase font-medium text-slate-500 hover:text-slate-800 underline decoration-1 underline-offset-4 transition-all\" href=\"/privacy\">Privacy Policy</a></div><div class=\"bg-slate-200 h-px w-full my-8\"></div><div class=\"text-[10px] text-slate-400 font-bold tracking-[0.2em] uppercase\">&copy; 2025 Atlas Cloud. All rights reserved.</div></footer></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -121,46 +137,46 @@ func featureCard(icon string, title string, description string) templ.Component 
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"group p-8 bg-surface-container-lowest rounded-xl hover:shadow-md transition-all duration-300\"><div class=\"w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center mb-6 text-on-primary-container group-hover:bg-primary group-hover:text-on-primary transition-colors\"><span class=\"material-symbols-outlined\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"group p-8 bg-surface-container-lowest rounded-xl hover:shadow-md transition-all duration-300\"><div class=\"w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center mb-6 text-on-primary-container group-hover:bg-primary group-hover:text-on-primary transition-colors\"><span class=\"material-symbols-outlined\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(icon)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 287, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 319, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</span></div><h3 class=\"text-xl font-bold mb-3\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</span></div><h3 class=\"text-xl font-bold mb-3\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 289, Col: 44}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 321, Col: 44}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</h3><p class=\"text-on-surface-variant text-sm leading-relaxed\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</h3><p class=\"text-on-surface-variant text-sm leading-relaxed\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(description)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 290, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 322, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</p></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</p></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -189,46 +205,277 @@ func processStep(number string, title string, description string) templ.Componen
 			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"relative space-y-6\"><div class=\"text-6xl font-black text-slate-200/50 font-headline\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"relative space-y-6\"><div class=\"text-6xl font-black text-slate-200/50 font-headline\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(number)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 296, Col: 75}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 328, Col: 75}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><h4 class=\"text-xl font-bold\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div><h4 class=\"text-xl font-bold\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 297, Col: 39}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 329, Col: 39}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</h4><p class=\"text-sm text-on-surface-variant leading-relaxed\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</h4><p class=\"text-sm text-on-surface-variant leading-relaxed\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(description)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 298, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 330, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</p></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</p></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func pricingCardBasic() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var11 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var11 == nil {
+			templ_7745c5c3_Var11 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/20 flex flex-col\"><div class=\"mb-6\"><h3 class=\"text-lg font-bold text-slate-900 mb-1\">Basic</h3><p class=\"text-sm text-secondary\">Everything you need to run your operation.</p></div><div class=\"mb-8\"><span class=\"text-5xl font-extrabold text-slate-900\">$39</span> <span class=\"text-secondary font-medium\">/mo</span><p class=\"text-xs text-on-surface-variant mt-1\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var12 string
+		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs("for")
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 343, Col: 58}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, " up to 3 users</p></div><ul class=\"space-y-3 mb-8 flex-1\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Order Management").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("VIN Tracking & NHTSA Decode").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Dispatch & Trip Management").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Invoicing & Payments").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Credit Memos & Damage Claims").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("QuickBooks Integration").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("10+ Reports & CSV Export").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Dashboard & Analytics").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</ul><a href=\"/register\" class=\"block text-center bg-surface-container-high text-slate-900 px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-surface-container transition-all\">Get Started</a></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func pricingCardPro() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var13 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var13 == nil {
+			templ_7745c5c3_Var13 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<div class=\"bg-surface-container-lowest rounded-2xl p-8 border-2 border-primary flex flex-col relative shadow-lg\"><div class=\"absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-on-primary text-xs font-bold px-4 py-1 rounded-full tracking-wide uppercase\">Most Popular</div><div class=\"mb-6\"><h3 class=\"text-lg font-bold text-slate-900 mb-1\">Pro</h3><p class=\"text-sm text-secondary\">For teams that need the full platform.</p></div><div class=\"mb-8\"><span class=\"text-5xl font-extrabold text-slate-900\">$59</span> <span class=\"text-secondary font-medium\">/mo</span><p class=\"text-xs text-on-surface-variant mt-1\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var14 string
+		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs("for")
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 373, Col: 58}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, " up to 3 users</p></div><ul class=\"space-y-3 mb-8 flex-1\"><li class=\"flex items-start gap-3 text-sm text-on-surface-variant font-medium\"><span class=\"material-symbols-outlined text-on-primary-container mt-0.5\" style=\"font-size:18px;\">stars</span> Everything in Basic, plus:</li>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Loadboard Access").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Post & Browse Loads").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Claim Management").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Loadboard Messaging").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</ul><a href=\"/register\" class=\"block text-center bg-primary text-on-primary px-6 py-3.5 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-black/5\">Get Started</a></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func pricingCardEnterprise() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var15 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var15 == nil {
+			templ_7745c5c3_Var15 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div class=\"bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/20 flex flex-col\"><div class=\"mb-6\"><h3 class=\"text-lg font-bold text-slate-900 mb-1\">Need More?</h3><p class=\"text-sm text-secondary\">For larger operations with custom needs.</p></div><div class=\"mb-8\"><span class=\"text-3xl font-extrabold text-slate-900\">Let's Talk</span></div><ul class=\"space-y-3 mb-8 flex-1\"><li class=\"flex items-start gap-3 text-sm text-on-surface-variant font-medium\"><span class=\"material-symbols-outlined text-on-primary-container mt-0.5\" style=\"font-size:18px;\">stars</span> Everything in Pro, plus:</li>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Custom Integrations").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Volume Pricing").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Priority Support").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pricingFeature("Dedicated Onboarding").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</ul><a href=\"mailto:support@atlinks.app\" class=\"block text-center bg-surface-container-high text-slate-900 px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-surface-container transition-all\">Contact Us</a></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func pricingFeature(name string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var16 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var16 == nil {
+			templ_7745c5c3_Var16 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<li class=\"flex items-start gap-3 text-sm text-on-surface-variant\"><span class=\"material-symbols-outlined text-on-tertiary-container mt-0.5\" style=\"font-size:18px;\">check_circle</span> ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var17 string
+		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(name)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/pages/landing.templ`, Line: 419, Col: 8}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
