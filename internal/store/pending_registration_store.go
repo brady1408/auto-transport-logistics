@@ -16,6 +16,8 @@ type PendingRegistration struct {
 	Username     string
 	Email        string
 	PasswordHash string
+	FirstName    string
+	LastName     string
 	ExpiresAt    time.Time
 }
 
@@ -40,9 +42,9 @@ func (s *PendingRegistrationStore) Create(ctx context.Context, reg *PendingRegis
 	expiresAt := time.Now().Add(24 * time.Hour)
 
 	_, err := s.pool.Exec(ctx,
-		`INSERT INTO pending_registrations (company_name, slug, username, email, password_hash, token_hash, expires_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-		reg.CompanyName, reg.Slug, reg.Username, reg.Email, reg.PasswordHash, hash, expiresAt)
+		`INSERT INTO pending_registrations (company_name, slug, username, email, password_hash, first_name, last_name, token_hash, expires_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+		reg.CompanyName, reg.Slug, reg.Username, reg.Email, reg.PasswordHash, reg.FirstName, reg.LastName, hash, expiresAt)
 	if err != nil {
 		return "", fmt.Errorf("insert pending registration: %w", err)
 	}
@@ -56,11 +58,11 @@ func (s *PendingRegistrationStore) Validate(ctx context.Context, rawToken string
 
 	var reg PendingRegistration
 	err := s.pool.QueryRow(ctx,
-		`SELECT id, company_name, slug, username, email, password_hash, expires_at
+		`SELECT id, company_name, slug, username, email, password_hash, COALESCE(first_name,''), COALESCE(last_name,''), expires_at
 		 FROM pending_registrations
 		 WHERE token_hash = $1 AND expires_at > NOW()`,
 		hash,
-	).Scan(&reg.ID, &reg.CompanyName, &reg.Slug, &reg.Username, &reg.Email, &reg.PasswordHash, &reg.ExpiresAt)
+	).Scan(&reg.ID, &reg.CompanyName, &reg.Slug, &reg.Username, &reg.Email, &reg.PasswordHash, &reg.FirstName, &reg.LastName, &reg.ExpiresAt)
 	if err != nil {
 		return nil, fmt.Errorf("validate registration token: %w", err)
 	}

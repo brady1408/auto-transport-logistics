@@ -226,21 +226,51 @@ func (h *AuthHandler) showRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	brand := components.BrandFromHost(r.Host)
-	h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "register", "", "", "", "", "", nil, nil))
+	h.deps.renderTempl(w, r, authpages.RegisterPage(brand, nil, nil, "", ""))
+}
+
+// generateSlug creates a URL-safe slug from a company name.
+func generateSlug(name string) string {
+	s := strings.ToLower(name)
+	// Replace non-alphanumeric with hyphens
+	var buf strings.Builder
+	for _, r := range s {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			buf.WriteRune(r)
+		} else {
+			buf.WriteByte('-')
+		}
+	}
+	// Collapse multiple hyphens and trim
+	result := buf.String()
+	for strings.Contains(result, "--") {
+		result = strings.ReplaceAll(result, "--", "-")
+	}
+	result = strings.Trim(result, "-")
+	if len(result) > 30 {
+		result = result[:30]
+		result = strings.TrimRight(result, "-")
+	}
+	return result
 }
 
 func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	inviteCode := strings.TrimSpace(r.FormValue("invite_code"))
 	companyName := strings.TrimSpace(r.FormValue("company_name"))
-	slug := strings.ToLower(strings.TrimSpace(r.FormValue("slug")))
+	firstName := strings.TrimSpace(r.FormValue("first_name"))
+	lastName := strings.TrimSpace(r.FormValue("last_name"))
 	username := strings.TrimSpace(r.FormValue("username"))
 	emailAddr := strings.TrimSpace(r.FormValue("email"))
 	password := r.FormValue("password")
 
+	// Auto-generate slug from company name
+	slug := generateSlug(companyName)
+
 	formData := map[string]string{
 		"invite_code":  inviteCode,
 		"company_name": companyName,
-		"slug":         slug,
+		"first_name":   firstName,
+		"last_name":    lastName,
 		"username":     username,
 		"email":        emailAddr,
 	}
@@ -264,13 +294,11 @@ func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		errs["company_name"] = "Company name must be 40 characters or less"
 	}
 
-	// Validate slug
-	if slug == "" {
-		errs["slug"] = "URL slug is required"
-	} else if len(slug) < 3 || len(slug) > 30 {
-		errs["slug"] = "Slug must be 3-30 characters"
+	// Validate auto-generated slug
+	if slug == "" || len(slug) < 3 {
+		errs["company_name"] = "Company name is too short to generate a URL"
 	} else if !slugRegex.MatchString(slug) {
-		errs["slug"] = "Only lowercase letters, numbers, and hyphens"
+		errs["company_name"] = "Company name must contain some letters or numbers"
 	}
 
 	// Validate user fields
@@ -301,7 +329,7 @@ func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(errs) > 0 {
-		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "register", "", "", "", "", "", formData, errs))
+		h.deps.renderTempl(w, r, authpages.RegisterPage(brand, formData, errs, "", ""))
 		return
 	}
 
@@ -319,21 +347,23 @@ func (h *AuthHandler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		Username:     username,
 		Email:        emailAddr,
 		PasswordHash: hash,
+		FirstName:    firstName,
+		LastName:     lastName,
 	}
 	token, err := h.pendingStore.Create(r.Context(), reg)
 	if err != nil {
-		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "register", "", "", "", "", "Failed to start registration. Please try again.", formData, nil))
+		h.deps.renderTempl(w, r, authpages.RegisterPage(brand, formData, nil, "", "Failed to start registration. Please try again."))
 		return
 	}
 
 	verifyURL := h.appBaseURL + "/verify-email/" + token
 	if err := h.emailSvc.SendVerification(emailAddr, companyName, verifyURL); err != nil {
 		log.Printf("ERROR: send verification email to %s: %v", emailAddr, err)
-		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "register", "", "", "", "", "Failed to send verification email. Please try again.", formData, nil))
+		h.deps.renderTempl(w, r, authpages.RegisterPage(brand, formData, nil, "", "Failed to send verification email. Please try again."))
 		return
 	}
 
-	h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "register", "", "", "", fmt.Sprintf("Verification email sent to %s. Please check your inbox to complete registration.", emailAddr), "", nil, nil))
+	h.deps.renderTempl(w, r, authpages.RegisterPage(brand, nil, nil, fmt.Sprintf("Verification email sent to %s. Please check your inbox to complete registration.", emailAddr), ""))
 }
 
 func (h *AuthHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request) {
@@ -368,6 +398,13 @@ func (h *AuthHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Create admin user
+	var firstName, lastName *string
+	if reg.FirstName != "" {
+		firstName = &reg.FirstName
+	}
+	if reg.LastName != "" {
+		lastName = &reg.LastName
+	}
 	user := &models.User{
 		Username:     reg.Username,
 		Email:        reg.Email,
@@ -375,6 +412,8 @@ func (h *AuthHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request) 
 		Role:         "company_admin",
 		Active:       true,
 		CompanyID:    &company.ID,
+		FirstName:    firstName,
+		LastName:     lastName,
 	}
 	if err := h.users.Create(r.Context(), user); err != nil {
 		log.Printf("ERROR: create user from verification: %v", err)

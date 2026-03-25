@@ -1,0 +1,273 @@
+package authpages
+
+import (
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+)
+
+templ RegisterPage(brand components.Brand, formData map[string]string, fieldErrors map[string]string, successMsg string, errorMsg string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="description" content={ brand.Name + " — Create your account. Start managing vehicle transport in minutes." }/>
+			<title>Register - { brand.Name }</title>
+			<link rel="icon" type="image/svg+xml" href={ brand.FaviconFile }/>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap"/>
+			<link rel="stylesheet" href={ components.AssetVersion("/static/css/app.css") }/>
+			<script src={ components.AssetVersion("/static/js/alpine.min.js") } defer></script>
+			<style>
+				.register-page { display: flex; min-height: 100vh; }
+				.register-brand {
+					width: 40%; background: linear-gradient(160deg, #000000 0%, #00174b 100%);
+					color: white; padding: 48px 40px; display: flex; flex-direction: column;
+					justify-content: space-between; font-family: var(--font-heading);
+				}
+				.register-brand-label {
+					font-size: 14px; font-weight: 700; letter-spacing: 0.1em;
+					opacity: 0.6; text-transform: uppercase; margin-bottom: 24px;
+				}
+				.register-brand h2 {
+					font-size: 28px; font-weight: 800; line-height: 1.2;
+					margin: 0 0 16px; letter-spacing: -0.02em;
+				}
+				.register-brand p { font-size: 14px; line-height: 1.7; opacity: 0.7; margin: 0; }
+				.register-bullet {
+					display: flex; gap: 8px; align-items: center; margin-bottom: 12px;
+				}
+				.register-bullet-dot {
+					width: 8px; height: 8px; border-radius: 50%; background: #6ffbbe; flex-shrink: 0;
+				}
+				.register-bullet span { font-size: 12px; opacity: 0.7; }
+				.register-form-panel {
+					width: 60%; background: var(--surface); padding: 40px 48px;
+					display: flex; flex-direction: column; justify-content: center;
+					font-family: var(--font-body);
+				}
+				.register-form-inner { max-width: 480px; width: 100%; margin: 0 auto; }
+				.register-form-inner h3 {
+					font-size: 22px; font-weight: 800; margin: 0 0 4px;
+					color: var(--gray-800); font-family: var(--font-heading);
+					letter-spacing: -0.02em;
+				}
+				.register-form-inner .subtitle {
+					font-size: 13px; color: var(--gray-500); margin: 0 0 28px;
+				}
+				.register-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+				.register-field { margin-bottom: 16px; }
+				.register-field label {
+					display: block; font-size: 11px; font-weight: 600; color: var(--gray-500);
+					text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+				}
+				.register-field input {
+					width: 100%; padding: 10px 14px;
+					border: 1px solid rgba(198,198,205,0.3); border-radius: 8px;
+					font-size: 14px; background: white; font-family: var(--font-body);
+					outline: none; transition: border-color 0.15s;
+				}
+				.register-field input:focus {
+					border-color: var(--primary);
+					box-shadow: 0 0 0 2px rgba(71,124,255,0.15);
+				}
+				.register-field input.input-error { border-color: var(--danger); }
+				.register-field .field-error { color: var(--danger); font-size: 12px; margin-top: 4px; display: block; }
+				.register-slug-preview {
+					margin-top: 6px; font-size: 12px; color: var(--gray-400);
+				}
+				.register-slug-preview strong { color: var(--primary); }
+				.register-divider {
+					border: none; border-top: 1px solid rgba(198,198,205,0.2); margin: 24px 0;
+				}
+				.register-submit {
+					width: 100%; padding: 14px; background: linear-gradient(135deg, #000000, #00174b);
+					color: white; border: none; border-radius: 12px; font-size: 14px;
+					font-weight: 700; cursor: pointer; font-family: var(--font-body);
+					letter-spacing: 0.01em; transition: opacity 0.15s;
+				}
+				.register-submit:hover { opacity: 0.9; }
+				.register-footer {
+					text-align: center; font-size: 12px; color: var(--gray-400); margin-top: 16px;
+				}
+				.register-footer a { color: var(--primary); font-weight: 600; text-decoration: none; }
+				.register-footer a:hover { text-decoration: underline; }
+				@media (max-width: 768px) {
+					.register-page { flex-direction: column; }
+					.register-brand { width: 100%; padding: 32px 24px; }
+					.register-brand-benefits { display: none; }
+					.register-form-panel { width: 100%; padding: 24px; }
+					.register-row { grid-template-columns: 1fr; }
+				}
+			</style>
+		</head>
+		<body>
+			<div class="register-page">
+				<!-- Left branding panel -->
+				<div class="register-brand">
+					<div>
+						<div class="register-brand-label">{ brand.Name }</div>
+						<h2>The Professional Standard for Vehicle Transport</h2>
+						<p>Orchestrate your entire fleet, manage complex logistics, and scale your vehicle transport business.</p>
+					</div>
+					<div class="register-brand-benefits">
+						<div class="register-bullet">
+							<div class="register-bullet-dot"></div>
+							<span>Free trial — no credit card required</span>
+						</div>
+						<div class="register-bullet">
+							<div class="register-bullet-dot"></div>
+							<span>Set up in under 5 minutes</span>
+						</div>
+						<div class="register-bullet">
+							<div class="register-bullet-dot"></div>
+							<span>Cancel anytime</span>
+						</div>
+					</div>
+				</div>
+				<!-- Right form panel -->
+				<div class="register-form-panel">
+					<div class="register-form-inner">
+						<h3>Create your account</h3>
+						<p class="subtitle">Start your free trial today</p>
+						if successMsg != "" {
+							<div class="alert alert-success">{ successMsg }</div>
+						}
+						if errorMsg != "" {
+							<div class="alert alert-danger">{ errorMsg }</div>
+						}
+						if successMsg == "" {
+							<form method="POST" action="/register" x-data={ slugAlpineData(formData) }>
+								if !brand.OpenRegistration {
+									<div class="register-field">
+										<label for="invite_code">Invite Code *</label>
+										<input
+											type="text"
+											id="invite_code"
+											name="invite_code"
+											class={ inputClass(fieldErrors, "invite_code") }
+											value={ formVal(formData, "invite_code") }
+											required
+										/>
+										if fieldErrors != nil && fieldErrors["invite_code"] != "" {
+											<span class="field-error">{ fieldErrors["invite_code"] }</span>
+										}
+									</div>
+									<hr class="register-divider"/>
+								}
+								<div class="register-field">
+									<label for="company_name">Company Name *</label>
+									<input
+										type="text"
+										id="company_name"
+										name="company_name"
+										class={ inputClass(fieldErrors, "company_name") }
+										x-model="cn"
+										required
+										maxlength="40"
+										placeholder="Acme Transport LLC"
+									/>
+									<div class="register-slug-preview" x-show="cn.length > 2">
+										Your workspace: <strong x-text="'atlascloud.app/c/' + cn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 30)"></strong>
+									</div>
+									if fieldErrors != nil && fieldErrors["company_name"] != "" {
+										<span class="field-error">{ fieldErrors["company_name"] }</span>
+									}
+								</div>
+								<hr class="register-divider"/>
+								<div class="register-row">
+									<div class="register-field">
+										<label for="first_name">First Name</label>
+										<input
+											type="text"
+											id="first_name"
+											name="first_name"
+											value={ formVal(formData, "first_name") }
+											maxlength="50"
+											placeholder="John"
+										/>
+									</div>
+									<div class="register-field">
+										<label for="last_name">Last Name</label>
+										<input
+											type="text"
+											id="last_name"
+											name="last_name"
+											value={ formVal(formData, "last_name") }
+											maxlength="50"
+											placeholder="Smith"
+										/>
+									</div>
+								</div>
+								<div class="register-field">
+									<label for="reg-email">Email *</label>
+									<input
+										type="email"
+										id="reg-email"
+										name="email"
+										class={ inputClass(fieldErrors, "email") }
+										value={ formVal(formData, "email") }
+										required
+										maxlength="255"
+										placeholder="john@acmetransport.com"
+									/>
+									if fieldErrors != nil && fieldErrors["email"] != "" {
+										<span class="field-error">{ fieldErrors["email"] }</span>
+									}
+								</div>
+								<div class="register-field">
+									<label for="reg-username">Username *</label>
+									<input
+										type="text"
+										id="reg-username"
+										name="username"
+										class={ inputClass(fieldErrors, "username") }
+										value={ formVal(formData, "username") }
+										required
+										maxlength="50"
+										placeholder="jsmith"
+									/>
+									if fieldErrors != nil && fieldErrors["username"] != "" {
+										<span class="field-error">{ fieldErrors["username"] }</span>
+									}
+								</div>
+								<div class="register-field">
+									<label for="reg-password">Password *</label>
+									<input
+										type="password"
+										id="reg-password"
+										name="password"
+										class={ inputClass(fieldErrors, "password") }
+										required
+									/>
+									if fieldErrors != nil && fieldErrors["password"] != "" {
+										<span class="field-error">{ fieldErrors["password"] }</span>
+									}
+								</div>
+								<button type="submit" class="register-submit">Create Account</button>
+							</form>
+						}
+						<p class="register-footer">
+							Already have an account? <a href="/login">Sign in</a>
+						</p>
+					</div>
+				</div>
+			</div>
+		</body>
+	</html>
+}
+
+func inputClass(errs map[string]string, field string) string {
+	if errs != nil && errs[field] != "" {
+		return "input-error"
+	}
+	return ""
+}
+
+func slugAlpineData(form map[string]string) string {
+	cn := ""
+	if form != nil {
+		cn = form["company_name"]
+	}
+	return "{ cn: '" + cn + "' }"
+}
