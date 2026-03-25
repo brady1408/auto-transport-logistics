@@ -26,16 +26,11 @@ templ RegisterPage(brand components.Brand, formData map[string]string, fieldErro
 					justify-content: space-between; font-family: var(--font-heading);
 					position: relative; overflow: hidden;
 				}
-				.register-glow-1 {
-					position: absolute; top: -30%; right: -15%; width: 70%; height: 100%;
-					background: radial-gradient(ellipse, rgba(71,124,255,0.2) 0%, transparent 65%);
+				.register-photo-overlay {
+					position: absolute; inset: 0; opacity: 0.2; mix-blend-mode: overlay;
 					pointer-events: none;
 				}
-				.register-glow-2 {
-					position: absolute; bottom: -20%; left: -15%; width: 60%; height: 80%;
-					background: radial-gradient(ellipse, rgba(111,251,190,0.1) 0%, transparent 65%);
-					pointer-events: none;
-				}
+				.register-photo-overlay img { width: 100%; height: 100%; object-fit: cover; }
 				.register-brand-content { position: relative; z-index: 1; }
 				.register-brand-label {
 					font-size: 14px; font-weight: 700; letter-spacing: 0.1em;
@@ -117,8 +112,7 @@ templ RegisterPage(brand components.Brand, formData map[string]string, fieldErro
 			<div class="register-page">
 				<!-- Left branding panel -->
 				<div class="register-brand">
-					<div class="register-glow-1"></div>
-					<div class="register-glow-2"></div>
+					<div class="register-photo-overlay"><img alt="" src="/static/img/logistics-bg.png"/></div>
 					<div class="register-brand-content">
 						<div class="register-brand-label">{ brand.Name }</div>
 						<h2>The Professional Standard for Vehicle Transport</h2>
