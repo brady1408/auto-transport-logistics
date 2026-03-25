@@ -98,20 +98,20 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" defer></script><style>\n\t\t\t\t.register-page { display: flex; min-height: 100vh; }\n\t\t\t\t.register-brand {\n\t\t\t\t\twidth: 40%; background: linear-gradient(160deg, #000000 0%, #00174b 100%);\n\t\t\t\t\tcolor: white; padding: 48px 40px; display: flex; flex-direction: column;\n\t\t\t\t\tjustify-content: space-between; font-family: var(--font-heading);\n\t\t\t\t}\n\t\t\t\t.register-brand-label {\n\t\t\t\t\tfont-size: 14px; font-weight: 700; letter-spacing: 0.1em;\n\t\t\t\t\topacity: 0.6; text-transform: uppercase; margin-bottom: 24px;\n\t\t\t\t}\n\t\t\t\t.register-brand h2 {\n\t\t\t\t\tfont-size: 28px; font-weight: 800; line-height: 1.2;\n\t\t\t\t\tmargin: 0 0 16px; letter-spacing: -0.02em;\n\t\t\t\t}\n\t\t\t\t.register-brand p { font-size: 14px; line-height: 1.7; opacity: 0.7; margin: 0; }\n\t\t\t\t.register-bullet {\n\t\t\t\t\tdisplay: flex; gap: 8px; align-items: center; margin-bottom: 12px;\n\t\t\t\t}\n\t\t\t\t.register-bullet-dot {\n\t\t\t\t\twidth: 8px; height: 8px; border-radius: 50%; background: #6ffbbe; flex-shrink: 0;\n\t\t\t\t}\n\t\t\t\t.register-bullet span { font-size: 12px; opacity: 0.7; }\n\t\t\t\t.register-form-panel {\n\t\t\t\t\twidth: 60%; background: var(--surface); padding: 40px 48px;\n\t\t\t\t\tdisplay: flex; flex-direction: column; justify-content: center;\n\t\t\t\t\tfont-family: var(--font-body);\n\t\t\t\t}\n\t\t\t\t.register-form-inner { max-width: 480px; width: 100%; margin: 0 auto; }\n\t\t\t\t.register-form-inner h3 {\n\t\t\t\t\tfont-size: 22px; font-weight: 800; margin: 0 0 4px;\n\t\t\t\t\tcolor: var(--gray-800); font-family: var(--font-heading);\n\t\t\t\t\tletter-spacing: -0.02em;\n\t\t\t\t}\n\t\t\t\t.register-form-inner .subtitle {\n\t\t\t\t\tfont-size: 13px; color: var(--gray-500); margin: 0 0 28px;\n\t\t\t\t}\n\t\t\t\t.register-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }\n\t\t\t\t.register-field { margin-bottom: 16px; }\n\t\t\t\t.register-field label {\n\t\t\t\t\tdisplay: block; font-size: 11px; font-weight: 600; color: var(--gray-500);\n\t\t\t\t\ttext-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;\n\t\t\t\t}\n\t\t\t\t.register-field input {\n\t\t\t\t\twidth: 100%; padding: 10px 14px;\n\t\t\t\t\tborder: 1px solid rgba(198,198,205,0.3); border-radius: 8px;\n\t\t\t\t\tfont-size: 14px; background: white; font-family: var(--font-body);\n\t\t\t\t\toutline: none; transition: border-color 0.15s;\n\t\t\t\t}\n\t\t\t\t.register-field input:focus {\n\t\t\t\t\tborder-color: var(--primary);\n\t\t\t\t\tbox-shadow: 0 0 0 2px rgba(71,124,255,0.15);\n\t\t\t\t}\n\t\t\t\t.register-field input.input-error { border-color: var(--danger); }\n\t\t\t\t.register-field .field-error { color: var(--danger); font-size: 12px; margin-top: 4px; display: block; }\n\t\t\t\t.register-slug-preview {\n\t\t\t\t\tmargin-top: 6px; font-size: 12px; color: var(--gray-400);\n\t\t\t\t}\n\t\t\t\t.register-slug-preview strong { color: var(--primary); }\n\t\t\t\t.register-divider {\n\t\t\t\t\tborder: none; border-top: 1px solid rgba(198,198,205,0.2); margin: 24px 0;\n\t\t\t\t}\n\t\t\t\t.register-submit {\n\t\t\t\t\twidth: 100%; padding: 14px; background: linear-gradient(135deg, #000000, #00174b);\n\t\t\t\t\tcolor: white; border: none; border-radius: 12px; font-size: 14px;\n\t\t\t\t\tfont-weight: 700; cursor: pointer; font-family: var(--font-body);\n\t\t\t\t\tletter-spacing: 0.01em; transition: opacity 0.15s;\n\t\t\t\t}\n\t\t\t\t.register-submit:hover { opacity: 0.9; }\n\t\t\t\t.register-footer {\n\t\t\t\t\ttext-align: center; font-size: 12px; color: var(--gray-400); margin-top: 16px;\n\t\t\t\t}\n\t\t\t\t.register-footer a { color: var(--primary); font-weight: 600; text-decoration: none; }\n\t\t\t\t.register-footer a:hover { text-decoration: underline; }\n\t\t\t\t@media (max-width: 768px) {\n\t\t\t\t\t.register-page { flex-direction: column; }\n\t\t\t\t\t.register-brand { width: 100%; padding: 32px 24px; }\n\t\t\t\t\t.register-brand-benefits { display: none; }\n\t\t\t\t\t.register-form-panel { width: 100%; padding: 24px; }\n\t\t\t\t\t.register-row { grid-template-columns: 1fr; }\n\t\t\t\t}\n\t\t\t</style></head><body><div class=\"register-page\"><!-- Left branding panel --><div class=\"register-brand\"><div><div class=\"register-brand-label\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" defer></script><style>\n\t\t\t\t.register-page { display: flex; min-height: 100vh; }\n\t\t\t\t.register-brand {\n\t\t\t\t\twidth: 40%; background: linear-gradient(160deg, #000000 0%, #00174b 100%);\n\t\t\t\t\tcolor: white; padding: 48px 40px; display: flex; flex-direction: column;\n\t\t\t\t\tjustify-content: space-between; font-family: var(--font-heading);\n\t\t\t\t\tposition: relative; overflow: hidden;\n\t\t\t\t}\n\t\t\t\t.register-glow-1 {\n\t\t\t\t\tposition: absolute; top: -30%; right: -15%; width: 70%; height: 100%;\n\t\t\t\t\tbackground: radial-gradient(ellipse, rgba(71,124,255,0.2) 0%, transparent 65%);\n\t\t\t\t\tpointer-events: none;\n\t\t\t\t}\n\t\t\t\t.register-glow-2 {\n\t\t\t\t\tposition: absolute; bottom: -20%; left: -15%; width: 60%; height: 80%;\n\t\t\t\t\tbackground: radial-gradient(ellipse, rgba(111,251,190,0.1) 0%, transparent 65%);\n\t\t\t\t\tpointer-events: none;\n\t\t\t\t}\n\t\t\t\t.register-brand-content { position: relative; z-index: 1; }\n\t\t\t\t.register-brand-label {\n\t\t\t\t\tfont-size: 14px; font-weight: 700; letter-spacing: 0.1em;\n\t\t\t\t\topacity: 0.6; text-transform: uppercase; margin-bottom: 24px;\n\t\t\t\t}\n\t\t\t\t.register-brand h2 {\n\t\t\t\t\tfont-size: 28px; font-weight: 800; line-height: 1.2;\n\t\t\t\t\tmargin: 0 0 16px; letter-spacing: -0.02em;\n\t\t\t\t}\n\t\t\t\t.register-brand p { font-size: 14px; line-height: 1.7; opacity: 0.7; margin: 0; }\n\t\t\t\t.register-bullet {\n\t\t\t\t\tdisplay: flex; gap: 8px; align-items: center; margin-bottom: 12px;\n\t\t\t\t}\n\t\t\t\t.register-bullet-dot {\n\t\t\t\t\twidth: 8px; height: 8px; border-radius: 50%; background: #6ffbbe; flex-shrink: 0;\n\t\t\t\t}\n\t\t\t\t.register-bullet span { font-size: 12px; opacity: 0.7; }\n\t\t\t\t.register-form-panel {\n\t\t\t\t\twidth: 60%; background: var(--surface); padding: 40px 48px;\n\t\t\t\t\tdisplay: flex; flex-direction: column; justify-content: center;\n\t\t\t\t\tfont-family: var(--font-body);\n\t\t\t\t}\n\t\t\t\t.register-form-inner { max-width: 480px; width: 100%; margin: 0 auto; }\n\t\t\t\t.register-form-inner h3 {\n\t\t\t\t\tfont-size: 22px; font-weight: 800; margin: 0 0 4px;\n\t\t\t\t\tcolor: var(--gray-800); font-family: var(--font-heading);\n\t\t\t\t\tletter-spacing: -0.02em;\n\t\t\t\t}\n\t\t\t\t.register-form-inner .subtitle {\n\t\t\t\t\tfont-size: 13px; color: var(--gray-500); margin: 0 0 28px;\n\t\t\t\t}\n\t\t\t\t.register-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }\n\t\t\t\t.register-field { margin-bottom: 16px; }\n\t\t\t\t.register-field label {\n\t\t\t\t\tdisplay: block; font-size: 11px; font-weight: 600; color: var(--gray-500);\n\t\t\t\t\ttext-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;\n\t\t\t\t}\n\t\t\t\t.register-field input {\n\t\t\t\t\twidth: 100%; padding: 10px 14px;\n\t\t\t\t\tborder: 1px solid rgba(198,198,205,0.3); border-radius: 8px;\n\t\t\t\t\tfont-size: 14px; background: white; font-family: var(--font-body);\n\t\t\t\t\toutline: none; transition: border-color 0.15s;\n\t\t\t\t}\n\t\t\t\t.register-field input:focus {\n\t\t\t\t\tborder-color: var(--primary);\n\t\t\t\t\tbox-shadow: 0 0 0 2px rgba(71,124,255,0.15);\n\t\t\t\t}\n\t\t\t\t.register-field input.input-error { border-color: var(--danger); }\n\t\t\t\t.register-field .field-error { color: var(--danger); font-size: 12px; margin-top: 4px; display: block; }\n\t\t\t\t.register-slug-preview {\n\t\t\t\t\tmargin-top: 6px; font-size: 12px; color: var(--gray-400);\n\t\t\t\t}\n\t\t\t\t.register-slug-preview strong { color: var(--primary); }\n\t\t\t\t.register-divider {\n\t\t\t\t\tborder: none; border-top: 1px solid rgba(198,198,205,0.2); margin: 24px 0;\n\t\t\t\t}\n\t\t\t\t.register-submit {\n\t\t\t\t\twidth: 100%; padding: 14px; background: linear-gradient(135deg, #000000, #00174b);\n\t\t\t\t\tcolor: white; border: none; border-radius: 12px; font-size: 14px;\n\t\t\t\t\tfont-weight: 700; cursor: pointer; font-family: var(--font-body);\n\t\t\t\t\tletter-spacing: 0.01em; transition: opacity 0.15s;\n\t\t\t\t}\n\t\t\t\t.register-submit:hover { opacity: 0.9; }\n\t\t\t\t.register-footer {\n\t\t\t\t\ttext-align: center; font-size: 12px; color: var(--gray-400); margin-top: 16px;\n\t\t\t\t}\n\t\t\t\t.register-footer a { color: var(--primary); font-weight: 600; text-decoration: none; }\n\t\t\t\t.register-footer a:hover { text-decoration: underline; }\n\t\t\t\t@media (max-width: 768px) {\n\t\t\t\t\t.register-page { flex-direction: column; }\n\t\t\t\t\t.register-brand { width: 100%; padding: 32px 24px; }\n\t\t\t\t\t.register-brand-benefits { display: none; }\n\t\t\t\t\t.register-form-panel { width: 100%; padding: 24px; }\n\t\t\t\t\t.register-row { grid-template-columns: 1fr; }\n\t\t\t\t}\n\t\t\t</style></head><body><div class=\"register-page\"><!-- Left branding panel --><div class=\"register-brand\"><div class=\"register-glow-1\"></div><div class=\"register-glow-2\"></div><div class=\"register-brand-content\"><div class=\"register-brand-label\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(brand.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 109, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 123, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div><h2>The Professional Standard for Vehicle Transport</h2><p>Orchestrate your entire fleet, manage complex logistics, and scale your vehicle transport business.</p></div><div class=\"register-brand-benefits\"><div class=\"register-bullet\"><div class=\"register-bullet-dot\"></div><span>Free trial — no credit card required</span></div><div class=\"register-bullet\"><div class=\"register-bullet-dot\"></div><span>Set up in under 5 minutes</span></div><div class=\"register-bullet\"><div class=\"register-bullet-dot\"></div><span>Cancel anytime</span></div></div></div><!-- Right form panel --><div class=\"register-form-panel\"><div class=\"register-form-inner\"><h3>Create your account</h3><p class=\"subtitle\">Start your free trial today</p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div><h2>The Professional Standard for Vehicle Transport</h2><p>Orchestrate your entire fleet, manage complex logistics, and scale your vehicle transport business.</p></div><div class=\"register-brand-benefits register-brand-content\"><div class=\"register-bullet\"><div class=\"register-bullet-dot\"></div><span>Free trial — no credit card required</span></div><div class=\"register-bullet\"><div class=\"register-bullet-dot\"></div><span>Set up in under 5 minutes</span></div><div class=\"register-bullet\"><div class=\"register-bullet-dot\"></div><span>Cancel anytime</span></div></div></div><!-- Right form panel --><div class=\"register-form-panel\"><div class=\"register-form-inner\"><h3>Create your account</h3><p class=\"subtitle\">Start your free trial today</p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -123,7 +123,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(successMsg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 134, Col: 52}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 148, Col: 52}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -142,7 +142,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(errorMsg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 137, Col: 49}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 151, Col: 49}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -161,7 +161,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(slugAlpineData(formData))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 140, Col: 79}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 154, Col: 79}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -201,7 +201,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 				var templ_7745c5c3_Var13 string
 				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(formVal(formData, "invite_code"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 149, Col: 51}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 163, Col: 51}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
@@ -219,7 +219,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 					var templ_7745c5c3_Var14 string
 					templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fieldErrors["invite_code"])
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 153, Col: 65}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 167, Col: 65}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 					if templ_7745c5c3_Err != nil {
@@ -269,7 +269,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 				var templ_7745c5c3_Var17 string
 				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fieldErrors["company_name"])
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 174, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 188, Col: 65}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 				if templ_7745c5c3_Err != nil {
@@ -287,7 +287,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(formVal(formData, "first_name"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 185, Col: 50}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 199, Col: 50}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -300,7 +300,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(formVal(formData, "last_name"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 196, Col: 49}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 210, Col: 49}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -335,7 +335,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(formVal(formData, "email"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 209, Col: 44}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 223, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
@@ -353,7 +353,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(fieldErrors["email"])
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 215, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 229, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
@@ -393,7 +393,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 			var templ_7745c5c3_Var26 string
 			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(formVal(formData, "username"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 225, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 239, Col: 47}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
@@ -411,7 +411,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 				var templ_7745c5c3_Var27 string
 				templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(fieldErrors["username"])
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 231, Col: 61}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 245, Col: 61}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 				if templ_7745c5c3_Err != nil {
@@ -456,7 +456,7 @@ func RegisterPage(brand components.Brand, formData map[string]string, fieldError
 				var templ_7745c5c3_Var30 string
 				templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(fieldErrors["password"])
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 244, Col: 61}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/register.templ`, Line: 258, Col: 61}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 				if templ_7745c5c3_Err != nil {
