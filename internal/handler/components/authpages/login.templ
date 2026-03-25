@@ -20,69 +20,254 @@ templ LoginPage(brand components.Brand, companyName string, loginAction string, 
 			<link rel="preconnect" href="https://fonts.googleapis.com"/>
 			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap"/>
+			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"/>
 			<link rel="stylesheet" href={ components.AssetVersion("/static/css/app.css") }/>
+			<style>
+				.login-split { display: flex; min-height: 100vh; }
+				.login-hero {
+					display: none; width: 50%; position: relative; overflow: hidden;
+					background-color: #00174b;
+					background-image:
+						radial-gradient(at 0% 0%, rgba(0,83,219,0.15) 0px, transparent 50%),
+						radial-gradient(at 100% 100%, rgba(111,251,190,0.1) 0px, transparent 50%);
+					padding: 64px; align-items: center; justify-content: center;
+				}
+				.login-hero-overlay {
+					position: absolute; inset: 0; opacity: 0.2; mix-blend-mode: overlay;
+				}
+				.login-hero-overlay img { width: 100%; height: 100%; object-fit: cover; }
+				.login-hero-content { position: relative; z-index: 10; max-width: 560px; }
+				.login-hero-brand {
+					font-family: var(--font-heading); font-weight: 800; font-size: 48px;
+					letter-spacing: -0.04em; color: white; margin-bottom: 8px;
+				}
+				.login-hero-accent { height: 4px; width: 48px; background: #6ffbbe; margin-bottom: 48px; border-radius: 2px; }
+				.login-hero h1 {
+					font-family: var(--font-heading); font-size: 40px; font-weight: 700;
+					color: white; line-height: 1.15; margin: 0 0 24px;
+				}
+				.login-hero p {
+					color: #b4c5ff; font-size: 18px; font-weight: 500; line-height: 1.6; max-width: 420px; margin: 0;
+				}
+				.login-hero p span { color: white; }
+				.login-hero-stats {
+					margin-top: 64px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+				}
+				.login-hero-stat-label {
+					font-family: var(--font-body); font-size: 11px; text-transform: uppercase;
+					letter-spacing: 0.2em; color: rgba(198,198,205,0.6); margin-bottom: 8px;
+				}
+				.login-hero-stat-value {
+					display: flex; align-items: center; gap: 8px; color: white; font-weight: 600; font-size: 14px;
+				}
+				.login-hero-stat-dot {
+					width: 8px; height: 8px; border-radius: 50%; background: #6ffbbe;
+					animation: pulse-dot 1.5s ease-in-out infinite;
+				}
+				@keyframes pulse-dot {
+					0%, 100% { opacity: 1; }
+					50% { opacity: 0.4; }
+				}
+				.login-form-panel {
+					width: 100%; display: flex; align-items: center; justify-content: center;
+					padding: 24px; background: var(--surface);
+				}
+				.login-form-wrap { width: 100%; max-width: 440px; }
+				.login-form-card {
+					background: white; padding: 40px; border-radius: 12px;
+					box-shadow: 0 24px 48px rgba(25,28,30,0.04);
+					border: 1px solid rgba(198,198,205,0.1);
+				}
+				.login-form-card h2 {
+					font-family: var(--font-heading); font-size: 22px; font-weight: 700;
+					color: var(--gray-800); margin: 0 0 8px;
+				}
+				.login-form-card .subtitle {
+					color: var(--gray-500); font-size: 13px; margin: 0 0 32px;
+				}
+				.login-field { margin-bottom: 20px; }
+				.login-field label {
+					display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;
+					letter-spacing: 0.08em; color: var(--gray-500); margin-bottom: 6px;
+				}
+				.login-field .input-wrap {
+					position: relative; display: flex; align-items: center;
+				}
+				.login-field .input-wrap .material-symbols-outlined {
+					position: absolute; left: 14px; color: var(--gray-300); font-size: 20px;
+					transition: color 0.15s;
+				}
+				.login-field .input-wrap:focus-within .material-symbols-outlined {
+					color: var(--primary);
+				}
+				.login-field input {
+					width: 100%; padding: 14px 14px 14px 46px;
+					background: var(--surface-low); border: none;
+					border-bottom: 2px solid transparent;
+					border-radius: 8px 8px 0 0; font-size: 14px;
+					font-family: var(--font-body); outline: none;
+					transition: border-color 0.15s, background 0.15s;
+				}
+				.login-field input:focus {
+					border-bottom-color: var(--primary);
+					background: white;
+				}
+				.login-field input::placeholder { color: rgba(118,119,125,0.5); }
+				.login-field .field-label-row {
+					display: flex; justify-content: space-between; align-items: center;
+				}
+				.login-field .forgot-link {
+					font-size: 11px; font-weight: 500; color: var(--primary);
+					text-decoration: none;
+				}
+				.login-field .forgot-link:hover { text-decoration: underline; }
+				.login-submit {
+					width: 100%; padding: 16px; background: linear-gradient(135deg, #000000, #00174b);
+					color: white; border: none; border-radius: 12px; font-size: 13px;
+					font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;
+					cursor: pointer; font-family: var(--font-body);
+					display: flex; align-items: center; justify-content: center; gap: 8px;
+					transition: opacity 0.15s;
+				}
+				.login-submit:hover { opacity: 0.9; }
+				.login-divider {
+					display: flex; align-items: center; padding: 20px 0;
+				}
+				.login-divider::before, .login-divider::after {
+					content: ''; flex: 1; border-top: 1px solid rgba(198,198,205,0.3);
+				}
+				.login-divider span {
+					padding: 0 16px; font-size: 11px; text-transform: uppercase;
+					letter-spacing: 0.15em; color: var(--gray-400);
+				}
+				.login-register-link {
+					text-align: center; font-size: 13px; color: var(--gray-500);
+				}
+				.login-register-link a {
+					font-weight: 700; color: var(--gray-800); text-decoration: none; margin-left: 4px;
+				}
+				.login-register-link a:hover { color: var(--primary); }
+				.login-footer-links {
+					margin-top: 40px; display: flex; justify-content: center; gap: 24px;
+				}
+				.login-footer-links a {
+					font-size: 11px; color: var(--gray-400); text-decoration: none;
+				}
+				.login-footer-links a:hover { color: var(--gray-800); }
+				.login-mobile-brand {
+					display: flex; justify-content: center; margin-bottom: 32px;
+				}
+				.login-mobile-brand span {
+					font-family: var(--font-heading); font-weight: 800; font-size: 28px;
+					letter-spacing: -0.04em; color: var(--nav-bg);
+				}
+				@media (min-width: 1024px) {
+					.login-hero { display: flex; }
+					.login-form-panel { width: 50%; padding: 48px; }
+					.login-mobile-brand { display: none; }
+				}
+			</style>
 		</head>
-		<body class="login-body">
-			if loginAction != "" {
-				<!-- Company-specific login -->
-				<div class="login-container">
-					<div class="login-card">
-						<h1 class="login-title">{ companyName }</h1>
-						<p class="login-subtitle">{ brand.Tagline }</p>
-						if flash != "" {
-							<div class="alert alert-success">{ flash }</div>
-						}
-						if errMsg != "" {
-							<div class="alert alert-danger">{ errMsg }</div>
-						}
-						<form method="POST" action={ templ.SafeURL(loginAction) }>
-							<div class="form-group">
-								<label for="username">Username</label>
-								<input type="text" id="username" name="username" class="form-control" value={ username } required autofocus/>
+		<body>
+			<div class="login-split">
+				<!-- Left: Brand Hero -->
+				<section class="login-hero">
+					<div class="login-hero-overlay"><img alt="" src="/static/img/logistics-bg.png"/></div>
+					<div class="login-hero-content">
+						<div class="login-hero-brand">
+							if companyName != "" {
+								{ companyName }
+							} else {
+								{ brand.Name }
+							}
+						</div>
+						<div class="login-hero-accent"></div>
+						<h1>Vehicle Transport<br/>Management</h1>
+						<p>Dispatch, track, and invoice — <span>all in one platform</span> built for precision logistics.</p>
+						<div class="login-hero-stats">
+							<div>
+								<div class="login-hero-stat-label">System Status</div>
+								<div class="login-hero-stat-value">
+									<div class="login-hero-stat-dot"></div>
+									Active & Encrypted
+								</div>
 							</div>
-							<div class="form-group">
-								<label for="password">Password</label>
-								<input type="password" id="password" name="password" class="form-control" required/>
+							<div>
+								<div class="login-hero-stat-label">Global Fleet</div>
+								<div class="login-hero-stat-value">
+									<span class="material-symbols-outlined" style="font-size:16px;">public</span>
+									Real-time Sync
+								</div>
 							</div>
-							<button type="submit" class="btn btn-primary btn-block">Sign In</button>
-						</form>
-						<p style="text-align: center; margin-top: 0.75rem;">
-							<a href="/forgot-password" style="font-size: 0.9rem;">Forgot Password?</a>
-						</p>
+						</div>
 					</div>
-				</div>
-			} else {
-				<!-- Global login -->
-				<div class="login-container">
-					<div class="login-card">
-						<h1 class="login-title">{ brand.Name }</h1>
-						<p class="login-subtitle">{ brand.Tagline }</p>
-						if flash != "" {
-							<div class="alert alert-success">{ flash }</div>
-						}
-						if errMsg != "" {
-							<div class="alert alert-danger">{ errMsg }</div>
-						}
-						<form method="POST" action="/login">
-							<div class="form-group">
-								<label for="login-username">Username</label>
-								<input type="text" id="login-username" name="username" class="form-control" value={ username } required/>
+				</section>
+				<!-- Right: Login Form -->
+				<section class="login-form-panel">
+					<div class="login-form-wrap">
+						<div class="login-mobile-brand">
+							<span>
+								if companyName != "" {
+									{ companyName }
+								} else {
+									{ brand.Name }
+								}
+							</span>
+						</div>
+						<div class="login-form-card">
+							<h2>Sign in to your account</h2>
+							<p class="subtitle">Enter your credentials to access the dispatch console.</p>
+							if flash != "" {
+								<div class="alert alert-success">{ flash }</div>
+							}
+							if errMsg != "" {
+								<div class="alert alert-danger">{ errMsg }</div>
+							}
+							if loginAction != "" {
+								<form method="POST" action={ templ.SafeURL(loginAction) }>
+									@loginFormFields(username)
+								</form>
+							} else {
+								<form method="POST" action="/login">
+									@loginFormFields(username)
+								</form>
+							}
+							<div class="login-divider"><span>or</span></div>
+							<div class="login-register-link">
+								New to the platform?<a href="/register">Create an account</a>
 							</div>
-							<div class="form-group">
-								<label for="login-password">Password</label>
-								<input type="password" id="login-password" name="password" class="form-control" required/>
-							</div>
-							<button type="submit" class="btn btn-primary btn-block">Sign In</button>
-						</form>
-						<p style="text-align: center; margin-top: 0.75rem;">
-							<a href="/forgot-password" style="font-size: 0.9rem;">Forgot Password?</a>
-						</p>
-						<p style="text-align: center; margin-top: 0.5rem; font-size: 0.85rem; color: var(--gray-400);">
-							Don't have an account? <a href="/register" style="font-weight: 600;">Register</a>
-						</p>
+						</div>
+						<div class="login-footer-links">
+							<a href="/terms">Terms of Service</a>
+							<a href="/privacy">Privacy Policy</a>
+						</div>
 					</div>
-				</div>
-			}
+				</section>
+			</div>
 		</body>
 	</html>
+}
+
+templ loginFormFields(username string) {
+	<div class="login-field">
+		<label for="username">Username</label>
+		<div class="input-wrap">
+			<span class="material-symbols-outlined">person</span>
+			<input type="text" id="username" name="username" value={ username } placeholder="Enter your username" required autofocus/>
+		</div>
+	</div>
+	<div class="login-field">
+		<div class="field-label-row">
+			<label for="password">Password</label>
+			<a href="/forgot-password" class="forgot-link">Forgot your password?</a>
+		</div>
+		<div class="input-wrap">
+			<span class="material-symbols-outlined">lock</span>
+			<input type="password" id="password" name="password" placeholder="••••••••" required/>
+		</div>
+	</div>
+	<button type="submit" class="login-submit">
+		Sign In
+		<span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+	</button>
 }

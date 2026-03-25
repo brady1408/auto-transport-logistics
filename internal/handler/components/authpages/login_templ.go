@@ -113,210 +113,194 @@ func LoginPage(brand components.Brand, companyName string, loginAction string, u
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\"><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap\"><link rel=\"stylesheet\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\"><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap\"><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap\"><link rel=\"stylesheet\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 templ.SafeURL
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(components.AssetVersion("/static/css/app.css"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 23, Col: 79}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 24, Col: 79}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\"></head><body class=\"login-body\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\"><style>\n\t\t\t\t.login-split { display: flex; min-height: 100vh; }\n\t\t\t\t.login-hero {\n\t\t\t\t\tdisplay: none; width: 50%; position: relative; overflow: hidden;\n\t\t\t\t\tbackground-color: #00174b;\n\t\t\t\t\tbackground-image:\n\t\t\t\t\t\tradial-gradient(at 0% 0%, rgba(0,83,219,0.15) 0px, transparent 50%),\n\t\t\t\t\t\tradial-gradient(at 100% 100%, rgba(111,251,190,0.1) 0px, transparent 50%);\n\t\t\t\t\tpadding: 64px; align-items: center; justify-content: center;\n\t\t\t\t}\n\t\t\t\t.login-hero-overlay {\n\t\t\t\t\tposition: absolute; inset: 0; opacity: 0.2; mix-blend-mode: overlay;\n\t\t\t\t}\n\t\t\t\t.login-hero-overlay img { width: 100%; height: 100%; object-fit: cover; }\n\t\t\t\t.login-hero-content { position: relative; z-index: 10; max-width: 560px; }\n\t\t\t\t.login-hero-brand {\n\t\t\t\t\tfont-family: var(--font-heading); font-weight: 800; font-size: 48px;\n\t\t\t\t\tletter-spacing: -0.04em; color: white; margin-bottom: 8px;\n\t\t\t\t}\n\t\t\t\t.login-hero-accent { height: 4px; width: 48px; background: #6ffbbe; margin-bottom: 48px; border-radius: 2px; }\n\t\t\t\t.login-hero h1 {\n\t\t\t\t\tfont-family: var(--font-heading); font-size: 40px; font-weight: 700;\n\t\t\t\t\tcolor: white; line-height: 1.15; margin: 0 0 24px;\n\t\t\t\t}\n\t\t\t\t.login-hero p {\n\t\t\t\t\tcolor: #b4c5ff; font-size: 18px; font-weight: 500; line-height: 1.6; max-width: 420px; margin: 0;\n\t\t\t\t}\n\t\t\t\t.login-hero p span { color: white; }\n\t\t\t\t.login-hero-stats {\n\t\t\t\t\tmargin-top: 64px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px;\n\t\t\t\t}\n\t\t\t\t.login-hero-stat-label {\n\t\t\t\t\tfont-family: var(--font-body); font-size: 11px; text-transform: uppercase;\n\t\t\t\t\tletter-spacing: 0.2em; color: rgba(198,198,205,0.6); margin-bottom: 8px;\n\t\t\t\t}\n\t\t\t\t.login-hero-stat-value {\n\t\t\t\t\tdisplay: flex; align-items: center; gap: 8px; color: white; font-weight: 600; font-size: 14px;\n\t\t\t\t}\n\t\t\t\t.login-hero-stat-dot {\n\t\t\t\t\twidth: 8px; height: 8px; border-radius: 50%; background: #6ffbbe;\n\t\t\t\t\tanimation: pulse-dot 1.5s ease-in-out infinite;\n\t\t\t\t}\n\t\t\t\t@keyframes pulse-dot {\n\t\t\t\t\t0%, 100% { opacity: 1; }\n\t\t\t\t\t50% { opacity: 0.4; }\n\t\t\t\t}\n\t\t\t\t.login-form-panel {\n\t\t\t\t\twidth: 100%; display: flex; align-items: center; justify-content: center;\n\t\t\t\t\tpadding: 24px; background: var(--surface);\n\t\t\t\t}\n\t\t\t\t.login-form-wrap { width: 100%; max-width: 440px; }\n\t\t\t\t.login-form-card {\n\t\t\t\t\tbackground: white; padding: 40px; border-radius: 12px;\n\t\t\t\t\tbox-shadow: 0 24px 48px rgba(25,28,30,0.04);\n\t\t\t\t\tborder: 1px solid rgba(198,198,205,0.1);\n\t\t\t\t}\n\t\t\t\t.login-form-card h2 {\n\t\t\t\t\tfont-family: var(--font-heading); font-size: 22px; font-weight: 700;\n\t\t\t\t\tcolor: var(--gray-800); margin: 0 0 8px;\n\t\t\t\t}\n\t\t\t\t.login-form-card .subtitle {\n\t\t\t\t\tcolor: var(--gray-500); font-size: 13px; margin: 0 0 32px;\n\t\t\t\t}\n\t\t\t\t.login-field { margin-bottom: 20px; }\n\t\t\t\t.login-field label {\n\t\t\t\t\tdisplay: block; font-size: 11px; font-weight: 600; text-transform: uppercase;\n\t\t\t\t\tletter-spacing: 0.08em; color: var(--gray-500); margin-bottom: 6px;\n\t\t\t\t}\n\t\t\t\t.login-field .input-wrap {\n\t\t\t\t\tposition: relative; display: flex; align-items: center;\n\t\t\t\t}\n\t\t\t\t.login-field .input-wrap .material-symbols-outlined {\n\t\t\t\t\tposition: absolute; left: 14px; color: var(--gray-300); font-size: 20px;\n\t\t\t\t\ttransition: color 0.15s;\n\t\t\t\t}\n\t\t\t\t.login-field .input-wrap:focus-within .material-symbols-outlined {\n\t\t\t\t\tcolor: var(--primary);\n\t\t\t\t}\n\t\t\t\t.login-field input {\n\t\t\t\t\twidth: 100%; padding: 14px 14px 14px 46px;\n\t\t\t\t\tbackground: var(--surface-low); border: none;\n\t\t\t\t\tborder-bottom: 2px solid transparent;\n\t\t\t\t\tborder-radius: 8px 8px 0 0; font-size: 14px;\n\t\t\t\t\tfont-family: var(--font-body); outline: none;\n\t\t\t\t\ttransition: border-color 0.15s, background 0.15s;\n\t\t\t\t}\n\t\t\t\t.login-field input:focus {\n\t\t\t\t\tborder-bottom-color: var(--primary);\n\t\t\t\t\tbackground: white;\n\t\t\t\t}\n\t\t\t\t.login-field input::placeholder { color: rgba(118,119,125,0.5); }\n\t\t\t\t.login-field .field-label-row {\n\t\t\t\t\tdisplay: flex; justify-content: space-between; align-items: center;\n\t\t\t\t}\n\t\t\t\t.login-field .forgot-link {\n\t\t\t\t\tfont-size: 11px; font-weight: 500; color: var(--primary);\n\t\t\t\t\ttext-decoration: none;\n\t\t\t\t}\n\t\t\t\t.login-field .forgot-link:hover { text-decoration: underline; }\n\t\t\t\t.login-submit {\n\t\t\t\t\twidth: 100%; padding: 16px; background: linear-gradient(135deg, #000000, #00174b);\n\t\t\t\t\tcolor: white; border: none; border-radius: 12px; font-size: 13px;\n\t\t\t\t\tfont-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;\n\t\t\t\t\tcursor: pointer; font-family: var(--font-body);\n\t\t\t\t\tdisplay: flex; align-items: center; justify-content: center; gap: 8px;\n\t\t\t\t\ttransition: opacity 0.15s;\n\t\t\t\t}\n\t\t\t\t.login-submit:hover { opacity: 0.9; }\n\t\t\t\t.login-divider {\n\t\t\t\t\tdisplay: flex; align-items: center; padding: 20px 0;\n\t\t\t\t}\n\t\t\t\t.login-divider::before, .login-divider::after {\n\t\t\t\t\tcontent: ''; flex: 1; border-top: 1px solid rgba(198,198,205,0.3);\n\t\t\t\t}\n\t\t\t\t.login-divider span {\n\t\t\t\t\tpadding: 0 16px; font-size: 11px; text-transform: uppercase;\n\t\t\t\t\tletter-spacing: 0.15em; color: var(--gray-400);\n\t\t\t\t}\n\t\t\t\t.login-register-link {\n\t\t\t\t\ttext-align: center; font-size: 13px; color: var(--gray-500);\n\t\t\t\t}\n\t\t\t\t.login-register-link a {\n\t\t\t\t\tfont-weight: 700; color: var(--gray-800); text-decoration: none; margin-left: 4px;\n\t\t\t\t}\n\t\t\t\t.login-register-link a:hover { color: var(--primary); }\n\t\t\t\t.login-footer-links {\n\t\t\t\t\tmargin-top: 40px; display: flex; justify-content: center; gap: 24px;\n\t\t\t\t}\n\t\t\t\t.login-footer-links a {\n\t\t\t\t\tfont-size: 11px; color: var(--gray-400); text-decoration: none;\n\t\t\t\t}\n\t\t\t\t.login-footer-links a:hover { color: var(--gray-800); }\n\t\t\t\t.login-mobile-brand {\n\t\t\t\t\tdisplay: flex; justify-content: center; margin-bottom: 32px;\n\t\t\t\t}\n\t\t\t\t.login-mobile-brand span {\n\t\t\t\t\tfont-family: var(--font-heading); font-weight: 800; font-size: 28px;\n\t\t\t\t\tletter-spacing: -0.04em; color: var(--nav-bg);\n\t\t\t\t}\n\t\t\t\t@media (min-width: 1024px) {\n\t\t\t\t\t.login-hero { display: flex; }\n\t\t\t\t\t.login-form-panel { width: 50%; padding: 48px; }\n\t\t\t\t\t.login-mobile-brand { display: none; }\n\t\t\t\t}\n\t\t\t</style></head><body><div class=\"login-split\"><!-- Left: Brand Hero --><section class=\"login-hero\"><div class=\"login-hero-overlay\"><img alt=\"\" src=\"/static/img/logistics-bg.png\"></div><div class=\"login-hero-content\"><div class=\"login-hero-brand\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if loginAction != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<!-- Company-specific login --> <div class=\"login-container\"><div class=\"login-card\"><h1 class=\"login-title\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
+		if companyName != "" {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(companyName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 30, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 179, Col: 21}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</h1><p class=\"login-subtitle\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
+		} else {
 			var templ_7745c5c3_Var9 string
-			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(brand.Tagline)
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(brand.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 31, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 181, Col: 20}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</p>")
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div><div class=\"login-hero-accent\"></div><h1>Vehicle Transport<br>Management</h1><p>Dispatch, track, and invoice — <span>all in one platform</span> built for precision logistics.</p><div class=\"login-hero-stats\"><div><div class=\"login-hero-stat-label\">System Status</div><div class=\"login-hero-stat-value\"><div class=\"login-hero-stat-dot\"></div>Active & Encrypted</div></div><div><div class=\"login-hero-stat-label\">Global Fleet</div><div class=\"login-hero-stat-value\"><span class=\"material-symbols-outlined\" style=\"font-size:16px;\">public</span> Real-time Sync</div></div></div></div></section><!-- Right: Login Form --><section class=\"login-form-panel\"><div class=\"login-form-wrap\"><div class=\"login-mobile-brand\"><span>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if companyName != "" {
+			var templ_7745c5c3_Var10 string
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(companyName)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 211, Col: 22}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if flash != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"alert alert-success\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var10 string
-				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(flash)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 33, Col: 47}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
+		} else {
+			var templ_7745c5c3_Var11 string
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(brand.Name)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 213, Col: 21}
 			}
-			if errMsg != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<div class=\"alert alert-danger\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var11 string
-				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(errMsg)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 36, Col: 47}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<form method=\"POST\" action=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var12 templ.SafeURL
-			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(loginAction))
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</span></div><div class=\"login-form-card\"><h2>Sign in to your account</h2><p class=\"subtitle\">Enter your credentials to access the dispatch console.</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if flash != "" {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"alert alert-success\">")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 38, Col: 61}
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var12 string
+			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(flash)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 221, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\"><div class=\"form-group\"><label for=\"username\">Username</label> <input type=\"text\" id=\"username\" name=\"username\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		if errMsg != "" {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"alert alert-danger\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var13 string
-			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(username)
+			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(errMsg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 41, Col: 94}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 224, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" required autofocus></div><div class=\"form-group\"><label for=\"password\">Password</label> <input type=\"password\" id=\"password\" name=\"password\" class=\"form-control\" required></div><button type=\"submit\" class=\"btn btn-primary btn-block\">Sign In</button></form><p style=\"text-align: center; margin-top: 0.75rem;\"><a href=\"/forgot-password\" style=\"font-size: 0.9rem;\">Forgot Password?</a></p></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<!-- Global login --> <div class=\"login-container\"><div class=\"login-card\"><h1 class=\"login-title\">")
+		}
+		if loginAction != "" {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<form method=\"POST\" action=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var14 string
-			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(brand.Name)
+			var templ_7745c5c3_Var14 templ.SafeURL
+			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(loginAction))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 58, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 227, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</h1><p class=\"login-subtitle\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var15 string
-			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(brand.Tagline)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 59, Col: 47}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+			templ_7745c5c3_Err = loginFormFields(username).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</form>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if flash != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<div class=\"alert alert-success\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var16 string
-				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(flash)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 61, Col: 47}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			if errMsg != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "<div class=\"alert alert-danger\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var17 string
-				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(errMsg)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 64, Col: 47}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<form method=\"POST\" action=\"/login\"><div class=\"form-group\"><label for=\"login-username\">Username</label> <input type=\"text\" id=\"login-username\" name=\"username\" class=\"form-control\" value=\"")
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<form method=\"POST\" action=\"/login\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var18 string
-			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(username)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 69, Col: 100}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
+			templ_7745c5c3_Err = loginFormFields(username).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "\" required></div><div class=\"form-group\"><label for=\"login-password\">Password</label> <input type=\"password\" id=\"login-password\" name=\"password\" class=\"form-control\" required></div><button type=\"submit\" class=\"btn btn-primary btn-block\">Sign In</button></form><p style=\"text-align: center; margin-top: 0.75rem;\"><a href=\"/forgot-password\" style=\"font-size: 0.9rem;\">Forgot Password?</a></p><p style=\"text-align: center; margin-top: 0.5rem; font-size: 0.85rem; color: var(--gray-400);\">Don't have an account? <a href=\"/register\" style=\"font-weight: 600;\">Register</a></p></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</form>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<div class=\"login-divider\"><span>or</span></div><div class=\"login-register-link\">New to the platform?<a href=\"/register\">Create an account</a></div></div><div class=\"login-footer-links\"><a href=\"/terms\">Terms of Service</a> <a href=\"/privacy\">Privacy Policy</a></div></div></section></div></body></html>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func loginFormFields(username string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var15 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var15 == nil {
+			templ_7745c5c3_Var15 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<div class=\"login-field\"><label for=\"username\">Username</label><div class=\"input-wrap\"><span class=\"material-symbols-outlined\">person</span> <input type=\"text\" id=\"username\" name=\"username\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var16 string
+		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(username)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/authpages/login.templ`, Line: 256, Col: 68}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\" placeholder=\"Enter your username\" required autofocus></div></div><div class=\"login-field\"><div class=\"field-label-row\"><label for=\"password\">Password</label> <a href=\"/forgot-password\" class=\"forgot-link\">Forgot your password?</a></div><div class=\"input-wrap\"><span class=\"material-symbols-outlined\">lock</span> <input type=\"password\" id=\"password\" name=\"password\" placeholder=\"••••••••\" required></div></div><button type=\"submit\" class=\"login-submit\">Sign In <span class=\"material-symbols-outlined\" style=\"font-size:18px;\">arrow_forward</span></button>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
