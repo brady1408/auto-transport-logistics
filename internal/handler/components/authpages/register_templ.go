@@ -495,4 +495,11 @@ func slugAlpineData(form map[string]string) string {
 	return "{ cn: '" + cn + "' }"
 }
 
+func formVal(form map[string]string, key string) string {
+	if form == nil {
+		return ""
+	}
+	return form[key]
+}
+
 var _ = templruntime.GeneratedTemplate

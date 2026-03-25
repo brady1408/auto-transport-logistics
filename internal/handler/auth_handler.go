@@ -100,7 +100,7 @@ func (h *AuthHandler) showLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	brand := components.BrandFromHost(r.Host)
-	h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "", "", "", h.deps.getFlash(w, r), "", "", nil, nil))
+	h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "", "", h.deps.getFlash(w, r)))
 }
 
 func (h *AuthHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -110,12 +110,12 @@ func (h *AuthHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.users.GetByUsername(r.Context(), username)
 	if err != nil || !user.Active {
-		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "", username, "Invalid username or password", "", "", "", nil, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", username, "Invalid username or password", ""))
 		return
 	}
 
 	if err := auth.CheckPassword(user.PasswordHash, password); err != nil {
-		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", "", username, "Invalid username or password", "", "", "", nil, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, "", "", username, "Invalid username or password", ""))
 		return
 	}
 
@@ -161,7 +161,7 @@ func (h *AuthHandler) showCompanyLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	brand := components.BrandFromHost(r.Host)
-	h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, "/c/"+slug+"/login", "", "", "", h.deps.getFlash(w, r), "", "", nil, nil))
+	h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, "/c/"+slug+"/login", "", "", h.deps.getFlash(w, r)))
 }
 
 func (h *AuthHandler) handleCompanyLogin(w http.ResponseWriter, r *http.Request) {
@@ -180,18 +180,18 @@ func (h *AuthHandler) handleCompanyLogin(w http.ResponseWriter, r *http.Request)
 
 	user, err := h.users.GetByUsername(r.Context(), username)
 	if err != nil || !user.Active {
-		h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, loginAction, username, "Invalid username or password", ""))
 		return
 	}
 
 	// Verify user belongs to this company
 	if user.CompanyID == nil || *user.CompanyID != company.ID {
-		h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, loginAction, username, "Invalid username or password", ""))
 		return
 	}
 
 	if err := auth.CheckPassword(user.PasswordHash, password); err != nil {
-		h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, loginAction, "", username, "Invalid username or password", "", "", "", nil, nil))
+		h.deps.renderTempl(w, r, authpages.LoginPage(brand, company.CompanyName, loginAction, username, "Invalid username or password", ""))
 		return
 	}
 
