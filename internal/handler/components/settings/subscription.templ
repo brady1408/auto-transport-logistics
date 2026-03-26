@@ -16,15 +16,13 @@ type SubscriptionPageData struct {
 	OrderCount int
 }
 
-// TierUserLimitValue returns the user-seat cap for a given tier.
+// TierUserLimitValue returns the user-seat cap for a given tier (base band).
 func TierUserLimitValue(tier models.Tier) int {
 	switch tier {
-	case models.TierPro:
-		return 15
 	case models.TierEnterprise:
-		return 999
+		return 0 // custom / unlimited
 	default:
-		return 5
+		return 3 // Basic and Pro both start at 3 users
 	}
 }
 
@@ -42,23 +40,23 @@ func tierLabel(tier models.Tier) string {
 func tierPrice(tier models.Tier) string {
 	switch tier {
 	case models.TierPro:
-		return "$149"
+		return "$79"
 	case models.TierEnterprise:
-		return "$349"
+		return "Custom"
 	default:
-		return "$0"
+		return "$49"
 	}
 }
 
 func userLimitLabel(limit int) string {
-	if limit >= 999 {
-		return "Unlimited"
+	if limit == 0 {
+		return "Custom"
 	}
 	return fmt.Sprintf("%d", limit)
 }
 
 func usagePercent(used, limit int) int {
-	if limit <= 0 || limit >= 999 {
+	if limit <= 0 {
 		return 0
 	}
 	pct := (used * 100) / limit
@@ -94,16 +92,12 @@ templ currentPlanCard(data SubscriptionPageData) {
 				} else {
 					<span class="sub-badge sub-badge-suspended">Suspended</span>
 				}
-				if data.Sub.Tier == models.TierBasic {
-					<span class="sub-badge sub-badge-beta">Beta</span>
-				}
+				<span class="sub-badge sub-badge-beta">Beta</span>
 			</div>
 			<div class="sub-plan-price">
 				{ tierPrice(data.Sub.Tier) }
-				if data.Sub.Tier != models.TierBasic {
-					<span>/ month</span>
-				} else {
-					<span>Free forever</span>
+				if data.Sub.Tier != models.TierEnterprise {
+					<span>/ mo</span>
 				}
 			</div>
 			<dl class="sub-plan-meta">
@@ -147,49 +141,96 @@ templ usageMetrics(data SubscriptionPageData) {
 	</div>
 }
 
+type planCard struct {
+	Tier     models.Tier
+	Name     string
+	Price    string
+	PerMonth bool
+	Subtitle string
+	Features []string
+}
+
+func planCards() []planCard {
+	return []planCard{
+		{
+			Tier: models.TierBasic, Name: "Basic", Price: "$49", PerMonth: true,
+			Subtitle: "Everything you need to run your operation.",
+			Features: []string{
+				"Order Management",
+				"VIN Tracking & NHTSA Decode",
+				"Dispatch & Trip Management",
+				"Invoicing & Payments",
+				"Credit Memos & Damage Claims",
+				"QuickBooks Integration",
+				"10+ Reports & CSV Export",
+				"Dashboard & Analytics",
+				"Up to 3 users",
+			},
+		},
+		{
+			Tier: models.TierPro, Name: "Pro", Price: "$79", PerMonth: true,
+			Subtitle: "For teams that need the full platform.",
+			Features: []string{
+				"Everything in Basic, plus:",
+				"Loadboard Access",
+				"Post & Browse Loads",
+				"Claim Management",
+				"Loadboard Messaging",
+				"Up to 3 users",
+			},
+		},
+		{
+			Tier: models.TierEnterprise, Name: "Enterprise", Price: "Custom", PerMonth: false,
+			Subtitle: "Tailored for high-volume operations.",
+			Features: []string{
+				"Everything in Pro, plus:",
+				"Custom Integrations",
+				"Volume Pricing",
+				"Priority Support",
+				"Dedicated Onboarding",
+			},
+		},
+	}
+}
+
 templ planComparison(data SubscriptionPageData) {
 	<h3 style="margin-bottom:12px">Plans</h3>
 	<div class="sub-tiers">
-		for _, t := range []models.Tier{models.TierBasic, models.TierPro, models.TierEnterprise} {
-			<div class={ "sub-tier-card", templ.KV("current", t == data.Sub.Tier) }>
-				<div class="sub-tier-name">{ tierLabel(t) }</div>
+		for _, p := range planCards() {
+			<div class={ "sub-tier-card", templ.KV("current", p.Tier == data.Sub.Tier) }>
+				if p.Tier == data.Sub.Tier {
+					<div style="margin-bottom:4px;">
+						<span class="sub-badge sub-badge-tier">Current Plan</span>
+					</div>
+				}
+				<div class="sub-tier-name">{ p.Name }</div>
 				<div class="sub-tier-price">
-					{ tierPrice(t) }
-					if t != models.TierBasic {
+					{ p.Price }
+					if p.PerMonth {
 						<span>/ mo</span>
 					}
 				</div>
+				<p style="font-size:0.8125rem; color:var(--gray-400); margin-bottom:12px;">{ p.Subtitle }</p>
 				<ul class="sub-tier-features">
-					for _, f := range []models.Feature{models.FeatureDispatch, models.FeatureAccounting, models.FeatureReports, models.FeatureLoadboard, models.FeatureEDI, models.FeatureQBO} {
+					for _, f := range p.Features {
 						<li>
-							if hasFeature(t, f) {
-								<span class="check">&#10003;</span>
-							} else {
-								<span class="lock">&#128274;</span>
-							}
-							{ string(f) }
+							<span class="check">&#10003;</span>
+							{ f }
 						</li>
 					}
 				</ul>
-				if t == data.Sub.Tier {
+				if p.Tier == data.Sub.Tier {
 					<button class="btn" disabled>Current Plan</button>
-				} else if strings.Compare(t, data.Sub.Tier) > 0 {
-					<button class="btn btn-primary" disabled title="Contact support to upgrade">Upgrade</button>
+				} else if p.Tier == models.TierEnterprise {
+					<button class="btn" disabled title="Coming soon">Contact Us</button>
+				} else if strings.Compare(p.Tier, data.Sub.Tier) > 0 {
+					<button class="btn btn-primary" disabled title="Coming soon">Upgrade</button>
 				} else {
-					<button class="btn" disabled title="Contact support to downgrade">Downgrade</button>
+					<button class="btn" disabled title="Coming soon">Downgrade</button>
 				}
 			</div>
 		}
 	</div>
-}
-
-func hasFeature(tier models.Tier, f models.Feature) bool {
-	for _, feat := range models.TierFeatures[tier] {
-		if feat == f {
-			return true
-		}
-	}
-	return false
 }
 
 templ billingHistory() {
