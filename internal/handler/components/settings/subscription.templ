@@ -1,0 +1,224 @@
+package settings
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+)
+
+// SubscriptionPageData carries all data the subscription page needs.
+type SubscriptionPageData struct {
+	Sub        *models.Subscription
+	UserCount  int
+	UserLimit  int
+	OrderCount int
+}
+
+// TierUserLimitValue returns the user-seat cap for a given tier.
+func TierUserLimitValue(tier models.Tier) int {
+	switch tier {
+	case models.TierPro:
+		return 15
+	case models.TierEnterprise:
+		return 999
+	default:
+		return 5
+	}
+}
+
+func tierLabel(tier models.Tier) string {
+	switch tier {
+	case models.TierPro:
+		return "Pro"
+	case models.TierEnterprise:
+		return "Enterprise"
+	default:
+		return "Basic"
+	}
+}
+
+func tierPrice(tier models.Tier) string {
+	switch tier {
+	case models.TierPro:
+		return "$149"
+	case models.TierEnterprise:
+		return "$349"
+	default:
+		return "$0"
+	}
+}
+
+func userLimitLabel(limit int) string {
+	if limit >= 999 {
+		return "Unlimited"
+	}
+	return fmt.Sprintf("%d", limit)
+}
+
+func usagePercent(used, limit int) int {
+	if limit <= 0 || limit >= 999 {
+		return 0
+	}
+	pct := (used * 100) / limit
+	if pct > 100 {
+		pct = 100
+	}
+	return pct
+}
+
+templ SubscriptionPage(pg components.PageContext, data SubscriptionPageData) {
+	@components.Layout(pg, "Subscription - Settings") {
+		<div class="sub-page">
+			<div class="page-header">
+				<h2>Subscription</h2>
+			</div>
+
+			@currentPlanCard(data)
+			@usageMetrics(data)
+			@planComparison(data)
+			@billingHistory()
+			@dangerZone(pg)
+		</div>
+	}
+}
+
+templ currentPlanCard(data SubscriptionPageData) {
+	<div class="sub-plan-card">
+		<div class="sub-plan-info">
+			<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+				<span class="sub-badge sub-badge-tier">{ tierLabel(data.Sub.Tier) }</span>
+				if data.Sub.Status == models.StatusActive {
+					<span class="sub-badge sub-badge-active">Active</span>
+				} else {
+					<span class="sub-badge sub-badge-suspended">Suspended</span>
+				}
+				if data.Sub.Tier == models.TierBasic {
+					<span class="sub-badge sub-badge-beta">Beta</span>
+				}
+			</div>
+			<div class="sub-plan-price">
+				{ tierPrice(data.Sub.Tier) }
+				if data.Sub.Tier != models.TierBasic {
+					<span>/ month</span>
+				} else {
+					<span>Free forever</span>
+				}
+			</div>
+			<dl class="sub-plan-meta">
+				<div>
+					<dt>Users</dt>
+					<dd>{ fmt.Sprintf("%d", data.UserCount) } / { userLimitLabel(data.UserLimit) }</dd>
+				</div>
+				<div>
+					<dt>Orders (30d)</dt>
+					<dd>{ fmt.Sprintf("%d", data.OrderCount) }</dd>
+				</div>
+				<div>
+					<dt>Since</dt>
+					<dd>{ data.Sub.CreatedAt.Format("Jan 2006") }</dd>
+				</div>
+			</dl>
+		</div>
+	</div>
+}
+
+templ usageMetrics(data SubscriptionPageData) {
+	<div class="sub-metrics">
+		<div class="sub-metric-card">
+			<div class="sub-metric-label">Active Users</div>
+			<div class="sub-metric-value">
+				{ fmt.Sprintf("%d", data.UserCount) }
+				<span>/ { userLimitLabel(data.UserLimit) }</span>
+			</div>
+			<div class="sub-metric-bar">
+				<div class="sub-metric-bar-fill" style={ fmt.Sprintf("width:%d%%", usagePercent(data.UserCount, data.UserLimit)) }></div>
+			</div>
+		</div>
+		<div class="sub-metric-card">
+			<div class="sub-metric-label">Orders (30 days)</div>
+			<div class="sub-metric-value">{ fmt.Sprintf("%d", data.OrderCount) }</div>
+		</div>
+		<div class="sub-metric-card">
+			<div class="sub-metric-label">Current Tier</div>
+			<div class="sub-metric-value">{ tierLabel(data.Sub.Tier) }</div>
+		</div>
+	</div>
+}
+
+templ planComparison(data SubscriptionPageData) {
+	<h3 style="margin-bottom:12px">Plans</h3>
+	<div class="sub-tiers">
+		for _, t := range []models.Tier{models.TierBasic, models.TierPro, models.TierEnterprise} {
+			<div class={ "sub-tier-card", templ.KV("current", t == data.Sub.Tier) }>
+				<div class="sub-tier-name">{ tierLabel(t) }</div>
+				<div class="sub-tier-price">
+					{ tierPrice(t) }
+					if t != models.TierBasic {
+						<span>/ mo</span>
+					}
+				</div>
+				<ul class="sub-tier-features">
+					for _, f := range []models.Feature{models.FeatureDispatch, models.FeatureAccounting, models.FeatureReports, models.FeatureLoadboard, models.FeatureEDI, models.FeatureQBO} {
+						<li>
+							if hasFeature(t, f) {
+								<span class="check">&#10003;</span>
+							} else {
+								<span class="lock">&#128274;</span>
+							}
+							{ string(f) }
+						</li>
+					}
+				</ul>
+				if t == data.Sub.Tier {
+					<button class="btn" disabled>Current Plan</button>
+				} else if strings.Compare(t, data.Sub.Tier) > 0 {
+					<button class="btn btn-primary" disabled title="Contact support to upgrade">Upgrade</button>
+				} else {
+					<button class="btn" disabled title="Contact support to downgrade">Downgrade</button>
+				}
+			</div>
+		}
+	</div>
+}
+
+func hasFeature(tier models.Tier, f models.Feature) bool {
+	for _, feat := range models.TierFeatures[tier] {
+		if feat == f {
+			return true
+		}
+	}
+	return false
+}
+
+templ billingHistory() {
+	<h3 style="margin-bottom:12px">Billing History</h3>
+	<div class="sub-history">
+		<div class="sub-history-empty">
+			No billing history yet. ATLinks is currently in beta &mdash; all plans are free.
+		</div>
+	</div>
+}
+
+templ dangerZone(pg components.PageContext) {
+	<h3 style="margin-bottom:12px">Danger Zone</h3>
+	<div class="sub-danger" x-data="{ confirm: '' }">
+		<h3>Cancel Subscription</h3>
+		<p>
+			Cancelling will immediately revoke access for all users in your company.
+			This action cannot be undone. Type your company name to confirm.
+		</p>
+		<div class="sub-danger-confirm">
+			<input type="text" placeholder={ pg.CompanyName } x-model="confirm"/>
+			<button
+				class="btn btn-danger"
+				disabled
+				x-bind:disabled={ fmt.Sprintf("confirm !== '%s'", pg.CompanyName) }
+				title="Contact support to cancel"
+			>
+				Cancel Subscription
+			</button>
+		</div>
+	</div>
+}

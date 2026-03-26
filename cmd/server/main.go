@@ -135,6 +135,7 @@ func main() {
 		riverClient,
 		cfg.MigrationsDir,
 		deps,
+		routeStores.userStore,
 	)
 	adminHandler.RegisterAdmin(routeStores.protectedMux, middleware.RequireRole("super_admin"))
 	adminHandler.RegisterSettings(routeStores.protectedMux, middleware.RequireRole("company_admin", "super_admin"))

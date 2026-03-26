@@ -142,6 +142,10 @@ type adminApiKeyStore interface {
 	Revoke(ctx context.Context, id int) error
 }
 
+type subscriptionUserStore interface {
+	ListByCompany(ctx context.Context, companyID int) ([]models.User, error)
+}
+
 type AdminHandler struct {
 	companyStore      adminCompanyStore
 	userStore         adminUserStore
@@ -149,6 +153,7 @@ type AdminHandler struct {
 	migrationRunStore *store.MigrationRunStore
 	truckStore        adminTruckStore
 	apiKeyStore       adminApiKeyStore
+	subUserStore      subscriptionUserStore
 	river             *river.Client[pgx.Tx]
 	migrationsDir     string
 	deps              *Deps
@@ -164,6 +169,7 @@ func NewAdminHandler(
 	riverClient *river.Client[pgx.Tx],
 	migrationsDir string,
 	deps *Deps,
+	subUserStore subscriptionUserStore,
 ) *AdminHandler {
 	return &AdminHandler{
 		companyStore:      companyStore,
@@ -172,6 +178,7 @@ func NewAdminHandler(
 		migrationRunStore: migrationRunStore,
 		truckStore:        truckStore,
 		apiKeyStore:       apiKeyStore,
+		subUserStore:      subUserStore,
 		river:             riverClient,
 		migrationsDir:     migrationsDir,
 		deps:              deps,
@@ -249,6 +256,7 @@ func (h *AdminHandler) RegisterSettings(mux *http.ServeMux, mw func(http.Handler
 	mux.Handle("POST /settings/users", wrap(h.createUser))
 	mux.Handle("GET /settings/users/{id}/edit", wrap(h.editUser))
 	mux.Handle("POST /settings/users/{id}", wrap(h.updateUser))
+	mux.Handle("GET /settings/subscription", wrap(h.showSubscription))
 }
 
 // RegisterProfile registers the self-service change-password route (all authenticated users).
@@ -303,6 +311,41 @@ func (h *AdminHandler) handleChangePassword(w http.ResponseWriter, r *http.Reque
 	}
 
 	h.deps.renderTempl(w, r, settings.ChangePasswordPage(pg, "", "Password changed successfully."))
+}
+
+func (h *AdminHandler) showSubscription(w http.ResponseWriter, r *http.Request) {
+	pg := h.deps.pageContext(w, r)
+	user := pg.User
+	if user == nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	sub, err := h.subscriptionStore.GetByCompanyID(r.Context(), user.CompanyID)
+	if err != nil {
+		sub = &models.Subscription{
+			CompanyID: user.CompanyID,
+			Tier:      models.TierBasic,
+			Status:    models.StatusActive,
+		}
+	}
+
+	users, _ := h.subUserStore.ListByCompany(r.Context(), user.CompanyID)
+	activeCount := 0
+	for _, u := range users {
+		if u.Active {
+			activeCount++
+		}
+	}
+
+	data := settings.SubscriptionPageData{
+		Sub:        sub,
+		UserCount:  activeCount,
+		UserLimit:  settings.TierUserLimitValue(sub.Tier),
+		OrderCount: 0,
+	}
+
+	h.deps.renderTempl(w, r, settings.SubscriptionPage(pg, data))
 }
 
 // --- Company Management (super_admin only) ---

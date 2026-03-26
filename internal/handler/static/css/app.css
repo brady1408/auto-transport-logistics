@@ -620,3 +620,68 @@ legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-70
     .feedback-modal { width: calc(100vw - 48px); }
     .feedback-overlay { padding: 24px 24px 80px; align-items: flex-end; justify-content: center; }
 }
+
+/* Subscription Management */
+.sub-page { max-width: 960px; margin: 0 auto; }
+
+.sub-plan-card {
+    display: flex; gap: 24px; align-items: flex-start;
+    background: white; border-radius: var(--radius); padding: 24px;
+    box-shadow: var(--shadow); margin-bottom: 24px;
+}
+.sub-plan-info { flex: 1; }
+.sub-plan-price { font-family: var(--font-heading); font-size: 2rem; font-weight: 800; }
+.sub-plan-price span { font-size: 0.875rem; font-weight: 400; color: var(--gray-400); }
+.sub-plan-meta { display: flex; gap: 24px; margin-top: 12px; color: var(--gray-400); font-size: 0.8125rem; }
+.sub-plan-meta dt { font-weight: 600; color: var(--gray-500); }
+
+.sub-badge {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.sub-badge-tier { background: var(--primary); color: white; }
+.sub-badge-active { background: #d1fae5; color: #065f46; }
+.sub-badge-beta { background: #fef3c7; color: #92400e; }
+.sub-badge-suspended { background: #fee2e2; color: #991b1b; }
+
+.sub-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.sub-metric-card {
+    background: white; border-radius: var(--radius); padding: 20px;
+    box-shadow: var(--shadow);
+}
+.sub-metric-label { font-size: 0.75rem; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.05em; }
+.sub-metric-value { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; margin: 4px 0; }
+.sub-metric-value span { font-size: 0.875rem; font-weight: 400; color: var(--gray-400); }
+.sub-metric-bar { height: 6px; background: var(--gray-200); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.sub-metric-bar-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.3s; }
+
+.sub-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.sub-tier-card {
+    background: white; border-radius: var(--radius); padding: 24px;
+    box-shadow: var(--shadow); display: flex; flex-direction: column;
+}
+.sub-tier-card.current { outline: 2px solid var(--primary); }
+.sub-tier-name { font-family: var(--font-heading); font-weight: 800; font-size: 1.125rem; }
+.sub-tier-price { font-family: var(--font-heading); font-size: 1.75rem; font-weight: 800; margin: 8px 0; }
+.sub-tier-price span { font-size: 0.8125rem; font-weight: 400; color: var(--gray-400); }
+.sub-tier-features { list-style: none; padding: 0; margin: 16px 0; flex: 1; }
+.sub-tier-features li { padding: 4px 0; font-size: 0.8125rem; display: flex; align-items: center; gap: 6px; }
+.sub-tier-features .check { color: var(--success); }
+.sub-tier-features .lock { color: var(--gray-300); }
+
+.sub-history { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
+.sub-history-empty { text-align: center; padding: 32px; color: var(--gray-400); }
+
+.sub-danger {
+    background: #fef2f2; border-radius: var(--radius); padding: 24px; margin-bottom: 24px;
+}
+.sub-danger h3 { color: var(--danger); margin-bottom: 8px; }
+.sub-danger p { color: #991b1b; font-size: 0.8125rem; margin-bottom: 16px; }
+.sub-danger-confirm { margin-top: 12px; display: flex; gap: 12px; align-items: flex-end; }
+.sub-danger-confirm input { padding: 6px 10px; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); font-size: 0.875rem; }
+
+@media (max-width: 768px) {
+    .sub-plan-card { flex-direction: column; }
+    .sub-metrics { grid-template-columns: 1fr; }
+    .sub-tiers { grid-template-columns: 1fr; }
+}

@@ -103,6 +103,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 				<button class="nav-link">Utilities</button>
 				<div class="dropdown-menu" x-show="open === 'utilities'" x-cloak>
 					<a href="/utilities/company" class="dropdown-item">Company Settings</a>
+					<a href="/settings/subscription" class="dropdown-item">Subscription</a>
 					if user.Role == "super_admin" || user.Role == "company_admin" {
 						<a href="/settings/users" class="dropdown-item">Users</a>
 					}
