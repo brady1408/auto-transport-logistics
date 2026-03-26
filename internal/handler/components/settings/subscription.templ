@@ -37,33 +37,52 @@ func tierLabel(tier models.Tier) string {
 	}
 }
 
-func tierPrice(tier models.Tier) string {
-	switch tier {
-	case models.TierPro:
-		return "$79"
-	case models.TierEnterprise:
+// bandLabel returns the pricing band label based on active user count.
+func bandLabel(users int) string {
+	if users <= 3 {
+		return "1–3 users"
+	}
+	if users <= 10 {
+		return "4–10 users"
+	}
+	return "11+ users"
+}
+
+// bandPrice returns the effective price string for a tier at the given user count.
+func bandPrice(tier models.Tier, users int) string {
+	if tier == models.TierEnterprise {
 		return "Custom"
-	default:
+	}
+	if users <= 3 {
+		if tier == models.TierPro {
+			return "$79"
+		}
 		return "$49"
 	}
+	if users <= 10 {
+		if tier == models.TierPro {
+			return "$109"
+		}
+		return "$69"
+	}
+	// 11+ users: base (4-10 band) + per-user for extras
+	extra := users - 10
+	if tier == models.TierPro {
+		return fmt.Sprintf("$%d", 109+extra*14)
+	}
+	return fmt.Sprintf("$%d", 69+extra*9)
 }
 
-func userLimitLabel(limit int) string {
-	if limit == 0 {
-		return "Custom"
+// bandNote returns a short explanation of the per-user pricing for 11+ bands.
+func bandNote(tier models.Tier, users int) string {
+	if tier == models.TierEnterprise || users <= 10 {
+		return ""
 	}
-	return fmt.Sprintf("%d", limit)
-}
-
-func usagePercent(used, limit int) int {
-	if limit <= 0 {
-		return 0
+	extra := users - 10
+	if tier == models.TierPro {
+		return fmt.Sprintf("$109 base + %d extra × $14/user", extra)
 	}
-	pct := (used * 100) / limit
-	if pct > 100 {
-		pct = 100
-	}
-	return pct
+	return fmt.Sprintf("$69 base + %d extra × $9/user", extra)
 }
 
 templ SubscriptionPage(pg components.PageContext, data SubscriptionPageData) {
@@ -95,19 +114,24 @@ templ currentPlanCard(data SubscriptionPageData) {
 				<span class="sub-badge sub-badge-beta">Beta</span>
 			</div>
 			<div class="sub-plan-price">
-				{ tierPrice(data.Sub.Tier) }
+				{ bandPrice(data.Sub.Tier, data.UserCount) }
 				if data.Sub.Tier != models.TierEnterprise {
 					<span>/ mo</span>
 				}
 			</div>
+			if bandNote(data.Sub.Tier, data.UserCount) != "" {
+				<p style="font-size:0.75rem; color:var(--gray-400); margin-top:2px;">
+					{ bandNote(data.Sub.Tier, data.UserCount) }
+				</p>
+			}
 			<dl class="sub-plan-meta">
 				<div>
-					<dt>Users</dt>
-					<dd>{ fmt.Sprintf("%d", data.UserCount) } / { userLimitLabel(data.UserLimit) }</dd>
+					<dt>Active Users</dt>
+					<dd>{ fmt.Sprintf("%d", data.UserCount) }</dd>
 				</div>
 				<div>
-					<dt>Orders (30d)</dt>
-					<dd>{ fmt.Sprintf("%d", data.OrderCount) }</dd>
+					<dt>Pricing Band</dt>
+					<dd>{ bandLabel(data.UserCount) }</dd>
 				</div>
 				<div>
 					<dt>Since</dt>
@@ -122,21 +146,21 @@ templ usageMetrics(data SubscriptionPageData) {
 	<div class="sub-metrics">
 		<div class="sub-metric-card">
 			<div class="sub-metric-label">Active Users</div>
-			<div class="sub-metric-value">
-				{ fmt.Sprintf("%d", data.UserCount) }
-				<span>/ { userLimitLabel(data.UserLimit) }</span>
-			</div>
-			<div class="sub-metric-bar">
-				<div class="sub-metric-bar-fill" style={ fmt.Sprintf("width:%d%%", usagePercent(data.UserCount, data.UserLimit)) }></div>
-			</div>
+			<div class="sub-metric-value">{ fmt.Sprintf("%d", data.UserCount) }</div>
+			<p style="font-size:0.75rem; color:var(--gray-400); margin-top:4px;">{ bandLabel(data.UserCount) } band</p>
 		</div>
 		<div class="sub-metric-card">
 			<div class="sub-metric-label">Orders (30 days)</div>
 			<div class="sub-metric-value">{ fmt.Sprintf("%d", data.OrderCount) }</div>
 		</div>
 		<div class="sub-metric-card">
-			<div class="sub-metric-label">Current Tier</div>
-			<div class="sub-metric-value">{ tierLabel(data.Sub.Tier) }</div>
+			<div class="sub-metric-label">Effective Rate</div>
+			<div class="sub-metric-value">
+				{ bandPrice(data.Sub.Tier, data.UserCount) }
+				if data.Sub.Tier != models.TierEnterprise {
+					<span>/ mo</span>
+				}
+			</div>
 		</div>
 	</div>
 }
@@ -144,8 +168,6 @@ templ usageMetrics(data SubscriptionPageData) {
 type planCard struct {
 	Tier     models.Tier
 	Name     string
-	Price    string
-	PerMonth bool
 	Subtitle string
 	Features []string
 }
@@ -153,7 +175,7 @@ type planCard struct {
 func planCards() []planCard {
 	return []planCard{
 		{
-			Tier: models.TierBasic, Name: "Basic", Price: "$49", PerMonth: true,
+			Tier: models.TierBasic, Name: "Basic",
 			Subtitle: "Everything you need to run your operation.",
 			Features: []string{
 				"Order Management",
@@ -164,11 +186,10 @@ func planCards() []planCard {
 				"QuickBooks Integration",
 				"10+ Reports & CSV Export",
 				"Dashboard & Analytics",
-				"Up to 3 users",
 			},
 		},
 		{
-			Tier: models.TierPro, Name: "Pro", Price: "$79", PerMonth: true,
+			Tier: models.TierPro, Name: "Pro",
 			Subtitle: "For teams that need the full platform.",
 			Features: []string{
 				"Everything in Basic, plus:",
@@ -176,11 +197,10 @@ func planCards() []planCard {
 				"Post & Browse Loads",
 				"Claim Management",
 				"Loadboard Messaging",
-				"Up to 3 users",
 			},
 		},
 		{
-			Tier: models.TierEnterprise, Name: "Enterprise", Price: "Custom", PerMonth: false,
+			Tier: models.TierEnterprise, Name: "Enterprise",
 			Subtitle: "Tailored for high-volume operations.",
 			Features: []string{
 				"Everything in Pro, plus:",
@@ -205,11 +225,14 @@ templ planComparison(data SubscriptionPageData) {
 				}
 				<div class="sub-tier-name">{ p.Name }</div>
 				<div class="sub-tier-price">
-					{ p.Price }
-					if p.PerMonth {
+					{ bandPrice(p.Tier, data.UserCount) }
+					if p.Tier != models.TierEnterprise {
 						<span>/ mo</span>
 					}
 				</div>
+				<p style="font-size:0.75rem; color:var(--gray-400); margin-bottom:4px;">
+					{ fmt.Sprintf("for %d active users", data.UserCount) }
+				</p>
 				<p style="font-size:0.8125rem; color:var(--gray-400); margin-bottom:12px;">{ p.Subtitle }</p>
 				<ul class="sub-tier-features">
 					for _, f := range p.Features {
@@ -230,6 +253,24 @@ templ planComparison(data SubscriptionPageData) {
 				}
 			</div>
 		}
+	</div>
+	<!-- Band pricing reference -->
+	<div style="background:white; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); margin-bottom:24px;">
+		<h4 style="font-size:0.8125rem; font-weight:700; text-align:center; margin-bottom:12px;">Growing team? We scale with you.</h4>
+		<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; text-align:center; font-size:0.8125rem;">
+			<div>
+				<p style="color:var(--gray-400); font-weight:600; margin-bottom:4px;">1–3 users</p>
+				<p style="font-weight:700;">Basic $49 · Pro $79</p>
+			</div>
+			<div>
+				<p style="color:var(--gray-400); font-weight:600; margin-bottom:4px;">4–10 users</p>
+				<p style="font-weight:700;">Basic $69 · Pro $109</p>
+			</div>
+			<div>
+				<p style="color:var(--gray-400); font-weight:600; margin-bottom:4px;">11+ users</p>
+				<p style="font-weight:700;">+$9/user · +$14/user</p>
+			</div>
+		</div>
 	</div>
 }
 
