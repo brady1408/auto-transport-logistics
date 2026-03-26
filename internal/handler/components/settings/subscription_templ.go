@@ -643,7 +643,7 @@ func billingHistory() templ.Component {
 			templ_7745c5c3_Var23 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<h3 style=\"margin-bottom:12px\">Billing History</h3><div class=\"sub-history\"><div class=\"sub-history-empty\">No billing history yet. ATLinks is currently in beta &mdash; all plans are free.</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<h3 style=\"margin-bottom:12px\">Billing History</h3><div class=\"sub-history\"><div class=\"sub-history-empty\">No billing history yet. Atlas Cloud is currently in beta &mdash; all plans are free.</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
