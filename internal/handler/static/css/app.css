@@ -72,8 +72,13 @@ a:hover { text-decoration: underline; }
 .nav-link:hover { color: var(--gray-800); background: rgba(0,0,0,0.04); }
 .nav-link:focus-visible { color: var(--gray-800); background: rgba(0,0,0,0.04); outline: 2px solid var(--primary); outline-offset: -2px; }
 .dropdown-menu {
-    position: absolute; top: calc(100% + 4px); left: 0; background: white; border: none;
+    position: absolute; top: 100%; left: 0; background: white; border: none;
     border-radius: 12px; box-shadow: 0 8px 32px rgba(25,28,30,0.12); min-width: 220px; z-index: 200; padding: 6px;
+    padding-top: 10px;
+}
+/* Invisible bridge for hover travel from nav-link to dropdown */
+.dropdown-menu::before {
+    content: ''; position: absolute; top: -8px; left: 0; right: 0; height: 8px;
 }
 .dropdown-item {
     display: block; padding: 8px 14px; color: var(--gray-700); font-size: 13px; text-decoration: none;

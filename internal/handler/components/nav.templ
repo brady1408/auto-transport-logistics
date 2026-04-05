@@ -6,7 +6,7 @@ import (
 )
 
 templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet, brand Brand) {
-	<nav class="main-nav" x-data="{ open: '', mobileOpen: false }" @click.outside="open = ''; mobileOpen = false" style="position:relative">
+	<nav class="main-nav" x-data="{ open: '', mobileOpen: false }" @click.outside="mobileOpen = false" style="position:relative">
 		<div class="nav-brand">
 			<a href="/">
 				if companyName != "" {
@@ -21,7 +21,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 			<a href="/search/vin" class="nav-link" style="text-decoration:none;">VIN Search</a>
 			<!-- Loadboard (Pro+) -->
 			if features.Has(models.FeatureLoadboard) {
-				<div class="nav-dropdown" @click="open = open === 'loadboard' ? '' : 'loadboard'">
+				<div class="nav-dropdown" @mouseenter="open = 'loadboard'" @mouseleave="open = ''">
 					<button class="nav-link">Loadboard</button>
 					<div class="dropdown-menu" x-show="open === 'loadboard'" x-cloak>
 						<a href="/loadboard" class="dropdown-item">Browse Loads</a>
@@ -31,7 +31,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 				</div>
 			}
 			<!-- Dispatch -->
-			<div class="nav-dropdown" @click="open = open === 'dispatch' ? '' : 'dispatch'">
+			<div class="nav-dropdown" @mouseenter="open = 'dispatch'" @mouseleave="open = ''">
 				<button class="nav-link">Dispatch</button>
 				<div class="dropdown-menu" x-show="open === 'dispatch'" x-cloak>
 					<a href="/dispatch/orders" class="dropdown-item">Orders</a>
@@ -40,7 +40,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 				</div>
 			</div>
 			<!-- Accounting -->
-			<div class="nav-dropdown" @click="open = open === 'accounting' ? '' : 'accounting'">
+			<div class="nav-dropdown" @mouseenter="open = 'accounting'" @mouseleave="open = ''">
 				<button class="nav-link">Accounting</button>
 				<div class="dropdown-menu" x-show="open === 'accounting'" x-cloak>
 					<a href="/accounting/invoices" class="dropdown-item">Invoices</a>
@@ -56,7 +56,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 				</div>
 			</div>
 			<!-- Global -->
-			<div class="nav-dropdown" @click="open = open === 'global' ? '' : 'global'">
+			<div class="nav-dropdown" @mouseenter="open = 'global'" @mouseleave="open = ''">
 				<button class="nav-link">Global</button>
 				<div class="dropdown-menu" x-show="open === 'global'" x-cloak>
 					<a href="/global/customers" class="dropdown-item">Customers</a>
@@ -81,7 +81,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 				</div>
 			</div>
 			<!-- Reports -->
-			<div class="nav-dropdown" @click="open = open === 'reports' ? '' : 'reports'">
+			<div class="nav-dropdown" @mouseenter="open = 'reports'" @mouseleave="open = ''">
 				<button class="nav-link">Reports</button>
 				<div class="dropdown-menu" x-show="open === 'reports'" x-cloak>
 					<a href="/reports" class="dropdown-item">All Reports</a>
@@ -99,7 +99,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 				</div>
 			</div>
 			<!-- Utilities -->
-			<div class="nav-dropdown" @click="open = open === 'utilities' ? '' : 'utilities'">
+			<div class="nav-dropdown" @mouseenter="open = 'utilities'" @mouseleave="open = ''">
 				<button class="nav-link">Utilities</button>
 				<div class="dropdown-menu" x-show="open === 'utilities'" x-cloak>
 					<a href="/utilities/company" class="dropdown-item">Company Settings</a>
@@ -118,7 +118,7 @@ templ Nav(user auth.ContextUser, companyName string, features models.FeatureSet,
 			</div>
 			if user.Role == "super_admin" {
 				<!-- Admin (super_admin only) -->
-				<div class="nav-dropdown" @click="open = open === 'admin' ? '' : 'admin'">
+				<div class="nav-dropdown" @mouseenter="open = 'admin'" @mouseleave="open = ''">
 					<button class="nav-link">Admin</button>
 					<div class="dropdown-menu" x-show="open === 'admin'" x-cloak>
 						<a href="/admin/companies" class="dropdown-item">Companies</a>
