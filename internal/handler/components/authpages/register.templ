@@ -10,7 +10,7 @@ templ RegisterPage(brand components.Brand, formData map[string]string, fieldErro
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<meta name="description" content={ brand.Name + " — Create your account. Start managing vehicle transport in minutes." }/>
+			<meta name="description" content={ brand.Name + " — Sign up free during our open beta. Start managing vehicle transport in minutes." }/>
 			<title>Register - { brand.Name }</title>
 			<link rel="icon" type="image/svg+xml" href={ brand.FaviconFile }/>
 			<link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -48,6 +48,13 @@ templ RegisterPage(brand components.Brand, formData map[string]string, fieldErro
 					width: 8px; height: 8px; border-radius: 50%; background: #6ffbbe; flex-shrink: 0;
 				}
 				.register-bullet span { font-size: 12px; opacity: 0.7; }
+				.register-beta-badge {
+					display: inline-block; font-size: 11px; font-weight: 700;
+					letter-spacing: 0.08em; text-transform: uppercase;
+					background: rgba(111,251,190,0.15); color: #6ffbbe;
+					padding: 4px 12px; border-radius: 20px; margin-bottom: 16px;
+					border: 1px solid rgba(111,251,190,0.25);
+				}
 				.register-form-panel {
 					width: 60%; background: var(--surface); padding: 40px 48px;
 					display: flex; flex-direction: column; justify-content: center;
@@ -119,9 +126,14 @@ templ RegisterPage(brand components.Brand, formData map[string]string, fieldErro
 						<p>Orchestrate your entire fleet, manage complex logistics, and scale your vehicle transport business.</p>
 					</div>
 					<div class="register-brand-benefits register-brand-content">
+						<div class="register-beta-badge">Open Beta</div>
 						<div class="register-bullet">
 							<div class="register-bullet-dot"></div>
-							<span>Free trial — no credit card required</span>
+							<span>100% free during open enrollment</span>
+						</div>
+						<div class="register-bullet">
+							<div class="register-bullet-dot"></div>
+							<span>No credit card required — ever, during beta</span>
 						</div>
 						<div class="register-bullet">
 							<div class="register-bullet-dot"></div>
@@ -129,7 +141,7 @@ templ RegisterPage(brand components.Brand, formData map[string]string, fieldErro
 						</div>
 						<div class="register-bullet">
 							<div class="register-bullet-dot"></div>
-							<span>Cancel anytime</span>
+							<span>Paid plans begin after beta — you'll be notified</span>
 						</div>
 					</div>
 				</div>
@@ -137,7 +149,7 @@ templ RegisterPage(brand components.Brand, formData map[string]string, fieldErro
 				<div class="register-form-panel">
 					<div class="register-form-inner">
 						<h3>Create your account</h3>
-						<p class="subtitle">Start your free trial today</p>
+						<p class="subtitle">Free during our open beta — no strings attached</p>
 						if successMsg != "" {
 							<div class="alert alert-success">{ successMsg }</div>
 						}
@@ -252,7 +264,7 @@ templ RegisterPage(brand components.Brand, formData map[string]string, fieldErro
 										<span class="field-error">{ fieldErrors["password"] }</span>
 									}
 								</div>
-								<button type="submit" class="register-submit">Create Account</button>
+								<button type="submit" class="register-submit">Get Started Free</button>
 							</form>
 						}
 						<p class="register-footer">

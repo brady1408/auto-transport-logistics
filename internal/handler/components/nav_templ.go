@@ -13,7 +13,7 @@ import (
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
-func Nav(user auth.ContextUser, companyName string, features models.FeatureSet, brand Brand) templ.Component {
+func sidebarLink(icon string, label string, href string, active bool) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -34,121 +34,736 @@ func Nav(user auth.ContextUser, companyName string, features models.FeatureSet, 
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<nav class=\"main-nav\" x-data=\"{ open: '', mobileOpen: false }\" @click.outside=\"mobileOpen = false\" style=\"position:relative\"><div class=\"nav-brand\"><a href=\"/\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		if companyName != "" {
-			var templ_7745c5c3_Var2 string
-			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(companyName)
+		if active {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<a class=\"flex items-center gap-3 px-3 py-2.5 bg-white text-slate-900 font-semibold rounded-lg shadow-sm transition-all duration-200\" href=\"")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 13, Col: 18}
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var2 templ.SafeURL
+			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(href))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 10, Col: 162}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		} else {
-			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(brand.Name)
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><span class=\"material-symbols-outlined text-[20px]\">")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 15, Col: 17}
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var3 string
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(icon)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 11, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</span> <span>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var4 string
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(label)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 12, Col: 16}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</span></a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<a class=\"flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 rounded-lg transition-colors duration-200\" href=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var5 templ.SafeURL
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(href))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 15, Col: 175}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"><span class=\"material-symbols-outlined text-[20px]\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var6 string
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(icon)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 16, Col: 61}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</span> <span>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var7 string
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(label)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 17, Col: 16}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</span></a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</a></div><div class=\"nav-menu\"><!-- VIN Search (top-level) --><a href=\"/search/vin\" class=\"nav-link\" style=\"text-decoration:none;\">VIN Search</a><!-- Loadboard (Pro+) -->")
+		return nil
+	})
+}
+
+func sidebarSection(label string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var8 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var8 == nil {
+			templ_7745c5c3_Var8 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<p class=\"px-3 pt-4 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em]\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var9 string
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(label)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 23, Col: 98}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func Sidebar(user auth.ContextUser, companyName string, features models.FeatureSet, brand Brand) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var10 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var10 == nil {
+			templ_7745c5c3_Var10 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<aside class=\"hidden lg:flex flex-col h-full p-4 bg-slate-100 w-64 border-r-0 antialiased tracking-tight flex-shrink-0\" style=\"font-family: 'Manrope', sans-serif;\"><!-- Brand --><div class=\"mb-8 px-2\"><a href=\"/\" class=\"flex items-center gap-3 no-underline\"><div class=\"w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center\"><span class=\"material-symbols-outlined text-white\">local_shipping</span></div><div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if companyName != "" {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<h1 class=\"text-lg font-bold tracking-tighter text-slate-900 leading-none\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var11 string
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(companyName)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 36, Col: 94}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</h1>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<h1 class=\"text-lg font-bold tracking-tighter text-slate-900 leading-none\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var12 string
+			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(brand.Name)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 38, Col: 93}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</h1>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<span class=\"text-[10px] uppercase tracking-widest text-slate-500 font-bold\">Logistics Engine</span></div></a></div><!-- Main Nav --><nav class=\"flex-1 space-y-1 overflow-y-auto no-scrollbar\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("dashboard", "Dashboard", "/", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("search", "VIN Search", "/search/vin", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarSection("Dispatch").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("inventory_2", "Orders", "/dispatch/orders", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("local_shipping", "Trips / Loads", "/dispatch/trips", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("grid_view", "Waiting Grid", "/dispatch/waiting", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarSection("Accounting").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("receipt_long", "Invoices", "/accounting/invoices", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("payments", "Payments", "/accounting/payments", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("note_stack", "Credit Memos", "/accounting/credit-memos", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("car_crash", "Damage Claims", "/accounting/damage-claims", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("request_quote", "Accounts Payable", "/accounting/ap", false).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if features.Has(models.FeatureLoadboard) {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"nav-dropdown\" @mouseenter=\"open = 'loadboard'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Loadboard</button><div class=\"dropdown-menu\" x-show=\"open === 'loadboard'\" x-cloak><a href=\"/loadboard\" class=\"dropdown-item\">Browse Loads</a> <a href=\"/loadboard/my-listings\" class=\"dropdown-item\">My Listings</a> <a href=\"/loadboard/my-claims\" class=\"dropdown-item\">My Claims</a></div></div>")
+			templ_7745c5c3_Err = sidebarSection("Loadboard").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("travel_explore", "Browse Loads", "/loadboard", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("list_alt", "My Listings", "/loadboard/my-listings", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("handshake", "My Claims", "/loadboard/my-claims", false).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<!-- Dispatch --><div class=\"nav-dropdown\" @mouseenter=\"open = 'dispatch'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Dispatch</button><div class=\"dropdown-menu\" x-show=\"open === 'dispatch'\" x-cloak><a href=\"/dispatch/orders\" class=\"dropdown-item\">Orders</a> <a href=\"/dispatch/trips\" class=\"dropdown-item\">Trips/Loads</a> <a href=\"/dispatch/waiting\" class=\"dropdown-item\">Waiting Grid</a></div></div><!-- Accounting --><div class=\"nav-dropdown\" @mouseenter=\"open = 'accounting'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Accounting</button><div class=\"dropdown-menu\" x-show=\"open === 'accounting'\" x-cloak><a href=\"/accounting/invoices\" class=\"dropdown-item\">Invoices</a> <a href=\"/accounting/payments\" class=\"dropdown-item\">Payments</a> <a href=\"/accounting/credit-memos\" class=\"dropdown-item\">Credit Memos</a> <a href=\"/accounting/damage-claims\" class=\"dropdown-item\">Damage Claims</a> <a href=\"/accounting/ap\" class=\"dropdown-item\">Accounts Payable</a><hr class=\"dropdown-divider\"><a href=\"/accounting/driver-adjustments\" class=\"dropdown-item\">Driver Adjustments</a> <a href=\"/accounting/truck-adjustments\" class=\"dropdown-item\">Truck Adjustments</a><hr class=\"dropdown-divider\"><a href=\"/accounting/posting\" class=\"dropdown-item\">Period Posting</a></div></div><!-- Global --><div class=\"nav-dropdown\" @mouseenter=\"open = 'global'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Global</button><div class=\"dropdown-menu\" x-show=\"open === 'global'\" x-cloak><a href=\"/global/customers\" class=\"dropdown-item\">Customers</a> <a href=\"/global/employees\" class=\"dropdown-item\">Employees</a> <a href=\"/global/trucks\" class=\"dropdown-item\">Trucks</a> <a href=\"/global/vendors\" class=\"dropdown-item\">Vendors</a> <a href=\"/global/zones\" class=\"dropdown-item\">Zones</a> <a href=\"/global/zone-pricing\" class=\"dropdown-item\">Zone Pricing</a><hr class=\"dropdown-divider\"><a href=\"/global/dispatch-codes\" class=\"dropdown-item\">Dispatch Codes</a> <a href=\"/global/equipment-types\" class=\"dropdown-item\">Equipment Types</a> <a href=\"/global/items\" class=\"dropdown-item\">Items/Charges</a> <a href=\"/global/regions\" class=\"dropdown-item\">Regions</a> <a href=\"/global/terms\" class=\"dropdown-item\">Terms</a> <a href=\"/global/tax-codes\" class=\"dropdown-item\">Tax Codes</a><hr class=\"dropdown-divider\"><a href=\"/global/damage-areas\" class=\"dropdown-item\">Damage Areas</a> <a href=\"/global/damage-types\" class=\"dropdown-item\">Damage Types</a> <a href=\"/global/damage-severities\" class=\"dropdown-item\">Damage Severities</a> <a href=\"/global/hold-codes\" class=\"dropdown-item\">Hold Codes</a> <a href=\"/global/declination-codes\" class=\"dropdown-item\">Declination Codes</a></div></div><!-- Reports --><div class=\"nav-dropdown\" @mouseenter=\"open = 'reports'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Reports</button><div class=\"dropdown-menu\" x-show=\"open === 'reports'\" x-cloak><a href=\"/reports\" class=\"dropdown-item\">All Reports</a><hr class=\"dropdown-divider\"><a href=\"/reports/ar-aging\" class=\"dropdown-item\">AR Aging</a> <a href=\"/reports/revenue-by-customer\" class=\"dropdown-item\">Revenue by Customer</a> <a href=\"/reports/payments\" class=\"dropdown-item\">Payment Report</a><hr class=\"dropdown-divider\"><a href=\"/reports/order-status\" class=\"dropdown-item\">Order Status</a> <a href=\"/reports/trip-summary\" class=\"dropdown-item\">Trip Summary</a> <a href=\"/reports/driver-settlement\" class=\"dropdown-item\">Driver Settlement</a> <a href=\"/reports/vehicle-history\" class=\"dropdown-item\">Vehicle History</a><hr class=\"dropdown-divider\"><a href=\"/reports/damages\" class=\"dropdown-item\">Damage Report</a></div></div><!-- Utilities --><div class=\"nav-dropdown\" @mouseenter=\"open = 'utilities'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Utilities</button><div class=\"dropdown-menu\" x-show=\"open === 'utilities'\" x-cloak><a href=\"/utilities/company\" class=\"dropdown-item\">Company Settings</a> <a href=\"/settings/subscription\" class=\"dropdown-item\">Subscription</a> ")
+		templ_7745c5c3_Err = sidebarSection("Reports").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("assessment", "All Reports", "/reports", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarSection("Masters").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("people", "Customers", "/global/customers", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("badge", "Employees", "/global/employees", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("local_shipping", "Trucks", "/global/trucks", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("store", "Vendors", "/global/vendors", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("map", "Zones", "/global/zones", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("attach_money", "Zone Pricing", "/global/zone-pricing", false).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if user.Role == "super_admin" || user.Role == "company_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<a href=\"/settings/users\" class=\"dropdown-item\">Users</a>")
+			templ_7745c5c3_Err = sidebarSection("Settings").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<hr class=\"dropdown-divider\"><a href=\"/settings/change-password\" class=\"dropdown-item\">Change Password</a> <a href=\"/feedback\" class=\"dropdown-item\">Feedback</a> ")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		if features.Has(models.FeatureQBO) {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<hr class=\"dropdown-divider\"><a href=\"/settings/integrations\" class=\"dropdown-item\">Integrations</a>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
+			templ_7745c5c3_Err = sidebarLink("domain", "Company", "/utilities/company", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("group", "Users", "/settings/users", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if features.Has(models.FeatureQBO) {
+				templ_7745c5c3_Err = sidebarLink("sync", "Integrations", "/settings/integrations", false).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
 		}
 		if user.Role == "super_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<!-- Admin (super_admin only) --> <div class=\"nav-dropdown\" @mouseenter=\"open = 'admin'\" @mouseleave=\"open = ''\"><button class=\"nav-link\">Admin</button><div class=\"dropdown-menu\" x-show=\"open === 'admin'\" x-cloak><a href=\"/admin/companies\" class=\"dropdown-item\">Companies</a> <a href=\"/admin/backups\" class=\"dropdown-item\">Backups</a><hr class=\"dropdown-divider\"><a href=\"/admin/migration\" class=\"dropdown-item\">Migration</a> <a href=\"/admin/riverui/\" class=\"dropdown-item\">Job Queue</a> <a href=\"/admin/activity\" class=\"dropdown-item\">Activity</a> <a href=\"/admin/api-keys\" class=\"dropdown-item\">API Keys</a></div></div>")
+			templ_7745c5c3_Err = sidebarSection("Admin").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("apartment", "Companies", "/admin/companies", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("backup", "Backups", "/admin/backups", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("storage", "Migration", "/admin/migration", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("queue", "Job Queue", "/admin/riverui/", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("monitoring", "Activity", "/admin/activity", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("key", "API Keys", "/admin/api-keys", false).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><!-- Hamburger (mobile/tablet) --><button class=\"nav-hamburger\" @click=\"mobileOpen = !mobileOpen\" type=\"button\" :aria-expanded=\"mobileOpen\" aria-label=\"Toggle navigation menu\" aria-controls=\"nav-mobile-menu\">☰</button><div class=\"nav-user\"><!-- Notification bell --><div class=\"notification-bell\" x-data=\"{ open: false }\" @click.away=\"open = false\"><button class=\"bell-btn\" @click=\"open = !open; if(open) { htmx.ajax('POST', '/notifications/mark-read', {swap:'none'}); htmx.ajax('GET', '/notifications', {target:'#notification-panel', swap:'innerHTML'}) }\" type=\"button\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"></path><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"></path></svg> <span hx-get=\"/notifications/count\" hx-trigger=\"load, every 30s\" hx-swap=\"innerHTML\"></span></button><div id=\"notification-panel\" class=\"notification-panel\" x-show=\"open\" x-cloak><p style=\"padding:1rem; color:var(--gray-400); text-align:center;\">Loading...</p></div></div><span>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "</nav><!-- Bottom --><div class=\"mt-auto space-y-1 pt-4 border-t border-slate-200/50\"><a href=\"/dispatch/orders/new\" class=\"w-full bg-primary-container text-white py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary-container/10 no-underline hover:opacity-90 transition-opacity\"><span class=\"material-symbols-outlined text-[18px]\">add</span> New Order</a><div class=\"mt-3 space-y-1\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(user.Username)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 152, Col: 24}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		templ_7745c5c3_Err = sidebarLink("settings", "Settings", "/settings/change-password", false).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</span> <button class=\"btn btn-sm\" hx-post=\"/logout\">Logout</button></div><!-- Mobile nav drawer --><div id=\"nav-mobile-menu\" class=\"nav-mobile-menu\" x-show=\"mobileOpen\" x-cloak><a href=\"/search/vin\">VIN Search</a><hr>")
+		templ_7745c5c3_Err = sidebarLink("feedback", "Feedback", "/feedback", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</div></div></aside>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func TopBar(user auth.ContextUser, companyName string, brand Brand) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var13 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var13 == nil {
+			templ_7745c5c3_Var13 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<header class=\"w-full h-16 sticky top-0 z-40 bg-white/80 backdrop-blur-md flex justify-between items-center px-6 border-b border-slate-200/50 shadow-sm\"><!-- Mobile hamburger (shown < lg) --><button class=\"lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg\" x-data @click=\"$dispatch('toggle-mobile-nav')\"><span class=\"material-symbols-outlined\">menu</span></button><!-- Search --><div class=\"flex items-center gap-4 flex-1 max-w-xl\"><div class=\"relative w-full\"><span class=\"material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]\">search</span> <input class=\"w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-sm focus:ring-2 focus:ring-primary-container/20 placeholder:text-slate-400\" placeholder=\"Search orders, VINs, or drivers...\" type=\"text\" style=\"font-family: 'Inter', sans-serif;\"></div></div><!-- Right side --><div class=\"flex items-center gap-2\"><!-- Notifications --><div class=\"relative\" x-data=\"{ open: false }\" @click.away=\"open = false\"><button class=\"p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-all duration-200\" @click=\"open = !open; if(open) { htmx.ajax('POST', '/notifications/mark-read', {swap:'none'}); htmx.ajax('GET', '/notifications', {target:'#notification-panel-new', swap:'innerHTML'}) }\" type=\"button\"><span class=\"material-symbols-outlined\">notifications</span> <span hx-get=\"/notifications/count\" hx-trigger=\"load, every 30s\" hx-swap=\"innerHTML\" class=\"absolute -top-0.5 -right-0.5 text-[10px] font-bold\"></span></button><div id=\"notification-panel-new\" class=\"absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-200/50 max-h-96 overflow-y-auto z-50\" x-show=\"open\" x-cloak><p class=\"p-4 text-slate-400 text-center text-sm\">Loading...</p></div></div><div class=\"h-8 w-px bg-slate-200 mx-2\"></div><!-- User --><div class=\"flex items-center gap-3\"><div class=\"text-right hidden sm:block\"><p class=\"text-xs font-bold text-slate-900 leading-none\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var14 string
+		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(user.Username)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 143, Col: 77}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if companyName != "" {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "<p class=\"text-[10px] text-slate-500 font-medium\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var15 string
+			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(companyName)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 145, Col: 69}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</p>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "</div><div class=\"w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-white text-sm font-bold\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var16 string
+		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(string([]rune(user.Username)[0:1]))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 149, Col: 41}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</div></div><button class=\"ml-2 p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-all\" hx-post=\"/logout\" title=\"Logout\"><span class=\"material-symbols-outlined text-[20px]\">logout</span></button></div></header>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+// Nav is kept for backwards compatibility but delegates to the new sidebar layout.
+// It renders a mobile-only nav drawer that responds to the toggle-mobile-nav event.
+func Nav(user auth.ContextUser, companyName string, features models.FeatureSet, brand Brand) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var17 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var17 == nil {
+			templ_7745c5c3_Var17 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<!-- Mobile nav drawer (< lg screens) --><div x-data=\"{ mobileOpen: false }\" @toggle-mobile-nav.window=\"mobileOpen = !mobileOpen\" @click.away=\"mobileOpen = false\" class=\"lg:hidden\"><div x-show=\"mobileOpen\" x-cloak class=\"fixed inset-0 z-50 flex\"><!-- Backdrop --><div class=\"fixed inset-0 bg-black/40\" @click=\"mobileOpen = false\"></div><!-- Drawer --><aside class=\"relative z-50 flex flex-col h-full p-4 bg-slate-100 w-72 shadow-2xl overflow-y-auto\" style=\"font-family: 'Manrope', sans-serif;\"><div class=\"mb-6 px-2 flex items-center justify-between\"><div class=\"flex items-center gap-3\"><div class=\"w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center\"><span class=\"material-symbols-outlined text-white\">local_shipping</span></div><div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if companyName != "" {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "<h1 class=\"text-lg font-bold tracking-tighter text-slate-900 leading-none\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var18 string
+			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(companyName)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 176, Col: 96}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</h1>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "<h1 class=\"text-lg font-bold tracking-tighter text-slate-900 leading-none\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var19 string
+			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(brand.Name)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/nav.templ`, Line: 178, Col: 95}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "</h1>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "</div></div><button class=\"p-2 text-slate-400 hover:text-slate-700\" @click=\"mobileOpen = false\"><span class=\"material-symbols-outlined\">close</span></button></div><nav class=\"flex-1 space-y-1\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("dashboard", "Dashboard", "/", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("search", "VIN Search", "/search/vin", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarSection("Dispatch").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("inventory_2", "Orders", "/dispatch/orders", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("local_shipping", "Trips / Loads", "/dispatch/trips", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("grid_view", "Waiting Grid", "/dispatch/waiting", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarSection("Accounting").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("receipt_long", "Invoices", "/accounting/invoices", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("payments", "Payments", "/accounting/payments", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("note_stack", "Credit Memos", "/accounting/credit-memos", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("car_crash", "Damage Claims", "/accounting/damage-claims", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("request_quote", "Accounts Payable", "/accounting/ap", false).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if features.Has(models.FeatureLoadboard) {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<div class=\"mobile-section-label\">Loadboard</div><a href=\"/loadboard\">Browse Loads</a> <a href=\"/loadboard/my-listings\">My Listings</a> <a href=\"/loadboard/my-claims\">My Claims</a><hr>")
+			templ_7745c5c3_Err = sidebarSection("Loadboard").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("travel_explore", "Browse Loads", "/loadboard", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("list_alt", "My Listings", "/loadboard/my-listings", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("handshake", "My Claims", "/loadboard/my-claims", false).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"mobile-section-label\">Dispatch</div><a href=\"/dispatch/orders\">Orders</a> <a href=\"/dispatch/trips\">Trips/Loads</a> <a href=\"/dispatch/waiting\">Waiting Grid</a><hr><div class=\"mobile-section-label\">Accounting</div><a href=\"/accounting/invoices\">Invoices</a> <a href=\"/accounting/payments\">Payments</a> <a href=\"/accounting/credit-memos\">Credit Memos</a> <a href=\"/accounting/damage-claims\">Damage Claims</a> <a href=\"/accounting/ap\">Accounts Payable</a> <a href=\"/accounting/driver-adjustments\">Driver Adjustments</a> <a href=\"/accounting/truck-adjustments\">Truck Adjustments</a> <a href=\"/accounting/posting\">Period Posting</a><hr><div class=\"mobile-section-label\">Global</div><a href=\"/global/customers\">Customers</a> <a href=\"/global/employees\">Employees</a> <a href=\"/global/trucks\">Trucks</a> <a href=\"/global/vendors\">Vendors</a> <a href=\"/global/zones\">Zones</a><hr><div class=\"mobile-section-label\">Reports</div><a href=\"/reports\">All Reports</a> <a href=\"/reports/ar-aging\">AR Aging</a> <a href=\"/reports/trip-summary\">Trip Summary</a> <a href=\"/reports/driver-settlement\">Driver Settlement</a><hr><div class=\"mobile-section-label\">Utilities</div><a href=\"/utilities/company\">Company Settings</a> ")
+		templ_7745c5c3_Err = sidebarSection("Reports").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("assessment", "All Reports", "/reports", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarSection("Masters").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("people", "Customers", "/global/customers", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("badge", "Employees", "/global/employees", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("local_shipping", "Trucks", "/global/trucks", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("store", "Vendors", "/global/vendors", false).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = sidebarLink("map", "Zones", "/global/zones", false).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if user.Role == "super_admin" || user.Role == "company_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<a href=\"/settings/users\">Users</a> ")
+			templ_7745c5c3_Err = sidebarSection("Settings").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<a href=\"/settings/change-password\">Change Password</a> <a href=\"/feedback\">Feedback</a> ")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		if features.Has(models.FeatureQBO) {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<a href=\"/settings/integrations\">Integrations</a> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("domain", "Company", "/utilities/company", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("group", "Users", "/settings/users", false).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
 		if user.Role == "super_admin" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<hr><div class=\"mobile-section-label\">Admin</div><a href=\"/admin/companies\">Companies</a> <a href=\"/admin/backups\">Backups</a> <a href=\"/admin/migration\">Migration</a> <a href=\"/admin/riverui/\">Job Queue</a> <a href=\"/admin/activity\">Activity</a> <a href=\"/admin/api-keys\">API Keys</a>")
+			templ_7745c5c3_Err = sidebarSection("Admin").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("apartment", "Companies", "/admin/companies", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("backup", "Backups", "/admin/backups", false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = sidebarLink("monitoring", "Activity", "/admin/activity", false).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<hr><button hx-post=\"/logout\">Logout</button></div></nav>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "</nav><div class=\"mt-auto pt-4\"><button class=\"w-full bg-primary-container text-white py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2\" hx-post=\"/logout\"><span class=\"material-symbols-outlined text-[18px]\">logout</span> Logout</button></div></aside></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

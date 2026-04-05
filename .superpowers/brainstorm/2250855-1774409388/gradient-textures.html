@@ -1,0 +1,83 @@
+<h2>Gradient Texture Options</h2>
+<p class="subtitle">Click the one that feels right for the registration branding panel</p>
+
+<div class="cards" style="grid-template-columns: 1fr 1fr;">
+  <!-- Option A: Noise texture -->
+  <div class="card" data-choice="noise" onclick="toggleSelect(this)">
+    <div class="card-image" style="height:300px;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:linear-gradient(160deg, #000000 0%, #00174b 100%);"></div>
+      <div style="position:absolute;inset:0;opacity:0.08;background-image:url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E');background-size:128px 128px;"></div>
+      <div style="position:relative;z-index:1;padding:32px;color:white;font-family:'Manrope',system-ui,sans-serif;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:0.1em;opacity:0.6;text-transform:uppercase;margin-bottom:16px;">Atlas Cloud</div>
+        <h3 style="font-size:22px;font-weight:800;margin:0 0 8px;letter-spacing:-0.02em;">The Professional Standard for Vehicle Transport</h3>
+        <p style="font-size:13px;opacity:0.6;margin:0;">Subtle film grain adds depth and warmth</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Noise / Film Grain</h3>
+      <p>Classic premium texture. Subtle, organic, adds tactile quality without distraction.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Geometric grid -->
+  <div class="card" data-choice="grid" onclick="toggleSelect(this)">
+    <div class="card-image" style="height:300px;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:linear-gradient(160deg, #000000 0%, #00174b 100%);"></div>
+      <div style="position:absolute;inset:0;opacity:0.06;background-image:
+        linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 40px 40px;"></div>
+      <div style="position:relative;z-index:1;padding:32px;color:white;font-family:'Manrope',system-ui,sans-serif;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:0.1em;opacity:0.6;text-transform:uppercase;margin-bottom:16px;">Atlas Cloud</div>
+        <h3 style="font-size:22px;font-weight:800;margin:0 0 8px;letter-spacing:-0.02em;">The Professional Standard for Vehicle Transport</h3>
+        <p style="font-size:13px;opacity:0.6;margin:0;">Architectural grid evokes precision and structure</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Geometric Grid</h3>
+      <p>Clean engineering feel. Subtle grid lines suggest precision logistics.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Diagonal lines -->
+  <div class="card" data-choice="diagonal" onclick="toggleSelect(this)">
+    <div class="card-image" style="height:300px;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:linear-gradient(160deg, #000000 0%, #00174b 100%);"></div>
+      <div style="position:absolute;inset:0;opacity:0.04;background-image:repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(255,255,255,0.3) 10px,
+        rgba(255,255,255,0.3) 11px
+      );"></div>
+      <div style="position:relative;z-index:1;padding:32px;color:white;font-family:'Manrope',system-ui,sans-serif;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:0.1em;opacity:0.6;text-transform:uppercase;margin-bottom:16px;">Atlas Cloud</div>
+        <h3 style="font-size:22px;font-weight:800;margin:0 0 8px;letter-spacing:-0.02em;">The Professional Standard for Vehicle Transport</h3>
+        <p style="font-size:13px;opacity:0.6;margin:0;">Diagonal pinstripe adds motion and energy</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Diagonal Pinstripe</h3>
+      <p>Subtle movement. Adds dynamism without overwhelming the text.</p>
+    </div>
+  </div>
+
+  <!-- Option D: Mesh / organic blobs -->
+  <div class="card" data-choice="mesh" onclick="toggleSelect(this)">
+    <div class="card-image" style="height:300px;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:linear-gradient(160deg, #000000 0%, #00174b 100%);"></div>
+      <div style="position:absolute;top:-20%;right:-10%;width:60%;height:80%;background:radial-gradient(ellipse, rgba(71,124,255,0.15) 0%, transparent 70%);"></div>
+      <div style="position:absolute;bottom:-10%;left:-10%;width:50%;height:70%;background:radial-gradient(ellipse, rgba(111,251,190,0.08) 0%, transparent 70%);"></div>
+      <div style="position:absolute;top:30%;left:40%;width:40%;height:50%;background:radial-gradient(ellipse, rgba(71,124,255,0.06) 0%, transparent 60%);"></div>
+      <div style="position:relative;z-index:1;padding:32px;color:white;font-family:'Manrope',system-ui,sans-serif;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:0.1em;opacity:0.6;text-transform:uppercase;margin-bottom:16px;">Atlas Cloud</div>
+        <h3 style="font-size:22px;font-weight:800;margin:0 0 8px;letter-spacing:-0.02em;">The Professional Standard for Vehicle Transport</h3>
+        <p style="font-size:13px;opacity:0.6;margin:0;">Organic light adds atmosphere and depth</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>D — Mesh / Ambient Glow</h3>
+      <p>Soft radial gradients create an organic, atmospheric depth. Premium SaaS feel.</p>
+    </div>
+  </div>
+</div>

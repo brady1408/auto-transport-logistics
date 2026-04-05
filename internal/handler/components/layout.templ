@@ -15,12 +15,82 @@ templ Layout(pg PageContext, title string) {
 		<link rel="icon" type="image/svg+xml" href={ pg.Brand.FaviconFile }/>
 		<link rel="preconnect" href="https://fonts.googleapis.com"/>
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap"/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap"/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"/>
 		<link rel="stylesheet" href={ AssetVersion("/static/css/app.css") }/>
+		<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+		<script>
+			tailwind.config = {
+				darkMode: "class",
+				theme: {
+					extend: {
+						colors: {
+							"primary": "#000000",
+							"on-primary": "#ffffff",
+							"primary-container": "#00174b",
+							"on-primary-container": "#497cff",
+							"secondary": "#515f74",
+							"on-secondary": "#ffffff",
+							"secondary-container": "#d5e3fc",
+							"on-secondary-container": "#57657a",
+							"tertiary": "#000000",
+							"on-tertiary": "#ffffff",
+							"tertiary-container": "#002113",
+							"on-tertiary-container": "#009668",
+							"tertiary-fixed": "#6ffbbe",
+							"tertiary-fixed-dim": "#4edea3",
+							"on-tertiary-fixed": "#002113",
+							"error": "#ba1a1a",
+							"on-error": "#ffffff",
+							"error-container": "#ffdad6",
+							"on-error-container": "#93000a",
+							"surface": "#f7f9fb",
+							"on-surface": "#191c1e",
+							"on-surface-variant": "#45464d",
+							"surface-dim": "#d8dadc",
+							"surface-bright": "#f7f9fb",
+							"surface-container-lowest": "#ffffff",
+							"surface-container-low": "#f2f4f6",
+							"surface-container": "#eceef0",
+							"surface-container-high": "#e6e8ea",
+							"surface-container-highest": "#e0e3e5",
+							"outline": "#76777d",
+							"outline-variant": "#c6c6cd",
+							"inverse-surface": "#2d3133",
+							"inverse-on-surface": "#eff1f3",
+							"inverse-primary": "#b4c5ff",
+							"primary-fixed": "#dbe1ff",
+							"primary-fixed-dim": "#b4c5ff",
+							"on-primary-fixed": "#00174b",
+							"on-primary-fixed-variant": "#003ea8",
+							"secondary-fixed": "#d5e3fc",
+							"secondary-fixed-dim": "#b9c7df",
+							"on-secondary-fixed": "#0d1c2e",
+							"on-secondary-fixed-variant": "#3a485b",
+							"on-tertiary-fixed-variant": "#005236",
+							"surface-tint": "#0053db",
+						},
+						fontFamily: {
+							"headline": ["Manrope", "sans-serif"],
+							"body": ["Inter", "sans-serif"],
+						},
+						borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+					},
+				},
+			}
+		</script>
+		<style>
+			.material-symbols-outlined {
+				font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+				vertical-align: middle;
+			}
+			/* Hide scrollbar but keep scrolling */
+			.no-scrollbar::-webkit-scrollbar { display: none; }
+			.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+		</style>
 		<script src={ AssetVersion("/static/js/htmx.min.js") }></script>
 		<script defer src={ AssetVersion("/static/js/alpine.min.js") }></script>
 		<script>
-			// Configure HTMX to send CSRF token from cookie on every request
 			document.addEventListener('htmx:configRequest', function(evt) {
 				var match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
 				if (match) {
@@ -29,21 +99,34 @@ templ Layout(pg PageContext, title string) {
 			});
 		</script>
 	</head>
-	<body>
+	<body class="bg-surface text-on-surface antialiased" style="font-family: 'Inter', sans-serif;">
 		if pg.User != nil {
-			@Nav(*pg.User, pg.CompanyName, pg.Features, pg.Brand)
-		}
-		<main class="container">
-			if pg.Suspended {
-				<div class="alert alert-danger" style="margin-bottom:1rem;">
-					&#128274; Your account is suspended. All data is in read-only mode. Contact your administrator to restore access.
+			<div class="flex h-screen overflow-hidden">
+				@Sidebar(*pg.User, pg.CompanyName, pg.Features, pg.Brand)
+				<div class="flex-1 flex flex-col overflow-hidden">
+					@TopBar(*pg.User, pg.CompanyName, pg.Brand)
+					<div class="flex-1 overflow-y-auto p-6 no-scrollbar">
+						if pg.Suspended {
+							<div class="mb-4 px-4 py-3 rounded-xl bg-error-container/30 text-on-error-container text-sm font-medium flex items-center gap-2">
+								<span class="material-symbols-outlined text-error">lock</span>
+								Your account is suspended. All data is in read-only mode. Contact your administrator to restore access.
+							</div>
+						}
+						if pg.Flash != "" {
+							@FlashMessage(pg.Flash)
+						}
+						{ children... }
+					</div>
 				</div>
-			}
-			if pg.Flash != "" {
-				@FlashMessage(pg.Flash)
-			}
-			{ children... }
-		</main>
+			</div>
+		} else {
+			<main class="container">
+				if pg.Flash != "" {
+					@FlashMessage(pg.Flash)
+				}
+				{ children... }
+			</main>
+		}
 		if pg.User != nil {
 			@FeedbackButton()
 		}

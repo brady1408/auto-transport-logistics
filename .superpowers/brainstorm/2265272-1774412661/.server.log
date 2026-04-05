@@ -1,0 +1,3 @@
+{"type":"server-started","port":56389,"host":"0.0.0.0","url_host":"192.168.23.20","url":"http://192.168.23.20:56389","screen_dir":"/home/brady/ws/atlinks/.superpowers/brainstorm/2265272-1774412661"}
+{"type":"screen-added","file":"/home/brady/ws/atlinks/.superpowers/brainstorm/2265272-1774412661/stitch-registration.html"}
+{"type":"server-stopped","reason":"idle timeout"}

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Register | Atlas Cloud</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#002113",
+                        "surface": "#f7f9fb",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "secondary-container": "#d5e3fc",
+                        "surface-container-high": "#e6e8ea",
+                        "on-tertiary-container": "#009668",
+                        "on-secondary": "#ffffff",
+                        "primary": "#000000",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-primary-container": "#497cff",
+                        "surface-container": "#eceef0",
+                        "on-surface": "#191c1e",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "primary-fixed": "#dbe1ff",
+                        "outline": "#76777d",
+                        "inverse-primary": "#b4c5ff",
+                        "primary-container": "#00174b",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "inverse-surface": "#2d3133",
+                        "secondary": "#515f74",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-variant": "#e0e3e5",
+                        "outline-variant": "#c6c6cd",
+                        "on-tertiary-fixed": "#002113",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#000000",
+                        "surface-tint": "#0053db",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e0e3e5",
+                        "background": "#f7f9fb",
+                        "surface-bright": "#f7f9fb",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-primary-fixed": "#00174b",
+                        "on-secondary-container": "#57657a",
+                        "on-background": "#191c1e",
+                        "on-surface-variant": "#45464d",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d8dadc",
+                        "on-tertiary-fixed-variant": "#005236"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-header {
+            background: rgba(247, 249, 251, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .signature-gradient {
+            background: linear-gradient(135deg, #000000 0%, #00174b 100%);
+        }
+        .ghost-border {
+            border: 1px solid rgba(198, 198, 205, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm border-b border-slate-200/50 dark:border-slate-800/50">
+<div class="flex justify-between items-center h-16 px-8 max-w-7xl mx-auto">
+<div class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-headline">Atlas Cloud</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors font-inter tracking-wide text-sm" href="#">Features</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors font-inter tracking-wide text-sm" href="#">Pricing</a>
+<a class="text-slate-900 dark:text-white font-semibold border-b-2 border-slate-900 dark:border-white pb-1 font-inter tracking-wide text-sm" href="#">Login</a>
+<button class="signature-gradient text-white px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-95 active:scale-90 duration-150">Get Started</button>
+</div>
+</div>
+</nav>
+<main class="flex-grow pt-32 pb-20 px-6">
+<div class="max-w-[1280px] mx-auto grid lg:grid-cols-12 gap-12 items-start">
+<!-- Left Side: Editorial Authority / Branding -->
+<div class="lg:col-span-5 space-y-8">
+<div>
+<span class="text-on-primary-container bg-secondary-container px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase font-label">Logistics Infrastructure</span>
+<h1 class="text-display-lg font-headline font-extrabold text-5xl mt-6 tracking-tight leading-tight">
+                        The architectural engine for <span class="text-on-primary-container">vehicle transport.</span>
+</h1>
+<p class="text-on-surface-variant text-lg mt-6 leading-relaxed max-w-md">
+                        Deploy a high-performance workspace for your fleet operations. Designed for precision, reliability, and data-intensive logistics management.
+                    </p>
+</div>
+<div class="space-y-4">
+<div class="flex items-start gap-4 p-4 rounded-xl bg-surface-container-low ghost-border">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">verified</span>
+<div>
+<h4 class="font-headline font-bold text-on-surface">Enterprise-Grade Security</h4>
+<p class="text-sm text-on-surface-variant">SOC2 compliant infrastructure for sensitive manifest data.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 rounded-xl bg-surface-container-low ghost-border">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">speed</span>
+<div>
+<h4 class="font-headline font-bold text-on-surface">Real-time Visibility</h4>
+<p class="text-sm text-on-surface-variant">Live tracking of VINs and driver assignments globally.</p>
+</div>
+</div>
+</div>
+<div class="relative rounded-xl overflow-hidden aspect-video shadow-2xl">
+<img class="object-cover w-full h-full" data-alt="Modern logistics hub with rows of transport vehicles and digital management screens in a clean warehouse environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDahZS7-sgeI4BmJ8VogpsmNX8MtAXN07GN4ChZVWNm64d8nkDObisHBgohP6SWK3M1sfL5CYa7WqyzJXw5653fW10NyUMgShrwFFdCp0N99aL83uVYNAHZWM6SuL_tc9YLBUOdIZkfQllVI_b4S6qveXUxQIJsqjz2Z2dYSIkJQvilDO-Gq1roRMkJW4JJ1ifNyvW0EbgiLpY6vQXUv-3eV9b8ljQzvHM2CFIXvldRKZClI-ekMmsrZ3-NlOMCl3-VkekdJq7cPM-R"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary-container/60 to-transparent"></div>
+</div>
+</div>
+<!-- Right Side: The Registration Ledger -->
+<div class="lg:col-span-7">
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_24px_48px_rgba(25,28,30,0.06)] overflow-hidden">
+<!-- Form Header -->
+<div class="p-8 border-b border-outline-variant/15 bg-surface-container-low">
+<h2 class="text-headline-md font-headline font-bold text-2xl">Register Your Organization</h2>
+<p class="text-sm text-on-surface-variant mt-1">Complete the manifest to initialize your cloud workspace.</p>
+</div>
+<form class="p-8 space-y-12">
+<!-- Section: Company -->
+<div class="space-y-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg signature-gradient flex items-center justify-center text-white text-xs font-bold">01</div>
+<h3 class="font-headline font-bold text-sm tracking-widest uppercase text-on-surface-variant">Company Details</h3>
+</div>
+<div class="space-y-4">
+<div class="group">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 font-label">Company Name</label>
+<input class="w-full bg-surface-container-low border-0 border-b border-outline-variant/20 focus:ring-0 focus:border-on-primary-container transition-all py-3 px-4 rounded-t-lg" placeholder="e.g. Acme Transport Logistics" type="text"/>
+<div class="mt-3 flex items-center gap-2 px-1">
+<span class="material-symbols-outlined text-sm text-outline">link</span>
+<p class="text-xs text-outline font-body">Your workspace: <span class="text-on-primary-container font-semibold">atlascloud.app/c/acme-transport/login</span></p>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Account -->
+<div class="space-y-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-on-surface text-xs font-bold">02</div>
+<h3 class="font-headline font-bold text-sm tracking-widest uppercase text-on-surface-variant">Admin Account</h3>
+</div>
+<div class="grid md:grid-cols-2 gap-6">
+<div class="group">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 font-label">Admin Username</label>
+<input class="w-full bg-surface-container-low border-0 border-b border-outline-variant/20 focus:ring-0 focus:border-on-primary-container transition-all py-3 px-4 rounded-t-lg" placeholder="fleet_commander" type="text"/>
+</div>
+<div class="group">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 font-label">Work Email</label>
+<input class="w-full bg-surface-container-low border-0 border-b border-outline-variant/20 focus:ring-0 focus:border-on-primary-container transition-all py-3 px-4 rounded-t-lg" placeholder="admin@acme.com" type="email"/>
+</div>
+<div class="md:col-span-2 group">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 font-label">Secure Password</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-0 border-b border-outline-variant/20 focus:ring-0 focus:border-on-primary-container transition-all py-3 px-4 rounded-t-lg" placeholder="••••••••••••" type="password"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline cursor-pointer">visibility</span>
+</div>
+<p class="text-[10px] text-outline mt-2 uppercase tracking-tight">Minimum 12 characters including one special character.</p>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="pt-6 space-y-4">
+<button class="w-full signature-gradient text-white py-4 rounded-xl font-headline font-bold text-lg shadow-lg hover:shadow-primary-container/20 transition-all flex items-center justify-center gap-2" type="submit">
+                                Initialize Workspace
+                                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<p class="text-center text-xs text-on-surface-variant leading-relaxed">
+                                By proceeding, you agree to our <a class="text-on-primary-container underline underline-offset-4" href="#">Terms of Service</a> and confirm you have read the <a class="text-on-primary-container underline underline-offset-4" href="#">Privacy Ledger</a>.
+                            </p>
+</div>
+</form>
+</div>
+<!-- Trust Badges -->
+<div class="mt-8 flex justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all">
+<div class="flex items-center gap-2 text-on-surface-variant font-label text-xs font-bold uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm">security</span>
+                        ISO 27001
+                    </div>
+<div class="flex items-center gap-2 text-on-surface-variant font-label text-xs font-bold uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm">verified_user</span>
+                        GDPR Compliant
+                    </div>
+<div class="flex items-center gap-2 text-on-surface-variant font-label text-xs font-bold uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm">cloud_done</span>
+                        SLA 99.99%
+                    </div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-8 mt-auto bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-4">
+<span class="text-sm font-inter tracking-wide text-slate-600 dark:text-slate-400">© 2024 Atlas Cloud. All rights reserved.</span>
+<div class="flex gap-6">
+<a class="text-sm font-inter tracking-wide text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4 transition-opacity duration-200" href="#">Terms of Service</a>
+<a class="text-sm font-inter tracking-wide text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4 transition-opacity duration-200" href="#">Privacy Policy</a>
+</div>
+</div>
+</footer>
+</body></html>
