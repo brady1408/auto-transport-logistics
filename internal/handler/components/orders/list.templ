@@ -1,77 +1,107 @@
 package orders
 
 import (
+	"fmt"
+
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
 templ ListPage(pg components.PageContext, result models.OrderListResult, filter models.OrderFilter) {
-	@components.Layout(pg, "Orders - ATLinks") {
-		<div class="page-header">
-			<h1>Orders</h1>
-			<a href="/dispatch/orders/new" class="btn btn-primary">New Order</a>
+	@components.Layout(pg, "Orders") {
+		<!-- Page Header -->
+		<div class="flex items-end justify-between mb-6">
+			<div>
+				<nav class="flex items-center gap-2 text-xs text-outline mb-2 font-medium tracking-wide uppercase">
+					<span>Dispatch</span>
+					<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+					<span class="text-secondary">Orders</span>
+				</nav>
+				<div class="flex items-center gap-4">
+					<h1 class="text-3xl font-extrabold tracking-tight text-on-surface" style="font-family: 'Manrope', sans-serif;">Orders</h1>
+					<span class="px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant text-xs font-bold tracking-tight">{ fmt.Sprintf("%d orders", result.TotalCount) }</span>
+				</div>
+			</div>
+			<a href="/dispatch/orders/new" class="flex items-center gap-2 bg-primary-container text-white px-5 py-2.5 rounded-xl font-bold text-sm no-underline hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary-container/10">
+				<span class="material-symbols-outlined text-[18px]">add</span>
+				New Order
+			</a>
 		</div>
-		<div class="filter-bar">
-			<div class="form-group">
-				<label for="search">Search</label>
-				<input
-					type="text" id="search" name="search" class="form-control search-input"
-					placeholder="Order #, customer name..."
-					value={ filter.Search }
-					hx-get="/dispatch/orders"
-					hx-trigger="keyup changed delay:300ms"
-					hx-target="#order-table"
-					hx-include=".filter-bar [name]"
-					hx-push-url="true"
-				/>
+		<!-- Filter Bar -->
+		<div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/10 mb-6">
+			<div class="flex flex-wrap items-end gap-4">
+				<div class="flex-1 min-w-[280px]">
+					<label for="search" class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5">Search</label>
+					<div class="relative">
+						<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+						<input
+							type="text" id="search" name="search"
+							class="w-full bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-container/20 transition-colors"
+							placeholder="Order #, customer name..."
+							value={ filter.Search }
+							hx-get="/dispatch/orders"
+							hx-trigger="keyup changed delay:300ms"
+							hx-target="#order-table"
+							hx-include=".filter-section [name]"
+							hx-push-url="true"
+							style="font-family: 'Inter', sans-serif;"
+						/>
+					</div>
+				</div>
+				<div class="min-w-[140px]">
+					<label for="active" class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5">Status</label>
+					<select
+						id="active" name="active"
+						class="w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20"
+						hx-get="/dispatch/orders"
+						hx-trigger="change"
+						hx-target="#order-table"
+						hx-include=".filter-section [name]"
+						hx-push-url="true"
+						style="font-family: 'Inter', sans-serif;"
+					>
+						<option value="" selected?={ filter.Active == "" }>All</option>
+						<option value="active" selected?={ filter.Active == "active" }>Active</option>
+						<option value="inactive" selected?={ filter.Active == "inactive" }>Inactive</option>
+					</select>
+				</div>
+				<div class="min-w-[160px]">
+					<label for="date_from" class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5">From Date</label>
+					<input
+						type="date" id="date_from" name="date_from"
+						class="w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20"
+						value={ filter.DateFrom }
+						hx-get="/dispatch/orders"
+						hx-trigger="change"
+						hx-target="#order-table"
+						hx-include=".filter-section [name]"
+						hx-push-url="true"
+					/>
+				</div>
+				<div class="min-w-[160px]">
+					<label for="date_to" class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5">To Date</label>
+					<input
+						type="date" id="date_to" name="date_to"
+						class="w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20"
+						value={ filter.DateTo }
+						hx-get="/dispatch/orders"
+						hx-trigger="change"
+						hx-target="#order-table"
+						hx-include=".filter-section [name]"
+						hx-push-url="true"
+					/>
+				</div>
+				<input type="hidden" name="sort_by" value={ filter.SortBy }/>
+				<input type="hidden" name="sort_dir" value={ filter.SortDir }/>
 			</div>
-			<div class="form-group">
-				<label for="active">Status</label>
-				<select
-					id="active" name="active" class="form-control"
-					hx-get="/dispatch/orders"
-					hx-trigger="change"
-					hx-target="#order-table"
-					hx-include=".filter-bar [name]"
-					hx-push-url="true"
-				>
-					<option value="" selected?={ filter.Active == "" }>All</option>
-					<option value="active" selected?={ filter.Active == "active" }>Active</option>
-					<option value="inactive" selected?={ filter.Active == "inactive" }>Inactive</option>
-				</select>
-			</div>
-			<div class="form-group">
-				<label for="date_from">From</label>
-				<input
-					type="date" id="date_from" name="date_from" class="form-control"
-					value={ filter.DateFrom }
-					hx-get="/dispatch/orders"
-					hx-trigger="change"
-					hx-target="#order-table"
-					hx-include=".filter-bar [name]"
-					hx-push-url="true"
-				/>
-			</div>
-			<div class="form-group">
-				<label for="date_to">To</label>
-				<input
-					type="date" id="date_to" name="date_to" class="form-control"
-					value={ filter.DateTo }
-					hx-get="/dispatch/orders"
-					hx-trigger="change"
-					hx-target="#order-table"
-					hx-include=".filter-bar [name]"
-					hx-push-url="true"
-				/>
-			</div>
-			<input type="hidden" name="sort_by" value={ filter.SortBy }/>
-			<input type="hidden" name="sort_dir" value={ filter.SortDir }/>
 		</div>
+		<!-- Orders Table -->
 		<div
 			id="order-table"
+			class="filter-section"
 			hx-get="/dispatch/orders"
 			hx-trigger="every 10s [document.visibilityState==='visible']"
-			hx-include=".filter-bar [name]"
+			hx-include=".filter-section [name]"
 			hx-swap="innerHTML"
 		>
 			@Table(result, filter)

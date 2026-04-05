@@ -8,63 +8,71 @@ import (
 )
 
 templ Table(result models.OrderListResult, filter models.OrderFilter) {
-	<div class="table-container">
-		<table>
-			<thead>
-				<tr>
-					@components.SortHeader("Order #", "order_number", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
-					@components.SortHeader("Bill Customer", "bill_customer_name", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
-					<th>Load Customer</th>
-					<th>Drop Customer</th>
-					@components.SortHeader("Zone", "zone", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
-					<th class="text-center">Vehicles</th>
-					@components.SortHeader("Status", "dispatch_code", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
-					@components.SortHeader("Create Date", "create_date", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
-					<th class="text-right">Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-				if len(result.Items) > 0 {
-					for _, o := range result.Items {
-						<tr>
-							<td><a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", o.ID)) }>{ o.OrderNumber }</a></td>
-							<td>{ components.Deref(o.BillCustomerName) }</td>
-							<td>{ components.Deref(o.LoadCustomerName) }</td>
-							<td>{ components.Deref(o.DropCustomerName) }</td>
-							<td>{ components.Deref(o.OriginZone) }</td>
-							<td class="text-center">
-								if o.VehicleCount > 0 {
-									<span class="badge badge-active">{ fmt.Sprintf("%d", o.VehicleCount) }</span>
-								} else {
-									0
-								}
-							</td>
-							<td>
-								@orderStatusBadge(o)
-							</td>
-							<td>
-								if o.CreateDate != nil {
-									{ o.CreateDate.Format("01/02/2006") }
-								}
-							</td>
-							<td class="text-right">
-								<div class="btn-group">
-									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", o.ID)) } class="btn btn-sm">View</a>
-									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/edit", o.ID)) } class="btn btn-sm">Edit</a>
-									<button
-										class="btn btn-sm btn-danger"
-										hx-delete={ fmt.Sprintf("/dispatch/orders/%d", o.ID) }
-										hx-confirm={ fmt.Sprintf("Delete order %s?", o.OrderNumber) }
-									>Delete</button>
-								</div>
-							</td>
-						</tr>
+	<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/10">
+		<div class="overflow-x-auto">
+			<table class="w-full text-left border-collapse">
+				<thead>
+					<tr class="bg-surface-container-low/50">
+						@components.SortHeader("Order #", "order_number", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
+						@components.SortHeader("Bill Customer", "bill_customer_name", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
+						<th>Load Customer</th>
+						<th>Drop Customer</th>
+						@components.SortHeader("Zone", "zone", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
+						<th class="text-center">Vehicles</th>
+						@components.SortHeader("Status", "dispatch_code", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
+						@components.SortHeader("Date", "create_date", filter.SortBy, filter.SortDir, "/dispatch/orders", "#order-table")
+						<th class="text-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(result.Items) > 0 {
+						for _, o := range result.Items {
+							<tr class="hover:bg-surface-container-low/50 transition-colors">
+								<td>
+									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", o.ID)) } class="font-bold text-on-primary-container no-underline hover:underline">{ o.OrderNumber }</a>
+								</td>
+								<td class="font-medium text-on-surface">{ components.Deref(o.BillCustomerName) }</td>
+								<td class="text-secondary">{ components.Deref(o.LoadCustomerName) }</td>
+								<td class="text-secondary">{ components.Deref(o.DropCustomerName) }</td>
+								<td>
+									if components.Deref(o.OriginZone) != "" {
+										<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-[10px] font-bold">{ components.Deref(o.OriginZone) }</span>
+									}
+								</td>
+								<td class="text-center">
+									if o.VehicleCount > 0 {
+										<span class="w-6 h-6 inline-flex items-center justify-center rounded-full bg-secondary-container text-on-secondary-container text-[11px] font-bold">{ fmt.Sprintf("%d", o.VehicleCount) }</span>
+									} else {
+										<span class="text-outline">0</span>
+									}
+								</td>
+								<td>
+									@orderStatusBadge(o)
+								</td>
+								<td class="text-secondary">
+									if o.CreateDate != nil {
+										{ o.CreateDate.Format("Jan 2, 2006") }
+									}
+								</td>
+								<td class="text-right">
+									<div class="btn-group">
+										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", o.ID)) } class="btn btn-sm">View</a>
+										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/edit", o.ID)) } class="btn btn-sm">Edit</a>
+										<button
+											class="btn btn-sm btn-danger"
+											hx-delete={ fmt.Sprintf("/dispatch/orders/%d", o.ID) }
+											hx-confirm={ fmt.Sprintf("Delete order %s?", o.OrderNumber) }
+										>Delete</button>
+									</div>
+								</td>
+							</tr>
+						}
+					} else {
+						<tr><td colspan="9" class="text-center text-outline py-12">No orders found</td></tr>
 					}
-				} else {
-					<tr><td colspan="9" class="text-center text-muted">No orders found</td></tr>
-				}
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
 	</div>
 	if len(result.Items) > 0 {
 		@components.Pagination(components.NewPaginationData(
@@ -76,16 +84,16 @@ templ Table(result models.OrderListResult, filter models.OrderFilter) {
 
 templ orderStatusBadge(o models.Order) {
 	if !o.Active {
-		<span class="badge badge-inactive">Inactive</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-highest text-on-surface-variant">Inactive</span>
 	} else if o.ConfirmedCount > 0 {
-		<span class="badge badge-confirmed">{ fmt.Sprintf("%dC", o.ConfirmedCount) }</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-fixed">{ fmt.Sprintf("%dC", o.ConfirmedCount) }</span>
 	} else if o.DeliveredCount > 0 {
-		<span class="badge badge-delivered">{ fmt.Sprintf("%dD", o.DeliveredCount) }</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">{ fmt.Sprintf("%dD", o.DeliveredCount) }</span>
 	} else if o.LoadedCount > 0 {
-		<span class="badge badge-loaded">{ fmt.Sprintf("%dL", o.LoadedCount) }</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary-container text-white">{ fmt.Sprintf("%dL", o.LoadedCount) }</span>
 	} else if o.ScheduledCount > 0 {
-		<span class="badge badge-scheduled">{ fmt.Sprintf("%dS", o.ScheduledCount) }</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-secondary-container text-on-secondary-container">{ fmt.Sprintf("%dS", o.ScheduledCount) }</span>
 	} else {
-		<span class="badge badge-waiting">{ fmt.Sprintf("%dW", o.WaitingCount) }</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">{ fmt.Sprintf("%dW", o.WaitingCount) }</span>
 	}
 }
