@@ -9,244 +9,300 @@ import (
 )
 
 templ ShowPage(pg components.PageContext, order *models.Order, atts []models.Attachment, subhauledClaims []models.LoadboardClaim) {
-	@components.Layout(pg, "Order " + order.OrderNumber + " - ATLinks") {
-		<div class="page-header">
-			<div>
-				<a href="/dispatch/orders" class="page-header-back">← Back to List</a>
-				<h1>Order { order.OrderNumber }</h1>
-			</div>
-			<div class="btn-group">
-				<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/edit", order.ID)) } class="btn">Edit Order</a>
-				<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/vehicles/new", order.ID)) } class="btn btn-primary">Add Vehicle</a>
-				if order.DeliveredCount > 0 || order.ConfirmedCount > 0 {
-					<button
-						class="btn btn-success"
-						hx-post={ fmt.Sprintf("/dispatch/orders/%d/invoice", order.ID) }
-						hx-confirm="Generate invoice for this order?"
-					>Generate Invoice</button>
-				}
-				if order.WaitingCount > 0 {
-					<a href={ templ.SafeURL(fmt.Sprintf("/loadboard/post/%d", order.ID)) } class="btn">Post to Loadboard</a>
-				}
-			</div>
-		</div>
-		<div class="order-detail-grid">
-			<div class="card">
-				<div class="card-header">Order Info</div>
-				<div class="card-body">
-					<div class="detail-row">
-						<span class="detail-label">Status:</span>
-						<span>
+	@components.Layout(pg, "Order " + order.OrderNumber) {
+		<div class="max-w-[1400px] mx-auto space-y-6">
+			<!-- Header -->
+			<header class="flex flex-col gap-6">
+				<div class="flex justify-between items-end">
+					<div>
+						<nav class="flex items-center gap-2 text-xs text-outline mb-2 font-medium tracking-wide uppercase">
+							<a href="/dispatch/orders" class="hover:text-on-surface no-underline">Dispatch</a>
+							<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+							<span class="text-secondary">Order { order.OrderNumber }</span>
+						</nav>
+						<div class="flex items-center gap-4">
+							<h1 class="text-3xl font-extrabold tracking-tight text-on-surface" style="font-family: 'Manrope', sans-serif;">Order { order.OrderNumber }</h1>
 							if order.Active {
-								<span class="badge badge-active">Active</span>
+								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-secondary-container text-on-secondary-container">ACTIVE</span>
 							} else {
-								<span class="badge badge-inactive">Inactive</span>
+								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-highest text-on-surface-variant">INACTIVE</span>
 							}
-						</span>
+						</div>
 					</div>
-					<div class="detail-row">
-						<span class="detail-label">Origin Zone:</span>
-						<span>{ components.Deref(order.OriginZone) }</span>
-					</div>
-					<div class="detail-row">
-						<span class="detail-label">Dest Zone:</span>
-						<span>{ components.Deref(order.DestinationZone) }</span>
-					</div>
-					<div class="detail-row">
-						<span class="detail-label">Dispatch Code:</span>
-						<span>{ components.Deref(order.DispatchCode) }</span>
-					</div>
-					<div class="detail-row">
-						<span class="detail-label">Create Date:</span>
-						<span>
-							if order.CreateDate != nil {
-								{ order.CreateDate.Format("01/02/2006") }
-							}
-						</span>
-					</div>
-					<div class="detail-row">
-						<span class="detail-label">Est. Pickup:</span>
-						<span>
-							if order.EstPickupDate != nil {
-								{ order.EstPickupDate.Format("01/02/2006") }
-							}
-						</span>
-					</div>
-					<div class="detail-row">
-						<span class="detail-label">Est. Deliver:</span>
-						<span>
-							if order.EstDeliverDate != nil {
-								{ order.EstDeliverDate.Format("01/02/2006") }
-							}
-						</span>
-					</div>
-				</div>
-			</div>
-			<div
-				id="vehicle-counts-card"
-				hx-get={ fmt.Sprintf("/dispatch/orders/%d/counts", order.ID) }
-				hx-trigger="every 10s [document.visibilityState==='visible']"
-				hx-swap="outerHTML"
-			>
-				@VehicleCountsCard(order)
-			</div>
-			<div class="card">
-				<div class="card-header">Bill-To</div>
-				<div class="card-body">
-					<strong>{ components.Deref(order.BillCustomerName) }</strong>
-					if order.BillToAddress != nil {
-						<br/>
-						{ components.Deref(order.BillToAddress) }
-					}
-					if order.BillToCity != nil {
-						<br/>
-						{ components.Deref(order.BillToCity) }, { components.Deref(order.BillToState) } { components.Deref(order.BillToZip) }
-					}
-				</div>
-			</div>
-			<div class="card">
-				<div class="card-header">Load/Pickup</div>
-				<div class="card-body">
-					<strong>{ components.Deref(order.LoadCustomerName) }</strong>
-					if order.LoadAddress != nil {
-						<br/>
-						{ components.Deref(order.LoadAddress) }
-					}
-					if order.LoadCity != nil {
-						<br/>
-						{ components.Deref(order.LoadCity) }, { components.Deref(order.LoadState) } { components.Deref(order.LoadZip) }
-					}
-					if order.LoadContact != nil {
-						<br/>
-						Contact: { components.Deref(order.LoadContact) }
-					}
-					if order.LoadPhone != nil {
-						<br/>
-						Phone: { components.Deref(order.LoadPhone) }
-					}
-				</div>
-			</div>
-			<div class="card">
-				<div class="card-header">Drop/Delivery</div>
-				<div class="card-body">
-					<strong>{ components.Deref(order.DropCustomerName) }</strong>
-					if order.DropAddress != nil {
-						<br/>
-						{ components.Deref(order.DropAddress) }
-					}
-					if order.DropCity != nil {
-						<br/>
-						{ components.Deref(order.DropCity) }, { components.Deref(order.DropState) } { components.Deref(order.DropZip) }
-					}
-					if order.DropContact != nil {
-						<br/>
-						Contact: { components.Deref(order.DropContact) }
-					}
-					if order.DropPhone != nil {
-						<br/>
-						Phone: { components.Deref(order.DropPhone) }
-					}
-				</div>
-			</div>
-		</div>
-		<h2 class="section-title">Vehicles</h2>
-		<div
-			id="vehicle-table"
-			hx-get={ fmt.Sprintf("/dispatch/orders/%d/vehicles", order.ID) }
-			hx-trigger="load, every 10s [document.visibilityState==='visible']"
-			hx-swap="innerHTML"
-		>
-			<p class="text-muted">Loading vehicles...</p>
-		</div>
-		<h2 class="section-title">Charges</h2>
-		<div
-			id="charge-table"
-			hx-get={ fmt.Sprintf("/dispatch/orders/%d/charges", order.ID) }
-			hx-trigger="load, every 10s [document.visibilityState==='visible']"
-			hx-swap="innerHTML"
-		>
-			<p class="text-muted">Loading charges...</p>
-		</div>
-		<h2 class="section-title">Attachments</h2>
-		<div class="card" id="attachments-section">
-			<div class="card-body">
-				<div id="order-attachments">
-					@attachments.AttachmentList(atts, "orders", order.ID)
-				</div>
-				<form
-					hx-post={ fmt.Sprintf("/dispatch/orders/%d/attachments", order.ID) }
-					hx-target="#order-attachments"
-					hx-swap="innerHTML"
-					hx-encoding="multipart/form-data"
-					hx-on::after-request="if(event.detail.successful) this.reset()"
-				>
-					<div style="display: flex; align-items: center; gap: 12px; margin-top: 1rem;">
-						<input type="file" name="file" accept="image/*"/>
-						<button type="submit" class="btn btn-sm btn-primary">Upload</button>
-					</div>
-				</form>
-			</div>
-		</div>
-		if len(subhauledClaims) > 0 {
-			<h2 class="section-title">Subhauled Loads</h2>
-			<div class="table-container">
-				<table>
-					<thead>
-						<tr>
-							<th>Listing</th>
-							<th>Carrier</th>
-							<th>MC#</th>
-							<th>DOT#</th>
-							<th>Agreed Pay</th>
-							<th>Status</th>
-							<th>Picked Up</th>
-							<th>Delivered</th>
-							<th></th>
-						</tr>
-					</thead>
-					<tbody>
-						for _, c := range subhauledClaims {
-							<tr>
-								<td>{ c.ListingNumber }</td>
-								<td>{ components.Deref(c.CarrierCompanyName) }</td>
-								<td>{ components.Deref(c.CarrierMCNumber) }</td>
-								<td>{ components.Deref(c.CarrierDOTNumber) }</td>
-								<td>${ c.AgreedPay }</td>
-								<td>@subhaulStatusBadge(c.Status)</td>
-								<td>
-									if c.PickedUpAt != nil {
-										{ c.PickedUpAt.Format("01/02/2006") }
-									}
-								</td>
-								<td>
-									if c.DeliveredAt != nil {
-										{ c.DeliveredAt.Format("01/02/2006") }
-									}
-								</td>
-								<td>
-									<a href={ templ.SafeURL(fmt.Sprintf("/loadboard/my-listings/%d", c.ListingID)) } class="btn btn-sm">View</a>
-								</td>
-							</tr>
+					<div class="flex gap-3">
+						<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/edit", order.ID)) } class="px-4 py-2 bg-surface-container-lowest border border-outline-variant/20 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-surface-container transition-colors no-underline text-on-surface">
+							<span class="material-symbols-outlined text-[18px]">edit</span>
+							Edit
+						</a>
+						<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/vehicles/new", order.ID)) } class="px-4 py-2 bg-primary-container text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-md hover:opacity-90 transition-all no-underline">
+							<span class="material-symbols-outlined text-[18px]">add</span>
+							Add Vehicle
+						</a>
+						if order.DeliveredCount > 0 || order.ConfirmedCount > 0 {
+							<button
+								class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-md hover:opacity-90 transition-all"
+								hx-post={ fmt.Sprintf("/dispatch/orders/%d/invoice", order.ID) }
+								hx-confirm="Generate invoice for this order?"
+							>
+								<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+								Generate Invoice
+							</button>
 						}
-					</tbody>
-				</table>
+						if order.WaitingCount > 0 {
+							<a href={ templ.SafeURL(fmt.Sprintf("/loadboard/post/%d", order.ID)) } class="px-4 py-2 bg-surface-container-lowest border border-outline-variant/20 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-surface-container transition-colors no-underline text-on-surface">
+								<span class="material-symbols-outlined text-[18px]">campaign</span>
+								Post to Loadboard
+							</a>
+						}
+					</div>
+				</div>
+				<!-- Three Customer Cards -->
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+					<!-- Bill To -->
+					<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/[0.15] shadow-sm">
+						<div class="flex justify-between items-start mb-3">
+							<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Bill To</span>
+							<span class="material-symbols-outlined text-on-primary-container">receipt_long</span>
+						</div>
+						<h3 class="text-lg font-bold text-on-surface leading-tight" style="font-family: 'Manrope', sans-serif;">{ components.Deref(order.BillCustomerName) }</h3>
+						if order.BillToAddress != nil {
+							<p class="text-sm text-on-surface-variant mt-1">{ components.Deref(order.BillToAddress) }</p>
+						}
+						if order.BillToCity != nil {
+							<p class="text-sm text-on-surface-variant">{ components.Deref(order.BillToCity) }, { components.Deref(order.BillToState) } { components.Deref(order.BillToZip) }</p>
+						}
+						if components.Deref(order.OriginZone) != "" {
+							<div class="mt-4 inline-flex items-center gap-1.5 px-2 py-1 bg-surface-container-high rounded text-[11px] font-bold">
+								ZONE: <span class="text-on-primary-container">{ components.Deref(order.OriginZone) }</span>
+							</div>
+						}
+					</div>
+					<!-- Load At -->
+					<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/[0.15] shadow-sm">
+						<div class="flex justify-between items-start mb-3">
+							<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Load At</span>
+							<span class="material-symbols-outlined text-on-primary-container">location_on</span>
+						</div>
+						<h3 class="text-lg font-bold text-on-surface leading-tight" style="font-family: 'Manrope', sans-serif;">{ components.Deref(order.LoadCustomerName) }</h3>
+						if order.LoadAddress != nil {
+							<p class="text-sm text-on-surface-variant mt-1">{ components.Deref(order.LoadAddress) }</p>
+						}
+						if order.LoadCity != nil {
+							<p class="text-sm text-on-surface-variant">{ components.Deref(order.LoadCity) }, { components.Deref(order.LoadState) } { components.Deref(order.LoadZip) }</p>
+						}
+						if order.LoadContact != nil {
+							<p class="text-xs text-outline mt-3">{ components.Deref(order.LoadContact) }
+								if order.LoadPhone != nil {
+									 · { components.Deref(order.LoadPhone) }
+								}
+							</p>
+						}
+					</div>
+					<!-- Drop At -->
+					<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/[0.15] shadow-sm">
+						<div class="flex justify-between items-start mb-3">
+							<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Drop At</span>
+							<span class="material-symbols-outlined text-on-primary-container">pin_drop</span>
+						</div>
+						<h3 class="text-lg font-bold text-on-surface leading-tight" style="font-family: 'Manrope', sans-serif;">{ components.Deref(order.DropCustomerName) }</h3>
+						if order.DropAddress != nil {
+							<p class="text-sm text-on-surface-variant mt-1">{ components.Deref(order.DropAddress) }</p>
+						}
+						if order.DropCity != nil {
+							<p class="text-sm text-on-surface-variant">{ components.Deref(order.DropCity) }, { components.Deref(order.DropState) } { components.Deref(order.DropZip) }</p>
+						}
+						if order.DropContact != nil {
+							<p class="text-xs text-outline mt-3">{ components.Deref(order.DropContact) }
+								if order.DropPhone != nil {
+									 · { components.Deref(order.DropPhone) }
+								}
+							</p>
+						}
+						if components.Deref(order.DestinationZone) != "" {
+							<div class="mt-4 inline-flex items-center gap-1.5 px-2 py-1 bg-surface-container-high rounded text-[11px] font-bold">
+								ZONE: <span class="text-on-primary-container">{ components.Deref(order.DestinationZone) }</span>
+							</div>
+						}
+					</div>
+				</div>
+			</header>
+			<div class="grid grid-cols-12 gap-6">
+				<!-- Main Content Column -->
+				<div class="col-span-12 lg:col-span-8 space-y-6">
+					<!-- Vehicle Counts -->
+					<div
+						id="vehicle-counts-card"
+						hx-get={ fmt.Sprintf("/dispatch/orders/%d/counts", order.ID) }
+						hx-trigger="every 10s [document.visibilityState==='visible']"
+						hx-swap="outerHTML"
+					>
+						@VehicleCountsCard(order)
+					</div>
+					<!-- Vehicles -->
+					<section class="bg-surface-container-lowest rounded-xl border border-outline-variant/[0.15] overflow-hidden shadow-sm">
+						<div class="px-6 py-4 border-b border-outline-variant/10 flex justify-between items-center">
+							<h2 class="text-base font-bold text-on-surface uppercase tracking-tight" style="font-family: 'Manrope', sans-serif;">Vehicle Manifest</h2>
+							<span class="text-xs font-medium text-on-surface-variant">{ fmt.Sprintf("%d vehicles", order.VehicleCount) }</span>
+						</div>
+						<div
+							id="vehicle-table"
+							hx-get={ fmt.Sprintf("/dispatch/orders/%d/vehicles", order.ID) }
+							hx-trigger="load, every 10s [document.visibilityState==='visible']"
+							hx-swap="innerHTML"
+						>
+							<p class="p-6 text-outline text-sm">Loading vehicles...</p>
+						</div>
+					</section>
+					<!-- Charges -->
+					<section class="bg-surface-container-lowest rounded-xl border border-outline-variant/[0.15] overflow-hidden shadow-sm">
+						<div class="px-6 py-4 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-low/50">
+							<h2 class="text-base font-bold text-on-surface uppercase tracking-tight" style="font-family: 'Manrope', sans-serif;">Order Charges</h2>
+							<span class="material-symbols-outlined text-on-surface-variant">account_balance_wallet</span>
+						</div>
+						<div
+							id="charge-table"
+							hx-get={ fmt.Sprintf("/dispatch/orders/%d/charges", order.ID) }
+							hx-trigger="load, every 10s [document.visibilityState==='visible']"
+							hx-swap="innerHTML"
+						>
+							<p class="p-6 text-outline text-sm">Loading charges...</p>
+						</div>
+					</section>
+					<!-- Subhauled Loads -->
+					if len(subhauledClaims) > 0 {
+						<section class="bg-surface-container-lowest rounded-xl border border-outline-variant/[0.15] overflow-hidden shadow-sm">
+							<div class="px-6 py-4 border-b border-outline-variant/10">
+								<h2 class="text-base font-bold text-on-surface uppercase tracking-tight" style="font-family: 'Manrope', sans-serif;">Subhauled Loads</h2>
+							</div>
+							<div class="overflow-x-auto">
+								<table class="w-full text-left border-collapse">
+									<thead>
+										<tr class="bg-surface-container-low/50">
+											<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Listing</th>
+											<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Carrier</th>
+											<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">MC#</th>
+											<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">DOT#</th>
+											<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest text-right">Agreed Pay</th>
+											<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Status</th>
+											<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Picked Up</th>
+											<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Delivered</th>
+											<th class="px-6 py-3"></th>
+										</tr>
+									</thead>
+									<tbody class="divide-y divide-outline-variant/10">
+										for _, c := range subhauledClaims {
+											<tr class="hover:bg-surface-container-low/50 transition-colors">
+												<td class="px-6 py-3 text-sm font-bold text-on-primary-container">{ c.ListingNumber }</td>
+												<td class="px-6 py-3 text-sm">{ components.Deref(c.CarrierCompanyName) }</td>
+												<td class="px-6 py-3 text-sm text-secondary">{ components.Deref(c.CarrierMCNumber) }</td>
+												<td class="px-6 py-3 text-sm text-secondary">{ components.Deref(c.CarrierDOTNumber) }</td>
+												<td class="px-6 py-3 text-sm font-bold text-right">${ c.AgreedPay }</td>
+												<td class="px-6 py-3">@subhaulStatusBadge(c.Status)</td>
+												<td class="px-6 py-3 text-sm text-secondary">
+													if c.PickedUpAt != nil {
+														{ c.PickedUpAt.Format("Jan 2, 2006") }
+													}
+												</td>
+												<td class="px-6 py-3 text-sm text-secondary">
+													if c.DeliveredAt != nil {
+														{ c.DeliveredAt.Format("Jan 2, 2006") }
+													}
+												</td>
+												<td class="px-6 py-3 text-right">
+													<a href={ templ.SafeURL(fmt.Sprintf("/loadboard/my-listings/%d", c.ListingID)) } class="btn btn-sm">View</a>
+												</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</section>
+					}
+				</div>
+				<!-- Side Panel -->
+				<div class="col-span-12 lg:col-span-4 space-y-6">
+					<!-- Order Info -->
+					<section class="bg-surface-container-lowest rounded-xl border border-outline-variant/[0.15] p-5 shadow-sm">
+						<h2 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4 flex items-center gap-2">
+							<span class="material-symbols-outlined text-[18px]">info</span>
+							Order Details
+						</h2>
+						<div class="space-y-3">
+							<div class="flex justify-between py-1.5">
+								<span class="text-xs font-semibold text-outline">Dispatch Code</span>
+								<span class="text-sm font-medium text-on-surface">{ components.Deref(order.DispatchCode) }</span>
+							</div>
+							<div class="flex justify-between py-1.5 border-t border-outline-variant/10">
+								<span class="text-xs font-semibold text-outline">Create Date</span>
+								<span class="text-sm font-medium text-on-surface">
+									if order.CreateDate != nil {
+										{ order.CreateDate.Format("Jan 2, 2006") }
+									}
+								</span>
+							</div>
+							<div class="flex justify-between py-1.5 border-t border-outline-variant/10">
+								<span class="text-xs font-semibold text-outline">Est. Pickup</span>
+								<span class="text-sm font-medium text-on-surface">
+									if order.EstPickupDate != nil {
+										{ order.EstPickupDate.Format("Jan 2, 2006") }
+									} else {
+										<span class="text-outline">—</span>
+									}
+								</span>
+							</div>
+							<div class="flex justify-between py-1.5 border-t border-outline-variant/10">
+								<span class="text-xs font-semibold text-outline">Est. Delivery</span>
+								<span class="text-sm font-medium text-on-surface">
+									if order.EstDeliverDate != nil {
+										{ order.EstDeliverDate.Format("Jan 2, 2006") }
+									} else {
+										<span class="text-outline">—</span>
+									}
+								</span>
+							</div>
+						</div>
+					</section>
+					<!-- Attachments -->
+					<section class="bg-surface-container-lowest rounded-xl border border-outline-variant/[0.15] p-5 shadow-sm">
+						<h2 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4 flex items-center gap-2">
+							<span class="material-symbols-outlined text-[18px]">attach_file</span>
+							Attachments
+						</h2>
+						<div id="order-attachments">
+							@attachments.AttachmentList(atts, "orders", order.ID)
+						</div>
+						<form
+							hx-post={ fmt.Sprintf("/dispatch/orders/%d/attachments", order.ID) }
+							hx-target="#order-attachments"
+							hx-swap="innerHTML"
+							hx-encoding="multipart/form-data"
+							hx-on::after-request="if(event.detail.successful) this.reset()"
+							class="mt-4"
+						>
+							<div class="flex items-center gap-3">
+								<input type="file" name="file" accept="image/*" class="text-xs"/>
+								<button type="submit" class="px-3 py-1.5 bg-primary-container text-white rounded-lg text-xs font-bold hover:opacity-90 transition-all">Upload</button>
+							</div>
+						</form>
+					</section>
+				</div>
 			</div>
-		}
+		</div>
 	}
 }
 
 templ subhaulStatusBadge(status string) {
 	switch status {
 		case "Accepted":
-			<span class="badge badge-waiting">Accepted</span>
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Accepted</span>
 		case "PickedUp":
-			<span class="badge badge-loaded">In Transit</span>
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary-container text-white">In Transit</span>
 		case "Delivered":
-			<span class="badge badge-confirmed">Delivered</span>
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-fixed">Delivered</span>
 		case "NoShow":
-			<span class="badge badge-inactive">No-Show</span>
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-highest text-on-surface-variant">No-Show</span>
 		default:
-			<span class="badge">{ status }</span>
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant">{ status }</span>
 	}
 }
 
@@ -257,17 +313,30 @@ templ VehicleCountsCard(order *models.Order) {
 		hx-trigger="every 10s [document.visibilityState==='visible']"
 		hx-swap="outerHTML"
 	>
-		<div class="card">
-			<div class="card-header">Vehicle Counts</div>
-			<div class="card-body">
-				<div class="count-grid">
-					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.VehicleCount) }</span><span class="count-label">Total</span></div>
-					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.WaitingCount) }</span><span class="count-label">Waiting</span></div>
-					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.ScheduledCount) }</span><span class="count-label">Scheduled</span></div>
-					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.LoadedCount) }</span><span class="count-label">Loaded</span></div>
-					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.DeliveredCount) }</span><span class="count-label">Delivered</span></div>
-					<div class="count-item"><span class="count-value">{ fmt.Sprintf("%d", order.ConfirmedCount) }</span><span class="count-label">Confirmed</span></div>
-				</div>
+		<div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+			<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 text-center shadow-sm">
+				<div class="text-2xl font-extrabold text-on-surface" style="font-family: 'Manrope', sans-serif;">{ fmt.Sprintf("%d", order.VehicleCount) }</div>
+				<div class="text-[10px] font-bold text-outline uppercase tracking-widest mt-1">Total</div>
+			</div>
+			<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 text-center shadow-sm">
+				<div class="text-2xl font-extrabold text-amber-600" style="font-family: 'Manrope', sans-serif;">{ fmt.Sprintf("%d", order.WaitingCount) }</div>
+				<div class="text-[10px] font-bold text-outline uppercase tracking-widest mt-1">Waiting</div>
+			</div>
+			<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 text-center shadow-sm">
+				<div class="text-2xl font-extrabold text-blue-600" style="font-family: 'Manrope', sans-serif;">{ fmt.Sprintf("%d", order.ScheduledCount) }</div>
+				<div class="text-[10px] font-bold text-outline uppercase tracking-widest mt-1">Scheduled</div>
+			</div>
+			<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 text-center shadow-sm">
+				<div class="text-2xl font-extrabold text-indigo-600" style="font-family: 'Manrope', sans-serif;">{ fmt.Sprintf("%d", order.LoadedCount) }</div>
+				<div class="text-[10px] font-bold text-outline uppercase tracking-widest mt-1">Loaded</div>
+			</div>
+			<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 text-center shadow-sm">
+				<div class="text-2xl font-extrabold text-emerald-600" style="font-family: 'Manrope', sans-serif;">{ fmt.Sprintf("%d", order.DeliveredCount) }</div>
+				<div class="text-[10px] font-bold text-outline uppercase tracking-widest mt-1">Delivered</div>
+			</div>
+			<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 text-center shadow-sm">
+				<div class="text-2xl font-extrabold text-on-tertiary-container" style="font-family: 'Manrope', sans-serif;">{ fmt.Sprintf("%d", order.ConfirmedCount) }</div>
+				<div class="text-[10px] font-bold text-outline uppercase tracking-widest mt-1">Confirmed</div>
 			</div>
 		</div>
 	</div>
