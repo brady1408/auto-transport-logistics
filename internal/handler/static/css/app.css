@@ -45,91 +45,100 @@ a:hover { text-decoration: underline; }
 /* Layout */
 .container { max-width: 1280px; margin: 0 auto; padding: 20px; }
 
-/* Navigation */
+/* Navigation — Glassmorphism top bar */
 .main-nav {
     display: flex;
     align-items: center;
-    background: var(--nav-bg);
-    color: white;
-    padding: 0 20px;
-    height: 48px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--gray-700);
+    padding: 0 24px;
+    height: 56px;
     position: sticky;
     top: 0;
     z-index: 100;
+    border-bottom: 1px solid rgba(198,198,205,0.2);
+    box-shadow: 0 1px 3px rgba(25,28,30,0.04);
 }
-.nav-brand a { color: white; font-weight: 800; font-size: 18px; text-decoration: none; margin-right: 30px; font-family: var(--font-heading); letter-spacing: -0.02em; }
-.nav-menu { display: flex; gap: 4px; flex: 1; }
+.nav-brand a { color: var(--gray-800); font-weight: 800; font-size: 18px; text-decoration: none; margin-right: 32px; font-family: var(--font-heading); letter-spacing: -0.03em; }
+.nav-menu { display: flex; gap: 2px; flex: 1; }
 .nav-dropdown { position: relative; }
 .nav-link {
-    background: none; border: none; color: var(--gray-300); cursor: pointer;
-    padding: 12px 14px; font-size: 14px; font-family: inherit;
+    background: none; border: none; color: var(--gray-500); cursor: pointer;
+    padding: 8px 12px; font-size: 13px; font-family: var(--font-heading); font-weight: 600;
+    border-radius: 8px; transition: all 0.15s;
 }
-.nav-link:hover { color: white; background: var(--gray-700); }
-.nav-link:focus-visible { color: white; background: var(--gray-700); outline: 2px solid white; outline-offset: -2px; }
+.nav-link:hover { color: var(--gray-800); background: rgba(0,0,0,0.04); }
+.nav-link:focus-visible { color: var(--gray-800); background: rgba(0,0,0,0.04); outline: 2px solid var(--primary); outline-offset: -2px; }
 .dropdown-menu {
-    position: absolute; top: 100%; left: 0; background: white; border: none;
-    border-radius: var(--radius); box-shadow: 0 4px 16px rgba(25,28,30,0.1); min-width: 200px; z-index: 200; padding: 4px 0;
+    position: absolute; top: calc(100% + 4px); left: 0; background: white; border: none;
+    border-radius: 12px; box-shadow: 0 8px 32px rgba(25,28,30,0.12); min-width: 220px; z-index: 200; padding: 6px;
 }
 .dropdown-item {
-    display: block; padding: 6px 16px; color: var(--gray-700); font-size: 13px; text-decoration: none;
+    display: block; padding: 8px 14px; color: var(--gray-700); font-size: 13px; text-decoration: none;
+    border-radius: 8px; transition: background 0.1s;
 }
 .dropdown-item:hover { background: var(--gray-100); text-decoration: none; }
 .dropdown-item:focus-visible { background: var(--gray-100); outline: 2px solid var(--primary); outline-offset: -2px; text-decoration: none; }
 .dropdown-item.disabled { color: var(--gray-400); pointer-events: none; }
-.dropdown-divider { margin: 4px 0; border: none; border-top: 1px solid var(--gray-200); }
-.nav-user { display: flex; align-items: center; gap: 10px; color: var(--gray-300); font-size: 13px; }
+.dropdown-divider { margin: 4px 6px; border: none; border-top: 1px solid rgba(198,198,205,0.2); }
+.nav-user { display: flex; align-items: center; gap: 10px; color: var(--gray-600); font-size: 13px; font-weight: 500; }
+.nav-user .btn { border-radius: 8px; }
 .nav-hamburger {
     display: none;
     margin-left: auto;
     background: none;
     border: none;
-    color: var(--gray-300);
+    color: var(--gray-500);
     cursor: pointer;
     padding: 8px;
     font-size: 22px;
     line-height: 1;
 }
-.nav-hamburger:hover { color: white; }
+.nav-hamburger:hover { color: var(--gray-800); }
 
 /* Mobile nav drawer */
 .nav-mobile-menu {
     display: none;
     position: absolute;
-    top: 48px;
+    top: 56px;
     left: 0;
     right: 0;
-    background: var(--nav-bg);
-    border-top: 1px solid rgba(255,255,255,0.1);
+    background: white;
+    border-top: 1px solid rgba(198,198,205,0.2);
     z-index: 210;
-    padding: 8px 0;
-    max-height: calc(100vh - 48px);
+    padding: 8px;
+    max-height: calc(100vh - 56px);
     overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(25,28,30,0.12);
 }
 .nav-mobile-menu a,
 .nav-mobile-menu button {
     display: block;
     width: 100%;
     text-align: left;
-    padding: 10px 20px;
-    color: var(--gray-300);
+    padding: 10px 16px;
+    color: var(--gray-700);
     background: none;
     border: none;
     font-size: 14px;
     font-family: inherit;
     cursor: pointer;
     text-decoration: none;
+    border-radius: 8px;
 }
 .nav-mobile-menu a:hover,
-.nav-mobile-menu button:hover { background: var(--gray-700); color: white; text-decoration: none; }
+.nav-mobile-menu button:hover { background: var(--gray-100); color: var(--gray-800); text-decoration: none; }
 .nav-mobile-menu .mobile-section-label {
-    padding: 6px 20px 2px;
+    padding: 6px 16px 2px;
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    color: var(--gray-500);
+    color: var(--gray-400);
     letter-spacing: 0.05em;
 }
-.nav-mobile-menu hr { border: none; border-top: 1px solid var(--gray-700); margin: 4px 0; }
+.nav-mobile-menu hr { border: none; border-top: 1px solid rgba(198,198,205,0.15); margin: 4px 0; }
 
 /* Page Header */
 .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
@@ -508,15 +517,15 @@ legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-70
 .notification-bell { position: relative; display: flex; align-items: center; }
 .bell-btn {
     background: none; border: none; cursor: pointer; position: relative;
-    color: var(--gray-300); padding: 4px; display: flex; align-items: center;
+    color: var(--gray-500); padding: 4px; display: flex; align-items: center;
     transition: color 0.15s;
 }
-.bell-btn:hover { color: white; }
+.bell-btn:hover { color: var(--gray-800); }
 .bell-btn .nav-badge { position: absolute; top: -4px; right: -6px; font-size: 10px; padding: 1px 5px; }
 .notification-panel {
     position: absolute; top: 100%; right: 0; width: 340px; margin-top: 8px;
-    background: white; border: none; border-radius: var(--radius);
-    box-shadow: 0 4px 16px rgba(25,28,30,0.12); max-height: 420px; overflow-y: auto;
+    background: white; border: none; border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(25,28,30,0.12); max-height: 420px; overflow-y: auto;
     z-index: 300;
 }
 .notification-list { display: flex; flex-direction: column; }

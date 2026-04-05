@@ -98,27 +98,27 @@ func Layout(pg PageContext, title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap\"><link rel=\"stylesheet\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap\"><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap\"><link rel=\"stylesheet\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 templ.SafeURL
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinURLErrs(AssetVersion("/static/css/app.css"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/layout.templ`, Line: 19, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/layout.templ`, Line: 20, Col: 67}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"><script src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"><script src=\"https://cdn.tailwindcss.com?plugins=forms,container-queries\"></script><script>\r\n\t\t\ttailwind.config = {\r\n\t\t\t\tdarkMode: \"class\",\r\n\t\t\t\ttheme: {\r\n\t\t\t\t\textend: {\r\n\t\t\t\t\t\tcolors: {\r\n\t\t\t\t\t\t\t\"primary\": \"#000000\",\r\n\t\t\t\t\t\t\t\"on-primary\": \"#ffffff\",\r\n\t\t\t\t\t\t\t\"primary-container\": \"#00174b\",\r\n\t\t\t\t\t\t\t\"on-primary-container\": \"#497cff\",\r\n\t\t\t\t\t\t\t\"secondary\": \"#515f74\",\r\n\t\t\t\t\t\t\t\"on-secondary\": \"#ffffff\",\r\n\t\t\t\t\t\t\t\"secondary-container\": \"#d5e3fc\",\r\n\t\t\t\t\t\t\t\"on-secondary-container\": \"#57657a\",\r\n\t\t\t\t\t\t\t\"tertiary\": \"#000000\",\r\n\t\t\t\t\t\t\t\"on-tertiary\": \"#ffffff\",\r\n\t\t\t\t\t\t\t\"tertiary-container\": \"#002113\",\r\n\t\t\t\t\t\t\t\"on-tertiary-container\": \"#009668\",\r\n\t\t\t\t\t\t\t\"tertiary-fixed\": \"#6ffbbe\",\r\n\t\t\t\t\t\t\t\"tertiary-fixed-dim\": \"#4edea3\",\r\n\t\t\t\t\t\t\t\"on-tertiary-fixed\": \"#002113\",\r\n\t\t\t\t\t\t\t\"error\": \"#ba1a1a\",\r\n\t\t\t\t\t\t\t\"on-error\": \"#ffffff\",\r\n\t\t\t\t\t\t\t\"error-container\": \"#ffdad6\",\r\n\t\t\t\t\t\t\t\"on-error-container\": \"#93000a\",\r\n\t\t\t\t\t\t\t\"surface\": \"#f7f9fb\",\r\n\t\t\t\t\t\t\t\"on-surface\": \"#191c1e\",\r\n\t\t\t\t\t\t\t\"on-surface-variant\": \"#45464d\",\r\n\t\t\t\t\t\t\t\"surface-dim\": \"#d8dadc\",\r\n\t\t\t\t\t\t\t\"surface-bright\": \"#f7f9fb\",\r\n\t\t\t\t\t\t\t\"surface-container-lowest\": \"#ffffff\",\r\n\t\t\t\t\t\t\t\"surface-container-low\": \"#f2f4f6\",\r\n\t\t\t\t\t\t\t\"surface-container\": \"#eceef0\",\r\n\t\t\t\t\t\t\t\"surface-container-high\": \"#e6e8ea\",\r\n\t\t\t\t\t\t\t\"surface-container-highest\": \"#e0e3e5\",\r\n\t\t\t\t\t\t\t\"outline\": \"#76777d\",\r\n\t\t\t\t\t\t\t\"outline-variant\": \"#c6c6cd\",\r\n\t\t\t\t\t\t\t\"inverse-surface\": \"#2d3133\",\r\n\t\t\t\t\t\t\t\"inverse-on-surface\": \"#eff1f3\",\r\n\t\t\t\t\t\t\t\"inverse-primary\": \"#b4c5ff\",\r\n\t\t\t\t\t\t\t\"primary-fixed\": \"#dbe1ff\",\r\n\t\t\t\t\t\t\t\"primary-fixed-dim\": \"#b4c5ff\",\r\n\t\t\t\t\t\t\t\"on-primary-fixed\": \"#00174b\",\r\n\t\t\t\t\t\t\t\"on-primary-fixed-variant\": \"#003ea8\",\r\n\t\t\t\t\t\t\t\"secondary-fixed\": \"#d5e3fc\",\r\n\t\t\t\t\t\t\t\"secondary-fixed-dim\": \"#b9c7df\",\r\n\t\t\t\t\t\t\t\"on-secondary-fixed\": \"#0d1c2e\",\r\n\t\t\t\t\t\t\t\"on-secondary-fixed-variant\": \"#3a485b\",\r\n\t\t\t\t\t\t\t\"on-tertiary-fixed-variant\": \"#005236\",\r\n\t\t\t\t\t\t\t\"surface-tint\": \"#0053db\",\r\n\t\t\t\t\t\t},\r\n\t\t\t\t\t\tfontFamily: {\r\n\t\t\t\t\t\t\t\"headline\": [\"Manrope\", \"sans-serif\"],\r\n\t\t\t\t\t\t\t\"body\": [\"Inter\", \"sans-serif\"],\r\n\t\t\t\t\t\t},\r\n\t\t\t\t\t\tborderRadius: { \"DEFAULT\": \"0.125rem\", \"lg\": \"0.25rem\", \"xl\": \"0.5rem\", \"full\": \"0.75rem\" },\r\n\t\t\t\t\t},\r\n\t\t\t\t},\r\n\t\t\t}\r\n\t\t</script><style>\r\n\t\t\t.material-symbols-outlined {\r\n\t\t\t\tfont-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;\r\n\t\t\t\tvertical-align: middle;\r\n\t\t\t}\r\n\t\t</style><script src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(AssetVersion("/static/js/htmx.min.js"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/layout.templ`, Line: 20, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/layout.templ`, Line: 88, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -131,13 +131,13 @@ func Layout(pg PageContext, title string) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(AssetVersion("/static/js/alpine.min.js"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/layout.templ`, Line: 21, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/layout.templ`, Line: 89, Col: 62}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"></script><script>\r\n\t\t\t// Configure HTMX to send CSRF token from cookie on every request\r\n\t\t\tdocument.addEventListener('htmx:configRequest', function(evt) {\r\n\t\t\t\tvar match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);\r\n\t\t\t\tif (match) {\r\n\t\t\t\t\tevt.detail.headers['X-CSRF-Token'] = match[1];\r\n\t\t\t\t}\r\n\t\t\t});\r\n\t\t</script></head><body>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"></script><script>\r\n\t\t\tdocument.addEventListener('htmx:configRequest', function(evt) {\r\n\t\t\t\tvar match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);\r\n\t\t\t\tif (match) {\r\n\t\t\t\t\tevt.detail.headers['X-CSRF-Token'] = match[1];\r\n\t\t\t\t}\r\n\t\t\t});\r\n\t\t</script></head><body class=\"bg-surface text-on-surface antialiased\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
