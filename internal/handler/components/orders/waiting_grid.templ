@@ -7,25 +7,46 @@ import (
 )
 
 templ WaitingGridPage(pg components.PageContext, rows []store.WaitingVehicleRow, stateFilter string) {
-	@components.Layout(pg, "Waiting Grid - ATLinks") {
-		<div class="page-header">
-			<h1>Waiting Grid</h1>
-			<span class="text-muted">{ fmt.Sprintf("%d vehicles waiting", len(rows)) }</span>
-		</div>
-		<div class="filter-bar">
-			<div class="form-group">
-				<label for="state">Origin State</label>
-				<input
-					type="text" id="state" name="state" class="form-control" maxlength="2"
-					placeholder="e.g. MI" value={ stateFilter }
-					hx-get="/dispatch/waiting"
-					hx-trigger="keyup changed delay:400ms"
-					hx-target="#waiting-table"
-					hx-include="[name=state]"
-					style="text-transform:uppercase; width:80px"
-				/>
+	@components.Layout(pg, "Waiting Grid") {
+		<!-- Page Header -->
+		<div class="flex items-end justify-between mb-6">
+			<div>
+				<nav class="flex items-center gap-2 text-xs text-outline mb-2 font-medium tracking-wide uppercase">
+					<span>Dispatch</span>
+					<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+					<span class="text-secondary">Waiting Grid</span>
+				</nav>
+				<div class="flex items-center gap-4">
+					<h1 class="text-3xl font-extrabold tracking-tight text-on-surface" style="font-family: 'Manrope', sans-serif;">Waiting Grid</h1>
+					<div class="bg-surface-container-highest px-3 py-1 rounded-xl flex items-center gap-2">
+						<span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Pending</span>
+						<span class="text-lg font-extrabold leading-none">{ fmt.Sprintf("%d", len(rows)) }</span>
+					</div>
+				</div>
+				<p class="text-on-surface-variant text-sm mt-1">Vehicle transport backlog and assignment queue</p>
 			</div>
 		</div>
+		<!-- Filter Bar -->
+		<div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/10 mb-6">
+			<div class="flex flex-wrap items-end gap-4">
+				<div class="min-w-[120px]">
+					<label for="state" class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5">Origin State</label>
+					<input
+						type="text" id="state" name="state"
+						class="w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 px-3 focus:ring-2 focus:ring-primary-container/20 uppercase"
+						maxlength="2"
+						placeholder="e.g. MI"
+						value={ stateFilter }
+						hx-get="/dispatch/waiting"
+						hx-trigger="keyup changed delay:400ms"
+						hx-target="#waiting-table"
+						hx-include="[name=state]"
+						style="font-family: 'Inter', sans-serif;"
+					/>
+				</div>
+			</div>
+		</div>
+		<!-- Waiting Table -->
 		<div id="waiting-table">
 			@WaitingGridTable(rows, stateFilter)
 		</div>
@@ -33,40 +54,56 @@ templ WaitingGridPage(pg components.PageContext, rows []store.WaitingVehicleRow,
 }
 
 templ WaitingGridTable(rows []store.WaitingVehicleRow, stateFilter string) {
-	<div class="table-container">
-		<table>
-			<thead>
-				<tr>
-					<th>VIN</th>
-					<th>Year/Make/Model</th>
-					<th>Order</th>
-					<th>Pickup</th>
-					<th>State</th>
-					<th>Dropoff</th>
-					<th class="text-right">Amount</th>
-					<th class="text-right">Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-				if len(rows) > 0 {
-					for _, r := range rows {
-						<tr>
-							<td class="font-mono text-sm">{ r.VIN }</td>
-							<td>{ components.Deref(r.Year) } { components.Deref(r.Make) } { components.Deref(r.Model) }</td>
-							<td><a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)) }>{ r.OrderNumber }</a></td>
-							<td>{ r.PickupName } { components.Deref(r.PickupCity) }</td>
-							<td>{ components.Deref(r.PickupState) }</td>
-							<td>{ r.DropName } { components.Deref(r.DropCity) }</td>
-							<td class="text-right">{ components.Deref(r.Amount) }</td>
-							<td class="text-right">
-								<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)) } class="btn btn-sm">View Order</a>
-							</td>
-						</tr>
+	<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/10">
+		<div class="overflow-x-auto">
+			<table class="w-full text-left border-collapse">
+				<thead>
+					<tr class="bg-surface-container-low/50">
+						<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">VIN</th>
+						<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Make / Model</th>
+						<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Order</th>
+						<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Pickup</th>
+						<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Dropoff</th>
+						<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest text-right">Amount</th>
+						<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest text-right">Action</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-outline-variant/10">
+					if len(rows) > 0 {
+						for _, r := range rows {
+							<tr class="hover:bg-surface-container-low/50 transition-colors">
+								<td class="px-6 py-3">
+									<span class="text-sm font-mono font-semibold tracking-tighter text-on-surface">{ r.VIN }</span>
+								</td>
+								<td class="px-6 py-3">
+									<p class="text-sm font-bold text-slate-900 leading-tight">{ components.Deref(r.Year) } { components.Deref(r.Make) } { components.Deref(r.Model) }</p>
+								</td>
+								<td class="px-6 py-3">
+									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)) } class="bg-surface-container-high px-2 py-0.5 rounded-md text-[11px] font-bold font-mono no-underline hover:underline text-on-primary-container">{ r.OrderNumber }</a>
+								</td>
+								<td class="px-6 py-3">
+									<p class="text-sm font-semibold">{ r.PickupName }</p>
+									<p class="text-[10px] text-slate-500">{ components.Deref(r.PickupCity) }, { components.Deref(r.PickupState) }</p>
+								</td>
+								<td class="px-6 py-3">
+									<p class="text-sm font-semibold">{ r.DropName }</p>
+									<p class="text-[10px] text-slate-500">{ components.Deref(r.DropCity) }</p>
+								</td>
+								<td class="px-6 py-3 text-right">
+									if components.Deref(r.Amount) != "" {
+										<span class="text-sm font-bold">${ components.Deref(r.Amount) }</span>
+									}
+								</td>
+								<td class="px-6 py-3 text-right">
+									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)) } class="bg-primary-container text-white px-3 py-1.5 rounded-lg text-xs font-bold no-underline hover:opacity-90 transition-all">View Order</a>
+								</td>
+							</tr>
+						}
+					} else {
+						<tr><td colspan="7" class="text-center text-outline py-12">No vehicles waiting</td></tr>
 					}
-				} else {
-					<tr><td colspan="8" class="text-center text-muted">No vehicles waiting</td></tr>
-				}
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
 	</div>
 }

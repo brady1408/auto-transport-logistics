@@ -8,57 +8,81 @@ import (
 )
 
 templ Table(result models.TripListResult, filter models.TripFilter) {
-	<div class="table-container">
-		<table>
-			<thead>
-				<tr>
-					@components.SortHeader("Load #", "load_number", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
-					@components.SortHeader("Truck", "truck_number", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
-					@components.SortHeader("Driver", "driver", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
-					@components.SortHeader("Trip Date", "trip_date", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
-					<th>Zone</th>
-					@components.SortHeader("Status", "status", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
-					<th class="text-right">Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-				if len(result.Items) > 0 {
-					for _, t := range result.Items {
-						<tr>
-							<td><a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d", t.ID)) }>{ t.LoadNumber }</a></td>
-							<td>{ components.Deref(t.TruckNumber) }</td>
-							<td>{ components.Deref(t.Driver) }</td>
-							<td>
-								if t.TripDate != nil {
-									{ t.TripDate.Format("01/02/2006") }
-								}
-							</td>
-							<td>{ components.Deref(t.Zone) }</td>
-							<td>
-								if !t.Active {
-									<span class="badge badge-inactive">Inactive</span>
-								} else {
-									<span class="badge badge-active">Active</span>
-								}
-							</td>
-							<td class="text-right">
-								<div class="btn-group">
-									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d", t.ID)) } class="btn btn-sm">View</a>
-									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d/edit", t.ID)) } class="btn btn-sm">Edit</a>
-									<button
-										class="btn btn-sm btn-danger"
-										hx-delete={ fmt.Sprintf("/dispatch/trips/%d", t.ID) }
-										hx-confirm={ fmt.Sprintf("Delete trip %s?", t.LoadNumber) }
-									>Delete</button>
-								</div>
-							</td>
-						</tr>
+	<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/10">
+		<div class="overflow-x-auto">
+			<table class="w-full text-left border-collapse">
+				<thead>
+					<tr class="bg-surface-container-low/50">
+						@components.SortHeader("Load #", "load_number", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
+						@components.SortHeader("Truck", "truck_number", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
+						@components.SortHeader("Driver", "driver", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
+						@components.SortHeader("Trip Date", "trip_date", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
+						<th>Zone</th>
+						@components.SortHeader("Status", "status", filter.SortBy, filter.SortDir, "/dispatch/trips", "#trip-table")
+						<th class="text-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(result.Items) > 0 {
+						for _, t := range result.Items {
+							<tr class="hover:bg-surface-container-low/50 transition-colors">
+								<td>
+									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d", t.ID)) } class="font-bold text-on-primary-container no-underline hover:underline">{ t.LoadNumber }</a>
+								</td>
+								<td>
+									<div class="flex flex-col">
+										<span class="text-sm font-semibold text-on-surface">{ components.Deref(t.TruckNumber) }</span>
+									</div>
+								</td>
+								<td>
+									if components.Deref(t.Driver) != "" {
+										<div class="flex items-center gap-2">
+											<div class="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-[10px] font-bold text-on-secondary-container">
+												{ string([]rune(components.Deref(t.Driver))[0:1]) }
+											</div>
+											<span class="text-sm">{ components.Deref(t.Driver) }</span>
+										</div>
+									}
+								</td>
+								<td class="text-secondary">
+									if t.TripDate != nil {
+										{ t.TripDate.Format("Jan 2, 2006") }
+									}
+								</td>
+								<td>
+									if components.Deref(t.Zone) != "" {
+										<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-[10px] font-bold">{ components.Deref(t.Zone) }</span>
+									}
+								</td>
+								<td>
+									if !t.Active {
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-highest text-on-surface-variant">Inactive</span>
+									} else {
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-secondary-container text-on-secondary-container">
+											<span class="w-1.5 h-1.5 rounded-full bg-on-secondary-container mr-1.5"></span>
+											Active
+										</span>
+									}
+								</td>
+								<td class="text-right">
+									<div class="btn-group">
+										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d", t.ID)) } class="btn btn-sm">View</a>
+										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d/edit", t.ID)) } class="btn btn-sm">Edit</a>
+										<button
+											class="btn btn-sm btn-danger"
+											hx-delete={ fmt.Sprintf("/dispatch/trips/%d", t.ID) }
+											hx-confirm={ fmt.Sprintf("Delete trip %s?", t.LoadNumber) }
+										>Delete</button>
+									</div>
+								</td>
+							</tr>
+						}
+					} else {
+						<tr><td colspan="7" class="text-center text-outline py-12">No trips found</td></tr>
 					}
-				} else {
-					<tr><td colspan="7" class="text-center text-muted">No trips found</td></tr>
-				}
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
 	</div>
 	if len(result.Items) > 0 {
 		@components.Pagination(components.NewPaginationData(
