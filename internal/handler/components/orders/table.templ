@@ -2,6 +2,7 @@ package orders
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
@@ -79,18 +80,39 @@ templ Table(result models.OrderListResult, filter models.OrderFilter) {
 	}
 }
 
+// statusBreakdown lists every non-zero vehicle status on an order, most
+// advanced first, e.g. "2 confirmed, 1 loaded, 3 waiting". Used as the chip's
+// title tooltip so the full picture is available on hover.
+func statusBreakdown(o models.Order) string {
+	parts := make([]string, 0, 5)
+	add := func(n int, label string) {
+		if n > 0 {
+			parts = append(parts, fmt.Sprintf("%d %s", n, label))
+		}
+	}
+	add(o.ConfirmedCount, "confirmed")
+	add(o.DeliveredCount, "delivered")
+	add(o.LoadedCount, "loaded")
+	add(o.ScheduledCount, "scheduled")
+	add(o.WaitingCount, "waiting")
+	return strings.Join(parts, ", ")
+}
+
+// Status chips show the dominant (most-advanced) non-zero status in full words,
+// keeping the original color coding. The title attribute carries the complete
+// per-status breakdown when more than one status is present.
 templ orderStatusBadge(o models.Order) {
 	if !o.Active {
-		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-highest text-on-surface-variant">Inactive</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-surface-container-highest text-on-surface-variant">Inactive</span>
 	} else if o.ConfirmedCount > 0 {
-		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-fixed">{ fmt.Sprintf("%dC", o.ConfirmedCount) }</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-tertiary-fixed text-on-tertiary-fixed" title={ statusBreakdown(o) }>{ fmt.Sprintf("%d confirmed", o.ConfirmedCount) }</span>
 	} else if o.DeliveredCount > 0 {
-		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">{ fmt.Sprintf("%dD", o.DeliveredCount) }</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800" title={ statusBreakdown(o) }>{ fmt.Sprintf("%d delivered", o.DeliveredCount) }</span>
 	} else if o.LoadedCount > 0 {
-		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary-container text-white">{ fmt.Sprintf("%dL", o.LoadedCount) }</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary-container text-white" title={ statusBreakdown(o) }>{ fmt.Sprintf("%d loaded", o.LoadedCount) }</span>
 	} else if o.ScheduledCount > 0 {
-		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-secondary-container text-on-secondary-container">{ fmt.Sprintf("%dS", o.ScheduledCount) }</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-secondary-container text-on-secondary-container" title={ statusBreakdown(o) }>{ fmt.Sprintf("%d scheduled", o.ScheduledCount) }</span>
 	} else {
-		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">{ fmt.Sprintf("%dW", o.WaitingCount) }</span>
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800" title={ statusBreakdown(o) }>{ fmt.Sprintf("%d waiting", o.WaitingCount) }</span>
 	}
 }
