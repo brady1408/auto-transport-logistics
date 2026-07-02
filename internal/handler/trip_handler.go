@@ -169,7 +169,7 @@ func (h *TripHandler) show(w http.ResponseWriter, r *http.Request) {
 
 	t, err := h.store.GetByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, "Trip not found", http.StatusNotFound)
+		h.deps.NotFound(w, r)
 		return
 	}
 

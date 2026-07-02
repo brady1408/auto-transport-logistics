@@ -167,7 +167,7 @@ func (h *InvoiceHandler) show(w http.ResponseWriter, r *http.Request) {
 
 	inv, err := h.store.GetByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, "Invoice not found", http.StatusNotFound)
+		h.deps.NotFound(w, r)
 		return
 	}
 

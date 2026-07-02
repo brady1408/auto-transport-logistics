@@ -48,8 +48,11 @@ func (h *DashboardHandler) Register(mux *http.ServeMux) {
 }
 
 func (h *DashboardHandler) show(w http.ResponseWriter, r *http.Request) {
+	// The dashboard is registered on the protected mux as "GET /", which Go's
+	// ServeMux also treats as the catch-all for any otherwise-unmatched path.
+	// Render the branded 404 for those instead of Go's bare-text default.
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		h.deps.NotFound(w, r)
 		return
 	}
 
