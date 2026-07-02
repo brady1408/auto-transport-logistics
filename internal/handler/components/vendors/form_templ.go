@@ -143,7 +143,7 @@ func FormPage(pg components.PageContext, vendor *models.Vendor, isNew bool, errM
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<fieldset><legend>Vendor Information</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"name\">Name *</label> <input type=\"text\" id=\"name\" name=\"name\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<fieldset><legend>Vendor Information</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"name\" class=\"required\">Name</label> <input type=\"text\" id=\"name\" name=\"name\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

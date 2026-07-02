@@ -58,14 +58,14 @@ templ PostFormPage(pg components.PageContext, order *models.Order, waitingCount 
 			<div class="card-header">Listing Details</div>
 			<div class="card-body">
 				<div class="form-row">
-					<div class="form-group" style="flex:2">
-						<label for="title">Title *</label>
+					<div class="form-group">
+						<label for="title" class="required">Title</label>
 						<input type="text" id="title" name="title" class="form-control" required
 							value="Vehicle Transport"
 							placeholder="e.g. 3 cars CA to TX"/>
 					</div>
-					<div class="form-group" style="flex:1">
-						<label for="carrier_pay">Carrier Pay ($) *</label>
+					<div class="form-group">
+						<label for="carrier_pay" class="required">Carrier Pay ($)</label>
 						<input type="number" id="carrier_pay" name="carrier_pay" class="form-control" required
 							step="0.01" min="0" placeholder="0.00"/>
 					</div>
@@ -91,14 +91,14 @@ templ PostFormPage(pg components.PageContext, order *models.Order, waitingCount 
 					</div>
 				</div>
 				<div class="form-row">
-					<div class="form-group" style="flex:2">
+					<div class="form-group">
 						<label for="special_instructions">Special Instructions</label>
 						<textarea id="special_instructions" name="special_instructions" class="form-control" rows="3"></textarea>
 					</div>
-					<div class="form-group" style="flex:1">
+					<div class="form-group">
 						<label for="expires_at">Expires At</label>
 						<input type="datetime-local" id="expires_at" name="expires_at" class="form-control"/>
-						<small class="text-muted">Leave blank for no expiration</small>
+						<small class="field-hint">Leave blank for no expiration</small>
 					</div>
 				</div>
 				<div class="form-group">

@@ -81,7 +81,7 @@ templ UserFormPage(pg components.PageContext, isNew bool, form map[string]string
 			@components.CSRFField(pg.CSRFToken)
 			<div class="form-row">
 				<div class="form-group">
-					<label for="username">Username *</label>
+					<label for="username" class="required">Username</label>
 					<input
 						type="text" id="username" name="username"
 						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "username") != "") }

@@ -50,7 +50,7 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew 
 			@components.CSRFField(pg.CSRFToken)
 			<div class="form-row">
 				<div class="form-group">
-					<label for="company_name">Company Name *</label>
+					<label for="company_name" class="required">Company Name</label>
 					<input
 						type="text" id="company_name" name="company_name"
 						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "company_name") != "") }
@@ -70,7 +70,7 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew 
 					}
 				</div>
 				<div class="form-group">
-					<label for="slug">Slug *</label>
+					<label for="slug" class="required">Slug</label>
 					<input
 						type="text" id="slug" name="slug"
 						class={ "form-control", templ.KV("input-error", fieldError(fieldErrors, "slug") != "") }
@@ -87,7 +87,7 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew 
 						pattern="[a-z0-9-]+"
 						title="Lowercase letters, numbers, and hyphens only"
 					/>
-					<small>Used in login URL: /c/<em>slug</em>/login</small>
+					<small class="field-hint">Used in login URL: /c/<em>slug</em>/login</small>
 					if fe := fieldError(fieldErrors, "slug"); fe != "" {
 						<small class="field-error">{ fe }</small>
 					}
@@ -317,7 +317,7 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew 
 				</div>
 			}
 			if !isNew {
-				<h3 style="margin-top:1.5rem; margin-bottom:0.5rem;">Subscription</h3>
+				<h3>Subscription</h3>
 				<div class="form-row">
 					<div class="form-group">
 						<label for="sub_status">Account Status</label>
@@ -342,7 +342,7 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew 
 							/>
 							EDI Add-on
 						</label>
-						<small>Enables EDI on Basic/Pro tiers</small>
+						<small class="field-hint">Enables EDI on Basic/Pro tiers</small>
 					</div>
 					<div class="form-group">
 						<label for="edi_monthly_limit">EDI Monthly Limit</label>
@@ -356,12 +356,12 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, isNew 
 					</div>
 				</div>
 			}
-			<h3 style="margin-top:1.5rem; margin-bottom:0.5rem;">Legacy Data Import</h3>
+			<h3>Legacy Data Import</h3>
 			<div class="form-row">
 				<div class="form-group">
 					<label for="backup">MSSQL Backup (.bak) — optional</label>
 					<input type="file" id="backup" name="backup" accept=".bak" class="form-control"/>
-					<small>Upload a .bak file to import legacy data into this company after saving.</small>
+					<small class="field-hint">Upload a .bak file to import legacy data into this company after saving.</small>
 				</div>
 			</div>
 			<div class="form-actions">

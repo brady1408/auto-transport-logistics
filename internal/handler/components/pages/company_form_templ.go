@@ -77,7 +77,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, errMsg 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<fieldset><legend>Company Information</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"company_name\">Company Name *</label> <input type=\"text\" id=\"company_name\" name=\"company_name\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<fieldset><legend>Company Information</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"company_name\" class=\"required\">Company Name</label> <input type=\"text\" id=\"company_name\" name=\"company_name\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
