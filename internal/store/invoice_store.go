@@ -305,16 +305,23 @@ func (s *InvoiceStore) DashboardAging(ctx context.Context) (AgingBucket, error) 
 	if err != nil {
 		return AgingBucket{}, err
 	}
+	// Aging is bucketed on days past the DUE date (falling back to the invoice
+	// date when a due date is not set). Include every non-void invoice that still
+	// carries an outstanding balance rather than filtering on a specific status
+	// literal: an invoice can be Open (or posted) with a balance, and "Posted" is
+	// not even a valid invoice status in this system (statuses are Open/Paid/Void).
 	var a AgingBucket
 	err = s.pool.QueryRow(ctx,
 		`SELECT
-			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date >= CURRENT_DATE - INTERVAL '30 days'), 0)::text,
-			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '30 days' AND invoice_date >= CURRENT_DATE - INTERVAL '60 days'), 0)::text,
-			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '60 days' AND invoice_date >= CURRENT_DATE - INTERVAL '90 days'), 0)::text,
-			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '90 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE COALESCE(due_date, invoice_date)::date >= CURRENT_DATE - INTERVAL '30 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE COALESCE(due_date, invoice_date)::date < CURRENT_DATE - INTERVAL '30 days' AND COALESCE(due_date, invoice_date)::date >= CURRENT_DATE - INTERVAL '60 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE COALESCE(due_date, invoice_date)::date < CURRENT_DATE - INTERVAL '60 days' AND COALESCE(due_date, invoice_date)::date >= CURRENT_DATE - INTERVAL '90 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE COALESCE(due_date, invoice_date)::date < CURRENT_DATE - INTERVAL '90 days'), 0)::text,
 			COALESCE(SUM(balance::numeric), 0)::text,
 			COUNT(*)
-		FROM invoices WHERE status = 'Open' AND company_id = $1 AND deleted_at IS NULL`, companyID,
+		FROM invoices
+		WHERE company_id = $1 AND deleted_at IS NULL
+			AND status != 'Void' AND balance::numeric > 0`, companyID,
 	).Scan(&a.Current, &a.Days31, &a.Days61, &a.Days90, &a.Total, &a.Count)
 	if err != nil {
 		return a, fmt.Errorf("dashboard aging: %w", err)
@@ -339,17 +346,22 @@ func (s *InvoiceStore) GetArAgingReport(ctx context.Context) ([]ArAgingRow, erro
 	if err != nil {
 		return nil, err
 	}
+	// Same bucketing rules as DashboardAging: age on days past the due date
+	// (fall back to invoice date), and include all non-void invoices that still
+	// have an outstanding balance. See DashboardAging for the full rationale.
 	rows, err := s.pool.Query(ctx,
 		`SELECT
 			COALESCE(customer_id, 0),
 			COALESCE(customer_number, ''),
 			COALESCE(customer_name, ''),
-			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date >= CURRENT_DATE - INTERVAL '30 days'), 0)::text,
-			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '30 days' AND invoice_date >= CURRENT_DATE - INTERVAL '60 days'), 0)::text,
-			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '60 days' AND invoice_date >= CURRENT_DATE - INTERVAL '90 days'), 0)::text,
-			COALESCE(SUM(balance::numeric) FILTER (WHERE invoice_date < CURRENT_DATE - INTERVAL '90 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE COALESCE(due_date, invoice_date)::date >= CURRENT_DATE - INTERVAL '30 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE COALESCE(due_date, invoice_date)::date < CURRENT_DATE - INTERVAL '30 days' AND COALESCE(due_date, invoice_date)::date >= CURRENT_DATE - INTERVAL '60 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE COALESCE(due_date, invoice_date)::date < CURRENT_DATE - INTERVAL '60 days' AND COALESCE(due_date, invoice_date)::date >= CURRENT_DATE - INTERVAL '90 days'), 0)::text,
+			COALESCE(SUM(balance::numeric) FILTER (WHERE COALESCE(due_date, invoice_date)::date < CURRENT_DATE - INTERVAL '90 days'), 0)::text,
 			COALESCE(SUM(balance::numeric), 0)::text
-		FROM invoices WHERE status = 'Open' AND company_id = $1 AND deleted_at IS NULL
+		FROM invoices
+		WHERE company_id = $1 AND deleted_at IS NULL
+			AND status != 'Void' AND balance::numeric > 0
 		GROUP BY customer_id, customer_number, customer_name
 		ORDER BY SUM(balance::numeric) DESC`, companyID)
 	if err != nil {

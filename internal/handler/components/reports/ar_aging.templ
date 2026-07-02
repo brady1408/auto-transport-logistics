@@ -1,6 +1,8 @@
 package reports
 
 import (
+	"time"
+
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
 	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
@@ -15,6 +17,7 @@ templ ArAgingPage(pg components.PageContext, rows []store.ArAgingRow) {
 				<a href="/reports" class="btn">Back to Reports</a>
 			</div>
 		</div>
+		<p class="text-muted" style="margin: -8px 0 16px;">Outstanding receivables aged by days past due, as of { time.Now().Format("January 2, 2006") }.</p>
 		<div class="table-container">
 			<table class="report-table">
 				<thead>
@@ -42,7 +45,7 @@ templ ArAgingPage(pg components.PageContext, rows []store.ArAgingRow) {
 							</tr>
 						}
 					} else {
-						<tr><td colspan="7" class="text-center text-muted">No open invoices found.</td></tr>
+						<tr><td colspan="7" class="text-center text-muted">No outstanding receivables.</td></tr>
 					}
 				</tbody>
 			</table>
