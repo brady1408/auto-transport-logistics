@@ -7,7 +7,10 @@ import (
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
-templ DetailTable(details []models.InvoiceDetail, invoiceID int) {
+// DetailTable renders the invoice line items. When locked is true (posted, paid,
+// or void invoice) the per-line Remove buttons are replaced with a lock note,
+// since posted invoices are immutable and must be adjusted via a credit memo.
+templ DetailTable(details []models.InvoiceDetail, invoiceID int, locked bool) {
 	<div class="table-container">
 		<table>
 			<thead>
@@ -32,13 +35,15 @@ templ DetailTable(details []models.InvoiceDetail, invoiceID int) {
 							<td class="text-right">{ components.Deref(d.Rate) }</td>
 							<td class="text-right">{ components.Deref(d.Amount) }</td>
 							<td class="text-right">
-								<button
-									class="btn btn-sm btn-danger"
-									hx-delete={ fmt.Sprintf("/accounting/invoice-details/%d", d.ID) }
-									hx-target="#invoice-detail-table"
-									hx-swap="innerHTML"
-									hx-confirm="Remove this line item?"
-								>Remove</button>
+								if !locked {
+									<button
+										class="btn btn-sm btn-danger"
+										hx-delete={ fmt.Sprintf("/accounting/invoice-details/%d", d.ID) }
+										hx-target="#invoice-detail-table"
+										hx-swap="innerHTML"
+										hx-confirm="Remove this line item?"
+									>Remove</button>
+								}
 							</td>
 						</tr>
 					}
@@ -47,5 +52,11 @@ templ DetailTable(details []models.InvoiceDetail, invoiceID int) {
 				}
 			</tbody>
 		</table>
+		if locked {
+			<p class="text-muted" style="margin-top:0.5rem;">
+				<span class="material-symbols-outlined" style="font-size:16px;">lock</span>
+				Posted — lines locked; use a credit memo to adjust.
+			</p>
+		}
 	</div>
 }

@@ -394,7 +394,7 @@ func ShowPage(pg components.PageContext, invoice *models.Invoice, details []mode
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = DetailTable(details, invoice.ID).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = DetailTable(details, invoice.ID, invoice.LinesLocked()).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -402,7 +402,7 @@ func ShowPage(pg components.PageContext, invoice *models.Invoice, details []mode
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if invoice.Status != nil && components.Deref(invoice.Status) == "Open" {
+			if !invoice.LinesLocked() {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<div class=\"card mt-2\"><div class=\"card-header\">Add Line Item</div><div class=\"card-body\"><form hx-post=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err

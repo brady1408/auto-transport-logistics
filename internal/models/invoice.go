@@ -39,6 +39,19 @@ type Invoice struct {
 	UpdatedAt      time.Time  `json:"updated_at"`
 }
 
+// LinesLocked reports whether the invoice's line items are immutable. Lines are
+// locked once an invoice has been posted (PostedAt set) or once its status is
+// Paid or Void. Adjustments to a locked invoice must go through a credit memo.
+func (i *Invoice) LinesLocked() bool {
+	if i.PostedAt != nil {
+		return true
+	}
+	if i.Status != nil && (*i.Status == "Paid" || *i.Status == "Void") {
+		return true
+	}
+	return false
+}
+
 type InvoiceDetail struct {
 	ID          int       `json:"id"`
 	CompanyID   int       `json:"company_id"`

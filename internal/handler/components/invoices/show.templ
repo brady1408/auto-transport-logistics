@@ -116,9 +116,9 @@ templ ShowPage(pg components.PageContext, invoice *models.Invoice, details []mod
 		</div>
 		<h2 class="section-title">Line Items</h2>
 		<div id="invoice-detail-table">
-			@DetailTable(details, invoice.ID)
+			@DetailTable(details, invoice.ID, invoice.LinesLocked())
 		</div>
-		if invoice.Status != nil && components.Deref(invoice.Status) == "Open" {
+		if !invoice.LinesLocked() {
 			<div class="card mt-2">
 				<div class="card-header">Add Line Item</div>
 				<div class="card-body">
