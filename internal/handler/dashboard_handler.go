@@ -11,10 +11,12 @@ import (
 
 type dashboardOrderStore interface {
 	DashboardCounts(ctx context.Context) (store.OrderDashboardCounts, error)
+	OrdersPerWeek(ctx context.Context, weeks int) ([]store.OrdersPerWeekRow, error)
 }
 
 type dashboardInvoiceStore interface {
 	DashboardAging(ctx context.Context) (store.AgingBucket, error)
+	RevenuePerMonth(ctx context.Context, months int) ([]store.RevenuePerMonthRow, error)
 }
 
 type dashboardTripStore interface {
@@ -76,6 +78,18 @@ func (h *DashboardHandler) show(w http.ResponseWriter, r *http.Request) {
 		expiringTrucks = nil // non-fatal
 	}
 
+	ordersPerWeek, err := h.orderStore.OrdersPerWeek(ctx, 8)
+	if err != nil {
+		log.Printf("orders per week: %v", err)
+		ordersPerWeek = nil // non-fatal — chart shows "No data yet"
+	}
+
+	revenuePerMonth, err := h.invoiceStore.RevenuePerMonth(ctx, 6)
+	if err != nil {
+		log.Printf("revenue per month: %v", err)
+		revenuePerMonth = nil // non-fatal — chart shows "No data yet"
+	}
+
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, pages.DashboardPage(pg, orderCounts, aging, tripCounts, expiringTrucks))
+	h.deps.renderTempl(w, r, pages.DashboardPage(pg, orderCounts, aging, tripCounts, expiringTrucks, ordersPerWeek, revenuePerMonth))
 }

@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/brady1408/auto-transport-logistics/internal/auth"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
@@ -346,6 +347,56 @@ func (s *OrderStore) DashboardCounts(ctx context.Context) (OrderDashboardCounts,
 		return c, fmt.Errorf("dashboard order counts: %w", err)
 	}
 	return c, nil
+}
+
+// OrdersPerWeekRow is a single bucket in the "orders per week" dashboard chart.
+type OrdersPerWeekRow struct {
+	WeekStart time.Time // Monday of the week
+	Count     int
+}
+
+// OrdersPerWeek returns order-creation counts bucketed by ISO week for the last
+// `weeks` weeks (including the current, partial week), oldest first. Weeks with
+// no orders are returned with a zero count so the chart has a continuous axis.
+func (s *OrderStore) OrdersPerWeek(ctx context.Context, weeks int) ([]OrdersPerWeekRow, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if weeks < 1 {
+		weeks = 8
+	}
+	// generate_series builds the week axis so empty weeks still appear; the
+	// LEFT JOIN folds in actual counts. date_trunc('week') gives Monday 00:00.
+	rows, err := s.pool.Query(ctx,
+		`SELECT wk.week_start,
+			COALESCE(COUNT(o.id), 0)
+		FROM generate_series(
+			date_trunc('week', CURRENT_DATE) - (($2::int - 1) * INTERVAL '1 week'),
+			date_trunc('week', CURRENT_DATE),
+			INTERVAL '1 week'
+		) AS wk(week_start)
+		LEFT JOIN orders o
+			ON date_trunc('week', o.create_date) = wk.week_start
+			AND o.company_id = $1
+			AND o.deleted_at IS NULL
+		GROUP BY wk.week_start
+		ORDER BY wk.week_start`,
+		companyID, weeks)
+	if err != nil {
+		return nil, fmt.Errorf("orders per week: %w", err)
+	}
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (OrdersPerWeekRow, error) {
+		var r OrdersPerWeekRow
+		if err := row.Scan(&r.WeekStart, &r.Count); err != nil {
+			return OrdersPerWeekRow{}, err
+		}
+		return r, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan orders per week: %w", err)
+	}
+	return items, nil
 }
 
 // StatusSummary returns order counts grouped by dispatch_code for a date range.

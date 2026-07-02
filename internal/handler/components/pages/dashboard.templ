@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/charts"
 	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
-templ DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardCounts, aging store.AgingBucket, tripCounts store.TripDashboardCounts, expiringTrucks []store.ExpiringTruck) {
+templ DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardCounts, aging store.AgingBucket, tripCounts store.TripDashboardCounts, expiringTrucks []store.ExpiringTruck, ordersPerWeek []store.OrdersPerWeekRow, revenuePerMonth []store.RevenuePerMonthRow) {
 	@components.Layout(pg, "Dashboard") {
 		<div class="space-y-8">
 			<!-- KPI Section -->
@@ -44,6 +45,25 @@ templ DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardC
 						}
 					</div>
 				</a>
+			</section>
+			<!-- Charts Row -->
+			<section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				<!-- Orders per week -->
+				<div class="chart-card bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 shadow-sm">
+					<div class="flex items-center justify-between mb-4">
+						<h2 class="text-base font-bold tracking-tight text-slate-900" style="font-family: 'Manrope', sans-serif;">Orders per Week</h2>
+						<span class="text-[11px] font-medium text-slate-400">Last 8 weeks</span>
+					</div>
+					@charts.ColumnChart(ordersPerWeekData(ordersPerWeek))
+				</div>
+				<!-- Revenue per month -->
+				<div class="chart-card bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 shadow-sm">
+					<div class="flex items-center justify-between mb-4">
+						<h2 class="text-base font-bold tracking-tight text-slate-900" style="font-family: 'Manrope', sans-serif;">Revenue per Month</h2>
+						<span class="text-[11px] font-medium text-slate-400">Last 6 months</span>
+					</div>
+					@charts.ColumnChart(revenuePerMonthData(revenuePerMonth))
+				</div>
 			</section>
 			<!-- Truck Expirations Alert -->
 			if len(expiringTrucks) > 0 {
@@ -106,6 +126,10 @@ templ DashboardPage(pg components.PageContext, orderCounts store.OrderDashboardC
 							<p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Total</p>
 							<p class="text-xl font-bold text-slate-900" style="font-family: 'Manrope', sans-serif;">${ aging.Total }</p>
 						</div>
+					</div>
+					<!-- Aging bucket bar chart -->
+					<div class="mt-6">
+						@charts.ColumnChart(agingBucketData(aging))
 					</div>
 				</div>
 				<!-- Quick Actions -->

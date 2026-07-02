@@ -322,6 +322,56 @@ func (s *InvoiceStore) DashboardAging(ctx context.Context) (AgingBucket, error) 
 	return a, nil
 }
 
+// RevenuePerMonthRow is a single bucket in the "revenue per month" dashboard chart.
+type RevenuePerMonthRow struct {
+	MonthStart time.Time // first day of the month
+	Total      string    // summed invoice total_amount for the month, as text
+}
+
+// RevenuePerMonth returns invoiced revenue (sum of total_amount, excluding Void)
+// bucketed by invoice_date month for the last `months` months (including the
+// current, partial month), oldest first. Months with no invoices come back with
+// a "0" total so the chart axis is continuous.
+func (s *InvoiceStore) RevenuePerMonth(ctx context.Context, months int) ([]RevenuePerMonthRow, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if months < 1 {
+		months = 6
+	}
+	rows, err := s.pool.Query(ctx,
+		`SELECT m.month_start,
+			COALESCE(SUM(i.total_amount::numeric), 0)::text
+		FROM generate_series(
+			date_trunc('month', CURRENT_DATE) - (($2::int - 1) * INTERVAL '1 month'),
+			date_trunc('month', CURRENT_DATE),
+			INTERVAL '1 month'
+		) AS m(month_start)
+		LEFT JOIN invoices i
+			ON date_trunc('month', i.invoice_date) = m.month_start
+			AND i.company_id = $1
+			AND i.deleted_at IS NULL
+			AND i.status != 'Void'
+		GROUP BY m.month_start
+		ORDER BY m.month_start`,
+		companyID, months)
+	if err != nil {
+		return nil, fmt.Errorf("revenue per month: %w", err)
+	}
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (RevenuePerMonthRow, error) {
+		var r RevenuePerMonthRow
+		if err := row.Scan(&r.MonthStart, &r.Total); err != nil {
+			return RevenuePerMonthRow{}, err
+		}
+		return r, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scan revenue per month: %w", err)
+	}
+	return items, nil
+}
+
 // ArAgingRow is a single customer row in the AR Aging report.
 type ArAgingRow struct {
 	CustomerID     int
