@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/charts"
 	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
@@ -18,6 +19,14 @@ templ ArAgingPage(pg components.PageContext, rows []store.ArAgingRow) {
 			</div>
 		</div>
 		<p class="text-muted" style="margin: -8px 0 16px;">Outstanding receivables aged by days past due, as of { time.Now().Format("January 2, 2006") }.</p>
+		if len(rows) > 0 {
+			<div class="chart-card card no-print" style="margin-bottom:16px;">
+				<div class="card-header">Open Balance by Age</div>
+				<div class="card-body">
+					@charts.ColumnChart(arAgingBucketData(rows))
+				</div>
+			</div>
+		}
 		<div class="table-container">
 			<table class="report-table">
 				<thead>
