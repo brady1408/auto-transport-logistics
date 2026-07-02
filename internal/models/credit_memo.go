@@ -21,6 +21,13 @@ type CreditMemo struct {
 	UpdatedAt      time.Time  `json:"updated_at"`
 }
 
+// Locked reports whether the credit memo is immutable. A memo is locked once
+// its status is Applied or Void (matches the existing raw string status
+// values); locked memos may not be edited or deleted.
+func (cm *CreditMemo) Locked() bool {
+	return cm.Status != nil && (*cm.Status == "Applied" || *cm.Status == "Void")
+}
+
 type CreditMemoFilter struct {
 	Search     string
 	CustomerID string

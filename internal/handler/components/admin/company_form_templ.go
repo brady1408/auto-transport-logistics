@@ -119,7 +119,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"form-row\"><div class=\"form-group\"><label for=\"company_name\">Company Name *</label> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"form-row\"><div class=\"form-group\"><label for=\"company_name\" class=\"required\">Company Name</label> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -182,7 +182,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div><div class=\"form-group\"><label for=\"slug\">Slug *</label> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div><div class=\"form-group\"><label for=\"slug\" class=\"required\">Slug</label> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -222,7 +222,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" required maxlength=\"30\" pattern=\"[a-z0-9-]+\" title=\"Lowercase letters, numbers, and hyphens only\"> <small>Used in login URL: /c/<em>slug</em>/login</small> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" required maxlength=\"30\" pattern=\"[a-z0-9-]+\" title=\"Lowercase letters, numbers, and hyphens only\"> <small class=\"field-hint\">Used in login URL: /c/<em>slug</em>/login</small> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -1003,7 +1003,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 				}
 			}
 			if !isNew {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 98, "<h3 style=\"margin-top:1.5rem; margin-bottom:0.5rem;\">Subscription</h3><div class=\"form-row\"><div class=\"form-group\"><label for=\"sub_status\">Account Status</label> <select id=\"sub_status\" name=\"sub_status\" class=\"form-control\"><option value=\"active\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 98, "<h3>Subscription</h3><div class=\"form-row\"><div class=\"form-group\"><label for=\"sub_status\">Account Status</label> <select id=\"sub_status\" name=\"sub_status\" class=\"form-control\"><option value=\"active\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -1063,7 +1063,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 110, "> EDI Add-on</label> <small>Enables EDI on Basic/Pro tiers</small></div><div class=\"form-group\"><label for=\"edi_monthly_limit\">EDI Monthly Limit</label> <select id=\"edi_monthly_limit\" name=\"edi_monthly_limit\" class=\"form-control\"><option value=\"\">Unlimited</option> <option value=\"500\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 110, "> EDI Add-on</label> <small class=\"field-hint\">Enables EDI on Basic/Pro tiers</small></div><div class=\"form-group\"><label for=\"edi_monthly_limit\">EDI Monthly Limit</label> <select id=\"edi_monthly_limit\" name=\"edi_monthly_limit\" class=\"form-control\"><option value=\"\">Unlimited</option> <option value=\"500\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -1108,7 +1108,7 @@ func CompanyFormPage(pg components.PageContext, company *models.Company, isNew b
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 119, "<h3 style=\"margin-top:1.5rem; margin-bottom:0.5rem;\">Legacy Data Import</h3><div class=\"form-row\"><div class=\"form-group\"><label for=\"backup\">MSSQL Backup (.bak) — optional</label> <input type=\"file\" id=\"backup\" name=\"backup\" accept=\".bak\" class=\"form-control\"> <small>Upload a .bak file to import legacy data into this company after saving.</small></div></div><div class=\"form-actions\"><button type=\"submit\" class=\"btn btn-primary\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 119, "<h3>Legacy Data Import</h3><div class=\"form-row\"><div class=\"form-group\"><label for=\"backup\">MSSQL Backup (.bak) — optional</label> <input type=\"file\" id=\"backup\" name=\"backup\" accept=\".bak\" class=\"form-control\"> <small class=\"field-hint\">Upload a .bak file to import legacy data into this company after saving.</small></div></div><div class=\"form-actions\"><button type=\"submit\" class=\"btn btn-primary\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

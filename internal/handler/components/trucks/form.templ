@@ -44,7 +44,7 @@ templ FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMs
 				<legend>Truck Information</legend>
 				<div class="form-row">
 					<div class="form-group">
-						<label for="truck_number">Truck # *</label>
+						<label for="truck_number" class="required">Truck #</label>
 						<input type="text" id="truck_number" name="truck_number" class="form-control" value={ truck.TruckNumber } required maxlength="10" style="text-transform:uppercase"/>
 					</div>
 					<div class="form-group">

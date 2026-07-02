@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components/payments"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/service"
 )
 
 type paymentStore interface {
@@ -173,8 +175,21 @@ func (h *PaymentHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if p.Posted() {
+		h.rejectPostedPayment(w, r, id, "edited")
+		return
+	}
+
 	pg := h.deps.pageContext(w, r)
 	h.deps.renderTempl(w, r, payments.FormPage(pg, p, false, ""))
+}
+
+// rejectPostedPayment refuses a mutation of a posted payment: it flashes the
+// lock message and sends the user back to the payment's show page, where the
+// mutation controls are hidden. Nothing is applied.
+func (h *PaymentHandler) rejectPostedPayment(w http.ResponseWriter, r *http.Request, paymentID int, action string) {
+	h.deps.setFlash(w, fmt.Sprintf("Posted payments are locked and cannot be %s.", action))
+	redirect(w, r, fmt.Sprintf("/accounting/payments/%d", paymentID))
 }
 
 func (h *PaymentHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -187,6 +202,11 @@ func (h *PaymentHandler) update(w http.ResponseWriter, r *http.Request) {
 	old, err := h.store.GetByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, "Payment not found", http.StatusNotFound)
+		return
+	}
+
+	if old.Posted() {
+		h.rejectPostedPayment(w, r, id, "edited")
 		return
 	}
 
@@ -219,6 +239,11 @@ func (h *PaymentHandler) delete(w http.ResponseWriter, r *http.Request) {
 	old, err := h.store.GetByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, "Payment not found", http.StatusNotFound)
+		return
+	}
+
+	if old.Posted() {
+		h.rejectPostedPayment(w, r, id, "deleted")
 		return
 	}
 
@@ -255,6 +280,10 @@ func (h *PaymentHandler) apply(w http.ResponseWriter, r *http.Request) {
 	discount := r.FormValue("discount_amount")
 
 	if err := h.paymentSvc.ApplyPayment(r.Context(), paymentID, *invoiceIDPtr, amount, discount); err != nil {
+		if errors.Is(err, service.ErrPaymentPosted) {
+			h.rejectPostedPayment(w, r, paymentID, "applied to invoices")
+			return
+		}
 		serverError(w, err)
 		return
 	}
@@ -280,6 +309,10 @@ func (h *PaymentHandler) unapply(w http.ResponseWriter, r *http.Request) {
 	paymentID := pd.PaymentID
 
 	if err := h.paymentSvc.UnapplyPayment(r.Context(), detailID); err != nil {
+		if errors.Is(err, service.ErrPaymentPosted) {
+			h.rejectPostedPayment(w, r, paymentID, "unapplied")
+			return
+		}
 		serverError(w, err)
 		return
 	}

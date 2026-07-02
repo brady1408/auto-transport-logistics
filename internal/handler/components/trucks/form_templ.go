@@ -151,7 +151,7 @@ func FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMsg
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<fieldset><legend>Truck Information</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"truck_number\">Truck # *</label> <input type=\"text\" id=\"truck_number\" name=\"truck_number\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<fieldset><legend>Truck Information</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"truck_number\" class=\"required\">Truck #</label> <input type=\"text\" id=\"truck_number\" name=\"truck_number\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

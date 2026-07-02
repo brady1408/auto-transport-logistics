@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -130,8 +131,21 @@ func (h *CreditMemoHandler) editForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if cm.Locked() {
+		h.rejectLockedMemo(w, r, id, "edited")
+		return
+	}
+
 	pg := h.deps.pageContext(w, r)
 	h.deps.renderTempl(w, r, creditmemos.FormPage(pg, cm, false, ""))
+}
+
+// rejectLockedMemo refuses a mutation of an Applied or Void credit memo: it
+// flashes the lock message and sends the user back to the memo's show page,
+// where the mutation controls are hidden. Nothing is applied.
+func (h *CreditMemoHandler) rejectLockedMemo(w http.ResponseWriter, r *http.Request, memoID int, action string) {
+	h.deps.setFlash(w, fmt.Sprintf("Applied or void credit memos are locked and cannot be %s.", action))
+	redirect(w, r, fmt.Sprintf("/accounting/credit-memos/%d", memoID))
 }
 
 func (h *CreditMemoHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -144,6 +158,11 @@ func (h *CreditMemoHandler) update(w http.ResponseWriter, r *http.Request) {
 	old, err := h.store.GetByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, "Credit memo not found", http.StatusNotFound)
+		return
+	}
+
+	if old.Locked() {
+		h.rejectLockedMemo(w, r, id, "edited")
 		return
 	}
 
@@ -174,6 +193,11 @@ func (h *CreditMemoHandler) delete(w http.ResponseWriter, r *http.Request) {
 	old, err := h.store.GetByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, "Credit memo not found", http.StatusNotFound)
+		return
+	}
+
+	if old.Locked() {
+		h.rejectLockedMemo(w, r, id, "deleted")
 		return
 	}
 

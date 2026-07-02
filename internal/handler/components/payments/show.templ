@@ -14,14 +14,21 @@ templ ShowPage(pg components.PageContext, payment *models.Payment, details []mod
 				<a href="/accounting/payments" class="page-header-back">← Back to List</a>
 				<h1>Payment #{ fmt.Sprintf("%d", payment.ID) }</h1>
 			</div>
-			<div class="btn-group">
-				<a href={ templ.SafeURL(fmt.Sprintf("/accounting/payments/%d/edit", payment.ID)) } class="btn">Edit</a>
-				<button
-					class="btn btn-danger"
-					hx-delete={ fmt.Sprintf("/accounting/payments/%d", payment.ID) }
-					hx-confirm="Delete this payment?"
-				>Delete</button>
-			</div>
+			if !payment.Posted() {
+				<div class="btn-group">
+					<a href={ templ.SafeURL(fmt.Sprintf("/accounting/payments/%d/edit", payment.ID)) } class="btn">Edit</a>
+					<button
+						class="btn btn-danger"
+						hx-delete={ fmt.Sprintf("/accounting/payments/%d", payment.ID) }
+						hx-confirm="Delete this payment?"
+					>Delete</button>
+				</div>
+			} else {
+				<p class="text-muted">
+					<span class="material-symbols-outlined" style="font-size:16px;">lock</span>
+					Posted { payment.PostedAt.Format("01/02/2006") } — locked.
+				</p>
+			}
 		</div>
 		<div class="order-detail-grid">
 			<div class="card">
@@ -97,21 +104,29 @@ templ ShowPage(pg components.PageContext, payment *models.Payment, details []mod
 								<td class="text-right">{ components.Deref(d.DiscountAmount) }</td>
 								<td>{ d.CreatedAt.Format("01/02/2006") }</td>
 								<td class="text-right">
-									<button
-										class="btn btn-sm btn-danger"
-										hx-delete={ fmt.Sprintf("/accounting/payment-details/%d", d.ID) }
-										hx-confirm="Remove this payment application?"
-									>Unapply</button>
+									if !payment.Posted() {
+										<button
+											class="btn btn-sm btn-danger"
+											hx-delete={ fmt.Sprintf("/accounting/payment-details/%d", d.ID) }
+											hx-confirm="Remove this payment application?"
+										>Unapply</button>
+									}
 								</td>
 							</tr>
 						}
 					</tbody>
 				</table>
+				if payment.Posted() {
+					<p class="text-muted" style="margin-top:0.5rem;">
+						<span class="material-symbols-outlined" style="font-size:16px;">lock</span>
+						Posted — applications locked.
+					</p>
+				}
 			</div>
 		} else {
 			<p class="text-muted">No invoices applied.</p>
 		}
-		if len(openInvoices) > 0 {
+		if !payment.Posted() && len(openInvoices) > 0 {
 			<div class="card mt-2">
 				<div class="card-header">Apply to Invoice</div>
 				<div class="card-body">

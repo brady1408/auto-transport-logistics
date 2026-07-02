@@ -91,10 +91,12 @@ templ FormPage(pg components.PageContext, order *models.Order, isNew bool, errMs
 						<label for="po_number">PO Number</label>
 						<input type="text" id="po_number" name="po_number" class="form-control" value={ components.Deref(order.PONumber) } maxlength="20"/>
 					</div>
-					<div class="form-check form-check-aligned">
-						<input type="checkbox" id="inactive" name="inactive" checked?={ !order.Active }/>
-						<label for="inactive">Inactive</label>
-					</div>
+					if !isNew {
+						<div class="form-check form-check-aligned">
+							<input type="checkbox" id="inactive" name="inactive" checked?={ !order.Active }/>
+							<label for="inactive">Inactive</label>
+						</div>
+					}
 				</div>
 			</fieldset>
 			@customerFieldset("Bill-To Customer", "bill", order.BillCustomerID, order.BillCustomerNumber, order.BillCustomerName, order.BillToAddress, order.BillToAddress2, order.BillToCity, order.BillToState, order.BillToZip, nil, nil)

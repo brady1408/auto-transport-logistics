@@ -38,7 +38,7 @@ templ DriverFormPage(pg components.PageContext, adj *models.DriverEarningsAdj, e
 				<legend>Adjustment Details</legend>
 				<div class="form-row">
 					<div class="form-group">
-						<label for="employee_id">Employee *</label>
+						<label for="employee_id" class="required">Employee</label>
 						<select id="employee_id" name="employee_id" class="form-control" required>
 							<option value="">-- Select Employee --</option>
 							for _, e := range employees {
@@ -47,11 +47,11 @@ templ DriverFormPage(pg components.PageContext, adj *models.DriverEarningsAdj, e
 						</select>
 					</div>
 					<div class="form-group">
-						<label for="adj_date">Date *</label>
+						<label for="adj_date" class="required">Date</label>
 						<input type="date" id="adj_date" name="adj_date" class="form-control" value={ store.FormatAdjDate(adj.AdjDate) } required/>
 					</div>
 					<div class="form-group">
-						<label for="adj_type">Type *</label>
+						<label for="adj_type" class="required">Type</label>
 						<select id="adj_type" name="adj_type" class="form-control" required>
 							<option value="Add" selected?={ adj.AdjType == "Add" }>Add</option>
 							<option value="Ded" selected?={ adj.AdjType == "Ded" }>Deduct</option>
@@ -60,11 +60,11 @@ templ DriverFormPage(pg components.PageContext, adj *models.DriverEarningsAdj, e
 				</div>
 				<div class="form-row">
 					<div class="form-group col-span-2">
-						<label for="description">Description *</label>
+						<label for="description" class="required">Description</label>
 						<input type="text" id="description" name="description" class="form-control" value={ adj.Description } maxlength="50" required/>
 					</div>
 					<div class="form-group">
-						<label for="amount">Amount *</label>
+						<label for="amount" class="required">Amount</label>
 						<input type="text" id="amount" name="amount" class="form-control" value={ adj.Amount } required/>
 					</div>
 					<div class="form-group">
@@ -117,7 +117,7 @@ templ TruckFormPage(pg components.PageContext, adj *models.TruckEarningsAdj, tru
 				<legend>Adjustment Details</legend>
 				<div class="form-row">
 					<div class="form-group">
-						<label for="truck_id">Truck *</label>
+						<label for="truck_id" class="required">Truck</label>
 						<select id="truck_id" name="truck_id" class="form-control" required>
 							<option value="">-- Select Truck --</option>
 							for _, t := range trucks {
@@ -126,11 +126,11 @@ templ TruckFormPage(pg components.PageContext, adj *models.TruckEarningsAdj, tru
 						</select>
 					</div>
 					<div class="form-group">
-						<label for="adj_date">Date *</label>
+						<label for="adj_date" class="required">Date</label>
 						<input type="date" id="adj_date" name="adj_date" class="form-control" value={ store.FormatAdjDate(adj.AdjDate) } required/>
 					</div>
 					<div class="form-group">
-						<label for="adj_type">Type *</label>
+						<label for="adj_type" class="required">Type</label>
 						<select id="adj_type" name="adj_type" class="form-control" required>
 							<option value="Add" selected?={ adj.AdjType == "Add" }>Add</option>
 							<option value="Ded" selected?={ adj.AdjType == "Ded" }>Deduct</option>
@@ -139,11 +139,11 @@ templ TruckFormPage(pg components.PageContext, adj *models.TruckEarningsAdj, tru
 				</div>
 				<div class="form-row">
 					<div class="form-group col-span-2">
-						<label for="description">Description *</label>
+						<label for="description" class="required">Description</label>
 						<input type="text" id="description" name="description" class="form-control" value={ adj.Description } maxlength="50" required/>
 					</div>
 					<div class="form-group">
-						<label for="amount">Amount *</label>
+						<label for="amount" class="required">Amount</label>
 						<input type="text" id="amount" name="amount" class="form-control" value={ adj.Amount } required/>
 					</div>
 					<div class="form-group">

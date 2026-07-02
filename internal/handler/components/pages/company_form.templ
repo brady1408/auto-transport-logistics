@@ -19,7 +19,7 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, errMsg
 				<legend>Company Information</legend>
 				<div class="form-row">
 					<div class="form-group col-span-2">
-						<label for="company_name">Company Name *</label>
+						<label for="company_name" class="required">Company Name</label>
 						<input type="text" id="company_name" name="company_name" class="form-control" value={ company.CompanyName } required maxlength="40"/>
 					</div>
 				</div>

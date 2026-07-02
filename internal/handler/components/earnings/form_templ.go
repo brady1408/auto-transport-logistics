@@ -136,7 +136,7 @@ func DriverFormPage(pg components.PageContext, adj *models.DriverEarningsAdj, em
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<fieldset><legend>Adjustment Details</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"employee_id\">Employee *</label> <select id=\"employee_id\" name=\"employee_id\" class=\"form-control\" required><option value=\"\">-- Select Employee --</option> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<fieldset><legend>Adjustment Details</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"employee_id\" class=\"required\">Employee</label> <select id=\"employee_id\" name=\"employee_id\" class=\"form-control\" required><option value=\"\">-- Select Employee --</option> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -182,7 +182,7 @@ func DriverFormPage(pg components.PageContext, adj *models.DriverEarningsAdj, em
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</select></div><div class=\"form-group\"><label for=\"adj_date\">Date *</label> <input type=\"date\" id=\"adj_date\" name=\"adj_date\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</select></div><div class=\"form-group\"><label for=\"adj_date\" class=\"required\">Date</label> <input type=\"date\" id=\"adj_date\" name=\"adj_date\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -195,7 +195,7 @@ func DriverFormPage(pg components.PageContext, adj *models.DriverEarningsAdj, em
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" required></div><div class=\"form-group\"><label for=\"adj_type\">Type *</label> <select id=\"adj_type\" name=\"adj_type\" class=\"form-control\" required><option value=\"Add\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" required></div><div class=\"form-group\"><label for=\"adj_type\" class=\"required\">Type</label> <select id=\"adj_type\" name=\"adj_type\" class=\"form-control\" required><option value=\"Add\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -215,7 +215,7 @@ func DriverFormPage(pg components.PageContext, adj *models.DriverEarningsAdj, em
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, ">Deduct</option></select></div></div><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"description\">Description *</label> <input type=\"text\" id=\"description\" name=\"description\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, ">Deduct</option></select></div></div><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"description\" class=\"required\">Description</label> <input type=\"text\" id=\"description\" name=\"description\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -228,7 +228,7 @@ func DriverFormPage(pg components.PageContext, adj *models.DriverEarningsAdj, em
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\" maxlength=\"50\" required></div><div class=\"form-group\"><label for=\"amount\">Amount *</label> <input type=\"text\" id=\"amount\" name=\"amount\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\" maxlength=\"50\" required></div><div class=\"form-group\"><label for=\"amount\" class=\"required\">Amount</label> <input type=\"text\" id=\"amount\" name=\"amount\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -403,7 +403,7 @@ func TruckFormPage(pg components.PageContext, adj *models.TruckEarningsAdj, truc
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "<fieldset><legend>Adjustment Details</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"truck_id\">Truck *</label> <select id=\"truck_id\" name=\"truck_id\" class=\"form-control\" required><option value=\"\">-- Select Truck --</option> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "<fieldset><legend>Adjustment Details</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"truck_id\" class=\"required\">Truck</label> <select id=\"truck_id\" name=\"truck_id\" class=\"form-control\" required><option value=\"\">-- Select Truck --</option> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -449,7 +449,7 @@ func TruckFormPage(pg components.PageContext, adj *models.TruckEarningsAdj, truc
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</select></div><div class=\"form-group\"><label for=\"adj_date\">Date *</label> <input type=\"date\" id=\"adj_date\" name=\"adj_date\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</select></div><div class=\"form-group\"><label for=\"adj_date\" class=\"required\">Date</label> <input type=\"date\" id=\"adj_date\" name=\"adj_date\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -462,7 +462,7 @@ func TruckFormPage(pg components.PageContext, adj *models.TruckEarningsAdj, truc
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "\" required></div><div class=\"form-group\"><label for=\"adj_type\">Type *</label> <select id=\"adj_type\" name=\"adj_type\" class=\"form-control\" required><option value=\"Add\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "\" required></div><div class=\"form-group\"><label for=\"adj_type\" class=\"required\">Type</label> <select id=\"adj_type\" name=\"adj_type\" class=\"form-control\" required><option value=\"Add\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -482,7 +482,7 @@ func TruckFormPage(pg components.PageContext, adj *models.TruckEarningsAdj, truc
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 54, ">Deduct</option></select></div></div><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"description\">Description *</label> <input type=\"text\" id=\"description\" name=\"description\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 54, ">Deduct</option></select></div></div><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"description\" class=\"required\">Description</label> <input type=\"text\" id=\"description\" name=\"description\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -495,7 +495,7 @@ func TruckFormPage(pg components.PageContext, adj *models.TruckEarningsAdj, truc
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "\" maxlength=\"50\" required></div><div class=\"form-group\"><label for=\"amount\">Amount *</label> <input type=\"text\" id=\"amount\" name=\"amount\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "\" maxlength=\"50\" required></div><div class=\"form-group\"><label for=\"amount\" class=\"required\">Amount</label> <input type=\"text\" id=\"amount\" name=\"amount\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -14,14 +14,21 @@ templ ShowPage(pg components.PageContext, creditMemo *models.CreditMemo) {
 				<a href="/accounting/credit-memos" class="page-header-back">← Back to List</a>
 				<h1>Credit Memo { creditMemo.CreditNumber }</h1>
 			</div>
-			<div class="btn-group">
-				<a href={ templ.SafeURL(fmt.Sprintf("/accounting/credit-memos/%d/edit", creditMemo.ID)) } class="btn">Edit</a>
-				<button
-					class="btn btn-danger"
-					hx-delete={ fmt.Sprintf("/accounting/credit-memos/%d", creditMemo.ID) }
-					hx-confirm={ fmt.Sprintf("Delete credit memo %s?", creditMemo.CreditNumber) }
-				>Delete</button>
-			</div>
+			if !creditMemo.Locked() {
+				<div class="btn-group">
+					<a href={ templ.SafeURL(fmt.Sprintf("/accounting/credit-memos/%d/edit", creditMemo.ID)) } class="btn">Edit</a>
+					<button
+						class="btn btn-danger"
+						hx-delete={ fmt.Sprintf("/accounting/credit-memos/%d", creditMemo.ID) }
+						hx-confirm={ fmt.Sprintf("Delete credit memo %s?", creditMemo.CreditNumber) }
+					>Delete</button>
+				</div>
+			} else {
+				<p class="text-muted">
+					<span class="material-symbols-outlined" style="font-size:16px;">lock</span>
+					{ components.Deref(creditMemo.Status) } — locked.
+				</p>
+			}
 		</div>
 		<div class="order-detail-grid">
 			<div class="card">

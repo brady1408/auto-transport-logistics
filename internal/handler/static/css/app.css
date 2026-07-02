@@ -176,27 +176,139 @@ a:hover { text-decoration: underline; }
 .btn-block { display: block; width: 100%; text-align: center; }
 .btn-group { display: flex; gap: 6px; }
 
-/* Forms */
-.form-group { margin-bottom: 12px; }
-.form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--gray-500); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
-.form-control {
-    width: 100%; padding: 6px 10px; border: 1px solid var(--gray-300); border-radius: var(--radius);
-    font-size: 14px; font-family: inherit; background: white;
+/* =========================================================================
+   FORMS — unified form design system
+   Applies to create/edit forms across the app. The card treatment is driven
+   almost entirely by these shared classes, so most form templates need no
+   markup changes: `fieldset` renders as a card section, `.form-card` wraps
+   sectionless forms in a single card, and `.form-control` gets a filled input
+   with a bottom-accent focus ring (matching the login page).
+   ========================================================================= */
+
+/* Constrain form pages to a comfortable reading width */
+form.form-card,
+main.container > form,
+main.container > form.form-card { max-width: 960px; }
+
+/* Field group (label above input) */
+.form-group { margin-bottom: 14px; min-width: 0; }
+.form-group label {
+    display: block; font-size: 11px; font-weight: 600; color: var(--gray-500);
+    margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.06em;
 }
-.form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+
+/* Inputs, selects, textareas — filled style with bottom-accent focus */
+.form-control {
+    width: 100%; padding: 10px 12px;
+    border: 1px solid var(--gray-200);
+    border-bottom: 2px solid var(--gray-300);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    font-size: 14px; font-family: inherit; color: var(--gray-800);
+    background: var(--surface-low);
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.form-control:hover:not(:focus):not(:disabled):not([readonly]) { background: var(--surface-container); }
+.form-control:focus {
+    outline: none;
+    border-color: var(--gray-200);
+    border-bottom-color: var(--primary);
+    background: white;
+    box-shadow: 0 2px 0 -1px rgba(73,124,255,0.25);
+}
 .form-control::placeholder { color: var(--gray-400); }
-select.form-control { height: 34px; }
-textarea.form-control { min-height: 80px; resize: vertical; }
-.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-.form-section { margin-bottom: 24px; }
-.form-section-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid rgba(198,198,205,0.2); font-family: var(--font-heading); }
-.form-check { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.form-check input[type="checkbox"] { margin: 0; }
-.form-check label { margin-bottom: 0; font-weight: 400; }
-.form-actions { display: flex; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--gray-200); }
+.form-control:disabled,
+.form-control[readonly] { background: var(--surface-container); color: var(--gray-500); cursor: default; }
+
+/* Native select — styled chevron, native picker preserved */
+select.form-control {
+    height: 40px; padding-right: 34px; cursor: pointer;
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2376777d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+}
+select.form-control:focus {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23497cff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+}
+
+/* Native date/time inputs — align picker indicator, keep native control */
+input[type="date"].form-control,
+input[type="datetime-local"].form-control,
+input[type="time"].form-control,
+input[type="month"].form-control { min-height: 40px; }
+.form-control::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.55; transition: opacity 0.15s; }
+.form-control:hover::-webkit-calendar-picker-indicator,
+.form-control:focus::-webkit-calendar-picker-indicator { opacity: 1; }
+
+textarea.form-control { min-height: 88px; resize: vertical; line-height: 1.5; }
+
+/* Native file input — styled label-button + file-name affordance */
+input[type="file"].form-control {
+    padding: 0; border: 1px dashed var(--gray-300); border-radius: var(--radius-sm);
+    background: var(--surface-low); font-size: 13px; color: var(--gray-500);
+    cursor: pointer;
+}
+input[type="file"].form-control::-webkit-file-upload-button,
+input[type="file"].form-control::file-selector-button {
+    margin-right: 12px; padding: 10px 16px; border: none;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    background: var(--surface-container); color: var(--gray-700);
+    font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background 0.15s;
+}
+input[type="file"].form-control:hover::-webkit-file-upload-button,
+input[type="file"].form-control:hover::file-selector-button { background: var(--surface-high); }
+
+/* Required-field marker — add class="required" to the field's <label> */
+label.required::after {
+    content: "*"; color: var(--danger); font-weight: 700; margin-left: 3px;
+}
+
+/* Help / hint text under a field */
+.field-hint {
+    display: block; margin-top: 5px; font-size: 11px; color: var(--gray-400);
+    text-transform: none; letter-spacing: 0; font-weight: 400; line-height: 1.4;
+}
+
+/* Field grid inside a section */
+.form-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px 16px; align-items: start;
+}
 .col-span-2 { grid-column: span 2; }
-.form-check-aligned { padding-top: 20px; }
+
+/* Section blocks (non-fieldset variant) */
+.form-section { margin-bottom: 24px; }
+.form-section-title {
+    font-size: 15px; font-weight: 700; margin-bottom: 12px; padding-bottom: 6px;
+    border-bottom: 1px solid rgba(198,198,205,0.2); font-family: var(--font-heading);
+}
+
+/* Checkboxes / toggles */
+.form-check { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.form-check input[type="checkbox"] { margin: 0; width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+.form-check label { margin-bottom: 0; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--gray-700); font-size: 13px; cursor: pointer; }
+.form-check-aligned { padding-top: 26px; }
 .form-check-aligned-sm { padding-top: 8px; }
+/* Checkbox rendered inside its own <label> (settings/admin pattern) —
+   render as a normal-case, tappable row rather than a micro uppercase label. */
+.form-group > label:has(> input[type="checkbox"]) {
+    display: inline-flex; align-items: center; gap: 8px;
+    text-transform: none; letter-spacing: 0; font-weight: 500;
+    font-size: 13px; color: var(--gray-700); cursor: pointer;
+}
+.form-group > label > input[type="checkbox"] { margin: 0; width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+
+/* Action bar — sticky footer with primary submit + quiet cancel */
+.form-actions {
+    display: flex; gap: 10px; align-items: center;
+    margin-top: 20px; padding: 14px 0;
+    border-top: 1px solid var(--gray-200);
+    position: sticky; bottom: 0; z-index: 20;
+    background: linear-gradient(to top, var(--surface) 70%, rgba(247,249,251,0));
+}
+.form-actions .btn { padding: 9px 20px; font-size: 13px; font-weight: 600; }
+.form-actions .btn-primary { padding: 9px 24px; }
 
 /* Tables */
 .table-container { overflow-x: auto; }
@@ -211,6 +323,8 @@ tr:hover td .btn-group, tr:focus-within td .btn-group { opacity: 1; }
 .card { background: white; border: none; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; }
 .card-header { padding: 12px 16px; font-weight: 700; border-bottom: 1px solid rgba(198,198,205,0.15); background: var(--surface-low); font-family: var(--font-heading); }
 .card-body { padding: 16px; }
+.card-footer { display: flex; gap: 10px; align-items: center; padding: 14px 16px; border-top: 1px solid rgba(198,198,205,0.15); background: var(--surface-low); border-radius: 0 0 var(--radius) var(--radius); }
+.card-footer .btn { padding: 9px 20px; font-size: 13px; font-weight: 600; }
 
 /* Alerts */
 .alert { padding: 10px 16px; border-radius: var(--radius); margin-bottom: 16px; font-size: 13px; }
@@ -287,9 +401,36 @@ tr:hover td .btn-group, tr:focus-within td .btn-group { opacity: 1; }
 .inline-form { display: flex; gap: 8px; align-items: center; }
 .inline-form .form-control { margin-bottom: 0; }
 
-/* Fieldset-style form grouping */
-fieldset { border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
-legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-700); }
+/* Fieldset-style form grouping — renders as a white card section with a
+   proper section header. Every fieldset-based form inherits this treatment. */
+fieldset {
+    border: none; border-radius: var(--radius); padding: 20px 22px 22px;
+    margin: 0 0 16px; background: white; box-shadow: var(--shadow);
+}
+fieldset legend {
+    float: left; width: 100%; margin: 0 0 16px; padding: 0 0 12px;
+    border-bottom: 1px solid rgba(198,198,205,0.35);
+    font-family: var(--font-heading); font-weight: 700; font-size: 15px;
+    letter-spacing: -0.01em; color: var(--gray-800);
+}
+fieldset legend + * { clear: both; }
+/* Standalone legend (defensive; fieldset legend styled above) */
+legend { font-weight: 700; font-size: 15px; color: var(--gray-800); }
+
+/* Sectionless forms wrapped in a single card (settings/admin/user forms) */
+.form-card {
+    display: block; background: white; border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 22px 24px 24px; margin-bottom: 16px;
+}
+.form-card > h3 {
+    font-family: var(--font-heading); font-weight: 700; font-size: 15px;
+    letter-spacing: -0.01em; color: var(--gray-800);
+    margin: 22px 0 14px; padding-bottom: 10px;
+    border-bottom: 1px solid rgba(198,198,205,0.35);
+}
+.form-card > h3:first-child { margin-top: 0; }
+/* Keep the sticky action bar flush inside a form-card */
+.form-card .form-actions { margin-left: -24px; margin-right: -24px; padding-left: 24px; padding-right: 24px; }
 
 /* Badge */
 .badge { display: inline-block; padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
@@ -338,6 +479,13 @@ legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-70
 .customer-search-empty { padding: 8px 12px; font-size: 12px; color: var(--gray-500); }
 .customer-section { position: relative; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
 .customer-section-title { font-weight: 600; font-size: 14px; margin-bottom: 12px; color: var(--gray-700); }
+
+/* Anchor the typeahead dropdown to its field wrapper and lift it to match the
+   card language. `.search-results` is the container the widget populates. */
+.form-group:has(> .search-results) { position: relative; }
+.search-results .customer-search-results,
+.customer-search-results { box-shadow: 0 8px 24px rgba(25,28,30,0.12); margin-top: 4px; }
+.customer-search-results .search-result-item:last-child { border-bottom: none; }
 
 /* Status action buttons */
 .btn-warning { background: var(--warning); color: white; border-color: var(--warning); }
@@ -632,8 +780,13 @@ legend { font-weight: 600; font-size: 14px; padding: 0 8px; color: var(--gray-70
     .filter-bar .form-control,
     .filter-bar .search-input { min-width: 0 !important; width: 100%; }
 
+    /* Forms stack to a single column on narrow screens */
+    .form-row { grid-template-columns: 1fr; }
+    .col-span-2 { grid-column: auto; }
+    .form-check-aligned { padding-top: 0; }
+
     /* Form actions — full-width buttons */
-    .form-actions { flex-direction: column; }
+    .form-actions { flex-direction: column; position: static; background: none; }
     .form-actions .btn { width: 100%; text-align: center; justify-content: center; }
 
     /* Feedback modal — full width with margin */
