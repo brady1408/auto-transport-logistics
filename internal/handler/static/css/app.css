@@ -88,6 +88,10 @@ a:hover { text-decoration: underline; }
 .dropdown-item:focus-visible { background: var(--gray-100); outline: 2px solid var(--primary); outline-offset: -2px; text-decoration: none; }
 .dropdown-item.disabled { color: var(--gray-400); pointer-events: none; }
 .dropdown-divider { margin: 4px 6px; border: none; border-top: 1px solid rgba(198,198,205,0.2); }
+.dropdown-label {
+    padding: 6px 14px 3px; font-size: 10px; font-weight: 700; color: var(--gray-400);
+    text-transform: uppercase; letter-spacing: 0.06em; pointer-events: none; user-select: none;
+}
 .nav-user { display: flex; align-items: center; gap: 10px; color: var(--gray-600); font-size: 13px; font-weight: 500; }
 .nav-user .btn { border-radius: 8px; }
 .nav-hamburger {
