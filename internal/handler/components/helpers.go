@@ -1,6 +1,7 @@
 package components
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"strings"
@@ -9,6 +10,18 @@ import (
 	"github.com/brady1408/auto-transport-logistics/internal/auth"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
+
+// JSONAttr marshals v to a compact JSON string for embedding in an HTML
+// attribute. templ HTML-escapes attribute values, so the resulting quotes are
+// rendered as &#34; and read back correctly by JSON.parse in the browser.
+// On marshal error it returns "{}" rather than failing the render.
+func JSONAttr(v any) string {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return "{}"
+	}
+	return string(b)
+}
 
 // Brand holds white-label display values resolved from the incoming host.
 type Brand struct {

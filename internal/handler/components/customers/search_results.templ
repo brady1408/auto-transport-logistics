@@ -1,0 +1,35 @@
+package customers
+
+import (
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+)
+
+// SearchResults renders the typeahead dropdown for the customer-search widget.
+// It is returned as an HTML partial (not JSON) so HTMX can swap it directly
+// into the widget's results container. The prefix identifies which set of form
+// fields a selection should populate (e.g. "bill", "load", "drop", or "" for
+// the single-customer forms). Each row carries the customer as a data-attribute;
+// clicking it invokes the global atlinksSelectCustomer() helper defined in the
+// layout, which fills the read-only detail inputs and the hidden customer id.
+templ SearchResults(prefix string, customers []models.Customer) {
+	if len(customers) > 0 {
+		<ul class="customer-search-results" data-prefix={ prefix } role="listbox">
+			for _, c := range customers {
+				<li
+					class="search-result-item"
+					role="option"
+					tabindex="0"
+					data-customer={ components.JSONAttr(searchResultData(c)) }
+					onclick="atlinksSelectCustomer(this)"
+					onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();atlinksSelectCustomer(this);}"
+				>
+					<span class="search-result-name">{ c.Name }</span>
+					<span class="search-result-meta">{ searchResultMeta(c) }</span>
+				</li>
+			}
+		</ul>
+	} else {
+		<div class="customer-search-results customer-search-empty">No customers found</div>
+	}
+}

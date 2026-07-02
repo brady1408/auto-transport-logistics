@@ -95,6 +95,66 @@ templ Layout(pg PageContext, title string) {
 				}
 			});
 		</script>
+		<script>
+			// Shared customer-typeahead selection handler. Invoked from the
+			// dropdown rows rendered by customers.SearchResults. Reads the
+			// prefix from the results list and the customer payload from the
+			// clicked row, then populates the hidden id + read-only detail
+			// inputs. Handles the "prefixed" order-form fields (bill/load/drop)
+			// as well as the single-customer payment/invoice/credit-memo forms.
+			window.atlinksSelectCustomer = function (row) {
+				var list = row.closest('.customer-search-results');
+				var prefix = list ? (list.getAttribute('data-prefix') || '') : '';
+				var customer;
+				try { customer = JSON.parse(row.getAttribute('data-customer')); }
+				catch (e) { return; }
+
+				var p = prefix ? prefix + '_' : '';
+				// Try the prefixed id first, then fall back to the bare id used
+				// by the single-customer forms.
+				function setField(value, ids) {
+					for (var i = 0; i < ids.length; i++) {
+						var el = document.getElementById(ids[i]);
+						if (el) { el.value = value == null ? '' : value; return el; }
+					}
+					return null;
+				}
+
+				setField(customer.id, [p + 'customer_id', 'customer_id']);
+				setField(customer.number, [p + 'customer_number', 'customer_number']);
+				setField(customer.name, [p + 'customer_name', 'customer_name']);
+				setField(customer.address, [p + 'to_address', p + 'address', 'bill_to_address']);
+				setField(customer.address2, [p + 'to_address2', 'bill_to_address2']);
+				setField(customer.city, [p + 'to_city', p + 'city', 'bill_to_city']);
+				setField(customer.state, [p + 'to_state', p + 'state', 'bill_to_state']);
+				setField(customer.zip, [p + 'to_zip', p + 'zip', 'bill_to_zip']);
+				setField(customer.contact, [p + 'contact']);
+				setField(customer.phone, [p + 'phone']);
+
+				// Auto-fill order zones from the load/drop customer.
+				if (customer.zone) {
+					var zoneField = null;
+					if (prefix === 'load') zoneField = document.getElementById('origin_zone');
+					else if (prefix === 'drop') zoneField = document.getElementById('destination_zone');
+					if (zoneField) {
+						zoneField.value = customer.zone;
+						zoneField.dispatchEvent(new Event('change', { bubbles: true }));
+					}
+				}
+
+				// Reflect the chosen customer in the search box and close the
+				// dropdown. The results container (list.parentElement) and the
+				// search input are siblings inside the same .form-group.
+				var group = list ? list.closest('.form-group') : null;
+				if (group) {
+					var searchInput = group.querySelector('input[placeholder="Type to search..."]');
+					if (searchInput) searchInput.value = customer.name || '';
+				}
+				if (list && list.parentElement) {
+					list.parentElement.innerHTML = '';
+				}
+			};
+		</script>
 	</head>
 	<body class="bg-surface text-on-surface antialiased">
 		if pg.User != nil {

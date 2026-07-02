@@ -87,6 +87,7 @@ templ FormPage(pg components.PageContext, invoice *models.Invoice, isNew bool, e
 						<input
 							type="text" id="bill_customer_search" class="form-control"
 							placeholder="Type to search..."
+							autocomplete="off"
 							hx-get="/api/customers/search"
 							hx-trigger="keyup changed delay:300ms"
 							hx-target="#inv_customer_results"
@@ -184,20 +185,12 @@ func atInput() templ.Attributes {
 	return templ.Attributes{"@input": "$el.name='q'"}
 }
 
+// invoiceForm is the Alpine.js data component for the invoice form. Customer
+// selection is handled globally by atlinksSelectCustomer (see layout).
 templ invoiceFormScript() {
 	@templ.Raw(`<script>
 function invoiceForm() {
-    return {
-        selectCustomer(prefix, customer) {
-            document.getElementById('customer_id').value = customer.id;
-            document.getElementById('customer_number').value = customer.number || '';
-            document.getElementById('customer_name').value = customer.name || '';
-            document.getElementById('bill_to_address').value = customer.address || '';
-            document.getElementById('bill_to_city').value = customer.city || '';
-            document.getElementById('bill_to_state').value = customer.state || '';
-            document.getElementById('bill_to_zip').value = customer.zip || '';
-        }
-    }
+    return {}
 }
 </script>`)
 }
