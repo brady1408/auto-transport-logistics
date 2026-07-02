@@ -25,6 +25,13 @@ type Payment struct {
 	UpdatedAt       time.Time  `json:"updated_at"`
 }
 
+// Posted reports whether the payment has been posted (PostedAt set). A posted
+// payment is immutable: its header may not be edited or deleted, and invoice
+// applications may not be added or removed.
+func (p *Payment) Posted() bool {
+	return p.PostedAt != nil
+}
+
 type PaymentDetail struct {
 	ID             int       `json:"id"`
 	CompanyID      int       `json:"company_id"`

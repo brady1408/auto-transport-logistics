@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/brady1408/auto-transport-logistics/internal/audit"
@@ -34,8 +35,14 @@ func NewPaymentService(
 	}
 }
 
+// ErrPaymentPosted is returned when a caller attempts to apply or unapply a
+// posted payment. Posted payments are immutable; adjustments require a
+// correcting entry, not edits to the posted payment.
+var ErrPaymentPosted = errors.New("payment is posted; applications are locked")
+
 // ApplyPayment creates a payment_detail row, updates payment applied/unapplied
 // amounts, and updates invoice amount_paid/balance/status atomically.
+// Returns ErrPaymentPosted if the payment has been posted.
 func (s *PaymentService) ApplyPayment(ctx context.Context, paymentID, invoiceID int, amount string, discount string) error {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -47,6 +54,10 @@ func (s *PaymentService) ApplyPayment(ctx context.Context, paymentID, invoiceID 
 	payment, err := s.paymentStore.GetByIDTx(ctx, tx, paymentID)
 	if err != nil {
 		return fmt.Errorf("get payment: %w", err)
+	}
+
+	if payment.Posted() {
+		return ErrPaymentPosted
 	}
 
 	// Get current invoice
@@ -124,6 +135,7 @@ func (s *PaymentService) ApplyPayment(ctx context.Context, paymentID, invoiceID 
 }
 
 // UnapplyPayment removes a payment_detail and reverses the balance updates.
+// Returns ErrPaymentPosted if the payment has been posted.
 func (s *PaymentService) UnapplyPayment(ctx context.Context, paymentDetailID int) error {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -145,6 +157,10 @@ func (s *PaymentService) UnapplyPayment(ctx context.Context, paymentDetailID int
 	payment, err := s.paymentStore.GetByIDTx(ctx, tx, pd.PaymentID)
 	if err != nil {
 		return fmt.Errorf("get payment: %w", err)
+	}
+
+	if payment.Posted() {
+		return ErrPaymentPosted
 	}
 
 	currentAppliedCents := parseCentsPtr(payment.AppliedAmount)
