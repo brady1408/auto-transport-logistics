@@ -42,14 +42,11 @@ templ Table(result models.CustomerListResult, filter models.CustomerFilter) {
 								}
 							</td>
 							<td class="text-right">
-								<div class="btn-group">
-									<a href={ templ.SafeURL(fmt.Sprintf("/global/customers/%d/edit", c.ID)) } class="btn btn-sm">Edit</a>
-									<button
-										class="btn btn-sm btn-danger"
-										hx-delete={ fmt.Sprintf("/global/customers/%d", c.ID) }
-										hx-confirm={ fmt.Sprintf("Delete customer %s?", c.Name) }
-									>Delete</button>
-								</div>
+								@components.RowActionsMenu(components.RowActions{
+									EditURL:       fmt.Sprintf("/global/customers/%d/edit", c.ID),
+									DeleteURL:     fmt.Sprintf("/global/customers/%d", c.ID),
+									DeleteConfirm: fmt.Sprintf("Delete customer %s?", c.Name),
+								})
 							</td>
 						</tr>
 					}

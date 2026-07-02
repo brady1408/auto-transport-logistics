@@ -31,14 +31,11 @@ templ Table(result models.VendorListResult, filter models.VendorFilter) {
 							<td>{ components.FormatPhone(v.Phone) }</td>
 							<td>{ components.Deref(v.Terms) }</td>
 							<td class="text-right">
-								<div class="btn-group">
-									<a href={ templ.SafeURL(fmt.Sprintf("/global/vendors/%d/edit", v.ID)) } class="btn btn-sm">Edit</a>
-									<button
-										class="btn btn-sm btn-danger"
-										hx-delete={ fmt.Sprintf("/global/vendors/%d", v.ID) }
-										hx-confirm={ fmt.Sprintf("Delete vendor %s?", v.Name) }
-									>Delete</button>
-								</div>
+								@components.RowActionsMenu(components.RowActions{
+									EditURL:       fmt.Sprintf("/global/vendors/%d/edit", v.ID),
+									DeleteURL:     fmt.Sprintf("/global/vendors/%d", v.ID),
+									DeleteConfirm: fmt.Sprintf("Delete vendor %s?", v.Name),
+								})
 							</td>
 						</tr>
 					}

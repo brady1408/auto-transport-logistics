@@ -44,14 +44,11 @@ templ Table(result models.EmployeeListResult, filter models.EmployeeFilter) {
 								}
 							</td>
 							<td class="text-right">
-								<div class="btn-group">
-									<a href={ templ.SafeURL(fmt.Sprintf("/global/employees/%d/edit", e.ID)) } class="btn btn-sm">Edit</a>
-									<button
-										class="btn btn-sm btn-danger"
-										hx-delete={ fmt.Sprintf("/global/employees/%d", e.ID) }
-										hx-confirm={ fmt.Sprintf("Delete employee %s?", e.Name) }
-									>Delete</button>
-								</div>
+								@components.RowActionsMenu(components.RowActions{
+									EditURL:       fmt.Sprintf("/global/employees/%d/edit", e.ID),
+									DeleteURL:     fmt.Sprintf("/global/employees/%d", e.ID),
+									DeleteConfirm: fmt.Sprintf("Delete employee %s?", e.Name),
+								})
 							</td>
 						</tr>
 					}

@@ -51,11 +51,10 @@ templ ItemsTable(items []store.ItemRecord) {
 							<td>{ components.Deref(i.DefaultAmount) }</td>
 							<td>{ components.Deref(i.CalcType) }</td>
 							<td class="text-right">
-								<button
-									class="btn btn-sm btn-danger"
-									hx-delete={ fmt.Sprintf("/global/items/%d", i.ID) }
-									hx-confirm={ fmt.Sprintf("Delete %s?", i.Item) }
-								>Delete</button>
+								@components.RowActionsMenu(components.RowActions{
+									DeleteURL:     fmt.Sprintf("/global/items/%d", i.ID),
+									DeleteConfirm: fmt.Sprintf("Delete %s?", i.Item),
+								})
 							</td>
 						</tr>
 					}

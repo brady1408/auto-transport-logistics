@@ -26,13 +26,10 @@ templ Table(zones []models.Zone) {
 							<td>{ components.Deref(z.Description) }</td>
 							<td>{ components.Deref(z.Region) }</td>
 							<td class="text-right">
-								<div class="btn-group">
-									<button
-										class="btn btn-sm btn-danger"
-										hx-delete={ fmt.Sprintf("/global/zones/%d", z.ID) }
-										hx-confirm={ fmt.Sprintf("Delete zone %s?", z.Zone) }
-									>Delete</button>
-								</div>
+								@components.RowActionsMenu(components.RowActions{
+									DeleteURL:     fmt.Sprintf("/global/zones/%d", z.ID),
+									DeleteConfirm: fmt.Sprintf("Delete zone %s?", z.Zone),
+								})
 							</td>
 						</tr>
 					}

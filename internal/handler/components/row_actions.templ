@@ -1,0 +1,72 @@
+package components
+
+// RowActions configures the quiet per-row overflow menu shared across list
+// tables. It replaces the loud inline red "Delete" pill: navigation actions
+// (View/Edit) and the destructive Delete now live inside a subdued "⋯" menu,
+// with Delete rendered as red text at the bottom.
+//
+// Any field left empty is omitted. The Delete endpoint and confirm behavior are
+// carried through unchanged — this is a presentation change only.
+type RowActions struct {
+	// ViewURL, when set, renders a "View" item linking to the detail page.
+	ViewURL string
+	// EditURL, when set, renders an "Edit" item linking to the edit page.
+	EditURL string
+	// DeleteURL, when set, renders a red "Delete" item that issues hx-delete.
+	DeleteURL string
+	// DeleteConfirm is the hx-confirm message shown before deleting.
+	DeleteConfirm string
+	// DeleteTarget / DeleteSwap pass through to hx-target / hx-swap when the
+	// caller needs the delete to swap a specific element (e.g. an inline list
+	// that re-renders its own table body). Leave empty for the default.
+	DeleteTarget string
+	DeleteSwap   string
+}
+
+// HasMenu reports whether there is at least one action to show.
+func (r RowActions) HasMenu() bool {
+	return r.ViewURL != "" || r.EditURL != "" || r.DeleteURL != ""
+}
+
+// RowActionsMenu renders the shared quiet overflow menu for a table row.
+templ RowActionsMenu(a RowActions) {
+	if a.HasMenu() {
+		<div class="row-actions" x-data="{ open: false }" @keydown.escape.window="open = false">
+			<button
+				type="button"
+				class="row-actions-trigger"
+				aria-label="Row actions"
+				:aria-expanded="open"
+				@click="open = !open"
+				@click.outside="open = false"
+			>⋯</button>
+			<div class="row-actions-menu" x-show="open" x-cloak @click="open = false">
+				if a.ViewURL != "" {
+					<a href={ templ.SafeURL(a.ViewURL) } class="row-actions-item">View</a>
+				}
+				if a.EditURL != "" {
+					<a href={ templ.SafeURL(a.EditURL) } class="row-actions-item">Edit</a>
+				}
+				if a.DeleteURL != "" {
+					if a.ViewURL != "" || a.EditURL != "" {
+						<hr class="row-actions-divider"/>
+					}
+					<button
+						type="button"
+						class="row-actions-item row-actions-item-danger"
+						hx-delete={ a.DeleteURL }
+						if a.DeleteConfirm != "" {
+							hx-confirm={ a.DeleteConfirm }
+						}
+						if a.DeleteTarget != "" {
+							hx-target={ a.DeleteTarget }
+						}
+						if a.DeleteSwap != "" {
+							hx-swap={ a.DeleteSwap }
+						}
+					>Delete</button>
+				}
+			</div>
+		</div>
+	}
+}
