@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -205,6 +206,25 @@ func (s *InvoiceService) GenerateFromOrder(ctx context.Context, orderID int) (*m
 	s.audit.Log(ctx, "invoices", inv.ID, "INSERT", nil, inv)
 
 	return inv, nil
+}
+
+// ErrLinesLocked is returned when a caller attempts to add, remove, or edit line
+// items on an invoice whose lines are locked (posted, paid, or void). Such
+// invoices are immutable and must be adjusted with a credit memo.
+var ErrLinesLocked = errors.New("invoice lines are locked; use a credit memo to adjust")
+
+// EnsureLinesEditable returns ErrLinesLocked if the invoice's line items may not
+// be mutated (posted, paid, or void). Handlers call this before add/remove/edit
+// of invoice details to enforce immutability server-side.
+func (s *InvoiceService) EnsureLinesEditable(ctx context.Context, invoiceID int) error {
+	inv, err := s.invoiceStore.GetByID(ctx, invoiceID)
+	if err != nil {
+		return fmt.Errorf("get invoice: %w", err)
+	}
+	if inv.LinesLocked() {
+		return ErrLinesLocked
+	}
+	return nil
 }
 
 // RecalcTotals recalculates subtotal/tax/total from detail lines.

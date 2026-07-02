@@ -1,0 +1,96 @@
+package components
+
+// NotFoundPage renders a branded 404 for authenticated users inside the app
+// layout (nav intact), with links back to the Dashboard and Orders.
+templ NotFoundPage(pg PageContext) {
+	@Layout(pg, "Page Not Found - "+pg.Brand.Name) {
+		<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:50vh; text-align:center; padding:2rem;">
+			<div style="max-width:480px;">
+				<div style="font-family:var(--font-heading); font-size:4rem; font-weight:800; letter-spacing:-0.04em; color:var(--primary-container); line-height:1;">404</div>
+				<div style="height:4px; width:48px; background:#6ffbbe; margin:1rem auto 1.5rem; border-radius:2px;"></div>
+				<h2 style="margin-bottom:0.5rem;">Page not found</h2>
+				<p style="color:var(--gray-500); margin-bottom:1.5rem;">
+					We couldn't find the page you were looking for. It may have been moved, or the link may be incorrect.
+				</p>
+				<div class="btn-group" style="justify-content:center;">
+					<a href="/" class="btn btn-primary">Back to Dashboard</a>
+					<a href="/dispatch/orders" class="btn">Go to Orders</a>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+// NotFoundFragment renders a minimal 404 message for HTMX/partial requests,
+// so a swapped-in target doesn't get a full HTML document.
+templ NotFoundFragment() {
+	<div style="text-align:center; padding:2rem; color:var(--gray-500);">
+		<h3 style="margin-bottom:0.25rem;">Page not found</h3>
+		<p>The requested resource could not be found. <a href="/">Return to the dashboard</a>.</p>
+	</div>
+}
+
+// NotFoundPublic renders a minimal branded 404 for unauthenticated requests,
+// matching the login-page aesthetic (navy #00174b + mint #6ffbbe accent).
+templ NotFoundPublic(brand Brand) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>Page Not Found - { brand.Name }</title>
+			<link rel="icon" type="image/svg+xml" href={ brand.FaviconFile }/>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap"/>
+			<link rel="stylesheet" href={ AssetVersion("/static/css/app.css") }/>
+			<style>
+				.nf-wrap {
+					min-height: 100vh; display: flex; align-items: center; justify-content: center;
+					padding: 24px;
+					background-color: #00174b;
+					background-image:
+						radial-gradient(at 0% 0%, rgba(0,83,219,0.15) 0px, transparent 50%),
+						radial-gradient(at 100% 100%, rgba(111,251,190,0.1) 0px, transparent 50%);
+				}
+				.nf-card {
+					width: 100%; max-width: 440px; text-align: center;
+				}
+				.nf-brand {
+					font-family: var(--font-heading); font-weight: 800; font-size: 28px;
+					letter-spacing: -0.04em; color: white; margin-bottom: 8px;
+				}
+				.nf-accent { height: 4px; width: 48px; background: #6ffbbe; margin: 0 auto 40px; border-radius: 2px; }
+				.nf-code {
+					font-family: var(--font-heading); font-weight: 800; font-size: 72px;
+					letter-spacing: -0.04em; color: white; line-height: 1; margin: 0;
+				}
+				.nf-title {
+					font-family: var(--font-heading); font-size: 24px; font-weight: 700;
+					color: white; margin: 16px 0 12px;
+				}
+				.nf-text { color: #b4c5ff; font-size: 15px; font-weight: 500; line-height: 1.6; margin: 0 0 32px; }
+				.nf-link {
+					display: inline-flex; align-items: center; gap: 8px;
+					padding: 14px 28px; background: #6ffbbe; color: #00174b;
+					border-radius: 12px; font-size: 13px; font-weight: 700;
+					text-transform: uppercase; letter-spacing: 0.02em; text-decoration: none;
+					transition: opacity 0.15s;
+				}
+				.nf-link:hover { opacity: 0.9; }
+			</style>
+		</head>
+		<body>
+			<div class="nf-wrap">
+				<div class="nf-card">
+					<div class="nf-brand">{ brand.Name }</div>
+					<div class="nf-accent"></div>
+					<p class="nf-code">404</p>
+					<h1 class="nf-title">Page not found</h1>
+					<p class="nf-text">The page you're looking for doesn't exist or you may need to sign in to view it.</p>
+					<a href="/login" class="nf-link">Go to Sign In</a>
+				</div>
+			</div>
+		</body>
+	</html>
+}

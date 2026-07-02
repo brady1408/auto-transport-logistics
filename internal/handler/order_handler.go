@@ -153,7 +153,7 @@ func (h *OrderHandler) show(w http.ResponseWriter, r *http.Request) {
 
 	o, err := h.store.GetByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, "Order not found", http.StatusNotFound)
+		h.deps.NotFound(w, r)
 		return
 	}
 

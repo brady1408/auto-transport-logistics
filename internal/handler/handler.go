@@ -214,6 +214,32 @@ func (d *Deps) renderTempl(w http.ResponseWriter, r *http.Request, c templ.Compo
 	}
 }
 
+// renderTemplStatus renders a templ.Component with an explicit HTTP status code.
+func (d *Deps) renderTemplStatus(w http.ResponseWriter, r *http.Request, status int, c templ.Component) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
+	if err := c.Render(r.Context(), w); err != nil {
+		log.Printf("template render error: %v", err)
+	}
+}
+
+// NotFound renders the branded 404 page with a 404 status. Authenticated users
+// get the full app layout (nav intact); unauthenticated requests get a minimal
+// branded page linking to /login. HTMX/partial requests get a simple fragment
+// so a swapped-in target doesn't receive a full HTML document.
+func (d *Deps) NotFound(w http.ResponseWriter, r *http.Request) {
+	if isHTMX(r) {
+		d.renderTemplStatus(w, r, http.StatusNotFound, components.NotFoundFragment())
+		return
+	}
+	if _, ok := auth.GetUserFromRequest(r); ok {
+		pg := d.pageContext(w, r)
+		d.renderTemplStatus(w, r, http.StatusNotFound, components.NotFoundPage(pg))
+		return
+	}
+	d.renderTemplStatus(w, r, http.StatusNotFound, components.NotFoundPublic(components.BrandFromHost(r.Host)))
+}
+
 // redirect sends an HTMX-aware redirect.
 func redirect(w http.ResponseWriter, r *http.Request, url string) {
 	if isHTMX(r) {

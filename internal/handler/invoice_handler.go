@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"github.com/brady1408/auto-transport-logistics/internal/auth"
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components/invoices"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/service"
 )
 
 type invoiceStore interface {
@@ -43,6 +45,7 @@ type invoicePaymentDetailStore interface {
 type invoiceService interface {
 	VoidInvoice(ctx context.Context, id int) error
 	RecalcTotals(ctx context.Context, invoiceID int) error
+	EnsureLinesEditable(ctx context.Context, invoiceID int) error
 }
 
 type InvoiceHandler struct {
@@ -167,7 +170,7 @@ func (h *InvoiceHandler) show(w http.ResponseWriter, r *http.Request) {
 
 	inv, err := h.store.GetByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, "Invoice not found", http.StatusNotFound)
+		h.deps.NotFound(w, r)
 		return
 	}
 
@@ -319,11 +322,34 @@ func (h *InvoiceHandler) printView(w http.ResponseWriter, r *http.Request) {
 	h.deps.renderTempl(w, r, invoices.PrintPage(inv, details))
 }
 
+// rejectLineMutation handles a refused invoice line add/remove. For a locked
+// invoice it re-renders the (now locked) detail table so the stale Remove/Add
+// controls disappear in place and the lock note is shown; any other error is a
+// server error. The mutation itself is never applied.
+func (h *InvoiceHandler) rejectLineMutation(w http.ResponseWriter, r *http.Request, invoiceID int, cause error) {
+	if !errors.Is(cause, service.ErrLinesLocked) {
+		serverError(w, cause)
+		return
+	}
+	details, err := h.detailStore.ListByInvoice(r.Context(), invoiceID)
+	if err != nil {
+		log.Printf("list details for invoice %d: %v", invoiceID, err)
+	}
+	h.deps.setFlash(w, "Posted invoices are locked; use a credit memo to adjust.")
+	h.deps.renderTempl(w, r, invoices.DetailTable(details, invoiceID, true))
+}
+
 // Invoice detail inline CRUD
 func (h *InvoiceHandler) listDetails(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	inv, err := h.store.GetByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Invoice not found", http.StatusNotFound)
 		return
 	}
 
@@ -333,13 +359,18 @@ func (h *InvoiceHandler) listDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deps.renderTempl(w, r, invoices.DetailTable(details, id))
+	h.deps.renderTempl(w, r, invoices.DetailTable(details, id, inv.LinesLocked()))
 }
 
 func (h *InvoiceHandler) addDetail(w http.ResponseWriter, r *http.Request) {
 	invoiceID, err := parseID(r)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.invoiceSvc.EnsureLinesEditable(r.Context(), invoiceID); err != nil {
+		h.rejectLineMutation(w, r, invoiceID, err)
 		return
 	}
 
@@ -369,12 +400,12 @@ func (h *InvoiceHandler) addDetail(w http.ResponseWriter, r *http.Request) {
 
 	h.deps.Audit.Log(r.Context(), "invoice_details", d.ID, "INSERT", nil, d)
 
-	// Re-render detail table
+	// Re-render detail table (still editable — the add just succeeded).
 	details, err := h.detailStore.ListByInvoice(r.Context(), invoiceID)
 	if err != nil {
 		log.Printf("list details for invoice %d: %v", invoiceID, err)
 	}
-	h.deps.renderTempl(w, r, invoices.DetailTable(details, invoiceID))
+	h.deps.renderTempl(w, r, invoices.DetailTable(details, invoiceID, false))
 }
 
 func (h *InvoiceHandler) removeDetail(w http.ResponseWriter, r *http.Request) {
@@ -392,6 +423,11 @@ func (h *InvoiceHandler) removeDetail(w http.ResponseWriter, r *http.Request) {
 
 	invoiceID := detail.InvoiceID
 
+	if err := h.invoiceSvc.EnsureLinesEditable(r.Context(), invoiceID); err != nil {
+		h.rejectLineMutation(w, r, invoiceID, err)
+		return
+	}
+
 	if err := h.detailStore.Delete(r.Context(), detailID); err != nil {
 		serverError(w, err)
 		return
@@ -404,12 +440,12 @@ func (h *InvoiceHandler) removeDetail(w http.ResponseWriter, r *http.Request) {
 
 	h.deps.Audit.Log(r.Context(), "invoice_details", detailID, "DELETE", detail, nil)
 
-	// Re-render detail table
+	// Re-render detail table (still editable — the remove just succeeded).
 	details, err := h.detailStore.ListByInvoice(r.Context(), invoiceID)
 	if err != nil {
 		log.Printf("list details for invoice %d: %v", invoiceID, err)
 	}
-	h.deps.renderTempl(w, r, invoices.DetailTable(details, invoiceID))
+	h.deps.renderTempl(w, r, invoices.DetailTable(details, invoiceID, false))
 }
 
 func (h *InvoiceHandler) recalcForm(w http.ResponseWriter, r *http.Request) {
