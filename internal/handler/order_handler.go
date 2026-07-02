@@ -31,6 +31,16 @@ type waitingGridStore interface {
 	WaitingGrid(ctx context.Context, state string) ([]store.WaitingVehicleRow, error)
 }
 
+// tripPickerStore lists trips so the waiting grid can offer active trips to assign to.
+type tripPickerStore interface {
+	List(ctx context.Context, f models.TripFilter) (*models.TripListResult, error)
+}
+
+// tripAssignService assigns a waiting vehicle to a trip (Waiting → Scheduled).
+type tripAssignService interface {
+	AssignVehicleToTrip(ctx context.Context, tripID, vehicleID int, bayNumber string) error
+}
+
 type orderAttachmentStore interface {
 	ListByEntity(ctx context.Context, category string, entityID int) ([]models.Attachment, error)
 }
@@ -52,6 +62,8 @@ type OrderHandler struct {
 	store             orderStore
 	invoiceSvc        orderInvoiceService
 	waitingStore      waitingGridStore
+	tripStore         tripPickerStore
+	tripAssignSvc     tripAssignService
 	attachmentStore   orderAttachmentStore
 	loadboardStore    loadboardSubhaulStore
 	zonePricingStore  orderZonePricingStore
@@ -59,8 +71,8 @@ type OrderHandler struct {
 	deps              *Deps
 }
 
-func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, waitingStore waitingGridStore, attachmentStore orderAttachmentStore, loadboardStore loadboardSubhaulStore, zonePricingStore orderZonePricingStore, vehicleStore orderVehicleStore, deps *Deps) *OrderHandler {
-	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, waitingStore: waitingStore, attachmentStore: attachmentStore, loadboardStore: loadboardStore, zonePricingStore: zonePricingStore, vehicleStore: vehicleStore, deps: deps}
+func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, waitingStore waitingGridStore, tripStore tripPickerStore, tripAssignSvc tripAssignService, attachmentStore orderAttachmentStore, loadboardStore loadboardSubhaulStore, zonePricingStore orderZonePricingStore, vehicleStore orderVehicleStore, deps *Deps) *OrderHandler {
+	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, waitingStore: waitingStore, tripStore: tripStore, tripAssignSvc: tripAssignSvc, attachmentStore: attachmentStore, loadboardStore: loadboardStore, zonePricingStore: zonePricingStore, vehicleStore: vehicleStore, deps: deps}
 }
 
 func (h *OrderHandler) Register(mux *http.ServeMux) {
@@ -75,6 +87,8 @@ func (h *OrderHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /dispatch/orders/{id}/invoice", h.generateInvoice)
 	mux.HandleFunc("GET /dispatch/orders/{id}/counts", h.vehicleCounts)
 	mux.HandleFunc("GET /dispatch/waiting", h.waitingGrid)
+	mux.HandleFunc("GET /dispatch/waiting/trip-picker", h.waitingTripPicker)
+	mux.HandleFunc("POST /dispatch/waiting/assign", h.waitingAssign)
 }
 
 func (h *OrderHandler) list(w http.ResponseWriter, r *http.Request) {
@@ -347,6 +361,57 @@ func (h *OrderHandler) waitingGrid(w http.ResponseWriter, r *http.Request) {
 	}
 	pg := h.deps.pageContext(w, r)
 	h.deps.renderTempl(w, r, orders.WaitingGridPage(pg, rows, stateFilter))
+}
+
+// waitingTripPicker renders the inline list of active trips a waiting vehicle can be assigned to.
+func (h *OrderHandler) waitingTripPicker(w http.ResponseWriter, r *http.Request) {
+	vehicleID := formInt(r, "vehicle_id")
+	if vehicleID == nil {
+		http.Error(w, "vehicle_id is required", http.StatusBadRequest)
+		return
+	}
+	stateFilter := r.URL.Query().Get("state")
+
+	result, err := h.tripStore.List(r.Context(), models.TripFilter{
+		Active:   "active",
+		SortBy:   "trip_date",
+		SortDir:  "desc",
+		Page:     1,
+		PageSize: 200,
+	})
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
+	h.deps.renderTempl(w, r, orders.WaitingTripPicker(*vehicleID, result.Items, stateFilter))
+}
+
+// waitingAssign assigns a waiting vehicle to the chosen trip, then re-renders the grid.
+func (h *OrderHandler) waitingAssign(w http.ResponseWriter, r *http.Request) {
+	vehicleID := formInt(r, "vehicle_id")
+	tripID := formInt(r, "trip_id")
+	if vehicleID == nil || tripID == nil {
+		http.Error(w, "vehicle_id and trip_id are required", http.StatusBadRequest)
+		return
+	}
+	stateFilter := formStringRequired(r, "state")
+
+	if err := h.tripAssignSvc.AssignVehicleToTrip(r.Context(), *tripID, *vehicleID, ""); err != nil {
+		serverError(w, err)
+		return
+	}
+
+	rows, err := h.waitingStore.WaitingGrid(r.Context(), stateFilter)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
+	// Re-render the grid (the assigned vehicle is no longer Waiting, so its row drops out)
+	// with an out-of-band flash banner following the app's success-flash pattern.
+	h.deps.renderTempl(w, r, orders.WaitingGridTable(rows, stateFilter))
+	h.deps.renderTempl(w, r, orders.WaitingFlashOOB("Vehicle assigned to trip"))
 }
 
 func bindOrderForm(r *http.Request) *models.Order {
