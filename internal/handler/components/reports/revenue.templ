@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/charts"
 	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
@@ -28,6 +29,14 @@ templ RevenuePage(pg components.PageContext, rows []store.RevenueByCustomerRow, 
 			</div>
 			<button type="submit" class="btn btn-primary">Filter</button>
 		</form>
+		if len(rows) > 0 {
+			<div class="chart-card card no-print" style="margin-bottom:16px;">
+				<div class="card-header">Top Customers by Revenue</div>
+				<div class="card-body">
+					@charts.HBarChart(revenueTopCustomersData(rows, 10))
+				</div>
+			</div>
+		}
 		<div class="table-container">
 			<table class="report-table">
 				<thead>
