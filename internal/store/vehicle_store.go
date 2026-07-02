@@ -334,6 +334,7 @@ type GlobalSearchResult struct {
 	CustomerName  string
 	TripID        *int
 	LoadNumber    string
+	InvoiceID     *int
 	InvoiceNumber string
 }
 
@@ -347,7 +348,7 @@ func (s *VehicleStore) SearchGlobal(ctx context.Context, query string, limit int
 		ov.id, COALESCE(ov.vin, ''), COALESCE(ov.year, ''), COALESCE(ov.make, ''), COALESCE(ov.model, ''),
 		COALESCE(ov.status, ''), COALESCE(o.id, 0), COALESCE(o.order_number, ''),
 		COALESCE(o.bill_customer_name, ''), ov.trip_id,
-		COALESCE(ov.load_number, ''), COALESCE(ov.invoice_number, '')
+		COALESCE(ov.load_number, ''), ov.invoice_id, COALESCE(ov.invoice_number, '')
 	FROM order_vehicles ov
 	LEFT JOIN orders o ON o.id = ov.order_id AND o.deleted_at IS NULL
 	WHERE ov.company_id = $1 AND ov.deleted_at IS NULL AND (ov.vin ILIKE $2 OR o.order_number ILIKE $2 OR o.bill_customer_name ILIKE $2)
@@ -361,7 +362,7 @@ func (s *VehicleStore) SearchGlobal(ctx context.Context, query string, limit int
 		var r GlobalSearchResult
 		if err := row.Scan(&r.ID, &r.VIN, &r.Year, &r.Make, &r.Model, &r.Status,
 			&r.OrderID, &r.OrderNumber, &r.CustomerName, &r.TripID,
-			&r.LoadNumber, &r.InvoiceNumber); err != nil {
+			&r.LoadNumber, &r.InvoiceID, &r.InvoiceNumber); err != nil {
 			return GlobalSearchResult{}, err
 		}
 		return r, nil

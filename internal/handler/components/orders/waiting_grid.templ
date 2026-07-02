@@ -3,6 +3,7 @@ package orders
 import (
 	"fmt"
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 	"github.com/brady1408/auto-transport-logistics/internal/store"
 )
 
@@ -46,11 +47,22 @@ templ WaitingGridPage(pg components.PageContext, rows []store.WaitingVehicleRow,
 				</div>
 			</div>
 		</div>
+		<!-- Flash slot (out-of-band swap target for assign success) -->
+		<div id="waiting-flash"></div>
 		<!-- Waiting Table -->
 		<div id="waiting-table">
 			@WaitingGridTable(rows, stateFilter)
 		</div>
 	}
+}
+
+// WaitingFlashOOB is an out-of-band swap that drops a transient success banner into
+// the #waiting-flash slot after an HTMX assign, mirroring the app's flash pattern.
+templ WaitingFlashOOB(msg string) {
+	<div id="waiting-flash" hx-swap-oob="innerHTML">
+		<div class="alert alert-success" id="waiting-flash-msg" style="margin-bottom:1rem;">{ msg }</div>
+		<script>setTimeout(function(){ var el = document.getElementById('waiting-flash-msg'); if (el) el.remove(); }, 4000);</script>
+	</div>
 }
 
 templ WaitingGridTable(rows []store.WaitingVehicleRow, stateFilter string) {
@@ -95,7 +107,33 @@ templ WaitingGridTable(rows []store.WaitingVehicleRow, stateFilter string) {
 									}
 								</td>
 								<td class="px-6 py-3 text-right">
-									<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)) } class="bg-primary-container text-white px-3 py-1.5 rounded-lg text-xs font-bold no-underline hover:opacity-90 transition-all">View Order</a>
+									<div class="inline-flex items-center gap-2 justify-end" x-data="{ open: false }" @keydown.escape.window="open = false">
+										<div class="relative">
+											<button
+												type="button"
+												class="bg-primary-container text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 transition-all inline-flex items-center gap-1"
+												@click="open = !open"
+											>
+												<span class="material-symbols-outlined text-[16px] leading-none">local_shipping</span> Assign to Trip
+											</button>
+											<div
+												x-show="open"
+												x-cloak
+												@click.outside="open = false"
+												x-transition.opacity
+												class="absolute right-0 mt-2 w-80 z-20 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant/20 text-left"
+											>
+												<div
+													hx-get={ fmt.Sprintf("/dispatch/waiting/trip-picker?vehicle_id=%d&state=%s", r.VehicleID, stateFilter) }
+													hx-trigger="intersect once"
+													hx-swap="innerHTML"
+												>
+													<p class="text-outline p-4 text-center text-sm">Loading trips...</p>
+												</div>
+											</div>
+										</div>
+										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)) } class="bg-surface-container-high text-on-surface px-3 py-1.5 rounded-lg text-xs font-bold no-underline hover:opacity-90 transition-all">View Order</a>
+									</div>
 								</td>
 							</tr>
 						}
@@ -106,4 +144,62 @@ templ WaitingGridTable(rows []store.WaitingVehicleRow, stateFilter string) {
 			</table>
 		</div>
 	</div>
+}
+
+// WaitingTripPicker renders the active-trip chooser inside a waiting-grid row popover.
+// Selecting a trip posts to /dispatch/waiting/assign, which swaps the whole grid.
+templ WaitingTripPicker(vehicleID int, trips []models.Trip, stateFilter string) {
+	<div class="max-h-80 overflow-y-auto">
+		<div class="px-4 py-3 border-b border-outline-variant/20">
+			<p class="text-[10px] font-bold text-outline uppercase tracking-widest">Assign to active trip</p>
+		</div>
+		if len(trips) > 0 {
+			<ul class="divide-y divide-outline-variant/10">
+				for _, t := range trips {
+					<li class="px-4 py-2.5 hover:bg-surface-container-low/60 transition-colors flex items-center justify-between gap-3">
+						<div class="min-w-0">
+							<p class="text-sm font-bold text-on-surface truncate">Trip { t.LoadNumber }</p>
+							<p class="text-[11px] text-on-surface-variant truncate">
+								{ tripPickerMeta(t) }
+							</p>
+						</div>
+						<button
+							type="button"
+							class="shrink-0 bg-primary-container text-white px-2.5 py-1 rounded-md text-[11px] font-bold hover:opacity-90 transition-all"
+							hx-post="/dispatch/waiting/assign"
+							hx-vals={ fmt.Sprintf(`{"vehicle_id": "%d", "trip_id": "%d", "state": "%s"}`, vehicleID, t.ID, stateFilter) }
+							hx-target="#waiting-table"
+							hx-swap="innerHTML"
+							hx-confirm={ fmt.Sprintf("Assign this vehicle to trip %s?", t.LoadNumber) }
+						>Assign</button>
+					</li>
+				}
+			</ul>
+		} else {
+			<p class="text-outline p-4 text-center text-sm">No active trips available</p>
+		}
+	</div>
+}
+
+// tripPickerMeta builds a compact "driver · truck # · date" line for the picker,
+// omitting any pieces the trip doesn't have.
+func tripPickerMeta(t models.Trip) string {
+	parts := make([]string, 0, 3)
+	if d := components.Deref(t.Driver); d != "" {
+		parts = append(parts, d)
+	}
+	if tn := components.Deref(t.TruckNumber); tn != "" {
+		parts = append(parts, "Truck "+tn)
+	}
+	if t.TripDate != nil {
+		parts = append(parts, t.TripDate.Format("Jan 2, 2006"))
+	}
+	if len(parts) == 0 {
+		return "—"
+	}
+	out := parts[0]
+	for _, p := range parts[1:] {
+		out += " · " + p
+	}
+	return out
 }
