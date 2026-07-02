@@ -229,9 +229,11 @@ templ customerFieldset(legend string, prefix string, customerID *int, customerNu
 					id={ prefix + "_customer_search" }
 					class="form-control"
 					placeholder="Type to search..."
+					autocomplete="off"
 					hx-get="/api/customers/search"
 					hx-trigger="keyup changed delay:300ms"
 					hx-target={ "#" + prefix + "_customer_results" }
+					hx-vals={ fmt.Sprintf(`{"prefix": "%s"}`, prefix) }
 					hx-params="*"
 					{ atInput()... }
 				/>
@@ -285,9 +287,11 @@ templ customerFieldsetLoadDrop(legend string, prefix string, customerID *int, cu
 					id={ prefix + "_customer_search" }
 					class="form-control"
 					placeholder="Type to search..."
+					autocomplete="off"
 					hx-get="/api/customers/search"
 					hx-trigger="keyup changed delay:300ms"
 					hx-target={ "#" + prefix + "_customer_results" }
+					hx-vals={ fmt.Sprintf(`{"prefix": "%s"}`, prefix) }
 					hx-params="*"
 					{ atInput()... }
 				/>
@@ -348,46 +352,13 @@ func orderFormTitle(isNew bool, order *models.Order) string {
 	return "Edit Order: " + order.OrderNumber
 }
 
+// orderForm is the Alpine.js data component for the order form. Customer
+// selection is handled globally by atlinksSelectCustomer (see layout), so this
+// only needs to provide a valid x-data object.
 templ orderFormScript() {
 	@templ.Raw(`<script>
 function orderForm() {
-    return {
-        selectCustomer(prefix, customer) {
-            document.getElementById(prefix + '_customer_id').value = customer.id;
-            document.getElementById(prefix + '_customer_number').value = customer.number || '';
-            document.getElementById(prefix + '_customer_name').value = customer.name || '';
-            if (document.getElementById(prefix + '_address') || document.getElementById(prefix + '_to_address')) {
-                let addrField = document.getElementById(prefix + '_to_address') || document.getElementById(prefix + '_address');
-                if (addrField) addrField.value = customer.address || '';
-            }
-            let cityField = document.getElementById(prefix + '_to_city') || document.getElementById(prefix + '_city');
-            if (cityField) cityField.value = customer.city || '';
-            let stateField = document.getElementById(prefix + '_to_state') || document.getElementById(prefix + '_state');
-            if (stateField) stateField.value = customer.state || '';
-            let zipField = document.getElementById(prefix + '_to_zip') || document.getElementById(prefix + '_zip');
-            if (zipField) zipField.value = customer.zip || '';
-            let contactField = document.getElementById(prefix + '_contact');
-            if (contactField) contactField.value = customer.contact || '';
-            let phoneField = document.getElementById(prefix + '_phone');
-            if (phoneField) phoneField.value = customer.phone || '';
-            // Auto-fill zone from customer
-            if (customer.zone) {
-                if (prefix === 'load') {
-                    let ozField = document.getElementById('origin_zone');
-                    if (ozField) {
-                        ozField.value = customer.zone;
-                        ozField.dispatchEvent(new Event('change', {bubbles: true}));
-                    }
-                } else if (prefix === 'drop') {
-                    let dzField = document.getElementById('destination_zone');
-                    if (dzField) {
-                        dzField.value = customer.zone;
-                        dzField.dispatchEvent(new Event('change', {bubbles: true}));
-                    }
-                }
-            }
-        }
-    }
+    return {}
 }
 </script>`)
 }

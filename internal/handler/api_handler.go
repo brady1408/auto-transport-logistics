@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components/customers"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
@@ -36,50 +37,28 @@ func (h *APIHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/vin/decode", h.vinDecode)
 }
 
-type customerSearchResult struct {
-	ID      int     `json:"id"`
-	Number  *string `json:"number"`
-	Name    string  `json:"name"`
-	Address *string `json:"address"`
-	City    *string `json:"city"`
-	State   *string `json:"state"`
-	Zip     *string `json:"zip"`
-	Contact *string `json:"contact"`
-	Phone   *string `json:"phone"`
-	Zone    *string `json:"zone"`
-}
-
+// customerSearch serves the typeahead dropdown for the customer-search widget
+// used on the order, payment, invoice, and credit-memo forms. It renders an
+// HTML partial (customers.SearchResults) so HTMX can swap it directly into the
+// widget's results container — returning JSON here would render as raw text.
+// The optional "prefix" param (e.g. "bill"/"load"/"drop") tells the client which
+// set of form fields a selection should populate.
 func (h *APIHandler) customerSearch(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query().Get("q")
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	prefix := r.URL.Query().Get("prefix")
 	if q == "" {
-		writeJSON(w, []customerSearchResult{})
+		// Empty query: render nothing so the dropdown collapses.
 		return
 	}
 
-	// Use customer store list with search filter, limit to 10
+	// Use customer store list with search filter, limit to 10.
 	result, err := h.custStore.List(r.Context(), models.CustomerFilter{Search: q, PageSize: 10, Page: 1})
 	if err != nil {
 		serverError(w, err)
 		return
 	}
 
-	var results []customerSearchResult
-	for _, c := range result.Items {
-		results = append(results, customerSearchResult{
-			ID:      c.ID,
-			Number:  c.Number,
-			Name:    c.Name,
-			Address: c.Address,
-			City:    c.City,
-			State:   c.State,
-			Zip:     c.Zip,
-			Contact: c.Contact,
-			Phone:   c.Phone,
-			Zone:    c.Zone,
-		})
-	}
-
-	writeJSON(w, results)
+	h.deps.renderTempl(w, r, customers.SearchResults(prefix, result.Items))
 }
 
 type vehicleSearchResult struct {

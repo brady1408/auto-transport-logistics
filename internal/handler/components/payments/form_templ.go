@@ -233,7 +233,7 @@ func FormPage(pg components.PageContext, payment *models.Payment, isNew bool, er
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" maxlength=\"20\"></div></div></fieldset><fieldset><legend>Customer</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"pay_customer_search\">Search Customer</label> <input type=\"text\" id=\"pay_customer_search\" class=\"form-control\" placeholder=\"Type to search...\" hx-get=\"/api/customers/search\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#pay_customer_results\" hx-params=\"*\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" maxlength=\"20\"></div></div></fieldset><fieldset><legend>Customer</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"pay_customer_search\">Search Customer</label> <input type=\"text\" id=\"pay_customer_search\" class=\"form-control\" placeholder=\"Type to search...\" autocomplete=\"off\" hx-get=\"/api/customers/search\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#pay_customer_results\" hx-params=\"*\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -248,7 +248,7 @@ func FormPage(pg components.PageContext, payment *models.Payment, isNew bool, er
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", components.DerefInt(payment.CustomerID)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/form.templ`, Line: 80, Col: 129}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/form.templ`, Line: 81, Col: 129}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -261,7 +261,7 @@ func FormPage(pg components.PageContext, payment *models.Payment, isNew bool, er
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.CustomerNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/form.templ`, Line: 84, Col: 138}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/form.templ`, Line: 85, Col: 138}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -274,7 +274,7 @@ func FormPage(pg components.PageContext, payment *models.Payment, isNew bool, er
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.CustomerName))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/form.templ`, Line: 88, Col: 132}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/form.templ`, Line: 89, Col: 132}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -287,7 +287,7 @@ func FormPage(pg components.PageContext, payment *models.Payment, isNew bool, er
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(payment.Comments))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/form.templ`, Line: 95, Col: 102}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/payments/form.templ`, Line: 96, Col: 102}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -338,6 +338,8 @@ func atInput() templ.Attributes {
 	return templ.Attributes{"@input": "$el.name='q'"}
 }
 
+// paymentForm is the Alpine.js data component for the payment form. Customer
+// selection is handled globally by atlinksSelectCustomer (see layout).
 func paymentFormScript() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -361,13 +363,7 @@ func paymentFormScript() templ.Component {
 		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = templ.Raw(`<script>
 function paymentForm() {
-    return {
-        selectCustomer(prefix, customer) {
-            document.getElementById('customer_id').value = customer.id;
-            document.getElementById('customer_number').value = customer.number || '';
-            document.getElementById('customer_name').value = customer.name || '';
-        }
-    }
+    return {}
 }
 </script>`).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {

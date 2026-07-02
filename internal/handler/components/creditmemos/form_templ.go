@@ -223,7 +223,7 @@ func FormPage(pg components.PageContext, creditMemo *models.CreditMemo, isNew bo
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, ">Void</option></select></div></div></fieldset><fieldset><legend>Customer</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"cm_customer_search\">Search Customer</label> <input type=\"text\" id=\"cm_customer_search\" class=\"form-control\" placeholder=\"Type to search...\" hx-get=\"/api/customers/search\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#cm_customer_results\" hx-params=\"*\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, ">Void</option></select></div></div></fieldset><fieldset><legend>Customer</legend><div class=\"form-row\"><div class=\"form-group col-span-2\"><label for=\"cm_customer_search\">Search Customer</label> <input type=\"text\" id=\"cm_customer_search\" class=\"form-control\" placeholder=\"Type to search...\" autocomplete=\"off\" hx-get=\"/api/customers/search\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#cm_customer_results\" hx-params=\"*\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -238,7 +238,7 @@ func FormPage(pg components.PageContext, creditMemo *models.CreditMemo, isNew bo
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", components.DerefInt(creditMemo.CustomerID)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 83, Col: 132}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 84, Col: 132}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -251,7 +251,7 @@ func FormPage(pg components.PageContext, creditMemo *models.CreditMemo, isNew bo
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(creditMemo.CustomerNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 87, Col: 141}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 88, Col: 141}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -264,7 +264,7 @@ func FormPage(pg components.PageContext, creditMemo *models.CreditMemo, isNew bo
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(creditMemo.CustomerName))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 91, Col: 135}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 92, Col: 135}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -277,7 +277,7 @@ func FormPage(pg components.PageContext, creditMemo *models.CreditMemo, isNew bo
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(creditMemo.InvoiceNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 100, Col: 138}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 101, Col: 138}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -290,7 +290,7 @@ func FormPage(pg components.PageContext, creditMemo *models.CreditMemo, isNew bo
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(creditMemo.Reason))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 108, Col: 114}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 109, Col: 114}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -303,7 +303,7 @@ func FormPage(pg components.PageContext, creditMemo *models.CreditMemo, isNew bo
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(creditMemo.Comments))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 112, Col: 105}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/creditmemos/form.templ`, Line: 113, Col: 105}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -354,6 +354,8 @@ func atInput() templ.Attributes {
 	return templ.Attributes{"@input": "$el.name='q'"}
 }
 
+// creditMemoForm is the Alpine.js data component for the credit-memo form.
+// Customer selection is handled globally by atlinksSelectCustomer (see layout).
 func creditMemoFormScript() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -377,13 +379,7 @@ func creditMemoFormScript() templ.Component {
 		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = templ.Raw(`<script>
 function creditMemoForm() {
-    return {
-        selectCustomer(prefix, customer) {
-            document.getElementById('customer_id').value = customer.id;
-            document.getElementById('customer_number').value = customer.number || '';
-            document.getElementById('customer_name').value = customer.name || '';
-        }
-    }
+    return {}
 }
 </script>`).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {

@@ -73,6 +73,7 @@ templ FormPage(pg components.PageContext, creditMemo *models.CreditMemo, isNew b
 						<input
 							type="text" id="cm_customer_search" class="form-control"
 							placeholder="Type to search..."
+							autocomplete="off"
 							hx-get="/api/customers/search"
 							hx-trigger="keyup changed delay:300ms"
 							hx-target="#cm_customer_results"
@@ -139,16 +140,12 @@ func atInput() templ.Attributes {
 	return templ.Attributes{"@input": "$el.name='q'"}
 }
 
+// creditMemoForm is the Alpine.js data component for the credit-memo form.
+// Customer selection is handled globally by atlinksSelectCustomer (see layout).
 templ creditMemoFormScript() {
 	@templ.Raw(`<script>
 function creditMemoForm() {
-    return {
-        selectCustomer(prefix, customer) {
-            document.getElementById('customer_id').value = customer.id;
-            document.getElementById('customer_number').value = customer.number || '';
-            document.getElementById('customer_name').value = customer.name || '';
-        }
-    }
+    return {}
 }
 </script>`)
 }
