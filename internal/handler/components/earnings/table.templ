@@ -38,14 +38,11 @@ templ DriverTable(result models.DriverEarningsAdjResult, filter models.EarningsA
 							<td class="text-right">{ a.Amount }</td>
 							<td>{ components.Deref(a.Reference) }</td>
 							<td class="text-right">
-								<div class="btn-group">
-									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/driver-adjustments/%d/edit", a.ID)) } class="btn btn-sm">Edit</a>
-									<button
-										class="btn btn-sm btn-danger"
-										hx-delete={ fmt.Sprintf("/accounting/driver-adjustments/%d", a.ID) }
-										hx-confirm={ fmt.Sprintf("Delete this driver adjustment for %s?", a.EmployeeName) }
-									>Delete</button>
-								</div>
+								@components.RowActionsMenu(components.RowActions{
+									EditURL:       fmt.Sprintf("/accounting/driver-adjustments/%d/edit", a.ID),
+									DeleteURL:     fmt.Sprintf("/accounting/driver-adjustments/%d", a.ID),
+									DeleteConfirm: fmt.Sprintf("Delete this driver adjustment for %s?", a.EmployeeName),
+								})
 							</td>
 						</tr>
 					}
@@ -94,14 +91,11 @@ templ TruckTable(result models.TruckEarningsAdjResult, filter models.EarningsAdj
 							<td class="text-right">{ a.Amount }</td>
 							<td>{ components.Deref(a.Reference) }</td>
 							<td class="text-right">
-								<div class="btn-group">
-									<a href={ templ.SafeURL(fmt.Sprintf("/accounting/truck-adjustments/%d/edit", a.ID)) } class="btn btn-sm">Edit</a>
-									<button
-										class="btn btn-sm btn-danger"
-										hx-delete={ fmt.Sprintf("/accounting/truck-adjustments/%d", a.ID) }
-										hx-confirm={ fmt.Sprintf("Delete this truck adjustment for %s?", a.TruckNumber) }
-									>Delete</button>
-								</div>
+								@components.RowActionsMenu(components.RowActions{
+									EditURL:       fmt.Sprintf("/accounting/truck-adjustments/%d/edit", a.ID),
+									DeleteURL:     fmt.Sprintf("/accounting/truck-adjustments/%d", a.ID),
+									DeleteConfirm: fmt.Sprintf("Delete this truck adjustment for %s?", a.TruckNumber),
+								})
 							</td>
 						</tr>
 					}

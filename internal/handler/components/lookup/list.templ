@@ -45,11 +45,10 @@ templ Table(items []store.LookupItem, basePath string) {
 							<td>{ item.Code }</td>
 							<td>{ item.Description }</td>
 							<td class="text-right">
-								<button
-									class="btn btn-sm btn-danger"
-									hx-delete={ fmt.Sprintf("%s/%d", basePath, item.ID) }
-									hx-confirm={ fmt.Sprintf("Delete %s?", item.Code) }
-								>Delete</button>
+								@components.RowActionsMenu(components.RowActions{
+									DeleteURL:     fmt.Sprintf("%s/%d", basePath, item.ID),
+									DeleteConfirm: fmt.Sprintf("Delete %s?", item.Code),
+								})
 							</td>
 						</tr>
 					}

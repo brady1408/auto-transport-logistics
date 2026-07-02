@@ -46,14 +46,11 @@ templ Table(result models.TruckListResult, filter models.TruckFilter) {
 								}
 							</td>
 							<td class="text-right">
-								<div class="btn-group">
-									<a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/edit", t.ID)) } class="btn btn-sm">Edit</a>
-									<button
-										class="btn btn-sm btn-danger"
-										hx-delete={ fmt.Sprintf("/global/trucks/%d", t.ID) }
-										hx-confirm={ fmt.Sprintf("Delete truck %s?", t.TruckNumber) }
-									>Delete</button>
-								</div>
+								@components.RowActionsMenu(components.RowActions{
+									EditURL:       fmt.Sprintf("/global/trucks/%d/edit", t.ID),
+									DeleteURL:     fmt.Sprintf("/global/trucks/%d", t.ID),
+									DeleteConfirm: fmt.Sprintf("Delete truck %s?", t.TruckNumber),
+								})
 							</td>
 						</tr>
 					}

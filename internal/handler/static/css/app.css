@@ -207,6 +207,34 @@ tr:hover { background: var(--gray-50); }
 td .btn-group { opacity: 0.8; }
 tr:hover td .btn-group, tr:focus-within td .btn-group { opacity: 1; }
 
+/* Row overflow menu — quiet per-row actions (View / Edit / Delete) */
+.row-actions { position: relative; display: inline-block; text-align: left; }
+.row-actions-trigger {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; padding: 0; border: none; border-radius: 8px;
+    background: none; color: var(--gray-400); cursor: pointer;
+    font-size: 18px; line-height: 1; transition: background 0.15s, color 0.15s;
+}
+.row-actions-trigger:hover { background: var(--surface-container); color: var(--gray-700); }
+.row-actions-trigger:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+tr:hover .row-actions-trigger, tr:focus-within .row-actions-trigger { color: var(--gray-600); }
+.row-actions-menu {
+    position: absolute; top: 100%; right: 0; margin-top: 4px; z-index: 50;
+    background: white; border-radius: 10px; box-shadow: 0 8px 32px rgba(25,28,30,0.14);
+    min-width: 140px; padding: 6px; text-align: left;
+}
+.row-actions-item {
+    display: block; width: 100%; box-sizing: border-box; text-align: left;
+    padding: 7px 12px; border: none; background: none; color: var(--gray-700);
+    font-size: 13px; font-family: var(--font-body); font-weight: 500; cursor: pointer;
+    border-radius: 7px; text-decoration: none; transition: background 0.1s;
+}
+.row-actions-item:hover { background: var(--gray-100); text-decoration: none; color: var(--gray-800); }
+.row-actions-item:focus-visible { background: var(--gray-100); outline: 2px solid var(--primary); outline-offset: -2px; }
+.row-actions-item-danger { color: var(--danger); }
+.row-actions-item-danger:hover { background: #fef2f2; color: var(--danger); }
+.row-actions-divider { margin: 4px 6px; border: none; border-top: 1px solid rgba(198,198,205,0.25); }
+
 /* Cards */
 .card { background: white; border: none; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; }
 .card-header { padding: 12px 16px; font-weight: 700; border-bottom: 1px solid rgba(198,198,205,0.15); background: var(--surface-low); font-family: var(--font-heading); }

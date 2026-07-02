@@ -65,15 +65,12 @@ templ Table(result models.TripListResult, filter models.TripFilter) {
 									}
 								</td>
 								<td class="text-right">
-									<div class="btn-group">
-										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d", t.ID)) } class="btn btn-sm">View</a>
-										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d/edit", t.ID)) } class="btn btn-sm">Edit</a>
-										<button
-											class="btn btn-sm btn-danger"
-											hx-delete={ fmt.Sprintf("/dispatch/trips/%d", t.ID) }
-											hx-confirm={ fmt.Sprintf("Delete trip %s?", t.LoadNumber) }
-										>Delete</button>
-									</div>
+									@components.RowActionsMenu(components.RowActions{
+										ViewURL:       fmt.Sprintf("/dispatch/trips/%d", t.ID),
+										EditURL:       fmt.Sprintf("/dispatch/trips/%d/edit", t.ID),
+										DeleteURL:     fmt.Sprintf("/dispatch/trips/%d", t.ID),
+										DeleteConfirm: fmt.Sprintf("Delete trip %s?", t.LoadNumber),
+									})
 								</td>
 							</tr>
 						}

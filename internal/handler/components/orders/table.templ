@@ -55,15 +55,12 @@ templ Table(result models.OrderListResult, filter models.OrderFilter) {
 									}
 								</td>
 								<td class="text-right">
-									<div class="btn-group">
-										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", o.ID)) } class="btn btn-sm">View</a>
-										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d/edit", o.ID)) } class="btn btn-sm">Edit</a>
-										<button
-											class="btn btn-sm btn-danger"
-											hx-delete={ fmt.Sprintf("/dispatch/orders/%d", o.ID) }
-											hx-confirm={ fmt.Sprintf("Delete order %s?", o.OrderNumber) }
-										>Delete</button>
-									</div>
+									@components.RowActionsMenu(components.RowActions{
+										ViewURL:       fmt.Sprintf("/dispatch/orders/%d", o.ID),
+										EditURL:       fmt.Sprintf("/dispatch/orders/%d/edit", o.ID),
+										DeleteURL:     fmt.Sprintf("/dispatch/orders/%d", o.ID),
+										DeleteConfirm: fmt.Sprintf("Delete order %s?", o.OrderNumber),
+									})
 								</td>
 							</tr>
 						}

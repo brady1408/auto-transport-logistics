@@ -48,11 +48,10 @@ templ TermsTable(items []store.TermItem) {
 							<td>{ t.Description }</td>
 							<td>{ fmt.Sprintf("%d", components.DerefInt(t.Days)) }</td>
 							<td class="text-right">
-								<button
-									class="btn btn-sm btn-danger"
-									hx-delete={ fmt.Sprintf("/global/terms/%d", t.ID) }
-									hx-confirm={ fmt.Sprintf("Delete %s?", t.Term) }
-								>Delete</button>
+								@components.RowActionsMenu(components.RowActions{
+									DeleteURL:     fmt.Sprintf("/global/terms/%d", t.ID),
+									DeleteConfirm: fmt.Sprintf("Delete %s?", t.Term),
+								})
 							</td>
 						</tr>
 					}

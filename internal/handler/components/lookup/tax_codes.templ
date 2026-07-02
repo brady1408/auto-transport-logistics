@@ -48,11 +48,10 @@ templ TaxCodesTable(items []store.TaxCodeItem) {
 							<td>{ t.Description }</td>
 							<td>{ components.Deref(t.Rate) }</td>
 							<td class="text-right">
-								<button
-									class="btn btn-sm btn-danger"
-									hx-delete={ fmt.Sprintf("/global/tax-codes/%d", t.ID) }
-									hx-confirm={ fmt.Sprintf("Delete %s?", t.Code) }
-								>Delete</button>
+								@components.RowActionsMenu(components.RowActions{
+									DeleteURL:     fmt.Sprintf("/global/tax-codes/%d", t.ID),
+									DeleteConfirm: fmt.Sprintf("Delete %s?", t.Code),
+								})
 							</td>
 						</tr>
 					}
