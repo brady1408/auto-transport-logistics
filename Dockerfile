@@ -4,7 +4,7 @@ FROM golang:1.25-bookworm AS builder
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
-RUN go install github.com/a-h/templ/cmd/templ@latest
+RUN go install github.com/a-h/templ/cmd/templ@v0.3.977
 COPY . .
 RUN templ generate
 ARG BUILD_VERSION=docker
