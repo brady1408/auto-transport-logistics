@@ -75,8 +75,20 @@ templ VinSearchResults(query string, results []store.GlobalSearchResult) {
 									}
 								</td>
 								<td>{ r.CustomerName }</td>
-								<td>{ r.LoadNumber }</td>
-								<td>{ r.InvoiceNumber }</td>
+								<td>
+									if r.LoadNumber != "" && r.TripID != nil {
+										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d", *r.TripID)) }>{ r.LoadNumber }</a>
+									} else {
+										{ r.LoadNumber }
+									}
+								</td>
+								<td>
+									if r.InvoiceNumber != "" && r.InvoiceID != nil {
+										<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d", *r.InvoiceID)) }>{ r.InvoiceNumber }</a>
+									} else {
+										{ r.InvoiceNumber }
+									}
+								</td>
 								<td>
 									<div class="btn-group">
 										<a href={ templ.SafeURL(fmt.Sprintf("/reports/vehicle-history?vin=%s", r.VIN)) } class="btn btn-sm">History</a>
