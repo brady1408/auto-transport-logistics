@@ -1,7 +1,7 @@
 # Binaries
 bin/
 tmp/
-server
+/server
 *.exe
 *.exe~
 *.dll
