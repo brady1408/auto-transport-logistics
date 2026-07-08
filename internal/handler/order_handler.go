@@ -357,6 +357,7 @@ func (h *OrderHandler) waitingGrid(w http.ResponseWriter, r *http.Request) {
 	}
 	if isHTMX(r) {
 		h.deps.renderTempl(w, r, orders.WaitingGridTable(rows, stateFilter))
+		h.deps.renderTempl(w, r, orders.WaitingPendingCountOOB(len(rows)))
 		return
 	}
 	pg := h.deps.pageContext(w, r)
@@ -411,6 +412,7 @@ func (h *OrderHandler) waitingAssign(w http.ResponseWriter, r *http.Request) {
 	// Re-render the grid (the assigned vehicle is no longer Waiting, so its row drops out)
 	// with an out-of-band flash banner following the app's success-flash pattern.
 	h.deps.renderTempl(w, r, orders.WaitingGridTable(rows, stateFilter))
+	h.deps.renderTempl(w, r, orders.WaitingPendingCountOOB(len(rows)))
 	h.deps.renderTempl(w, r, orders.WaitingFlashOOB("Vehicle assigned to trip"))
 }
 

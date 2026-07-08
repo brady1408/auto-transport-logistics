@@ -128,7 +128,7 @@ func DetailTable(details []models.InvoiceDetail, invoiceID int, locked bool) tem
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var8 string
-				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(d.Rate))
+				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(components.Money(d.Rate))
 				if templ_7745c5c3_Err != nil {
 					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/partials.templ`, Line: 35, Col: 56}
 				}
@@ -141,7 +141,7 @@ func DetailTable(details []models.InvoiceDetail, invoiceID int, locked bool) tem
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var9 string
-				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(d.Amount))
+				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(components.Money(d.Amount))
 				if templ_7745c5c3_Err != nil {
 					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/partials.templ`, Line: 36, Col: 58}
 				}

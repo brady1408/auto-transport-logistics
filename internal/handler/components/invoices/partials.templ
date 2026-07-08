@@ -32,8 +32,8 @@ templ DetailTable(details []models.InvoiceDetail, invoiceID int, locked bool) {
 							<td>{ components.Deref(d.VIN) }</td>
 							<td>{ components.Deref(d.Year) } { components.Deref(d.Make) } { components.Deref(d.Model) }</td>
 							<td class="text-right">{ fmt.Sprintf("%d", components.DerefInt(d.Qty)) }</td>
-							<td class="text-right">{ components.Deref(d.Rate) }</td>
-							<td class="text-right">{ components.Deref(d.Amount) }</td>
+							<td class="text-right">{ components.Money(d.Rate) }</td>
+							<td class="text-right">{ components.Money(d.Amount) }</td>
 							<td class="text-right">
 								if !locked {
 									<button

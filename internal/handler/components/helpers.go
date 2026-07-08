@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 	"time"
 
@@ -127,6 +128,45 @@ func DerefInt(i *int) int {
 		return 0
 	}
 	return *i
+}
+
+// Money formats a stored numeric money string (e.g. "780.0000") as a display
+// amount with thousands separators and two decimals, e.g. "780.00" or
+// "1,234.50". Nil or empty input yields ""; non-numeric input is returned
+// unchanged so unexpected values stay visible.
+func Money(s *string) string {
+	if s == nil {
+		return ""
+	}
+	raw := strings.TrimSpace(*s)
+	if raw == "" {
+		return ""
+	}
+	clean := strings.ReplaceAll(strings.TrimPrefix(raw, "$"), ",", "")
+	f, err := strconv.ParseFloat(clean, 64)
+	if err != nil {
+		return raw
+	}
+	neg := f < 0
+	if neg {
+		f = -f
+	}
+	cents := int64(math.Round(f * 100))
+	dollars := cents / 100
+	frac := cents % 100
+	intStr := strconv.FormatInt(dollars, 10)
+	var b strings.Builder
+	for i, c := range intStr {
+		if i > 0 && (len(intStr)-i)%3 == 0 {
+			b.WriteByte(',')
+		}
+		b.WriteRune(c)
+	}
+	sign := ""
+	if neg {
+		sign = "-"
+	}
+	return sign + b.String() + fmt.Sprintf(".%02d", frac)
 }
 
 // FormatPhone formats a 10-digit phone string as (XXX) XXX-XXXX.

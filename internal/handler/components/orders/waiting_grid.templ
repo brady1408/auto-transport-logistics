@@ -21,7 +21,7 @@ templ WaitingGridPage(pg components.PageContext, rows []store.WaitingVehicleRow,
 					<h1 class="text-3xl font-extrabold tracking-tight text-on-surface" style="font-family: 'Manrope', sans-serif;">Waiting Grid</h1>
 					<div class="bg-surface-container-highest px-3 py-1 rounded-xl flex items-center gap-2">
 						<span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Pending</span>
-						<span class="text-lg font-extrabold leading-none">{ fmt.Sprintf("%d", len(rows)) }</span>
+						<span id="waiting-pending-count" class="text-lg font-extrabold leading-none">{ fmt.Sprintf("%d", len(rows)) }</span>
 					</div>
 				</div>
 				<p class="text-on-surface-variant text-sm mt-1">Vehicle transport backlog and assignment queue</p>
@@ -63,6 +63,12 @@ templ WaitingFlashOOB(msg string) {
 		<div class="alert alert-success" id="waiting-flash-msg" style="margin-bottom:1rem;">{ msg }</div>
 		<script>setTimeout(function(){ var el = document.getElementById('waiting-flash-msg'); if (el) el.remove(); }, 4000);</script>
 	</div>
+}
+
+// WaitingPendingCountOOB is an out-of-band swap that keeps the header PENDING
+// chip in sync with the rendered grid rows after an HTMX table refresh.
+templ WaitingPendingCountOOB(count int) {
+	<span id="waiting-pending-count" hx-swap-oob="true" class="text-lg font-extrabold leading-none">{ fmt.Sprintf("%d", count) }</span>
 }
 
 templ WaitingGridTable(rows []store.WaitingVehicleRow, stateFilter string) {

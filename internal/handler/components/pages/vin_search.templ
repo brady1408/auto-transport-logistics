@@ -71,20 +71,20 @@ templ VinSearchResults(query string, results []store.GlobalSearchResult) {
 								</td>
 								<td>
 									if r.OrderNumber != "" {
-										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)) }>{ r.OrderNumber }</a>
+										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)) } class="font-bold text-on-primary-container no-underline hover:underline">{ r.OrderNumber }</a>
 									}
 								</td>
 								<td>{ r.CustomerName }</td>
 								<td>
 									if r.LoadNumber != "" && r.TripID != nil {
-										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d", *r.TripID)) }>{ r.LoadNumber }</a>
+										<a href={ templ.SafeURL(fmt.Sprintf("/dispatch/trips/%d", *r.TripID)) } class="font-bold text-on-primary-container no-underline hover:underline">{ r.LoadNumber }</a>
 									} else {
 										{ r.LoadNumber }
 									}
 								</td>
 								<td>
 									if r.InvoiceNumber != "" && r.InvoiceID != nil {
-										<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d", *r.InvoiceID)) }>{ r.InvoiceNumber }</a>
+										<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/%d", *r.InvoiceID)) } class="font-bold text-on-primary-container no-underline hover:underline">{ r.InvoiceNumber }</a>
 									} else {
 										{ r.InvoiceNumber }
 									}
