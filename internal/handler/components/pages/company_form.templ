@@ -100,8 +100,16 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, errMsg
 									hx-swap="innerHTML"
 								>Verify with FMCSA</button>
 								if company.FMCSAVerifiedAt != nil {
-									<span class="badge badge-active">FMCSA Verified { company.FMCSAVerifiedAt.Format("Jan 2, 2006") }</span>
-									<span class="text-muted" style="font-size:12px;">{ components.Deref(company.FMCSAStatusSummary) }</span>
+									@components.FMCSAStatusBadge(*company)
+									<span class="text-muted" style="font-size:12px;">
+										if company.FMCSAVerifiedNumber != nil {
+											Checked { components.Deref(company.FMCSAVerifiedNumber) } &middot;
+										}
+										{ company.FMCSAVerifiedAt.Format("Jan 2, 2006") }
+										if company.FMCSAStatusSummary != nil {
+											&middot; { components.Deref(company.FMCSAStatusSummary) }
+										}
+									</span>
 								}
 							} else {
 								<button type="button" class="btn btn-sm" disabled title="Set FMCSA_WEBKEY to enable FMCSA verification">Verify with FMCSA</button>

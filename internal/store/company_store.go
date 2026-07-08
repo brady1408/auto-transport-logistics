@@ -23,7 +23,7 @@ const companyColumns = `id, legacy_id, company_name, slug, active, address, addr
 	phone, fax, scac, federal_id, mc_number, dot_number, splc,
 	insurance_carrier, insurance_policy_number, insurance_agent,
 	insurance_phone, insurance_fax, insurance_exp_date, insurance_coverage_amt,
-	fmcsa_verified_at, fmcsa_status_summary,
+	fmcsa_verified_at, fmcsa_status_summary, fmcsa_verified_number, fmcsa_authorized,
 	created_at, updated_at`
 
 func scanCompany(row interface{ Scan(dest ...any) error }) (*models.Company, error) {
@@ -33,7 +33,7 @@ func scanCompany(row interface{ Scan(dest ...any) error }) (*models.Company, err
 		&c.Phone, &c.Fax, &c.SCAC, &c.FederalID, &c.MCNumber, &c.DOTNumber, &c.SPLC,
 		&c.InsuranceCarrier, &c.InsurancePolicyNumber, &c.InsuranceAgent,
 		&c.InsurancePhone, &c.InsuranceFax, &c.InsuranceExpDate, &c.InsuranceCoverageAmt,
-		&c.FMCSAVerifiedAt, &c.FMCSAStatusSummary,
+		&c.FMCSAVerifiedAt, &c.FMCSAStatusSummary, &c.FMCSAVerifiedNumber, &c.FMCSAAuthorized,
 		&c.CreatedAt, &c.UpdatedAt,
 	)
 	return &c, err
@@ -123,15 +123,18 @@ func (s *CompanyStore) UpdateByID(ctx context.Context, c *models.Company) error 
 	return nil
 }
 
-// SaveFMCSASnapshot records the result of an FMCSA verification for the current company.
-func (s *CompanyStore) SaveFMCSASnapshot(ctx context.Context, verifiedAt time.Time, summary string) error {
+// SaveFMCSASnapshot records the result of an FMCSA verification for the
+// current company: when it ran, the short status summary, the prefixed number
+// actually looked up (e.g. "DOT 44110"), and whether the carrier was
+// authorized (allowed to operate and not out of service).
+func (s *CompanyStore) SaveFMCSASnapshot(ctx context.Context, verifiedAt time.Time, summary, verifiedNumber string, authorized bool) error {
 	companyID, err := auth.GetCompanyID(ctx)
 	if err != nil {
 		return err
 	}
 	_, err = s.pool.Exec(ctx,
-		`UPDATE companies SET fmcsa_verified_at=$1, fmcsa_status_summary=$2 WHERE id=$3`,
-		verifiedAt, summary, companyID,
+		`UPDATE companies SET fmcsa_verified_at=$1, fmcsa_status_summary=$2, fmcsa_verified_number=$3, fmcsa_authorized=$4 WHERE id=$5`,
+		verifiedAt, summary, verifiedNumber, authorized, companyID,
 	)
 	if err != nil {
 		return fmt.Errorf("save fmcsa snapshot: %w", err)
