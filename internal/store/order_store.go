@@ -458,3 +458,36 @@ func (s *OrderStore) GetByIDTx(ctx context.Context, tx pgx.Tx, id int) (*models.
 	}
 	return o, nil
 }
+
+// DistinctTransportCalcTypes returns the distinct transport_calc_type values
+// used by the company's orders. Calc types have no lookup table; the legacy
+// data is the only source of valid values.
+func (s *OrderStore) DistinctTransportCalcTypes(ctx context.Context) ([]string, error) {
+	return s.distinctOrderValues(ctx, "transport_calc_type")
+}
+
+// DistinctFuelCalcTypes returns the distinct fuel_calc_type values used by
+// the company's orders.
+func (s *OrderStore) DistinctFuelCalcTypes(ctx context.Context) ([]string, error) {
+	return s.distinctOrderValues(ctx, "fuel_calc_type")
+}
+
+// distinctOrderValues must only be called with a fixed column name.
+func (s *OrderStore) distinctOrderValues(ctx context.Context, column string) ([]string, error) {
+	companyID, err := auth.GetCompanyID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	query := fmt.Sprintf(
+		"SELECT DISTINCT %s FROM orders WHERE company_id = $1 AND deleted_at IS NULL AND %s IS NOT NULL AND %s <> '' ORDER BY %s",
+		column, column, column, column)
+	rows, err := s.pool.Query(ctx, query, companyID)
+	if err != nil {
+		return nil, fmt.Errorf("distinct %s: %w", column, err)
+	}
+	values, err := pgx.CollectRows(rows, pgx.RowTo[string])
+	if err != nil {
+		return nil, fmt.Errorf("scan distinct %s: %w", column, err)
+	}
+	return values, nil
+}
