@@ -43,6 +43,9 @@ Stargazer_Source/
 # Git worktrees
 .worktrees/
 
+# Local build tools (tailwindcss standalone binary)
+tools/
+
 # Playwright
 node_modules/
 playwright-report/
