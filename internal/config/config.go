@@ -20,6 +20,7 @@ type Config struct {
 	QBOSandbox       bool
 	MSSQLMigrationDSN string
 	MigrationsDir     string
+	FMCSAWebKey       string
 }
 
 func Load() (*Config, error) {
@@ -38,6 +39,7 @@ func Load() (*Config, error) {
 		QBOSandbox:      getEnv("QBO_SANDBOX", "true") == "true",
 		MSSQLMigrationDSN: getEnv("MSSQL_MIGRATION_DSN", "sqlserver://sa:ATLinks2024!@localhost:1433?encrypt=disable"),
 		MigrationsDir:     getEnv("MIGRATIONS_DIR", "./data/migrations"),
+		FMCSAWebKey:       getEnv("FMCSA_WEBKEY", ""),
 	}
 
 	if cfg.JWTSecret == "dev-secret-change-in-production" {
