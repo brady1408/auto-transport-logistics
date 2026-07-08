@@ -48,14 +48,14 @@ func WaitingGridPage(pg components.PageContext, rows []store.WaitingVehicleRow, 
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!-- Page Header --> <div class=\"flex items-end justify-between mb-6\"><div><nav class=\"flex items-center gap-2 text-xs text-outline mb-2 font-medium tracking-wide uppercase\"><span>Dispatch</span> <span class=\"material-symbols-outlined text-[14px]\">chevron_right</span> <span class=\"text-secondary\">Waiting Grid</span></nav><div class=\"flex items-center gap-4\"><h1 class=\"text-3xl font-extrabold tracking-tight text-on-surface\" style=\"font-family: 'Manrope', sans-serif;\">Waiting Grid</h1><div class=\"bg-surface-container-highest px-3 py-1 rounded-xl flex items-center gap-2\"><span class=\"text-xs font-bold uppercase tracking-widest text-on-surface-variant\">Pending</span> <span class=\"text-lg font-extrabold leading-none\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!-- Page Header --> <div class=\"flex items-end justify-between mb-6\"><div><nav class=\"flex items-center gap-2 text-xs text-outline mb-2 font-medium tracking-wide uppercase\"><span>Dispatch</span> <span class=\"material-symbols-outlined text-[14px]\">chevron_right</span> <span class=\"text-secondary\">Waiting Grid</span></nav><div class=\"flex items-center gap-4\"><h1 class=\"text-3xl font-extrabold tracking-tight text-on-surface\" style=\"font-family: 'Manrope', sans-serif;\">Waiting Grid</h1><div class=\"bg-surface-container-highest px-3 py-1 rounded-xl flex items-center gap-2\"><span class=\"text-xs font-bold uppercase tracking-widest text-on-surface-variant\">Pending</span> <span id=\"waiting-pending-count\" class=\"text-lg font-extrabold leading-none\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", len(rows)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 24, Col: 86}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 24, Col: 113}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -140,7 +140,9 @@ func WaitingFlashOOB(msg string) templ.Component {
 	})
 }
 
-func WaitingGridTable(rows []store.WaitingVehicleRow, stateFilter string) templ.Component {
+// WaitingPendingCountOOB is an out-of-band swap that keeps the header PENDING
+// chip in sync with the rendered grid rows after an HTMX table refresh.
+func WaitingPendingCountOOB(count int) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -161,216 +163,258 @@ func WaitingGridTable(rows []store.WaitingVehicleRow, stateFilter string) templ.
 			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/10\"><div class=\"overflow-x-auto\"><table class=\"w-full text-left border-collapse\"><thead><tr class=\"bg-surface-container-low/50\"><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest\">VIN</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest\">Make / Model</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest\">Order</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest\">Pickup</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest\">Dropoff</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest text-right\">Amount</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest text-right\">Action</th></tr></thead> <tbody class=\"divide-y divide-outline-variant/10\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<span id=\"waiting-pending-count\" hx-swap-oob=\"true\" class=\"text-lg font-extrabold leading-none\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var8 string
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", count))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 71, Col: 123}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</span>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func WaitingGridTable(rows []store.WaitingVehicleRow, stateFilter string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var9 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var9 == nil {
+			templ_7745c5c3_Var9 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/10\"><div class=\"overflow-x-auto\"><table class=\"w-full text-left border-collapse\"><thead><tr class=\"bg-surface-container-low/50\"><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest\">VIN</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest\">Make / Model</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest\">Order</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest\">Pickup</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest\">Dropoff</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest text-right\">Amount</th><th class=\"px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest text-right\">Action</th></tr></thead> <tbody class=\"divide-y divide-outline-variant/10\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if len(rows) > 0 {
 			for _, r := range rows {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<tr class=\"hover:bg-surface-container-low/50 transition-colors\"><td class=\"px-6 py-3\"><span class=\"text-sm font-mono font-semibold tracking-tighter text-on-surface\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var8 string
-				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(r.VIN)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 88, Col: 95}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</span></td><td class=\"px-6 py-3\"><p class=\"text-sm font-bold text-slate-900 leading-tight\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var9 string
-				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.Year))
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 91, Col: 93}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, " ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<tr class=\"hover:bg-surface-container-low/50 transition-colors\"><td class=\"px-6 py-3\"><span class=\"text-sm font-mono font-semibold tracking-tighter text-on-surface\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var10 string
-				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.Make))
+				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(r.VIN)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 91, Col: 122}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 94, Col: 95}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</span></td><td class=\"px-6 py-3\"><p class=\"text-sm font-bold text-slate-900 leading-tight\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var11 string
-				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.Model))
+				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.Year))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 91, Col: 152}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 97, Col: 93}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</p></td><td class=\"px-6 py-3\"><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, " ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var12 templ.SafeURL
-				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)))
+				var templ_7745c5c3_Var12 string
+				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.Make))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 94, Col: 79}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 97, Col: 122}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" class=\"bg-surface-container-high px-2 py-0.5 rounded-md text-[11px] font-bold font-mono no-underline hover:underline text-on-primary-container\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, " ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var13 string
-				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(r.OrderNumber)
+				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.Model))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 94, Col: 241}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 97, Col: 152}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</a></td><td class=\"px-6 py-3\"><p class=\"text-sm font-semibold\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</p></td><td class=\"px-6 py-3\"><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var14 string
-				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(r.PickupName)
+				var templ_7745c5c3_Var14 templ.SafeURL
+				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 97, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 100, Col: 79}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</p><p class=\"text-[10px] text-slate-500\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\" class=\"bg-surface-container-high px-2 py-0.5 rounded-md text-[11px] font-bold font-mono no-underline hover:underline text-on-primary-container\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var15 string
-				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.PickupCity))
+				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(r.OrderNumber)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 98, Col: 79}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 100, Col: 241}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, ", ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</a></td><td class=\"px-6 py-3\"><p class=\"text-sm font-semibold\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var16 string
-				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.PickupState))
+				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(r.PickupName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 98, Col: 116}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 103, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</p></td><td class=\"px-6 py-3\"><p class=\"text-sm font-semibold\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</p><p class=\"text-[10px] text-slate-500\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var17 string
-				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(r.DropName)
+				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.PickupCity))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 101, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 104, Col: 79}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</p><p class=\"text-[10px] text-slate-500\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, ", ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var18 string
-				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.DropCity))
+				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.PickupState))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 102, Col: 77}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 104, Col: 116}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</p></td><td class=\"px-6 py-3 text-right\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</p></td><td class=\"px-6 py-3\"><p class=\"text-sm font-semibold\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				if components.Deref(r.Amount) != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<span class=\"text-sm font-bold\">$")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					var templ_7745c5c3_Var19 string
-					templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.Amount))
-					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 106, Col: 71}
-					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</span>")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
+				var templ_7745c5c3_Var19 string
+				templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(r.DropName)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 107, Col: 54}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</td><td class=\"px-6 py-3 text-right\"><div class=\"inline-flex items-center gap-2 justify-end\" x-data=\"{ open: false }\" @keydown.escape.window=\"open = false\"><div class=\"relative\"><button type=\"button\" class=\"bg-primary-container text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 transition-all inline-flex items-center gap-1\" @click=\"open = !open\"><span class=\"material-symbols-outlined text-[16px] leading-none\">local_shipping</span> Assign to Trip</button><div x-show=\"open\" x-cloak @click.outside=\"open = false\" x-transition.opacity class=\"absolute right-0 mt-2 w-80 z-20 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant/20 text-left\"><div hx-get=\"")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</p><p class=\"text-[10px] text-slate-500\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var20 string
-				templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/waiting/trip-picker?vehicle_id=%d&state=%s", r.VehicleID, stateFilter))
+				templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.DropCity))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 127, Col: 115}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 108, Col: 77}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" hx-trigger=\"intersect once\" hx-swap=\"innerHTML\"><p class=\"text-outline p-4 text-center text-sm\">Loading trips...</p></div></div></div><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</p></td><td class=\"px-6 py-3 text-right\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var21 templ.SafeURL
-				templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)))
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 135, Col: 80}
+				if components.Deref(r.Amount) != "" {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<span class=\"text-sm font-bold\">$")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var21 string
+					templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(r.Amount))
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 112, Col: 71}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</span>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</td><td class=\"px-6 py-3 text-right\"><div class=\"inline-flex items-center gap-2 justify-end\" x-data=\"{ open: false }\" @keydown.escape.window=\"open = false\"><div class=\"relative\"><button type=\"button\" class=\"bg-primary-container text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 transition-all inline-flex items-center gap-1\" @click=\"open = !open\"><span class=\"material-symbols-outlined text-[16px] leading-none\">local_shipping</span> Assign to Trip</button><div x-show=\"open\" x-cloak @click.outside=\"open = false\" x-transition.opacity class=\"absolute right-0 mt-2 w-80 z-20 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant/20 text-left\"><div hx-get=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\" class=\"bg-surface-container-high text-on-surface px-3 py-1.5 rounded-lg text-xs font-bold no-underline hover:opacity-90 transition-all\">View Order</a></div></td></tr>")
+				var templ_7745c5c3_Var22 string
+				templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/dispatch/waiting/trip-picker?vehicle_id=%d&state=%s", r.VehicleID, stateFilter))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 133, Col: 115}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\" hx-trigger=\"intersect once\" hx-swap=\"innerHTML\"><p class=\"text-outline p-4 text-center text-sm\">Loading trips...</p></div></div></div><a href=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var23 templ.SafeURL
+				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/dispatch/orders/%d", r.OrderID)))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 141, Col: 80}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" class=\"bg-surface-container-high text-on-surface px-3 py-1.5 rounded-lg text-xs font-bold no-underline hover:opacity-90 transition-all\">View Order</a></div></td></tr>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<tr><td colspan=\"7\" class=\"text-center text-outline py-12\">No vehicles waiting</td></tr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<tr><td colspan=\"7\" class=\"text-center text-outline py-12\">No vehicles waiting</td></tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</tbody></table></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "</tbody></table></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -396,89 +440,89 @@ func WaitingTripPicker(vehicleID int, trips []models.Trip, stateFilter string) t
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var22 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var22 == nil {
-			templ_7745c5c3_Var22 = templ.NopComponent
+		templ_7745c5c3_Var24 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var24 == nil {
+			templ_7745c5c3_Var24 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div class=\"max-h-80 overflow-y-auto\"><div class=\"px-4 py-3 border-b border-outline-variant/20\"><p class=\"text-[10px] font-bold text-outline uppercase tracking-widest\">Assign to active trip</p></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<div class=\"max-h-80 overflow-y-auto\"><div class=\"px-4 py-3 border-b border-outline-variant/20\"><p class=\"text-[10px] font-bold text-outline uppercase tracking-widest\">Assign to active trip</p></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if len(trips) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<ul class=\"divide-y divide-outline-variant/10\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<ul class=\"divide-y divide-outline-variant/10\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, t := range trips {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<li class=\"px-4 py-2.5 hover:bg-surface-container-low/60 transition-colors flex items-center justify-between gap-3\"><div class=\"min-w-0\"><p class=\"text-sm font-bold text-on-surface truncate\">Trip ")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var23 string
-				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(t.LoadNumber)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 161, Col: 80}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</p><p class=\"text-[11px] text-on-surface-variant truncate\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var24 string
-				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(tripPickerMeta(t))
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 163, Col: 27}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</p></div><button type=\"button\" class=\"shrink-0 bg-primary-container text-white px-2.5 py-1 rounded-md text-[11px] font-bold hover:opacity-90 transition-all\" hx-post=\"/dispatch/waiting/assign\" hx-vals=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<li class=\"px-4 py-2.5 hover:bg-surface-container-low/60 transition-colors flex items-center justify-between gap-3\"><div class=\"min-w-0\"><p class=\"text-sm font-bold text-on-surface truncate\">Trip ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var25 string
-				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"vehicle_id": "%d", "trip_id": "%d", "state": "%s"}`, vehicleID, t.ID, stateFilter))
+				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(t.LoadNumber)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 170, Col: 114}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 167, Col: 80}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\" hx-target=\"#waiting-table\" hx-swap=\"innerHTML\" hx-confirm=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "</p><p class=\"text-[11px] text-on-surface-variant truncate\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var26 string
-				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("Assign this vehicle to trip %s?", t.LoadNumber))
+				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(tripPickerMeta(t))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 173, Col: 80}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 169, Col: 27}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\">Assign</button></li>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "</p></div><button type=\"button\" class=\"shrink-0 bg-primary-container text-white px-2.5 py-1 rounded-md text-[11px] font-bold hover:opacity-90 transition-all\" hx-post=\"/dispatch/waiting/assign\" hx-vals=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var27 string
+				templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"vehicle_id": "%d", "trip_id": "%d", "state": "%s"}`, vehicleID, t.ID, stateFilter))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 176, Col: 114}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\" hx-target=\"#waiting-table\" hx-swap=\"innerHTML\" hx-confirm=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var28 string
+				templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("Assign this vehicle to trip %s?", t.LoadNumber))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/waiting_grid.templ`, Line: 179, Col: 80}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\">Assign</button></li>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</ul>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</ul>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "<p class=\"text-outline p-4 text-center text-sm\">No active trips available</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<p class=\"text-outline p-4 text-center text-sm\">No active trips available</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
