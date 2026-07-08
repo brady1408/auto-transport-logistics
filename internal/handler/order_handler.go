@@ -21,6 +21,13 @@ type orderStore interface {
 	Update(ctx context.Context, o *models.Order) error
 	Delete(ctx context.Context, id int) error
 	NextOrderNumber(ctx context.Context) (string, error)
+	DistinctTransportCalcTypes(ctx context.Context) ([]string, error)
+	DistinctFuelCalcTypes(ctx context.Context) ([]string, error)
+}
+
+// orderTaxCodeStore supplies the tax code options for the order form.
+type orderTaxCodeStore interface {
+	List(ctx context.Context) ([]store.TaxCodeItem, error)
 }
 
 type orderInvoiceService interface {
@@ -68,11 +75,30 @@ type OrderHandler struct {
 	loadboardStore    loadboardSubhaulStore
 	zonePricingStore  orderZonePricingStore
 	vehicleStore      orderVehicleStore
+	taxCodeStore      orderTaxCodeStore
 	deps              *Deps
 }
 
-func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, waitingStore waitingGridStore, tripStore tripPickerStore, tripAssignSvc tripAssignService, attachmentStore orderAttachmentStore, loadboardStore loadboardSubhaulStore, zonePricingStore orderZonePricingStore, vehicleStore orderVehicleStore, deps *Deps) *OrderHandler {
-	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, waitingStore: waitingStore, tripStore: tripStore, tripAssignSvc: tripAssignSvc, attachmentStore: attachmentStore, loadboardStore: loadboardStore, zonePricingStore: zonePricingStore, vehicleStore: vehicleStore, deps: deps}
+func NewOrderHandler(store orderStore, invoiceSvc orderInvoiceService, waitingStore waitingGridStore, tripStore tripPickerStore, tripAssignSvc tripAssignService, attachmentStore orderAttachmentStore, loadboardStore loadboardSubhaulStore, zonePricingStore orderZonePricingStore, vehicleStore orderVehicleStore, taxCodeStore orderTaxCodeStore, deps *Deps) *OrderHandler {
+	return &OrderHandler{store: store, invoiceSvc: invoiceSvc, waitingStore: waitingStore, tripStore: tripStore, tripAssignSvc: tripAssignSvc, attachmentStore: attachmentStore, loadboardStore: loadboardStore, zonePricingStore: zonePricingStore, vehicleStore: vehicleStore, taxCodeStore: taxCodeStore, deps: deps}
+}
+
+// formOptions loads the dropdown option lists for the order form. Failures
+// are logged and yield empty lists so the form still renders; saved values
+// are preserved by the template regardless.
+func (h *OrderHandler) formOptions(ctx context.Context) orders.FormOptions {
+	var opts orders.FormOptions
+	var err error
+	if opts.CalcTypes, err = h.store.DistinctTransportCalcTypes(ctx); err != nil {
+		log.Printf("list transport calc types: %v", err)
+	}
+	if opts.FuelCalcTypes, err = h.store.DistinctFuelCalcTypes(ctx); err != nil {
+		log.Printf("list fuel calc types: %v", err)
+	}
+	if opts.TaxCodes, err = h.taxCodeStore.List(ctx); err != nil {
+		log.Printf("list tax codes: %v", err)
+	}
+	return opts
 }
 
 func (h *OrderHandler) Register(mux *http.ServeMux) {
@@ -128,7 +154,7 @@ func (h *OrderHandler) newForm(w http.ResponseWriter, r *http.Request) {
 		OrderNumber: orderNum,
 		Active:      true,
 		CreateDate:  &now,
-	}, true, ""))
+	}, true, "", h.formOptions(r.Context())))
 }
 
 func (h *OrderHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -139,7 +165,7 @@ func (h *OrderHandler) create(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			pg := h.deps.pageContext(w, r)
 			log.Printf("generate order number: %v", err)
-			h.deps.renderTempl(w, r, orders.FormPage(pg, o, true, "Failed to generate order number"))
+			h.deps.renderTempl(w, r, orders.FormPage(pg, o, true, "Failed to generate order number", h.formOptions(r.Context())))
 			return
 		}
 		o.OrderNumber = num
@@ -148,7 +174,7 @@ func (h *OrderHandler) create(w http.ResponseWriter, r *http.Request) {
 	if err := h.store.Create(r.Context(), o); err != nil {
 		pg := h.deps.pageContext(w, r)
 		log.Printf("create order: %v", err)
-		h.deps.renderTempl(w, r, orders.FormPage(pg, o, true, "Failed to create order"))
+		h.deps.renderTempl(w, r, orders.FormPage(pg, o, true, "Failed to create order", h.formOptions(r.Context())))
 		return
 	}
 
@@ -201,7 +227,7 @@ func (h *OrderHandler) editForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pg := h.deps.pageContext(w, r)
-	h.deps.renderTempl(w, r, orders.FormPage(pg, o, false, ""))
+	h.deps.renderTempl(w, r, orders.FormPage(pg, o, false, "", h.formOptions(r.Context())))
 }
 
 func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -231,12 +257,12 @@ func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 			}
 			pg := h.deps.pageContext(w, r)
 			h.deps.renderTempl(w, r, orders.FormPage(pg, current, false,
-				"This record was modified by another user. Your changes were NOT saved. The form now shows the latest data — please review and re-submit."))
+				"This record was modified by another user. Your changes were NOT saved. The form now shows the latest data — please review and re-submit.", h.formOptions(r.Context())))
 			return
 		}
 		pg := h.deps.pageContext(w, r)
 		log.Printf("update order: %v", err)
-		h.deps.renderTempl(w, r, orders.FormPage(pg, o, false, "Failed to update order"))
+		h.deps.renderTempl(w, r, orders.FormPage(pg, o, false, "Failed to update order", h.formOptions(r.Context())))
 		return
 	}
 

@@ -318,7 +318,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewLoadboardHandler(loadboardStore, orderStore, vehicleStore, companyStore, loadboardSvc, deps).Register(protectedMux, loadboardGate)
 
 	// Dispatch
-	handler.NewOrderHandler(orderStore, invoiceSvc, vehicleStore, tripStore, tripSvc, attachmentStore, loadboardStore, zonePricingStore, vehicleStore, deps).Register(protectedMux)
+	handler.NewOrderHandler(orderStore, invoiceSvc, vehicleStore, tripStore, tripSvc, attachmentStore, loadboardStore, zonePricingStore, vehicleStore, taxCodeStore, deps).Register(protectedMux)
 	handler.NewVehicleHandler(vehicleStore, orderStore, orderSvc, zonePricingStore, deps).Register(protectedMux)
 	damageLabelStore, err := store.NewDamageLabelStore(pool)
 	if err != nil {
