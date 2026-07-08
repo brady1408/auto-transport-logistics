@@ -86,7 +86,7 @@ func ChargeTable(charges []models.OrderCharge, orderID int) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var5 string
-				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(c.Rate))
+				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(components.Money(c.Rate))
 				if templ_7745c5c3_Err != nil {
 					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/charge_table.templ`, Line: 31, Col: 37}
 				}
@@ -99,7 +99,7 @@ func ChargeTable(charges []models.OrderCharge, orderID int) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var6 string
-				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(c.Amount))
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(components.Money(c.Amount))
 				if templ_7745c5c3_Err != nil {
 					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/orders/charge_table.templ`, Line: 32, Col: 39}
 				}

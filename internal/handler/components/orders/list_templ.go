@@ -74,7 +74,7 @@ func ListPage(pg components.PageContext, result models.OrderListResult, filter m
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" hx-get=\"/dispatch/orders\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#order-table\" hx-include=\".filter-section [name]\" hx-push-url=\"true\" style=\"font-family: 'Inter', sans-serif;\"></div></div><div class=\"min-w-[140px]\"><label for=\"active\" class=\"text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5\">Status</label> <select id=\"active\" name=\"active\" class=\"w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20\" hx-get=\"/dispatch/orders\" hx-trigger=\"change\" hx-target=\"#order-table\" hx-include=\".filter-section [name]\" hx-push-url=\"true\" style=\"font-family: 'Inter', sans-serif;\"><option value=\"\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" hx-get=\"/dispatch/orders\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#order-table\" hx-include=\".filter-section [name]\" hx-push-url=\"true\" style=\"font-family: 'Inter', sans-serif;\"></div></div><div class=\"min-w-[140px]\"><label for=\"active\" class=\"text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5\">Status</label> <select id=\"active\" name=\"active\" class=\"filter-select w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20\" hx-get=\"/dispatch/orders\" hx-trigger=\"change\" hx-target=\"#order-table\" hx-include=\".filter-section [name]\" hx-push-url=\"true\" style=\"font-family: 'Inter', sans-serif;\"><option value=\"\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -104,7 +104,7 @@ func ListPage(pg components.PageContext, result models.OrderListResult, filter m
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, ">Inactive</option></select></div><div class=\"min-w-[160px]\"><label for=\"date_from\" class=\"text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5\">From Date</label> <input type=\"date\" id=\"date_from\" name=\"date_from\" class=\"w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, ">Inactive</option></select></div><div class=\"min-w-[160px]\"><label for=\"date_from\" class=\"text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5\">From Date</label> <input type=\"date\" id=\"date_from\" name=\"date_from\" class=\"filter-select w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -117,7 +117,7 @@ func ListPage(pg components.PageContext, result models.OrderListResult, filter m
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\" hx-get=\"/dispatch/orders\" hx-trigger=\"change\" hx-target=\"#order-table\" hx-include=\".filter-section [name]\" hx-push-url=\"true\"></div><div class=\"min-w-[160px]\"><label for=\"date_to\" class=\"text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5\">To Date</label> <input type=\"date\" id=\"date_to\" name=\"date_to\" class=\"w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\" hx-get=\"/dispatch/orders\" hx-trigger=\"change\" hx-target=\"#order-table\" hx-include=\".filter-section [name]\" hx-push-url=\"true\"></div><div class=\"min-w-[160px]\"><label for=\"date_to\" class=\"text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5\">To Date</label> <input type=\"date\" id=\"date_to\" name=\"date_to\" class=\"filter-select w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

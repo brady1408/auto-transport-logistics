@@ -294,7 +294,8 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewEmployeeHandler(employeeStore, deps).Register(protectedMux)
 	handler.NewTruckHandler(truckStore, deps).Register(protectedMux)
 	handler.NewZoneHandler(zoneStore, zonePricingStore, deps).Register(protectedMux)
-	handler.NewCompanyHandler(companyStore, deps).Register(protectedMux)
+	fmcsaSvc := service.NewFMCSAService(cfg.FMCSAWebKey)
+	handler.NewCompanyHandler(companyStore, fmcsaSvc, deps).Register(protectedMux)
 
 	vendorStore := store.NewVendorStore(pool)
 	handler.NewVendorHandler(vendorStore, deps).Register(protectedMux)
@@ -318,7 +319,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewLoadboardHandler(loadboardStore, orderStore, vehicleStore, companyStore, loadboardSvc, deps).Register(protectedMux, loadboardGate)
 
 	// Dispatch
-	handler.NewOrderHandler(orderStore, invoiceSvc, vehicleStore, tripStore, tripSvc, attachmentStore, loadboardStore, zonePricingStore, vehicleStore, deps).Register(protectedMux)
+	handler.NewOrderHandler(orderStore, invoiceSvc, vehicleStore, tripStore, tripSvc, attachmentStore, loadboardStore, zonePricingStore, vehicleStore, taxCodeStore, deps).Register(protectedMux)
 	handler.NewVehicleHandler(vehicleStore, orderStore, orderSvc, zonePricingStore, deps).Register(protectedMux)
 	damageLabelStore, err := store.NewDamageLabelStore(pool)
 	if err != nil {

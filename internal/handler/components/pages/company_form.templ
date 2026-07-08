@@ -5,7 +5,7 @@ import (
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
 
-templ CompanyFormPage(pg components.PageContext, company *models.Company, errMsg string) {
+templ CompanyFormPage(pg components.PageContext, company *models.Company, errMsg string, fmcsaEnabled bool) {
 	@components.Layout(pg, "Company Settings - ATLinks") {
 		<div class="page-header">
 			<h1>Company Settings</h1>
@@ -84,6 +84,39 @@ templ CompanyFormPage(pg components.PageContext, company *models.Company, errMsg
 					<div class="form-group">
 						<label for="splc">SPLC</label>
 						<input type="text" id="splc" name="splc" class="form-control" value={ components.Deref(company.SPLC) } maxlength="10"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group col-span-2">
+						<label>FMCSA Verification</label>
+						<div style="display:flex; align-items:center; gap:10px;">
+							if fmcsaEnabled {
+								<button
+									type="button"
+									class="btn btn-sm"
+									hx-post="/utilities/company/fmcsa-verify"
+									hx-include="closest form"
+									hx-target="#fmcsa-panel"
+									hx-swap="innerHTML"
+								>Verify with FMCSA</button>
+								if company.FMCSAVerifiedAt != nil {
+									@components.FMCSAStatusBadge(*company)
+									<span class="text-muted" style="font-size:12px;">
+										if company.FMCSAVerifiedNumber != nil {
+											Checked { components.Deref(company.FMCSAVerifiedNumber) } &middot;
+										}
+										{ company.FMCSAVerifiedAt.Format("Jan 2, 2006") }
+										if company.FMCSAStatusSummary != nil {
+											&middot; { components.Deref(company.FMCSAStatusSummary) }
+										}
+									</span>
+								}
+							} else {
+								<button type="button" class="btn btn-sm" disabled title="Set FMCSA_WEBKEY to enable FMCSA verification">Verify with FMCSA</button>
+								<span class="text-muted" style="font-size:12px;">FMCSA verification is not configured</span>
+							}
+						</div>
+						<div id="fmcsa-panel"></div>
 					</div>
 				</div>
 			</fieldset>

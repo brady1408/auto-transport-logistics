@@ -248,6 +248,17 @@ select.form-control:focus {
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23497cff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
 }
 
+/* Pill-style filter-bar selects (orders/trips list) -- chevron + padding that the
+   CDN Tailwind forms plugin used to inject globally; compiled Tailwind runs the
+   forms plugin in class strategy, so these need their own rule. */
+select.filter-select {
+    padding-left: 12px; padding-right: 34px; cursor: pointer;
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2376777d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+}
+
 /* Native date/time inputs — align picker indicator, keep native control */
 input[type="date"].form-control,
 input[type="datetime-local"].form-control,
