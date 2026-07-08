@@ -27,6 +27,8 @@ type Company struct {
 	InsuranceFax          *string    `json:"insurance_fax,omitempty"`
 	InsuranceExpDate      *time.Time `json:"insurance_exp_date,omitempty"`
 	InsuranceCoverageAmt  *string    `json:"insurance_coverage_amt,omitempty"`
+	FMCSAVerifiedAt       *time.Time `json:"fmcsa_verified_at,omitempty"`
+	FMCSAStatusSummary    *string    `json:"fmcsa_status_summary,omitempty"`
 	CreatedAt             time.Time  `json:"created_at"`
 	UpdatedAt             time.Time  `json:"updated_at"`
 }

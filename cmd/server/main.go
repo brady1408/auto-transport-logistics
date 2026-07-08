@@ -294,7 +294,8 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewEmployeeHandler(employeeStore, deps).Register(protectedMux)
 	handler.NewTruckHandler(truckStore, deps).Register(protectedMux)
 	handler.NewZoneHandler(zoneStore, zonePricingStore, deps).Register(protectedMux)
-	handler.NewCompanyHandler(companyStore, deps).Register(protectedMux)
+	fmcsaSvc := service.NewFMCSAService(cfg.FMCSAWebKey)
+	handler.NewCompanyHandler(companyStore, fmcsaSvc, deps).Register(protectedMux)
 
 	vendorStore := store.NewVendorStore(pool)
 	handler.NewVendorHandler(vendorStore, deps).Register(protectedMux)
