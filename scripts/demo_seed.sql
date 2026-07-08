@@ -554,7 +554,7 @@ VALUES
   (CURRENT_DATE - 6), (CURRENT_DATE + 24), 'Net 30', 1980.00, 0, 1980.00, 0, 1980.00, 'Open', 'Dallas', 'TX', (CURRENT_DATE - 6), 'admin', (CURRENT_DATE - 5), 'admin', 2),
 ('INV-3013',
   (SELECT id FROM customers WHERE number='C1023' AND company_id=2), 'C1023', 'Ford Chicago Assembly',
-  (CURRENT_DATE - 1), (CURRENT_DATE + 29), 'Net 30', 2410.00, 0, 2410.00, 0, 2410.00, 'Open', 'Chicago', 'IL', (CURRENT_DATE - 1), 'admin', NULL, NULL, 2);
+  CURRENT_DATE, (CURRENT_DATE + 30), 'Net 30', 2410.00, 0, 2410.00, 0, 2410.00, 'Open', 'Chicago', 'IL', CURRENT_DATE, 'admin', NULL, NULL, 2);
 
 INSERT INTO invoice_details (invoice_id, description, qty, rate, amount, taxable, company_id)
 SELECT id, 'Vehicle transport services', 1, total_amount, total_amount, false, 2
@@ -663,6 +663,32 @@ JOIN invoices inv ON inv.invoice_number = pd.inv_num AND inv.company_id = 2;
 -- Update INV-3002 to Paid
 UPDATE invoices SET amount_paid = 1040.00, balance = 0, status = 'Paid'
 WHERE invoice_number = 'INV-3002' AND company_id = 2;
+
+-- ============================================================
+-- HISTORICAL PAYMENTS
+-- Back the Paid historical invoices (INV-2901..2904, 2909, 2910)
+-- so payment reports agree with the invoice list in those months.
+-- ============================================================
+INSERT INTO payments (customer_id, customer_number, customer_name, payment_date, check_number, amount, applied_amount, unapplied_amount, payment_method, created_by, company_id) VALUES
+((SELECT id FROM customers WHERE number='C1023' AND company_id=2), 'C1023', 'Ford Chicago Assembly', (CURRENT_DATE - 148), 'CHK-22101', 3150.00, 3150.00, 0, 'Check', 'admin', 2),
+((SELECT id FROM customers WHERE number='C1015' AND company_id=2), 'C1015', 'Subaru of Indiana',     (CURRENT_DATE - 138), 'ACH-22201', 1880.00, 1880.00, 0, 'ACH',   'admin', 2),
+((SELECT id FROM customers WHERE number='C1019' AND company_id=2), 'C1019', 'Copart Salvage',        (CURRENT_DATE - 122), 'WIR-22301', 2760.00, 2760.00, 0, 'Wire',  'admin', 2),
+((SELECT id FROM customers WHERE number='C1016' AND company_id=2), 'C1016', 'Group 1 Automotive',    (CURRENT_DATE - 92),  'CHK-22401', 2050.00, 2050.00, 0, 'Check', 'admin', 2),
+((SELECT id FROM customers WHERE number='C1021' AND company_id=2), 'C1021', 'Honda East Liberty',    (CURRENT_DATE - 62),  'ACH-22501', 3420.00, 3420.00, 0, 'ACH',   'admin', 2),
+((SELECT id FROM customers WHERE number='C1024' AND company_id=2), 'C1024', 'GM Lansing Delta',      (CURRENT_DATE - 37),  'WIR-22601', 2680.00, 2680.00, 0, 'Wire',  'admin', 2);
+
+INSERT INTO payment_details (payment_id, invoice_id, invoice_number, amount, company_id)
+SELECT p.id, inv.id, inv.invoice_number, pd.amt, 2
+FROM (VALUES
+  ('CHK-22101', 'INV-2901', 3150.00),
+  ('ACH-22201', 'INV-2902', 1880.00),
+  ('WIR-22301', 'INV-2903', 2760.00),
+  ('CHK-22401', 'INV-2904', 2050.00),
+  ('ACH-22501', 'INV-2909', 3420.00),
+  ('WIR-22601', 'INV-2910', 2680.00)
+) AS pd(chk, inv_num, amt)
+JOIN payments p ON p.check_number = pd.chk AND p.company_id = 2
+JOIN invoices inv ON inv.invoice_number = pd.inv_num AND inv.company_id = 2;
 
 -- ============================================================
 -- DAMAGE CLAIMS
