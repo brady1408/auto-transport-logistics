@@ -9,15 +9,6 @@ type FormOptions struct {
 	TaxCodes      []store.TaxCodeItem
 }
 
-func containsValue(values []string, v string) bool {
-	for _, s := range values {
-		if s == v {
-			return true
-		}
-	}
-	return false
-}
-
 func taxCodesContain(items []store.TaxCodeItem, code string) bool {
 	for _, t := range items {
 		if t.Code == code {

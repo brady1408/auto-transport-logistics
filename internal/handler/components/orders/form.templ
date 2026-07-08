@@ -112,7 +112,7 @@ templ FormPage(pg components.PageContext, order *models.Order, isNew bool, errMs
 					</div>
 					<div class="form-group">
 						<label for="transport_calc_type">Calc Type</label>
-						@codeSelect("transport_calc_type", "transport_calc_type", components.Deref(order.TransportCalcType), opts.CalcTypes)
+						@codeCombobox("transport_calc_type", "transport_calc_type", components.Deref(order.TransportCalcType), opts.CalcTypes)
 					</div>
 					<div class="form-group">
 						<label for="fuel_surcharge">Fuel Surcharge</label>
@@ -120,7 +120,7 @@ templ FormPage(pg components.PageContext, order *models.Order, isNew bool, errMs
 					</div>
 					<div class="form-group">
 						<label for="fuel_calc_type">Fuel Calc Type</label>
-						@codeSelect("fuel_calc_type", "fuel_calc_type", components.Deref(order.FuelCalcType), opts.FuelCalcTypes)
+						@codeCombobox("fuel_calc_type", "fuel_calc_type", components.Deref(order.FuelCalcType), opts.FuelCalcTypes)
 					</div>
 				</div>
 				<div class="form-row">
@@ -343,19 +343,20 @@ templ customerFieldsetLoadDrop(legend string, prefix string, customerID *int, cu
 	</fieldset>
 }
 
-// codeSelect renders a select for a code field. A saved value missing from
-// the option list is still rendered as a selected option so edits don't
-// silently lose it.
-templ codeSelect(id string, name string, current string, values []string) {
-	<select id={ id } name={ name } class="form-control">
-		<option value="">-- Select --</option>
-		if current != "" && !containsValue(values, current) {
-			<option value={ current } selected>{ current }</option>
-		}
+// codeCombobox renders a free-form text input for a code field with a
+// datalist of known values as suggestions. The field maps to a varchar(10)
+// column, so maxlength stays at 10.
+templ codeCombobox(id string, name string, current string, values []string) {
+	<input
+		type="text" id={ id } name={ name } class="form-control"
+		value={ current } maxlength="10" list={ id + "_options" }
+		autocomplete="off"
+	/>
+	<datalist id={ id + "_options" }>
 		for _, v := range values {
-			<option value={ v } selected?={ v == current }>{ v }</option>
+			<option value={ v }></option>
 		}
-	</select>
+	</datalist>
 }
 
 templ taxCodeSelect(id string, name string, current string, taxCodes []store.TaxCodeItem) {
