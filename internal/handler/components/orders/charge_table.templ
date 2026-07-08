@@ -28,8 +28,8 @@ templ ChargeTable(charges []models.OrderCharge, orderID int) {
 							<td>{ components.Deref(c.Description) }</td>
 							<td>{ components.Deref(c.ItemCode) }</td>
 							<td>{ fmt.Sprintf("%d", components.DerefInt(c.Qty)) }</td>
-							<td>{ components.Deref(c.Rate) }</td>
-							<td>{ components.Deref(c.Amount) }</td>
+							<td>{ components.Money(c.Rate) }</td>
+							<td>{ components.Money(c.Amount) }</td>
 							<td class="text-center">
 								if c.Taxable {
 									Y
