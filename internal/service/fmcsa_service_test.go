@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -117,6 +118,16 @@ func TestVerifyByDOT(t *testing.T) {
 	if v.CargoInsuranceOnFile != "$100,000" {
 		t.Errorf("cargo = %q, want $100,000", v.CargoInsuranceOnFile)
 	}
+	// "0" on file means no coverage, not "$0" of coverage.
+	if v.BondInsuranceOnFile != "" {
+		t.Errorf("bond = %q, want empty for zero amount", v.BondInsuranceOnFile)
+	}
+	if v.VerifiedNumber != "DOT 44110" {
+		t.Errorf("verified number = %q, want DOT 44110", v.VerifiedNumber)
+	}
+	if !v.Authorized() {
+		t.Error("Authorized() = false, want true")
+	}
 	if v.TotalPowerUnits != 9 || v.TotalDrivers != 12 {
 		t.Errorf("fleet = %d units %d drivers", v.TotalPowerUnits, v.TotalDrivers)
 	}
@@ -152,6 +163,12 @@ func TestVerifyByMC(t *testing.T) {
 	// String-typed numerics from the API still parse.
 	if v.TotalPowerUnits != 2 || v.TotalDrivers != 3 {
 		t.Errorf("fleet = %d units %d drivers", v.TotalPowerUnits, v.TotalDrivers)
+	}
+	if v.VerifiedNumber != "MC 99999" {
+		t.Errorf("verified number = %q, want MC 99999", v.VerifiedNumber)
+	}
+	if v.Authorized() {
+		t.Error("Authorized() = true, want false")
 	}
 	if got := v.Summary(); got != "Out of Service · Rating: Unsatisfactory" {
 		t.Errorf("summary = %q", got)
@@ -206,5 +223,59 @@ func TestVerifyInvalidNumber(t *testing.T) {
 	_, err := svc.VerifyByDOT(context.Background(), "abc")
 	if !errors.Is(err, ErrFMCSAInvalidNumber) {
 		t.Errorf("err = %v, want ErrFMCSAInvalidNumber", err)
+	}
+}
+
+type failingTransport struct{}
+
+func (failingTransport) RoundTrip(*http.Request) (*http.Response, error) {
+	return nil, errors.New("dial tcp 127.0.0.1:443: connection refused")
+}
+
+func TestTransportErrorDoesNotLeakWebKey(t *testing.T) {
+	const key = "super-secret-webkey"
+	svc := NewFMCSAService(key)
+	svc.httpClient = &http.Client{Transport: failingTransport{}}
+
+	_, err := svc.VerifyByDOT(context.Background(), "44110")
+	if err == nil {
+		t.Fatal("expected transport error")
+	}
+	if strings.Contains(err.Error(), key) {
+		t.Errorf("error message leaks webKey: %v", err)
+	}
+	if !strings.Contains(err.Error(), "connection refused") {
+		t.Errorf("error message lost underlying cause: %v", err)
+	}
+}
+
+func TestInsuranceAmount(t *testing.T) {
+	cases := map[string]string{
+		"":     "",
+		"N":    "",
+		"0":    "",
+		"000":  "",
+		"750":  "$750,000",
+		"1000": "$1,000,000",
+	}
+	for in, want := range cases {
+		if got := insuranceAmount(in); got != want {
+			t.Errorf("insuranceAmount(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
+func TestRequiredAmountIgnoresFlag(t *testing.T) {
+	flag := "Y"
+	if got := requiredAmount(&fmcsaCarrier{BIPDRequired: &flag}); got != "" {
+		t.Errorf("requiredAmount with only Y/N flag = %q, want empty", got)
+	}
+	amt := "750"
+	if got := requiredAmount(&fmcsaCarrier{BIPDReqdAmount: &amt, BIPDRequired: &flag}); got != "750" {
+		t.Errorf("requiredAmount = %q, want 750", got)
+	}
+	bad := "u"
+	if got := requiredAmount(&fmcsaCarrier{BIPDReqdAmount: &bad}); got != "" {
+		t.Errorf("requiredAmount with non-numeric amount = %q, want empty", got)
 	}
 }

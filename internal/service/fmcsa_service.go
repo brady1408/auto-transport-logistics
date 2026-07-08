@@ -69,6 +69,16 @@ type CarrierVerification struct {
 	TotalDrivers    int
 	SnapshotDate    string
 	VerifiedAt      time.Time
+
+	// VerifiedNumber is the number actually looked up, prefixed with its
+	// type, e.g. "DOT 44110" or "MC 123456".
+	VerifiedNumber string
+}
+
+// Authorized reports whether the carrier is allowed to operate and not out of
+// service.
+func (v *CarrierVerification) Authorized() bool {
+	return v.AllowedToOperate && !v.OutOfService
 }
 
 // Summary is a short status line persisted on the company record.
@@ -146,7 +156,9 @@ func (s *FMCSAService) VerifyByDOT(ctx context.Context, dotNumber string) (*Carr
 	if env.Content == nil || env.Content.Carrier == nil {
 		return nil, ErrFMCSACarrierNotFound
 	}
-	return normalizeCarrier(env.Content.Carrier), nil
+	v := normalizeCarrier(env.Content.Carrier)
+	v.VerifiedNumber = "DOT " + num
+	return v, nil
 }
 
 // VerifyByMC looks up a carrier by MC/docket number. When multiple carriers
@@ -171,7 +183,9 @@ func (s *FMCSAService) VerifyByMC(ctx context.Context, mcNumber string) (*Carrie
 	}
 	for _, c := range env.Content {
 		if c.Carrier != nil {
-			return normalizeCarrier(c.Carrier), nil
+			v := normalizeCarrier(c.Carrier)
+			v.VerifiedNumber = "MC " + num
+			return v, nil
 		}
 	}
 	return nil, ErrFMCSACarrierNotFound
@@ -203,6 +217,12 @@ func (s *FMCSAService) get(ctx context.Context, path string) ([]byte, error) {
 	req.Header.Set("Accept", "application/json")
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
+		// A *url.Error's message embeds the full request URL, which carries
+		// the webKey; surface only the operation and underlying cause.
+		var ue *url.Error
+		if errors.As(err, &ue) {
+			return nil, fmt.Errorf("fmcsa: %s request failed: %w", ue.Op, ue.Err)
+		}
 		return nil, fmt.Errorf("fmcsa: request failed: %w", err)
 	}
 	defer resp.Body.Close()
@@ -245,11 +265,15 @@ func normalizeCarrier(c *fmcsaCarrier) *CarrierVerification {
 	return v
 }
 
+// requiredAmount returns the numeric BIPD required amount only; the
+// bipdInsuranceRequired Y/N flag is not a dollar figure and must not be
+// rendered as one.
 func requiredAmount(c *fmcsaCarrier) string {
-	if amt := deref(c.BIPDReqdAmount); amt != "" {
-		return amt
+	amt := strings.TrimSpace(deref(c.BIPDReqdAmount))
+	if _, err := strconv.Atoi(amt); err != nil {
+		return ""
 	}
-	return deref(c.BIPDRequired)
+	return amt
 }
 
 func deref(s *string) string {
@@ -310,6 +334,9 @@ func insuranceAmount(v string) string {
 	n, err := strconv.Atoi(v)
 	if err != nil {
 		return v
+	}
+	if n == 0 {
+		return ""
 	}
 	return "$" + formatThousands(n*1000)
 }
