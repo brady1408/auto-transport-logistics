@@ -26,6 +26,7 @@ templ CompaniesPage(pg components.PageContext, companies []models.Company, subMa
 					<th>City</th>
 					<th>State</th>
 					<th>Phone</th>
+					<th>FMCSA</th>
 					<th>Login URL</th>
 					<th></th>
 				</tr>
@@ -58,6 +59,13 @@ templ CompaniesPage(pg components.PageContext, companies []models.Company, subMa
 							<td>{ components.Deref(c.City) }</td>
 							<td>{ components.Deref(c.State) }</td>
 							<td>{ components.Deref(c.Phone) }</td>
+							<td>
+								if c.FMCSAVerifiedAt != nil {
+									<span class="badge badge-active" title={ components.Deref(c.FMCSAStatusSummary) }>Verified</span>
+								} else {
+									<span class="text-muted">—</span>
+								}
+							</td>
 							<td><code>/c/{ c.Slug }/login</code></td>
 							<td>
 								<a href={ templ.SafeURL(fmt.Sprintf("/admin/companies/%d/users", c.ID)) } class="btn btn-sm">Users</a>
@@ -66,7 +74,7 @@ templ CompaniesPage(pg components.PageContext, companies []models.Company, subMa
 						</tr>
 					}
 				} else {
-					<tr><td colspan="10" class="text-center">No companies found</td></tr>
+					<tr><td colspan="11" class="text-center">No companies found</td></tr>
 				}
 				</tbody>
 			</table>
