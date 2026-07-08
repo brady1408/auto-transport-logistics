@@ -111,33 +111,46 @@ func Layout(pg PageContext, title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"><script src=\"https://cdn.tailwindcss.com?plugins=forms,container-queries\"></script><script>\r\n\t\t\ttailwind.config = {\r\n\t\t\t\tdarkMode: \"class\",\r\n\t\t\t\ttheme: {\r\n\t\t\t\t\textend: {\r\n\t\t\t\t\t\tcolors: {\r\n\t\t\t\t\t\t\t\"primary\": \"#000000\",\r\n\t\t\t\t\t\t\t\"on-primary\": \"#ffffff\",\r\n\t\t\t\t\t\t\t\"primary-container\": \"#00174b\",\r\n\t\t\t\t\t\t\t\"on-primary-container\": \"#497cff\",\r\n\t\t\t\t\t\t\t\"secondary\": \"#515f74\",\r\n\t\t\t\t\t\t\t\"on-secondary\": \"#ffffff\",\r\n\t\t\t\t\t\t\t\"secondary-container\": \"#d5e3fc\",\r\n\t\t\t\t\t\t\t\"on-secondary-container\": \"#57657a\",\r\n\t\t\t\t\t\t\t\"tertiary\": \"#000000\",\r\n\t\t\t\t\t\t\t\"on-tertiary\": \"#ffffff\",\r\n\t\t\t\t\t\t\t\"tertiary-container\": \"#002113\",\r\n\t\t\t\t\t\t\t\"on-tertiary-container\": \"#009668\",\r\n\t\t\t\t\t\t\t\"tertiary-fixed\": \"#6ffbbe\",\r\n\t\t\t\t\t\t\t\"tertiary-fixed-dim\": \"#4edea3\",\r\n\t\t\t\t\t\t\t\"on-tertiary-fixed\": \"#002113\",\r\n\t\t\t\t\t\t\t\"error\": \"#ba1a1a\",\r\n\t\t\t\t\t\t\t\"on-error\": \"#ffffff\",\r\n\t\t\t\t\t\t\t\"error-container\": \"#ffdad6\",\r\n\t\t\t\t\t\t\t\"on-error-container\": \"#93000a\",\r\n\t\t\t\t\t\t\t\"surface\": \"#f7f9fb\",\r\n\t\t\t\t\t\t\t\"on-surface\": \"#191c1e\",\r\n\t\t\t\t\t\t\t\"on-surface-variant\": \"#45464d\",\r\n\t\t\t\t\t\t\t\"surface-dim\": \"#d8dadc\",\r\n\t\t\t\t\t\t\t\"surface-bright\": \"#f7f9fb\",\r\n\t\t\t\t\t\t\t\"surface-container-lowest\": \"#ffffff\",\r\n\t\t\t\t\t\t\t\"surface-container-low\": \"#f2f4f6\",\r\n\t\t\t\t\t\t\t\"surface-container\": \"#eceef0\",\r\n\t\t\t\t\t\t\t\"surface-container-high\": \"#e6e8ea\",\r\n\t\t\t\t\t\t\t\"surface-container-highest\": \"#e0e3e5\",\r\n\t\t\t\t\t\t\t\"outline\": \"#76777d\",\r\n\t\t\t\t\t\t\t\"outline-variant\": \"#c6c6cd\",\r\n\t\t\t\t\t\t\t\"inverse-surface\": \"#2d3133\",\r\n\t\t\t\t\t\t\t\"inverse-on-surface\": \"#eff1f3\",\r\n\t\t\t\t\t\t\t\"inverse-primary\": \"#b4c5ff\",\r\n\t\t\t\t\t\t\t\"primary-fixed\": \"#dbe1ff\",\r\n\t\t\t\t\t\t\t\"primary-fixed-dim\": \"#b4c5ff\",\r\n\t\t\t\t\t\t\t\"on-primary-fixed\": \"#00174b\",\r\n\t\t\t\t\t\t\t\"on-primary-fixed-variant\": \"#003ea8\",\r\n\t\t\t\t\t\t\t\"secondary-fixed\": \"#d5e3fc\",\r\n\t\t\t\t\t\t\t\"secondary-fixed-dim\": \"#b9c7df\",\r\n\t\t\t\t\t\t\t\"on-secondary-fixed\": \"#0d1c2e\",\r\n\t\t\t\t\t\t\t\"on-secondary-fixed-variant\": \"#3a485b\",\r\n\t\t\t\t\t\t\t\"on-tertiary-fixed-variant\": \"#005236\",\r\n\t\t\t\t\t\t\t\"surface-tint\": \"#0053db\",\r\n\t\t\t\t\t\t},\r\n\t\t\t\t\t\tfontFamily: {\r\n\t\t\t\t\t\t\t\"headline\": [\"Manrope\", \"sans-serif\"],\r\n\t\t\t\t\t\t\t\"body\": [\"Inter\", \"sans-serif\"],\r\n\t\t\t\t\t\t},\r\n\t\t\t\t\t\tborderRadius: { \"DEFAULT\": \"0.125rem\", \"lg\": \"0.25rem\", \"xl\": \"0.5rem\", \"full\": \"0.75rem\" },\r\n\t\t\t\t\t},\r\n\t\t\t\t},\r\n\t\t\t}\r\n\t\t</script><style>\r\n\t\t\t.material-symbols-outlined {\r\n\t\t\t\tfont-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;\r\n\t\t\t\tvertical-align: middle;\r\n\t\t\t}\r\n\t\t</style><script src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"><link rel=\"stylesheet\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var7 string
-		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(AssetVersion("/static/js/htmx.min.js"))
+		var templ_7745c5c3_Var7 templ.SafeURL
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(AssetVersion("/static/css/tailwind.css"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/layout.templ`, Line: 88, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/layout.templ`, Line: 21, Col: 72}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"></script><script defer src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"><style>\r\n\t\t\t.material-symbols-outlined {\r\n\t\t\t\tfont-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;\r\n\t\t\t\tvertical-align: middle;\r\n\t\t\t}\r\n\t\t</style><script src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var8 string
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(AssetVersion("/static/js/alpine.min.js"))
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(AssetVersion("/static/js/htmx.min.js"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/layout.templ`, Line: 89, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/layout.templ`, Line: 28, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"></script><script>\r\n\t\t\tdocument.addEventListener('htmx:configRequest', function(evt) {\r\n\t\t\t\tvar match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);\r\n\t\t\t\tif (match) {\r\n\t\t\t\t\tevt.detail.headers['X-CSRF-Token'] = match[1];\r\n\t\t\t\t}\r\n\t\t\t});\r\n\t\t</script><script>\r\n\t\t\t// Shared customer-typeahead selection handler. Invoked from the\r\n\t\t\t// dropdown rows rendered by customers.SearchResults. Reads the\r\n\t\t\t// prefix from the results list and the customer payload from the\r\n\t\t\t// clicked row, then populates the hidden id + read-only detail\r\n\t\t\t// inputs. Handles the \"prefixed\" order-form fields (bill/load/drop)\r\n\t\t\t// as well as the single-customer payment/invoice/credit-memo forms.\r\n\t\t\twindow.atlinksSelectCustomer = function (row) {\r\n\t\t\t\tvar list = row.closest('.customer-search-results');\r\n\t\t\t\tvar prefix = list ? (list.getAttribute('data-prefix') || '') : '';\r\n\t\t\t\tvar customer;\r\n\t\t\t\ttry { customer = JSON.parse(row.getAttribute('data-customer')); }\r\n\t\t\t\tcatch (e) { return; }\r\n\r\n\t\t\t\tvar p = prefix ? prefix + '_' : '';\r\n\t\t\t\t// Try the prefixed id first, then fall back to the bare id used\r\n\t\t\t\t// by the single-customer forms.\r\n\t\t\t\tfunction setField(value, ids) {\r\n\t\t\t\t\tfor (var i = 0; i < ids.length; i++) {\r\n\t\t\t\t\t\tvar el = document.getElementById(ids[i]);\r\n\t\t\t\t\t\tif (el) { el.value = value == null ? '' : value; return el; }\r\n\t\t\t\t\t}\r\n\t\t\t\t\treturn null;\r\n\t\t\t\t}\r\n\r\n\t\t\t\tsetField(customer.id, [p + 'customer_id', 'customer_id']);\r\n\t\t\t\tsetField(customer.number, [p + 'customer_number', 'customer_number']);\r\n\t\t\t\tsetField(customer.name, [p + 'customer_name', 'customer_name']);\r\n\t\t\t\tsetField(customer.address, [p + 'to_address', p + 'address', 'bill_to_address']);\r\n\t\t\t\tsetField(customer.address2, [p + 'to_address2', 'bill_to_address2']);\r\n\t\t\t\tsetField(customer.city, [p + 'to_city', p + 'city', 'bill_to_city']);\r\n\t\t\t\tsetField(customer.state, [p + 'to_state', p + 'state', 'bill_to_state']);\r\n\t\t\t\tsetField(customer.zip, [p + 'to_zip', p + 'zip', 'bill_to_zip']);\r\n\t\t\t\tsetField(customer.contact, [p + 'contact']);\r\n\t\t\t\tsetField(customer.phone, [p + 'phone']);\r\n\r\n\t\t\t\t// Auto-fill order zones from the load/drop customer.\r\n\t\t\t\tif (customer.zone) {\r\n\t\t\t\t\tvar zoneField = null;\r\n\t\t\t\t\tif (prefix === 'load') zoneField = document.getElementById('origin_zone');\r\n\t\t\t\t\telse if (prefix === 'drop') zoneField = document.getElementById('destination_zone');\r\n\t\t\t\t\tif (zoneField) {\r\n\t\t\t\t\t\tzoneField.value = customer.zone;\r\n\t\t\t\t\t\tzoneField.dispatchEvent(new Event('change', { bubbles: true }));\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// Reflect the chosen customer in the search box and close the\r\n\t\t\t\t// dropdown. The results container (list.parentElement) and the\r\n\t\t\t\t// search input are siblings inside the same .form-group.\r\n\t\t\t\tvar group = list ? list.closest('.form-group') : null;\r\n\t\t\t\tif (group) {\r\n\t\t\t\t\tvar searchInput = group.querySelector('input[placeholder=\"Type to search...\"]');\r\n\t\t\t\t\tif (searchInput) searchInput.value = customer.name || '';\r\n\t\t\t\t}\r\n\t\t\t\tif (list && list.parentElement) {\r\n\t\t\t\t\tlist.parentElement.innerHTML = '';\r\n\t\t\t\t}\r\n\t\t\t};\r\n\t\t</script></head><body class=\"bg-surface text-on-surface antialiased\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"></script><script defer src=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var9 string
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(AssetVersion("/static/js/alpine.min.js"))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/layout.templ`, Line: 29, Col: 62}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\"></script><script>\r\n\t\t\tdocument.addEventListener('htmx:configRequest', function(evt) {\r\n\t\t\t\tvar match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);\r\n\t\t\t\tif (match) {\r\n\t\t\t\t\tevt.detail.headers['X-CSRF-Token'] = match[1];\r\n\t\t\t\t}\r\n\t\t\t});\r\n\t\t</script><script>\r\n\t\t\t// Shared customer-typeahead selection handler. Invoked from the\r\n\t\t\t// dropdown rows rendered by customers.SearchResults. Reads the\r\n\t\t\t// prefix from the results list and the customer payload from the\r\n\t\t\t// clicked row, then populates the hidden id + read-only detail\r\n\t\t\t// inputs. Handles the \"prefixed\" order-form fields (bill/load/drop)\r\n\t\t\t// as well as the single-customer payment/invoice/credit-memo forms.\r\n\t\t\twindow.atlinksSelectCustomer = function (row) {\r\n\t\t\t\tvar list = row.closest('.customer-search-results');\r\n\t\t\t\tvar prefix = list ? (list.getAttribute('data-prefix') || '') : '';\r\n\t\t\t\tvar customer;\r\n\t\t\t\ttry { customer = JSON.parse(row.getAttribute('data-customer')); }\r\n\t\t\t\tcatch (e) { return; }\r\n\r\n\t\t\t\tvar p = prefix ? prefix + '_' : '';\r\n\t\t\t\t// Try the prefixed id first, then fall back to the bare id used\r\n\t\t\t\t// by the single-customer forms.\r\n\t\t\t\tfunction setField(value, ids) {\r\n\t\t\t\t\tfor (var i = 0; i < ids.length; i++) {\r\n\t\t\t\t\t\tvar el = document.getElementById(ids[i]);\r\n\t\t\t\t\t\tif (el) { el.value = value == null ? '' : value; return el; }\r\n\t\t\t\t\t}\r\n\t\t\t\t\treturn null;\r\n\t\t\t\t}\r\n\r\n\t\t\t\tsetField(customer.id, [p + 'customer_id', 'customer_id']);\r\n\t\t\t\tsetField(customer.number, [p + 'customer_number', 'customer_number']);\r\n\t\t\t\tsetField(customer.name, [p + 'customer_name', 'customer_name']);\r\n\t\t\t\tsetField(customer.address, [p + 'to_address', p + 'address', 'bill_to_address']);\r\n\t\t\t\tsetField(customer.address2, [p + 'to_address2', 'bill_to_address2']);\r\n\t\t\t\tsetField(customer.city, [p + 'to_city', p + 'city', 'bill_to_city']);\r\n\t\t\t\tsetField(customer.state, [p + 'to_state', p + 'state', 'bill_to_state']);\r\n\t\t\t\tsetField(customer.zip, [p + 'to_zip', p + 'zip', 'bill_to_zip']);\r\n\t\t\t\tsetField(customer.contact, [p + 'contact']);\r\n\t\t\t\tsetField(customer.phone, [p + 'phone']);\r\n\r\n\t\t\t\t// Auto-fill order zones from the load/drop customer.\r\n\t\t\t\tif (customer.zone) {\r\n\t\t\t\t\tvar zoneField = null;\r\n\t\t\t\t\tif (prefix === 'load') zoneField = document.getElementById('origin_zone');\r\n\t\t\t\t\telse if (prefix === 'drop') zoneField = document.getElementById('destination_zone');\r\n\t\t\t\t\tif (zoneField) {\r\n\t\t\t\t\t\tzoneField.value = customer.zone;\r\n\t\t\t\t\t\tzoneField.dispatchEvent(new Event('change', { bubbles: true }));\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\r\n\t\t\t\t// Reflect the chosen customer in the search box and close the\r\n\t\t\t\t// dropdown. The results container (list.parentElement) and the\r\n\t\t\t\t// search input are siblings inside the same .form-group.\r\n\t\t\t\tvar group = list ? list.closest('.form-group') : null;\r\n\t\t\t\tif (group) {\r\n\t\t\t\t\tvar searchInput = group.querySelector('input[placeholder=\"Type to search...\"]');\r\n\t\t\t\t\tif (searchInput) searchInput.value = customer.name || '';\r\n\t\t\t\t}\r\n\t\t\t\tif (list && list.parentElement) {\r\n\t\t\t\t\tlist.parentElement.innerHTML = '';\r\n\t\t\t\t}\r\n\t\t\t};\r\n\t\t</script></head><body class=\"bg-surface text-on-surface antialiased\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -147,12 +160,12 @@ func Layout(pg PageContext, title string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<main class=\"container\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<main class=\"container\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if pg.Suspended {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"alert alert-danger\" style=\"margin-bottom:1rem;\">&#128274; Your account is suspended. All data is in read-only mode. Contact your administrator to restore access.</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"alert alert-danger\" style=\"margin-bottom:1rem;\">&#128274; Your account is suspended. All data is in read-only mode. Contact your administrator to restore access.</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -167,7 +180,7 @@ func Layout(pg PageContext, title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</main>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -177,7 +190,7 @@ func Layout(pg PageContext, title string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
