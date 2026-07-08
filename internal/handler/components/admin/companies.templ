@@ -60,11 +60,7 @@ templ CompaniesPage(pg components.PageContext, companies []models.Company, subMa
 							<td>{ components.Deref(c.State) }</td>
 							<td>{ components.Deref(c.Phone) }</td>
 							<td>
-								if c.FMCSAVerifiedAt != nil {
-									<span class="badge badge-active" title={ components.Deref(c.FMCSAStatusSummary) }>Verified</span>
-								} else {
-									<span class="text-muted">—</span>
-								}
+								@components.FMCSAStatusBadge(c)
 							</td>
 							<td><code>/c/{ c.Slug }/login</code></td>
 							<td>

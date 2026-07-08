@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/brady1408/auto-transport-logistics/internal/auth"
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components/pages"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
@@ -18,17 +19,23 @@ import (
 type companySettingsStore interface {
 	Get(ctx context.Context) (*models.Company, error)
 	Upsert(ctx context.Context, c *models.Company) error
-	SaveFMCSASnapshot(ctx context.Context, verifiedAt time.Time, summary string) error
+	SaveFMCSASnapshot(ctx context.Context, verifiedAt time.Time, summary, verifiedNumber string, authorized bool) error
 }
 
 type CompanyHandler struct {
-	store companySettingsStore
-	fmcsa *service.FMCSAService
-	deps  *Deps
+	store   companySettingsStore
+	fmcsa   *service.FMCSAService
+	limiter *slidingWindowLimiter
+	deps    *Deps
 }
 
 func NewCompanyHandler(store companySettingsStore, fmcsa *service.FMCSAService, deps *Deps) *CompanyHandler {
-	return &CompanyHandler{store: store, fmcsa: fmcsa, deps: deps}
+	return &CompanyHandler{
+		store:   store,
+		fmcsa:   fmcsa,
+		limiter: newSlidingWindowLimiter(5, time.Minute),
+		deps:    deps,
+	}
 }
 
 func (h *CompanyHandler) Register(mux *http.ServeMux) {
@@ -94,13 +101,20 @@ func (h *CompanyHandler) fmcsaVerify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	companyID, err := auth.GetCompanyID(r.Context())
+	if err != nil {
+		h.deps.renderTempl(w, r, components.FMCSANotice("danger", "FMCSA lookup failed. Please try again later."))
+		return
+	}
+	if !h.limiter.Allow(companyID) {
+		h.deps.renderTempl(w, r, components.FMCSANotice("warning", "Too many verification attempts. Please try again in a minute."))
+		return
+	}
+
 	dot := strings.TrimSpace(r.FormValue("dot_number"))
 	mc := strings.TrimSpace(r.FormValue("mc_number"))
 
-	var (
-		v   *service.CarrierVerification
-		err error
-	)
+	var v *service.CarrierVerification
 	switch {
 	case dot != "":
 		v, err = h.fmcsa.VerifyByDOT(r.Context(), dot)
@@ -124,7 +138,7 @@ func (h *CompanyHandler) fmcsaVerify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.store.SaveFMCSASnapshot(r.Context(), v.VerifiedAt, v.Summary()); err != nil {
+	if err := h.store.SaveFMCSASnapshot(r.Context(), v.VerifiedAt, v.Summary(), v.VerifiedNumber, v.Authorized()); err != nil {
 		log.Printf("save fmcsa snapshot: %v", err)
 	}
 

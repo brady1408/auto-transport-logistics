@@ -29,6 +29,8 @@ type Company struct {
 	InsuranceCoverageAmt  *string    `json:"insurance_coverage_amt,omitempty"`
 	FMCSAVerifiedAt       *time.Time `json:"fmcsa_verified_at,omitempty"`
 	FMCSAStatusSummary    *string    `json:"fmcsa_status_summary,omitempty"`
+	FMCSAVerifiedNumber   *string    `json:"fmcsa_verified_number,omitempty"`
+	FMCSAAuthorized       *bool      `json:"fmcsa_authorized,omitempty"`
 	CreatedAt             time.Time  `json:"created_at"`
 	UpdatedAt             time.Time  `json:"updated_at"`
 }

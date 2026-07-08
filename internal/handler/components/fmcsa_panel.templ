@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/brady1408/auto-transport-logistics/internal/models"
 	"github.com/brady1408/auto-transport-logistics/internal/service"
 )
 
@@ -21,6 +22,9 @@ templ FMCSAResultPanel(v *service.CarrierVerification) {
 				<span class="text-muted">DBA { v.DBAName }</span>
 			}
 			<span class="text-muted">USDOT# { strconv.Itoa(v.DOTNumber) }</span>
+			if v.VerifiedNumber != "" {
+				<span class="text-muted">Checked { v.VerifiedNumber }</span>
+			}
 			@fmcsaOperatingBadge(v)
 			@fmcsaSafetyBadge(v.SafetyRating)
 		</div>
@@ -93,6 +97,23 @@ templ fmcsaOperatingBadge(v *service.CarrierVerification) {
 		<span class="badge badge-confirmed">Authorized</span>
 	} else {
 		<span class="badge badge-waiting">Not Authorized</span>
+	}
+}
+
+// FMCSAStatusBadge renders a company's stored FMCSA verification state.
+// Green "Verified" only when the snapshot was authorized and the verified
+// number matches the company's saved DOT or MC number; a negative snapshot is
+// red "Not Authorized"; a snapshot for a number that no longer matches the
+// saved record is a neutral "Checked".
+templ FMCSAStatusBadge(c models.Company) {
+	if c.FMCSAVerifiedAt == nil {
+		<span class="text-muted">—</span>
+	} else if c.FMCSAAuthorized != nil && !*c.FMCSAAuthorized {
+		<span class="badge badge-denied" title={ fmcsaBadgeTitle(c) }>Not Authorized</span>
+	} else if c.FMCSAAuthorized != nil && *c.FMCSAAuthorized && fmcsaNumberMatchesSaved(c) {
+		<span class="badge badge-active" title={ fmcsaBadgeTitle(c) }>Verified</span>
+	} else {
+		<span class="badge badge-inactive" title={ fmcsaBadgeTitle(c) }>Checked</span>
 	}
 }
 
