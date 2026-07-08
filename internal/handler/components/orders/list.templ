@@ -52,7 +52,7 @@ templ ListPage(pg components.PageContext, result models.OrderListResult, filter 
 					<label for="active" class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5">Status</label>
 					<select
 						id="active" name="active"
-						class="w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20"
+						class="filter-select w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20"
 						hx-get="/dispatch/orders"
 						hx-trigger="change"
 						hx-target="#order-table"
@@ -69,7 +69,7 @@ templ ListPage(pg components.PageContext, result models.OrderListResult, filter 
 					<label for="date_from" class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5">From Date</label>
 					<input
 						type="date" id="date_from" name="date_from"
-						class="w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20"
+						class="filter-select w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20"
 						value={ filter.DateFrom }
 						hx-get="/dispatch/orders"
 						hx-trigger="change"
@@ -82,7 +82,7 @@ templ ListPage(pg components.PageContext, result models.OrderListResult, filter 
 					<label for="date_to" class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-1.5">To Date</label>
 					<input
 						type="date" id="date_to" name="date_to"
-						class="w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20"
+						class="filter-select w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary-container/20"
 						value={ filter.DateTo }
 						hx-get="/dispatch/orders"
 						hx-trigger="change"

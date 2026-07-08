@@ -5,6 +5,8 @@ module.exports = {
 		"./internal/handler/components/**/*.templ",
 		// Chart components build class strings in Go, so scan Go sources too.
 		"./internal/handler/components/**/*.go",
+		// Handlers emit raw HTML fragments (e.g. landing contact thank-you).
+		"./internal/handler/*.go",
 	],
 	theme: {
 		extend: {
