@@ -4,13 +4,31 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/a-h/templ"
+
 	"github.com/brady1408/auto-transport-logistics/internal/auth"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
+
+// QueryURL builds "base?key=value&..." from alternating key/value pairs,
+// URL-encoding values and skipping empty ones.
+func QueryURL(base string, pairs ...string) templ.SafeURL {
+	q := url.Values{}
+	for i := 0; i+1 < len(pairs); i += 2 {
+		if pairs[i+1] != "" {
+			q.Set(pairs[i], pairs[i+1])
+		}
+	}
+	if enc := q.Encode(); enc != "" {
+		base += "?" + enc
+	}
+	return templ.SafeURL(base)
+}
 
 // JSONAttr marshals v to a compact JSON string for embedding in an HTML
 // attribute. templ HTML-escapes attribute values, so the resulting quotes are

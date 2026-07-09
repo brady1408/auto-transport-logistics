@@ -9,7 +9,10 @@ templ ListPage(pg components.PageContext, result models.EmployeeListResult, filt
 	@components.Layout(pg, "Employees - ATLinks") {
 		<div class="page-header">
 			<h1>Employees</h1>
-			<a href="/global/employees/new" class="btn btn-primary">New Employee</a>
+			<div class="btn-group">
+				<a href="/global/employees/export/qbo.csv" class="btn" title="Download an employee contact CSV for QuickBooks">QuickBooks CSV</a>
+				<a href="/global/employees/new" class="btn btn-primary">New Employee</a>
+			</div>
 		</div>
 		<div class="filter-bar">
 			<div class="form-group">

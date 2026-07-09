@@ -300,8 +300,15 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	vendorStore := store.NewVendorStore(pool)
 	handler.NewVendorHandler(vendorStore, deps).Register(protectedMux)
 
+	trailerStore := store.NewTrailerStore(pool)
+	handler.NewTrailerHandler(trailerStore, deps).Register(protectedMux)
+
 	// Lookup tables
 	lookupStoresMap := registerLookups(protectedMux, pool, deps)
+
+	// Truck maintenance log
+	maintenanceLogStore := store.NewMaintenanceLogStore(pool)
+	handler.NewMaintenanceHandler(maintenanceLogStore, truckStore, lookupStoresMap["maintenance_types"], deps).Register(protectedMux)
 
 	// Terms, Tax Codes, Items
 	termsStore := store.NewTermsStore(pool)
@@ -345,6 +352,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewDamageClaimHandler(damageClaimStore, attachmentStore, storageSvc, deps).Register(protectedMux)
 	handler.NewAccountsPayableHandler(apStore, deps).Register(protectedMux)
 	handler.NewEarningsAdjHandler(earningsAdjStore, employeeStore, truckStore, deps).Register(protectedMux)
+	handler.NewQBOExportHandler(invoiceStore, invoiceDetailStore, paymentStore, paymentDetailStore, customerStore, employeeStore).Register(protectedMux)
 
 	// Feedback
 	handler.NewFeedbackHandler(feedbackStore, attachmentStore, storageSvc, deps).Register(protectedMux)
@@ -579,6 +587,7 @@ func registerLookups(mux *http.ServeMux, pool *pgxpool.Pool, deps *handler.Deps)
 		{"damage_types", "/global/damage-types", "Damage Types"},
 		{"damage_severities", "/global/damage-severities", "Damage Severities"},
 		{"equipment_types", "/global/equipment-types", "Equipment Types"},
+		{"maintenance_types", "/global/maintenance-types", "Maintenance Types"},
 		{"hold_codes", "/global/hold-codes", "Hold Codes"},
 		{"declination_codes", "/global/declination-codes", "Declination Codes"},
 		{"regions", "/global/regions", "Regions"},

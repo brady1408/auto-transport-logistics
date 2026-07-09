@@ -1,0 +1,82 @@
+package maintenance
+
+import (
+	"fmt"
+
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
+)
+
+func formTitle(isNew bool) string {
+	if isNew {
+		return "New Maintenance Entry"
+	}
+	return "Edit Maintenance Entry"
+}
+
+templ FormPage(pg components.PageContext, truck *models.Truck, m *models.MaintenanceLog, types []store.LookupItem, isNew bool, errMsg string) {
+	@components.Layout(pg, formTitle(isNew) + " - ATLinks") {
+		<div class="page-header">
+			<h1>{ formTitle(isNew) }: { truck.TruckNumber }</h1>
+			<a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/maintenance", truck.ID)) } class="btn">Back to Log</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			if isNew {
+				action={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/maintenance", truck.ID)) }
+				hx-post={ fmt.Sprintf("/global/trucks/%d/maintenance", truck.ID) }
+			} else {
+				action={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/maintenance/%d/edit", truck.ID, m.ID)) }
+				hx-put={ fmt.Sprintf("/global/trucks/%d/maintenance/%d", truck.ID, m.ID) }
+			}
+		>
+			@components.CSRFField(pg.CSRFToken)
+			<fieldset>
+				<legend>Maintenance Entry</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="maintenance_date" class="required">Date</label>
+						<input type="date" id="maintenance_date" name="maintenance_date" class="form-control" required value={ m.MaintenanceDate.Format("2006-01-02") }/>
+					</div>
+					<div class="form-group">
+						<label for="type_code">Type</label>
+						<select id="type_code" name="type_code" class="form-control">
+							<option value="">-- Select --</option>
+							for _, t := range types {
+								<option value={ t.Code } selected?={ components.Deref(m.TypeCode) == t.Code }>{ t.Code } - { t.Description }</option>
+							}
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="mileage">Mileage</label>
+						<input type="number" id="mileage" name="mileage" class="form-control" min="0" value={ mileageStr(m.Mileage) }/>
+					</div>
+					<div class="form-group">
+						<label for="cost">Cost</label>
+						<input type="text" id="cost" name="cost" class="form-control" placeholder="0.00" value={ components.Deref(m.Cost) }/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="notes">Notes</label>
+						<input type="text" id="notes" name="notes" class="form-control" maxlength="200" value={ components.Deref(m.Notes) }/>
+					</div>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Add Entry
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/maintenance", truck.ID)) } class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}

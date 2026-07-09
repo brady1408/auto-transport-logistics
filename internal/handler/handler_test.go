@@ -199,3 +199,31 @@ func TestGetFlashNoCookie(t *testing.T) {
 		t.Errorf("getFlash with no cookie = %q, want empty", msg)
 	}
 }
+
+func TestSanitizeCSVCell(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{"empty", "", ""},
+		{"plain text", "Acme Transport", "Acme Transport"},
+		{"formula equals", `=WEBSERVICE("http://evil/")`, `'=WEBSERVICE("http://evil/")`},
+		{"formula at", "@SUM(A1)", "'@SUM(A1)"},
+		{"leading tab", "\t=1+1", "'\t=1+1"},
+		{"leading cr", "\r=1+1", "'\r=1+1"},
+		{"negative amount kept", "-50.00", "-50.00"},
+		{"positive amount kept", "+5", "+5"},
+		{"scientific notation kept", "-1e3", "-1e3"},
+		{"minus formula escaped", "-1+2", "'-1+2"},
+		{"plus formula escaped", "+cmd|' /C calc'!A0", "'+cmd|' /C calc'!A0"},
+		{"lone dash escaped", "-", "'-"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := sanitizeCSVCell(tt.in); got != tt.want {
+				t.Errorf("sanitizeCSVCell(%q) = %q, want %q", tt.in, got, tt.want)
+			}
+		})
+	}
+}

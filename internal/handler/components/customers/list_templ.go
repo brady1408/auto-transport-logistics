@@ -46,90 +46,107 @@ func ListPage(pg components.PageContext, result models.CustomerListResult, filte
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h1>Customers</h1><a href=\"/global/customers/new\" class=\"btn btn-primary\">New Customer</a></div><div class=\"filter-bar\"><div class=\"form-group\"><label for=\"search\">Search</label> <input type=\"text\" id=\"search\" name=\"search\" class=\"form-control search-input\" placeholder=\"Name or number...\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h1>Customers</h1><div class=\"btn-group\"><a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(filter.Search)
+			var templ_7745c5c3_Var3 templ.SafeURL
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(components.QueryURL("/global/customers/export/qbo.csv",
+				"search", filter.Search,
+				"type", filter.Type,
+				"zone", filter.Zone,
+				"active", filter.Active))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/customers/list.templ`, Line: 20, Col: 26}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/customers/list.templ`, Line: 18, Col: 30}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" hx-get=\"/global/customers\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#customer-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"></div><div class=\"form-group\"><label for=\"type\">Type</label> <select id=\"type\" name=\"type\" class=\"form-control\" hx-get=\"/global/customers\" hx-trigger=\"change\" hx-target=\"#customer-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"><option value=\"\">All Types</option> <option value=\"Bill\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" onclick=\"this.search = location.search\" class=\"btn\" title=\"Download a CSV formatted for QuickBooks Online customer import\">QuickBooks CSV</a> <a href=\"/global/customers/new\" class=\"btn btn-primary\">New Customer</a></div></div><div class=\"filter-bar\"><div class=\"form-group\"><label for=\"search\">Search</label> <input type=\"text\" id=\"search\" name=\"search\" class=\"form-control search-input\" placeholder=\"Name or number...\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var4 string
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(filter.Search)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/customers/list.templ`, Line: 32, Col: 26}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" hx-get=\"/global/customers\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#customer-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"></div><div class=\"form-group\"><label for=\"type\">Type</label> <select id=\"type\" name=\"type\" class=\"form-control\" hx-get=\"/global/customers\" hx-trigger=\"change\" hx-target=\"#customer-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"><option value=\"\">All Types</option> <option value=\"Bill\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if filter.Type == "Bill" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " selected")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " selected")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, ">Bill</option> <option value=\"Load\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, ">Bill</option> <option value=\"Load\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if filter.Type == "Load" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " selected")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " selected")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, ">Load</option> <option value=\"Drop\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, ">Load</option> <option value=\"Drop\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if filter.Type == "Drop" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, " selected")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, " selected")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, ">Drop</option> <option value=\"Carrier\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, ">Drop</option> <option value=\"Carrier\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if filter.Type == "Carrier" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, " selected")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, " selected")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, ">Carrier</option></select></div><div class=\"form-group\"><label for=\"active\">Status</label> <select id=\"active\" name=\"active\" class=\"form-control\" hx-get=\"/global/customers\" hx-trigger=\"change\" hx-target=\"#customer-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"><option value=\"\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, ">Carrier</option></select></div><div class=\"form-group\"><label for=\"active\">Status</label> <select id=\"active\" name=\"active\" class=\"form-control\" hx-get=\"/global/customers\" hx-trigger=\"change\" hx-target=\"#customer-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"><option value=\"\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if filter.Active == "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " selected")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, " selected")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, ">All</option> <option value=\"active\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, ">All</option> <option value=\"active\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if filter.Active == "active" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, " selected")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, " selected")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, ">Active</option> <option value=\"inactive\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, ">Active</option> <option value=\"inactive\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if filter.Active == "inactive" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, " selected")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, " selected")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, ">Inactive</option></select></div></div><div id=\"customer-table\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, ">Inactive</option></select></div></div><div id=\"customer-table\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -137,7 +154,7 @@ func ListPage(pg components.PageContext, result models.CustomerListResult, filte
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

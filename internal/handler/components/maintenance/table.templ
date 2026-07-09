@@ -1,0 +1,55 @@
+package maintenance
+
+import (
+	"fmt"
+
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+)
+
+func mileageStr(v *int) string {
+	if v == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d", *v)
+}
+
+templ Table(result models.MaintenanceLogListResult, filter models.MaintenanceLogFilter) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Date</th>
+					<th>Type</th>
+					<th class="text-right">Mileage</th>
+					<th class="text-right">Cost</th>
+					<th>Notes</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, m := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/maintenance/%d/edit", m.TruckID, m.ID)) }>{ m.MaintenanceDate.Format("2006-01-02") }</a></td>
+							<td>{ components.Deref(m.TypeCode) }</td>
+							<td class="text-right">{ mileageStr(m.Mileage) }</td>
+							<td class="text-right">{ components.Money(m.Cost) }</td>
+							<td>{ components.Deref(m.Notes) }</td>
+							<td class="text-right">
+								@components.RowActionsMenu(components.RowActions{
+									EditURL:       fmt.Sprintf("/global/trucks/%d/maintenance/%d/edit", m.TruckID, m.ID),
+									DeleteURL:     fmt.Sprintf("/global/trucks/%d/maintenance/%d", m.TruckID, m.ID),
+									DeleteConfirm: fmt.Sprintf("Delete maintenance entry from %s?", m.MaintenanceDate.Format("2006-01-02")),
+								})
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="6" class="text-center text-muted">No maintenance entries found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	@components.Pagination(components.NewPaginationData(result.Page, result.PageSize, result.TotalCount, fmt.Sprintf("/global/trucks/%d/maintenance", filter.TruckID), "#maintenance-table"))
+}

@@ -1,0 +1,23 @@
+-- +goose Up
+ALTER TABLE trailers ADD COLUMN type_code VARCHAR(10);
+ALTER TABLE trailers ADD COLUMN manufacture_date DATE;
+ALTER TABLE trailers ADD COLUMN tare_weight INTEGER;
+ALTER TABLE trailers ADD COLUMN capacity INTEGER;
+ALTER TABLE trailers ADD COLUMN length_ft NUMERIC(6,2);
+ALTER TABLE trailers ADD COLUMN width_ft NUMERIC(6,2);
+ALTER TABLE trailers ADD COLUMN height_ft NUMERIC(6,2);
+ALTER TABLE trailers ADD COLUMN comments VARCHAR(200);
+ALTER TABLE trailers ADD COLUMN active BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE trailers ADD COLUMN deleted_at TIMESTAMPTZ DEFAULT NULL;
+
+-- +goose Down
+ALTER TABLE trailers DROP COLUMN IF EXISTS deleted_at;
+ALTER TABLE trailers DROP COLUMN IF EXISTS active;
+ALTER TABLE trailers DROP COLUMN IF EXISTS comments;
+ALTER TABLE trailers DROP COLUMN IF EXISTS height_ft;
+ALTER TABLE trailers DROP COLUMN IF EXISTS width_ft;
+ALTER TABLE trailers DROP COLUMN IF EXISTS length_ft;
+ALTER TABLE trailers DROP COLUMN IF EXISTS capacity;
+ALTER TABLE trailers DROP COLUMN IF EXISTS tare_weight;
+ALTER TABLE trailers DROP COLUMN IF EXISTS manufacture_date;
+ALTER TABLE trailers DROP COLUMN IF EXISTS type_code;

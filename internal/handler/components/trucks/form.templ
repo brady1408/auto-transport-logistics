@@ -24,7 +24,12 @@ templ FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMs
 					Edit Truck: { truck.TruckNumber }
 				}
 			</h1>
-			<a href="/global/trucks" class="btn">Back to List</a>
+			<div class="btn-group">
+				if !isNew {
+					<a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/maintenance", truck.ID)) } class="btn">Maintenance Log</a>
+				}
+				<a href="/global/trucks" class="btn">Back to List</a>
+			</div>
 		</div>
 		if errMsg != "" {
 			<div class="alert alert-danger">{ errMsg }</div>
