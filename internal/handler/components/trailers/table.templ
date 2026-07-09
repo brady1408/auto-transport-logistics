@@ -1,0 +1,72 @@
+package trailers
+
+import (
+	"fmt"
+
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+)
+
+func intStr(v *int) string {
+	if v == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d", *v)
+}
+
+templ Table(result models.TrailerListResult, filter models.TrailerFilter) {
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Trailer #</th>
+					<th>Make</th>
+					<th>Year</th>
+					<th>License</th>
+					<th>License Exp</th>
+					<th class="text-right">Tare Wt (lbs)</th>
+					<th class="text-right">Capacity</th>
+					<th>Status</th>
+					<th class="text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(result.Items) > 0 {
+					for _, t := range result.Items {
+						<tr>
+							<td><a href={ templ.SafeURL(fmt.Sprintf("/global/trailers/%d/edit", t.ID)) }>{ t.TrailerNumber }</a></td>
+							<td>{ components.Deref(t.Make) }</td>
+							<td>{ components.Deref(t.Year) }</td>
+							<td>{ components.Deref(t.License) }</td>
+							<td>{ components.FormatDate(t.LicenseExp) }</td>
+							<td class="text-right">{ intStr(t.TareWeight) }</td>
+							<td class="text-right">{ intStr(t.Capacity) }</td>
+							<td>
+								if t.Active {
+									<span class="badge badge-active">Active</span>
+								} else {
+									<span class="badge badge-inactive">Inactive</span>
+								}
+							</td>
+							<td class="text-right">
+								@components.RowActionsMenu(components.RowActions{
+									EditURL:       fmt.Sprintf("/global/trailers/%d/edit", t.ID),
+									DeleteURL:     fmt.Sprintf("/global/trailers/%d", t.ID),
+									DeleteConfirm: fmt.Sprintf("Delete trailer %s?", t.TrailerNumber),
+								})
+							</td>
+						</tr>
+					}
+				} else {
+					<tr><td colspan="9" class="text-center text-muted">No trailers found</td></tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	if len(result.Items) > 0 {
+		@components.Pagination(components.NewPaginationData(
+			result.Page, result.PageSize, result.TotalCount,
+			"/global/trailers", "#trailer-table",
+		))
+	}
+}

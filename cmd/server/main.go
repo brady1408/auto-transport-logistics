@@ -300,6 +300,9 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	vendorStore := store.NewVendorStore(pool)
 	handler.NewVendorHandler(vendorStore, deps).Register(protectedMux)
 
+	trailerStore := store.NewTrailerStore(pool)
+	handler.NewTrailerHandler(trailerStore, deps).Register(protectedMux)
+
 	// Lookup tables
 	lookupStoresMap := registerLookups(protectedMux, pool, deps)
 

@@ -1,0 +1,159 @@
+package trailers
+
+import (
+	"fmt"
+
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+)
+
+func formTitle(isNew bool) string {
+	if isNew {
+		return "New Trailer"
+	}
+	return "Edit Trailer"
+}
+
+templ FormPage(pg components.PageContext, trailer *models.Trailer, isNew bool, errMsg string) {
+	@components.Layout(pg, formTitle(isNew) + " - ATLinks") {
+		<div class="page-header">
+			<h1>
+				if isNew {
+					New Trailer
+				} else {
+					Edit Trailer: { trailer.TrailerNumber }
+				}
+			</h1>
+			<a href="/global/trailers" class="btn">Back to List</a>
+		</div>
+		if errMsg != "" {
+			<div class="alert alert-danger">{ errMsg }</div>
+		}
+		<form
+			method="POST"
+			if isNew {
+				action="/global/trailers"
+				hx-post="/global/trailers"
+			} else {
+				action={ templ.SafeURL(fmt.Sprintf("/global/trailers/%d/edit", trailer.ID)) }
+				hx-put={ fmt.Sprintf("/global/trailers/%d", trailer.ID) }
+			}
+		>
+			@components.CSRFField(pg.CSRFToken)
+			<fieldset>
+				<legend>Trailer Information</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="trailer_number" class="required">Trailer #</label>
+						<input type="text" id="trailer_number" name="trailer_number" class="form-control" value={ trailer.TrailerNumber } required maxlength="10" style="text-transform:uppercase"/>
+					</div>
+					<div class="form-group">
+						<label for="make">Make</label>
+						<input type="text" id="make" name="make" class="form-control" value={ components.Deref(trailer.Make) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="model">Model</label>
+						<input type="text" id="model" name="model" class="form-control" value={ components.Deref(trailer.Model) } maxlength="15"/>
+					</div>
+					<div class="form-group">
+						<label for="year">Year</label>
+						<input type="text" id="year" name="year" class="form-control" value={ components.Deref(trailer.Year) } maxlength="4"/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="serial_number">Serial # / VIN</label>
+						<input type="text" id="serial_number" name="serial_number" class="form-control" value={ components.Deref(trailer.SerialNumber) } maxlength="20"/>
+					</div>
+					<div class="form-group">
+						<label for="type_code">Equipment Type</label>
+						<input type="text" id="type_code" name="type_code" class="form-control" value={ components.Deref(trailer.TypeCode) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="manufacture_date">Manufacture Date</label>
+						<input type="date" id="manufacture_date" name="manufacture_date" class="form-control" value={ components.FormatDate(trailer.ManufactureDate) }/>
+					</div>
+					<div class="form-check form-check-aligned">
+						<input type="checkbox" id="active" name="active" checked?={ trailer.Active }/>
+						<label for="active">Active</label>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>License &amp; Compliance</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="license">License / Plate</label>
+						<input type="text" id="license" name="license" class="form-control" value={ components.Deref(trailer.License) } maxlength="10"/>
+					</div>
+					<div class="form-group">
+						<label for="license_exp">License Exp</label>
+						<input type="date" id="license_exp" name="license_exp" class="form-control" value={ components.FormatDate(trailer.LicenseExp) }/>
+					</div>
+					<div class="form-group">
+						<label for="safety_inspection">Safety Inspection</label>
+						<input type="date" id="safety_inspection" name="safety_inspection" class="form-control" value={ components.FormatDate(trailer.SafetyInspection) }/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Weight &amp; Dimensions</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="tare_weight">Tare Weight (lbs)</label>
+						<input type="number" id="tare_weight" name="tare_weight" class="form-control" value={ intStr(trailer.TareWeight) }/>
+					</div>
+					<div class="form-group">
+						<label for="capacity">Capacity (vehicles)</label>
+						<input type="number" id="capacity" name="capacity" class="form-control" value={ intStr(trailer.Capacity) }/>
+					</div>
+					<div class="form-group">
+						<label for="length_ft">Length (ft)</label>
+						<input type="text" id="length_ft" name="length_ft" class="form-control" value={ components.Deref(trailer.LengthFt) } maxlength="9"/>
+					</div>
+					<div class="form-group">
+						<label for="width_ft">Width (ft)</label>
+						<input type="text" id="width_ft" name="width_ft" class="form-control" value={ components.Deref(trailer.WidthFt) } maxlength="9"/>
+					</div>
+					<div class="form-group">
+						<label for="height_ft">Height (ft)</label>
+						<input type="text" id="height_ft" name="height_ft" class="form-control" value={ components.Deref(trailer.HeightFt) } maxlength="9"/>
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Purchase</legend>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="purchased_from">Purchased From</label>
+						<input type="text" id="purchased_from" name="purchased_from" class="form-control" value={ components.Deref(trailer.PurchasedFrom) } maxlength="30"/>
+					</div>
+					<div class="form-group">
+						<label for="purchase_date">Purchase Date</label>
+						<input type="date" id="purchase_date" name="purchase_date" class="form-control" value={ components.FormatDate(trailer.PurchaseDate) }/>
+					</div>
+					<div class="form-group">
+						<label for="cost">Cost</label>
+						<input type="text" id="cost" name="cost" class="form-control" value={ components.Deref(trailer.Cost) }/>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="comments">Comments</label>
+						<input type="text" id="comments" name="comments" class="form-control" value={ components.Deref(trailer.Comments) } maxlength="200"/>
+					</div>
+				</div>
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					if isNew {
+						Create Trailer
+					} else {
+						Save Changes
+					}
+				</button>
+				<a href="/global/trailers" class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}
