@@ -306,6 +306,10 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	// Lookup tables
 	lookupStoresMap := registerLookups(protectedMux, pool, deps)
 
+	// Truck maintenance log
+	maintenanceLogStore := store.NewMaintenanceLogStore(pool)
+	handler.NewMaintenanceHandler(maintenanceLogStore, truckStore, lookupStoresMap["maintenance_types"], deps).Register(protectedMux)
+
 	// Terms, Tax Codes, Items
 	termsStore := store.NewTermsStore(pool)
 	taxCodeStore := store.NewTaxCodeStore(pool)
@@ -582,6 +586,7 @@ func registerLookups(mux *http.ServeMux, pool *pgxpool.Pool, deps *handler.Deps)
 		{"damage_types", "/global/damage-types", "Damage Types"},
 		{"damage_severities", "/global/damage-severities", "Damage Severities"},
 		{"equipment_types", "/global/equipment-types", "Equipment Types"},
+		{"maintenance_types", "/global/maintenance-types", "Maintenance Types"},
 		{"hold_codes", "/global/hold-codes", "Hold Codes"},
 		{"declination_codes", "/global/declination-codes", "Declination Codes"},
 		{"regions", "/global/regions", "Regions"},

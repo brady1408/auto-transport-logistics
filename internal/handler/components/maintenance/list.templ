@@ -1,0 +1,55 @@
+package maintenance
+
+import (
+	"fmt"
+
+	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
+	"github.com/brady1408/auto-transport-logistics/internal/models"
+	"github.com/brady1408/auto-transport-logistics/internal/store"
+)
+
+templ ListPage(pg components.PageContext, truck *models.Truck, result models.MaintenanceLogListResult, filter models.MaintenanceLogFilter, types []store.LookupItem) {
+	@components.Layout(pg, "Maintenance Log - ATLinks") {
+		<div class="page-header">
+			<h1>Maintenance Log: { truck.TruckNumber }</h1>
+			<div>
+				<a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/edit", truck.ID)) } class="btn">Back to Truck</a>
+				<a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/maintenance/new", truck.ID)) } class="btn btn-primary">Add Entry</a>
+			</div>
+		</div>
+		<div class="filter-bar">
+			<div class="form-group">
+				<label for="search">Search</label>
+				<input
+					type="text" id="search" name="search" class="form-control search-input"
+					placeholder="Notes or type..."
+					value={ filter.Search }
+					hx-get={ fmt.Sprintf("/global/trucks/%d/maintenance", truck.ID) }
+					hx-trigger="keyup changed delay:300ms"
+					hx-target="#maintenance-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				/>
+			</div>
+			<div class="form-group">
+				<label for="type_code">Type</label>
+				<select
+					id="type_code" name="type_code" class="form-control"
+					hx-get={ fmt.Sprintf("/global/trucks/%d/maintenance", truck.ID) }
+					hx-trigger="change"
+					hx-target="#maintenance-table"
+					hx-include=".filter-bar [name]"
+					hx-push-url="true"
+				>
+					<option value="">All</option>
+					for _, t := range types {
+						<option value={ t.Code } selected?={ filter.TypeCode == t.Code }>{ t.Code } - { t.Description }</option>
+					}
+				</select>
+			</div>
+		</div>
+		<div id="maintenance-table">
+			@Table(result, filter)
+		</div>
+	}
+}

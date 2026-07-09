@@ -27,6 +27,7 @@ type LookupStore struct {
 var allowedTables = map[string]bool{
 	"dispatch_codes":    true,
 	"equipment_types":   true,
+	"maintenance_types": true,
 	"hold_codes":        true,
 	"declination_codes": true,
 	"regions":           true,

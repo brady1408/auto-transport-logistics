@@ -79,71 +79,94 @@ func FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMsg
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</h1><a href=\"/global/trucks\" class=\"btn\">Back to List</a></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</h1><div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if errMsg != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"alert alert-danger\">")
+			if !isNew {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var4 string
-				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(errMsg)
+				var templ_7745c5c3_Var4 templ.SafeURL
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/global/trucks/%d/maintenance", truck.ID)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 30, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 29, Col: 84}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" class=\"btn\">Maintenance Log</a> ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, " <form method=\"POST\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<a href=\"/global/trucks\" class=\"btn\">Back to List</a></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if isNew {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, " action=\"/global/trucks\" hx-post=\"/global/trucks\"")
+			if errMsg != "" {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"alert alert-danger\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, " action=\"")
+				var templ_7745c5c3_Var5 string
+				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(errMsg)
 				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var5 templ.SafeURL
-				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/global/trucks/%d/edit", truck.ID)))
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 38, Col: 75}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 35, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\" hx-put=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var6 string
-				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/global/trucks/%d", truck.ID))
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, " <form method=\"POST\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if isNew {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " action=\"/global/trucks\" hx-post=\"/global/trucks\"")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 39, Col: 55}
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, " action=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var6 templ.SafeURL
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/global/trucks/%d/edit", truck.ID)))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 43, Col: 75}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" hx-put=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var7 string
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/global/trucks/%d", truck.ID))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 44, Col: 55}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, ">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, ">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -151,413 +174,413 @@ func FormPage(pg components.PageContext, truck *models.Truck, isNew bool, errMsg
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<fieldset><legend>Truck Information</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"truck_number\" class=\"required\">Truck #</label> <input type=\"text\" id=\"truck_number\" name=\"truck_number\" class=\"form-control\" value=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var7 string
-			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(truck.TruckNumber)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 48, Col: 109}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\" required maxlength=\"10\" style=\"text-transform:uppercase\"></div><div class=\"form-group\"><label for=\"truck_make\">Make</label> <input type=\"text\" id=\"truck_make\" name=\"truck_make\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<fieldset><legend>Truck Information</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"truck_number\" class=\"required\">Truck #</label> <input type=\"text\" id=\"truck_number\" name=\"truck_number\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckMake))
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(truck.TruckNumber)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 52, Col: 121}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 53, Col: 109}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\" maxlength=\"20\"></div><div class=\"form-group\"><label for=\"truck_model\">Model</label> <input type=\"text\" id=\"truck_model\" name=\"truck_model\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" required maxlength=\"10\" style=\"text-transform:uppercase\"></div><div class=\"form-group\"><label for=\"truck_make\">Make</label> <input type=\"text\" id=\"truck_make\" name=\"truck_make\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var9 string
-			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckModel))
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckMake))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 56, Col: 124}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 57, Col: 121}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\" maxlength=\"15\"></div><div class=\"form-group\"><label for=\"truck_year\">Year</label> <input type=\"text\" id=\"truck_year\" name=\"truck_year\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" maxlength=\"20\"></div><div class=\"form-group\"><label for=\"truck_model\">Model</label> <input type=\"text\" id=\"truck_model\" name=\"truck_model\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckYear))
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckModel))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 60, Col: 121}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 61, Col: 124}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" maxlength=\"4\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"truck_serial_number\">Serial #</label> <input type=\"text\" id=\"truck_serial_number\" name=\"truck_serial_number\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\" maxlength=\"15\"></div><div class=\"form-group\"><label for=\"truck_year\">Year</label> <input type=\"text\" id=\"truck_year\" name=\"truck_year\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckSerialNumber))
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckYear))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 66, Col: 147}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 65, Col: 121}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" maxlength=\"20\"></div><div class=\"form-group\"><label for=\"truck_license\">License</label> <input type=\"text\" id=\"truck_license\" name=\"truck_license\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" maxlength=\"4\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"truck_serial_number\">Serial #</label> <input type=\"text\" id=\"truck_serial_number\" name=\"truck_serial_number\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var12 string
-			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckLicense))
+			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckSerialNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 70, Col: 130}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 71, Col: 147}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"truck_license_exp\">License Exp</label> <input type=\"date\" id=\"truck_license_exp\" name=\"truck_license_exp\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" maxlength=\"20\"></div><div class=\"form-group\"><label for=\"truck_license\">License</label> <input type=\"text\" id=\"truck_license\" name=\"truck_license\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var13 string
-			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.TruckLicenseExp))
+			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckLicense))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 74, Col: 146}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 75, Col: 130}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\"></div><div class=\"form-group\"><label for=\"truck_safety_inspection\">Safety Inspection</label> <input type=\"date\" id=\"truck_safety_inspection\" name=\"truck_safety_inspection\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"truck_license_exp\">License Exp</label> <input type=\"date\" id=\"truck_license_exp\" name=\"truck_license_exp\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var14 string
-			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.TruckSafetyInspection))
+			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.TruckLicenseExp))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 78, Col: 164}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 79, Col: 146}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"fleet_number\">Fleet #</label> <input type=\"text\" id=\"fleet_number\" name=\"fleet_number\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\"></div><div class=\"form-group\"><label for=\"truck_safety_inspection\">Safety Inspection</label> <input type=\"date\" id=\"truck_safety_inspection\" name=\"truck_safety_inspection\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var15 string
-			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.FleetNumber))
+			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.TruckSafetyInspection))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 84, Col: 127}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 83, Col: 164}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"class\">Class</label> <input type=\"text\" id=\"class\" name=\"class\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"fleet_number\">Fleet #</label> <input type=\"text\" id=\"fleet_number\" name=\"fleet_number\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var16 string
-			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.Class))
+			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.FleetNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 88, Col: 107}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 89, Col: 127}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" maxlength=\"2\"></div><div class=\"form-group\"><label for=\"tare_weight\">Tare Weight</label> <input type=\"number\" id=\"tare_weight\" name=\"tare_weight\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"class\">Class</label> <input type=\"text\" id=\"class\" name=\"class\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", components.DerefInt(truck.TareWeight)))
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.Class))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 92, Col: 148}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 93, Col: 107}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\"></div><div class=\"form-group\"><label for=\"driver1\">Default Driver 1</label> <input type=\"text\" id=\"driver1\" name=\"driver1\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" maxlength=\"2\"></div><div class=\"form-group\"><label for=\"tare_weight\">Tare Weight</label> <input type=\"number\" id=\"tare_weight\" name=\"tare_weight\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var18 string
-			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.Driver1))
+			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", components.DerefInt(truck.TareWeight)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 96, Col: 113}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 97, Col: 148}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"driver2\">Default Driver 2</label> <input type=\"text\" id=\"driver2\" name=\"driver2\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "\"></div><div class=\"form-group\"><label for=\"driver1\">Default Driver 1</label> <input type=\"text\" id=\"driver1\" name=\"driver1\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var19 string
-			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.Driver2))
+			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.Driver1))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 102, Col: 113}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 101, Col: 113}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" maxlength=\"30\"></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"active\" name=\"active\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			if truck.Active {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, " checked")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "> <label for=\"active\">Active</label></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"leased_truck\" name=\"leased_truck\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			if truck.LeasedTruck {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, " checked")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "> <label for=\"leased_truck\">Leased</label></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"straps\" name=\"straps\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			if truck.Straps {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, " checked")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "> <label for=\"straps\">Straps</label></div></div></fieldset><fieldset><legend>Trailer Information</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"trailer_number\">Trailer #</label> <input type=\"text\" id=\"trailer_number\" name=\"trailer_number\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"driver2\">Default Driver 2</label> <input type=\"text\" id=\"driver2\" name=\"driver2\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var20 string
-			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TrailerNumber))
+			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.Driver2))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 123, Col: 133}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 107, Col: 113}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\" maxlength=\"4\"></div><div class=\"form-group\"><label for=\"trailer_make\">Make</label> <input type=\"text\" id=\"trailer_make\" name=\"trailer_make\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "\" maxlength=\"30\"></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"active\" name=\"active\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if truck.Active {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, " checked")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "> <label for=\"active\">Active</label></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"leased_truck\" name=\"leased_truck\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if truck.LeasedTruck {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, " checked")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "> <label for=\"leased_truck\">Leased</label></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"straps\" name=\"straps\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if truck.Straps {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, " checked")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "> <label for=\"straps\">Straps</label></div></div></fieldset><fieldset><legend>Trailer Information</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"trailer_number\">Trailer #</label> <input type=\"text\" id=\"trailer_number\" name=\"trailer_number\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var21 string
-			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TrailerMake))
+			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TrailerNumber))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 127, Col: 127}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 128, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\" maxlength=\"20\"></div><div class=\"form-group\"><label for=\"trailer_model\">Model</label> <input type=\"text\" id=\"trailer_model\" name=\"trailer_model\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "\" maxlength=\"4\"></div><div class=\"form-group\"><label for=\"trailer_make\">Make</label> <input type=\"text\" id=\"trailer_make\" name=\"trailer_make\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var22 string
-			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TrailerModel))
+			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TrailerMake))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 131, Col: 130}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 132, Col: 127}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" maxlength=\"15\"></div><div class=\"form-group\"><label for=\"trailer_year\">Year</label> <input type=\"text\" id=\"trailer_year\" name=\"trailer_year\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "\" maxlength=\"20\"></div><div class=\"form-group\"><label for=\"trailer_model\">Model</label> <input type=\"text\" id=\"trailer_model\" name=\"trailer_model\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var23 string
-			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TrailerYear))
+			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TrailerModel))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 135, Col: 127}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 136, Col: 130}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "\" maxlength=\"4\"></div></div></fieldset><fieldset><legend>Rates &amp; Finance</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"truck_rate\">Truck Rate</label> <input type=\"text\" id=\"truck_rate\" name=\"truck_rate\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "\" maxlength=\"15\"></div><div class=\"form-group\"><label for=\"trailer_year\">Year</label> <input type=\"text\" id=\"trailer_year\" name=\"trailer_year\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var24 string
-			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckRate))
+			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TrailerYear))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 144, Col: 121}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 140, Col: 127}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "\"></div><div class=\"form-group\"><label for=\"truck_calc_type\">Calc Type</label> <input type=\"text\" id=\"truck_calc_type\" name=\"truck_calc_type\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "\" maxlength=\"4\"></div></div></fieldset><fieldset><legend>Rates &amp; Finance</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"truck_rate\">Truck Rate</label> <input type=\"text\" id=\"truck_rate\" name=\"truck_rate\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var25 string
-			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckCalcType))
+			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckRate))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 148, Col: 135}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 149, Col: 121}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"owned_by\">Owned By</label> <input type=\"text\" id=\"owned_by\" name=\"owned_by\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "\"></div><div class=\"form-group\"><label for=\"truck_calc_type\">Calc Type</label> <input type=\"text\" id=\"truck_calc_type\" name=\"truck_calc_type\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var26 string
-			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.OwnedBy))
+			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.TruckCalcType))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 152, Col: 115}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 153, Col: 135}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "\" maxlength=\"30\"></div><div class=\"form-group\"><label for=\"financed_by\">Financed By</label> <input type=\"text\" id=\"financed_by\" name=\"financed_by\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "\" maxlength=\"10\"></div><div class=\"form-group\"><label for=\"owned_by\">Owned By</label> <input type=\"text\" id=\"owned_by\" name=\"owned_by\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var27 string
-			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.FinancedBy))
+			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.OwnedBy))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 156, Col: 124}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 157, Col: 115}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"insurance_coverage_amt\">Insurance Coverage</label> <input type=\"text\" id=\"insurance_coverage_amt\" name=\"insurance_coverage_amt\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "\" maxlength=\"30\"></div><div class=\"form-group\"><label for=\"financed_by\">Financed By</label> <input type=\"text\" id=\"financed_by\" name=\"financed_by\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var28 string
-			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.InsuranceCoverageAmt))
+			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.FinancedBy))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 162, Col: 156}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 161, Col: 124}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "\"></div><div class=\"form-group\"><label for=\"insurance_exp_date\">Insurance Exp</label> <input type=\"date\" id=\"insurance_exp_date\" name=\"insurance_exp_date\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\" maxlength=\"30\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"insurance_coverage_amt\">Insurance Coverage</label> <input type=\"text\" id=\"insurance_coverage_amt\" name=\"insurance_coverage_amt\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var29 string
-			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.InsuranceExpDate))
+			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.InsuranceCoverageAmt))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 166, Col: 149}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 167, Col: 156}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "\"></div><div class=\"form-group\"><label for=\"cargo_coverage_amt\">Cargo Coverage</label> <input type=\"text\" id=\"cargo_coverage_amt\" name=\"cargo_coverage_amt\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "\"></div><div class=\"form-group\"><label for=\"insurance_exp_date\">Insurance Exp</label> <input type=\"date\" id=\"insurance_exp_date\" name=\"insurance_exp_date\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var30 string
-			templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.CargoCoverageAmt))
+			templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.InsuranceExpDate))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 170, Col: 144}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 171, Col: 149}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\"></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"exclude_fuel\" name=\"exclude_fuel\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			if truck.ExcludeFuel {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, " checked")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "> <label for=\"exclude_fuel\">Exclude Fuel</label></div></div></fieldset><fieldset><legend>Compliance Dates</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"w9_date\">W-9 Date</label> <input type=\"date\" id=\"w9_date\" name=\"w9_date\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "\"></div><div class=\"form-group\"><label for=\"cargo_coverage_amt\">Cargo Coverage</label> <input type=\"text\" id=\"cargo_coverage_amt\" name=\"cargo_coverage_amt\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var31 string
-			templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.W9Date))
+			templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(components.Deref(truck.CargoCoverageAmt))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 183, Col: 117}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 175, Col: 144}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "\"></div><div class=\"form-group\"><label for=\"workers_comp_date\">Workers Comp Date</label> <input type=\"date\" id=\"workers_comp_date\" name=\"workers_comp_date\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "\"></div><div class=\"form-check form-check-aligned\"><input type=\"checkbox\" id=\"exclude_fuel\" name=\"exclude_fuel\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if truck.ExcludeFuel {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, " checked")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "> <label for=\"exclude_fuel\">Exclude Fuel</label></div></div></fieldset><fieldset><legend>Compliance Dates</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"w9_date\">W-9 Date</label> <input type=\"date\" id=\"w9_date\" name=\"w9_date\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var32 string
-			templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.WorkersCompDate))
+			templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.W9Date))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 187, Col: 146}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 188, Col: 117}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "\"></div><div class=\"form-group\"><label for=\"carrier_agreement_date\">Carrier Agreement</label> <input type=\"date\" id=\"carrier_agreement_date\" name=\"carrier_agreement_date\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "\"></div><div class=\"form-group\"><label for=\"workers_comp_date\">Workers Comp Date</label> <input type=\"date\" id=\"workers_comp_date\" name=\"workers_comp_date\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var33 string
-			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.CarrierAgreementDate))
+			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.WorkersCompDate))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 191, Col: 161}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 192, Col: 146}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "\"></div></div></fieldset><div class=\"form-actions\"><button type=\"submit\" class=\"btn btn-primary\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "\"></div><div class=\"form-group\"><label for=\"carrier_agreement_date\">Carrier Agreement</label> <input type=\"date\" id=\"carrier_agreement_date\" name=\"carrier_agreement_date\" class=\"form-control\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var34 string
+			templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(components.FormatDate(truck.CarrierAgreementDate))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/trucks/form.templ`, Line: 196, Col: 161}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "\"></div></div></fieldset><div class=\"form-actions\"><button type=\"submit\" class=\"btn btn-primary\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if isNew {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "Create Truck")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "Create Truck")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "Save Changes")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 53, "Save Changes")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "</button> <a href=\"/global/trucks\" class=\"btn\">Cancel</a></div></form>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 54, "</button> <a href=\"/global/trucks\" class=\"btn\">Cancel</a></div></form>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
