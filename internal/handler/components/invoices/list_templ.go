@@ -9,6 +9,8 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"fmt"
+
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
@@ -46,112 +48,125 @@ func ListPage(pg components.PageContext, result models.InvoiceListResult, filter
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h1>Invoices</h1><a href=\"/accounting/invoices/new\" class=\"btn btn-primary\">New Invoice</a></div><div class=\"filter-bar\"><div class=\"form-group\"><label for=\"search\">Search</label> <input type=\"text\" id=\"search\" name=\"search\" class=\"form-control search-input\" placeholder=\"Invoice #, customer, order...\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h1>Invoices</h1><a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(filter.Search)
+			var templ_7745c5c3_Var3 templ.SafeURL
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/accounting/invoices/export/qbo.csv?date_from=%s&date_to=%s&status=%s", filter.DateFrom, filter.DateTo, filter.Status)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/list.templ`, Line: 20, Col: 26}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/list.templ`, Line: 14, Col: 159}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" hx-get=\"/accounting/invoices\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#invoice-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"></div><div class=\"form-group\"><label for=\"status\">Status</label> <select id=\"status\" name=\"status\" class=\"form-control\" hx-get=\"/accounting/invoices\" hx-trigger=\"change\" hx-target=\"#invoice-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"><option value=\"\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			if filter.Status == "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " selected")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, ">All</option> <option value=\"Open\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			if filter.Status == "Open" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " selected")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, ">Open</option> <option value=\"Paid\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			if filter.Status == "Paid" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, " selected")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, ">Paid</option> <option value=\"Void\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			if filter.Status == "Void" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, " selected")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, ">Void</option></select></div><div class=\"form-group\"><label for=\"date_from\">From</label> <input type=\"date\" id=\"date_from\" name=\"date_from\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"btn\" title=\"Download a CSV formatted for QuickBooks Online invoice import (max 100 invoices per file)\">QuickBooks CSV</a> <a href=\"/accounting/invoices/new\" class=\"btn btn-primary\">New Invoice</a></div><div class=\"filter-bar\"><div class=\"form-group\"><label for=\"search\">Search</label> <input type=\"text\" id=\"search\" name=\"search\" class=\"form-control search-input\" placeholder=\"Invoice #, customer, order...\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(filter.DateFrom)
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(filter.Search)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/list.templ`, Line: 48, Col: 28}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/list.templ`, Line: 23, Col: 26}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" hx-get=\"/accounting/invoices\" hx-trigger=\"change\" hx-target=\"#invoice-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"></div><div class=\"form-group\"><label for=\"date_to\">To</label> <input type=\"date\" id=\"date_to\" name=\"date_to\" class=\"form-control\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" hx-get=\"/accounting/invoices\" hx-trigger=\"keyup changed delay:300ms\" hx-target=\"#invoice-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"></div><div class=\"form-group\"><label for=\"status\">Status</label> <select id=\"status\" name=\"status\" class=\"form-control\" hx-get=\"/accounting/invoices\" hx-trigger=\"change\" hx-target=\"#invoice-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"><option value=\"\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if filter.Status == "" {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " selected")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, ">All</option> <option value=\"Open\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if filter.Status == "Open" {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " selected")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, ">Open</option> <option value=\"Paid\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if filter.Status == "Paid" {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, " selected")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, ">Paid</option> <option value=\"Void\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if filter.Status == "Void" {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, " selected")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, ">Void</option></select></div><div class=\"form-group\"><label for=\"date_from\">From</label> <input type=\"date\" id=\"date_from\" name=\"date_from\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
-			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(filter.DateTo)
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(filter.DateFrom)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/list.templ`, Line: 60, Col: 26}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/list.templ`, Line: 51, Col: 28}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" hx-get=\"/accounting/invoices\" hx-trigger=\"change\" hx-target=\"#invoice-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"></div><input type=\"hidden\" name=\"sort_by\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" hx-get=\"/accounting/invoices\" hx-trigger=\"change\" hx-target=\"#invoice-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"></div><div class=\"form-group\"><label for=\"date_to\">To</label> <input type=\"date\" id=\"date_to\" name=\"date_to\" class=\"form-control\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(filter.SortBy)
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(filter.DateTo)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/list.templ`, Line: 68, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/list.templ`, Line: 63, Col: 26}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\"> <input type=\"hidden\" name=\"sort_dir\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" hx-get=\"/accounting/invoices\" hx-trigger=\"change\" hx-target=\"#invoice-table\" hx-include=\".filter-bar [name]\" hx-push-url=\"true\"></div><input type=\"hidden\" name=\"sort_by\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
-			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(filter.SortDir)
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(filter.SortBy)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/list.templ`, Line: 69, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/list.templ`, Line: 71, Col: 60}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"></div><div id=\"invoice-table\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"> <input type=\"hidden\" name=\"sort_dir\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var8 string
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(filter.SortDir)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/invoices/list.templ`, Line: 72, Col: 62}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"></div><div id=\"invoice-table\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -159,7 +174,7 @@ func ListPage(pg components.PageContext, result models.InvoiceListResult, filter
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

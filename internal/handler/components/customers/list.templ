@@ -1,6 +1,8 @@
 package customers
 
 import (
+	"fmt"
+
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
@@ -9,6 +11,7 @@ templ ListPage(pg components.PageContext, result models.CustomerListResult, filt
 	@components.Layout(pg, "Customers - ATLinks") {
 		<div class="page-header">
 			<h1>Customers</h1>
+			<a href={ templ.SafeURL(fmt.Sprintf("/global/customers/export/qbo.csv?active=%s", filter.Active)) } class="btn" title="Download a CSV formatted for QuickBooks Online customer import">QuickBooks CSV</a>
 			<a href="/global/customers/new" class="btn btn-primary">New Customer</a>
 		</div>
 		<div class="filter-bar">

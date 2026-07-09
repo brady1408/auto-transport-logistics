@@ -352,6 +352,7 @@ func initRoutes(pool *pgxpool.Pool, cfg *config.Config, deps *handler.Deps) (*ht
 	handler.NewDamageClaimHandler(damageClaimStore, attachmentStore, storageSvc, deps).Register(protectedMux)
 	handler.NewAccountsPayableHandler(apStore, deps).Register(protectedMux)
 	handler.NewEarningsAdjHandler(earningsAdjStore, employeeStore, truckStore, deps).Register(protectedMux)
+	handler.NewQBOExportHandler(invoiceStore, invoiceDetailStore, paymentStore, paymentDetailStore, customerStore, employeeStore).Register(protectedMux)
 
 	// Feedback
 	handler.NewFeedbackHandler(feedbackStore, attachmentStore, storageSvc, deps).Register(protectedMux)
