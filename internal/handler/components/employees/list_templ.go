@@ -46,14 +46,14 @@ func ListPage(pg components.PageContext, result models.EmployeeListResult, filte
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h1>Employees</h1><a href=\"/global/employees/export/qbo.csv\" class=\"btn\" title=\"Download an employee contact CSV for QuickBooks\">QuickBooks CSV</a> <a href=\"/global/employees/new\" class=\"btn btn-primary\">New Employee</a></div><div class=\"filter-bar\"><div class=\"form-group\"><label for=\"search\">Search</label> <input type=\"text\" id=\"search\" name=\"search\" class=\"form-control search-input\" placeholder=\"Name or ID...\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h1>Employees</h1><div class=\"btn-group\"><a href=\"/global/employees/export/qbo.csv\" class=\"btn\" title=\"Download an employee contact CSV for QuickBooks\">QuickBooks CSV</a> <a href=\"/global/employees/new\" class=\"btn btn-primary\">New Employee</a></div></div><div class=\"filter-bar\"><div class=\"form-group\"><label for=\"search\">Search</label> <input type=\"text\" id=\"search\" name=\"search\" class=\"form-control search-input\" placeholder=\"Name or ID...\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(filter.Search)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/employees/list.templ`, Line: 21, Col: 26}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/employees/list.templ`, Line: 23, Col: 26}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {

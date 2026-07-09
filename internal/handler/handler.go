@@ -330,6 +330,25 @@ func formBool(r *http.Request, key string) bool {
 	return v == "on" || v == "true" || v == "1"
 }
 
+// sanitizeCSVCell neutralizes spreadsheet formula injection: cells starting
+// with =, +, -, @, tab, or CR are evaluated as formulas by Excel and other
+// spreadsheet tools, so they get a leading single quote to force text.
+// Purely numeric cells are left alone so negative amounts import correctly.
+func sanitizeCSVCell(cell string) string {
+	if cell == "" {
+		return cell
+	}
+	switch cell[0] {
+	case '=', '@', '\t', '\r':
+		return "'" + cell
+	case '+', '-':
+		if _, err := strconv.ParseFloat(cell, 64); err != nil {
+			return "'" + cell
+		}
+	}
+	return cell
+}
+
 // writeCSV writes a CSV file to the response.
 func writeCSV(w http.ResponseWriter, filename string, headers []string, rows [][]string) {
 	w.Header().Set("Content-Type", "text/csv")
@@ -341,6 +360,9 @@ func writeCSV(w http.ResponseWriter, filename string, headers []string, rows [][
 		return
 	}
 	for _, row := range rows {
+		for i, cell := range row {
+			row[i] = sanitizeCSVCell(cell)
+		}
 		if err := writer.Write(row); err != nil {
 			log.Printf("csv write row: %v", err)
 			return

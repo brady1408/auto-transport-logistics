@@ -12,7 +12,7 @@ templ ListPage(pg components.PageContext, truck *models.Truck, result models.Mai
 	@components.Layout(pg, "Maintenance Log - ATLinks") {
 		<div class="page-header">
 			<h1>Maintenance Log: { truck.TruckNumber }</h1>
-			<div>
+			<div class="btn-group">
 				<a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/edit", truck.ID)) } class="btn">Back to Truck</a>
 				<a href={ templ.SafeURL(fmt.Sprintf("/global/trucks/%d/maintenance/new", truck.ID)) } class="btn btn-primary">Add Entry</a>
 			</div>

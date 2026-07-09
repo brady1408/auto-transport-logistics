@@ -193,7 +193,7 @@ func FormPage(pg components.PageContext, truck *models.Truck, m *models.Maintena
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<fieldset><legend>Maintenance Entry</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"maintenance_date\">Date *</label> <input type=\"date\" id=\"maintenance_date\" name=\"maintenance_date\" class=\"form-control\" required value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<fieldset><legend>Maintenance Entry</legend><div class=\"form-row\"><div class=\"form-group\"><label for=\"maintenance_date\" class=\"required\">Date</label> <input type=\"date\" id=\"maintenance_date\" name=\"maintenance_date\" class=\"form-control\" required value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -291,7 +291,7 @@ func FormPage(pg components.PageContext, truck *models.Truck, m *models.Maintena
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\"></div></div><div class=\"form-row\"><div class=\"form-group\" style=\"flex:1\"><label for=\"notes\">Notes</label> <input type=\"text\" id=\"notes\" name=\"notes\" class=\"form-control\" maxlength=\"200\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\"></div></div><div class=\"form-row\"><div class=\"form-group\"><label for=\"notes\">Notes</label> <input type=\"text\" id=\"notes\" name=\"notes\" class=\"form-control\" maxlength=\"200\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

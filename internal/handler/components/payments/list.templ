@@ -1,8 +1,6 @@
 package payments
 
 import (
-	"fmt"
-
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
@@ -11,8 +9,19 @@ templ ListPage(pg components.PageContext, result models.PaymentListResult, filte
 	@components.Layout(pg, "Payments - ATLinks") {
 		<div class="page-header">
 			<h1>Payments</h1>
-			<a href={ templ.SafeURL(fmt.Sprintf("/accounting/payments/export/qbo.csv?date_from=%s&date_to=%s", filter.DateFrom, filter.DateTo)) } class="btn" title="Download a Receive Payments CSV for third-party QuickBooks importers">QuickBooks CSV</a>
-			<a href="/accounting/payments/new" class="btn btn-primary">New Payment</a>
+			<div class="btn-group">
+				<a
+					href={ components.QueryURL("/accounting/payments/export/qbo.csv",
+						"search", filter.Search,
+						"customer_id", filter.CustomerID,
+						"date_from", filter.DateFrom,
+						"date_to", filter.DateTo) }
+					onclick="this.search = location.search"
+					class="btn"
+					title="Download a Receive Payments CSV for third-party QuickBooks importers"
+				>QuickBooks CSV</a>
+				<a href="/accounting/payments/new" class="btn btn-primary">New Payment</a>
+			</div>
 		</div>
 		<div class="filter-bar">
 			<div class="form-group">

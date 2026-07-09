@@ -9,8 +9,6 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"fmt"
-
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
@@ -48,27 +46,31 @@ func ListPage(pg components.PageContext, result models.CustomerListResult, filte
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h1>Customers</h1><a href=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"page-header\"><h1>Customers</h1><div class=\"btn-group\"><a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 templ.SafeURL
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/global/customers/export/qbo.csv?active=%s", filter.Active)))
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(components.QueryURL("/global/customers/export/qbo.csv",
+				"search", filter.Search,
+				"type", filter.Type,
+				"zone", filter.Zone,
+				"active", filter.Active))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/customers/list.templ`, Line: 14, Col: 100}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/customers/list.templ`, Line: 18, Col: 30}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"btn\" title=\"Download a CSV formatted for QuickBooks Online customer import\">QuickBooks CSV</a> <a href=\"/global/customers/new\" class=\"btn btn-primary\">New Customer</a></div><div class=\"filter-bar\"><div class=\"form-group\"><label for=\"search\">Search</label> <input type=\"text\" id=\"search\" name=\"search\" class=\"form-control search-input\" placeholder=\"Name or number...\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" onclick=\"this.search = location.search\" class=\"btn\" title=\"Download a CSV formatted for QuickBooks Online customer import\">QuickBooks CSV</a> <a href=\"/global/customers/new\" class=\"btn btn-primary\">New Customer</a></div></div><div class=\"filter-bar\"><div class=\"form-group\"><label for=\"search\">Search</label> <input type=\"text\" id=\"search\" name=\"search\" class=\"form-control search-input\" placeholder=\"Name or number...\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(filter.Search)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/customers/list.templ`, Line: 23, Col: 26}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handler/components/customers/list.templ`, Line: 32, Col: 26}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {

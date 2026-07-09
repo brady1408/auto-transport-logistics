@@ -1,8 +1,6 @@
 package invoices
 
 import (
-	"fmt"
-
 	"github.com/brady1408/auto-transport-logistics/internal/handler/components"
 	"github.com/brady1408/auto-transport-logistics/internal/models"
 )
@@ -11,8 +9,20 @@ templ ListPage(pg components.PageContext, result models.InvoiceListResult, filte
 	@components.Layout(pg, "Invoices - ATLinks") {
 		<div class="page-header">
 			<h1>Invoices</h1>
-			<a href={ templ.SafeURL(fmt.Sprintf("/accounting/invoices/export/qbo.csv?date_from=%s&date_to=%s&status=%s", filter.DateFrom, filter.DateTo, filter.Status)) } class="btn" title="Download a CSV formatted for QuickBooks Online invoice import (max 100 invoices per file)">QuickBooks CSV</a>
-			<a href="/accounting/invoices/new" class="btn btn-primary">New Invoice</a>
+			<div class="btn-group">
+				<a
+					href={ components.QueryURL("/accounting/invoices/export/qbo.csv",
+						"search", filter.Search,
+						"customer_id", filter.CustomerID,
+						"status", filter.Status,
+						"date_from", filter.DateFrom,
+						"date_to", filter.DateTo) }
+					onclick="this.search = location.search"
+					class="btn"
+					title="Download a CSV formatted for QuickBooks Online invoice import (max 100 invoices per file)"
+				>QuickBooks CSV</a>
+				<a href="/accounting/invoices/new" class="btn btn-primary">New Invoice</a>
+			</div>
 		</div>
 		<div class="filter-bar">
 			<div class="form-group">
